@@ -12,3 +12,9 @@ Artisan::command('inspire', function () {
 
 Schedule::command(CheckUptime::class)->everyMinute();
 Schedule::command(CheckCertificates::class)->daily();
+
+// === LARAVEL HORIZON ===
+Schedule::command('horizon:snapshot')->everyFiveMinutes();
+
+// === LARAVEL TELOSCOPE ===
+Schedule::command('telescope:prune')->everyMinute();
