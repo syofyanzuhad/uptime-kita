@@ -15,6 +15,7 @@
         "laravel/horizon": "^5.32",
         "laravel/telescope": "^5.9",
         "laravel/tinker": "^2.10.1",
+        "predis/predis": "^3.0",
         "spatie/laravel-uptime-monitor": "^4.5",
         "tightenco/ziggy": "^2.4"
     },
