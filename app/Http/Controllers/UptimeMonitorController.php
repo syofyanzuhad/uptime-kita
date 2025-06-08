@@ -67,7 +67,7 @@ class UptimeMonitorController extends Controller
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
             ]);
 
-            return redirect()->route('uptime.index')
+            return redirect()->route('monitor.index')
                              ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
 
         } catch (\Exception $e) {
@@ -110,7 +110,7 @@ class UptimeMonitorController extends Controller
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
             ]);
 
-            return redirect()->route('uptime.index')
+            return redirect()->route('monitor.index')
                              ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
 
         } catch (\Exception $e) {
@@ -128,7 +128,7 @@ class UptimeMonitorController extends Controller
         try {
             $monitor->delete();
 
-            return redirect()->route('uptime.index')
+            return redirect()->route('monitor.index')
                              ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);
 
         } catch (\Exception $e) {

@@ -28,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const submit = () => {
-  form.post(route('uptime.store'), {
+  form.post(route('monitor.store'), {
     onFinish: () => form.reset('url'),
   });
 };
