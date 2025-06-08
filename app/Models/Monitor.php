@@ -12,6 +12,7 @@ class Monitor extends SpatieMonitor
         'url' => 'string',
         'uptime_last_check_date' => 'datetime',
         'certificate_expiration_date' => 'datetime',
+        'uptime_status_last_change_date' => 'datetime',
     ];
 
     protected $fillable = [
