@@ -17,4 +17,4 @@ Schedule::command(CheckCertificates::class)->daily();
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
 
 // === LARAVEL TELOSCOPE ===
-Schedule::command('telescope:prune')->everyMinute();
+Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
