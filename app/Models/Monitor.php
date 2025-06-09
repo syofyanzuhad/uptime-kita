@@ -2,27 +2,43 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\URL;
+use Spatie\Url\Url;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 
 class Monitor extends SpatieMonitor
 {
     protected $casts = [
-        'url' => 'string',
+        'uptime_check_enabled' => 'boolean',
+        'certificate_check_enabled' => 'boolean',
         'uptime_last_check_date' => 'datetime',
-        'certificate_expiration_date' => 'datetime',
         'uptime_status_last_change_date' => 'datetime',
+        'uptime_check_failed_event_fired_on_date' => 'datetime',
+        'certificate_expiration_date' => 'datetime',
     ];
 
-    protected $fillable = [
-        'url',
-        'uptime_check_enabled',
-        'certificate_check_enabled',
-    ];
+    protected $guarded = [];
 
-    public function getUrlStringAttribute()
+    protected $appends = ['raw_url'];
+
+    public function scopeEnabled($query)
     {
-        return $this->attributes['url'] ?? '';
+        return $query
+            ->where('uptime_check_enabled', true)
+            ->orWhere('certificate_check_enabled', true);
+    }
+
+    public function getUrlAttribute(): ?Url
+    {
+        if (! isset($this->attributes['url'])) {
+            return null;
+        }
+
+        return Url::fromString($this->attributes['url']);
+    }
+
+    public function getRawUrlAttribute(): string
+    {
+        return (string) $this->url;
     }
 }

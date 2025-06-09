@@ -19,7 +19,7 @@ class UptimeMonitorController extends Controller
                            ->map(function ($monitor) {
                                return [
                                    'id' => $monitor->id,
-                                   'url' => $monitor->url_string,
+                                   'url' => $monitor->raw_url,
                                    // Akses langsung atribut status dari model Monitor
                                    'uptime_status' => $monitor->uptime_status,
                                    'last_check_date' => $monitor->uptime_last_check_date,
@@ -85,7 +85,7 @@ class UptimeMonitorController extends Controller
         return Inertia::render('uptime/Edit', [
             'monitor' => [
                 'id' => $monitor->id,
-                'url' => $monitor->url_string,
+                'url' => $monitor->raw_url,
                 'uptime_check_enabled' => (bool) $monitor->uptime_check_enabled,
                 'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
             ]
