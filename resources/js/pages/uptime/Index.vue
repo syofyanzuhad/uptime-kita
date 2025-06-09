@@ -3,9 +3,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
+import { Head, Link, usePage, router, usePoll } from '@inertiajs/vue3';
 import type { Monitor, FlashMessage } from '@/types/monitor';
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch } from 'vue';
 
 const page = usePage();
 
@@ -49,24 +49,8 @@ const deleteMonitor = (monitorId: number) => {
   }
 };
 
-// Auto-fetch functionality
-let fetchInterval: number | null = null;
-
-const fetchLatestData = () => {
-    router.reload({ only: ['monitors'] });
-};
-
-onMounted(() => {
-    // Start auto-fetching every 5 seconds
-    fetchInterval = window.setInterval(fetchLatestData, 5000);
-});
-
-onUnmounted(() => {
-    // Clean up interval when component is unmounted
-    if (fetchInterval) {
-        clearInterval(fetchInterval);
-    }
-});
+// Use Inertia's usePoll for auto-refresh
+usePoll(5000);
 </script>
 
 <template>
