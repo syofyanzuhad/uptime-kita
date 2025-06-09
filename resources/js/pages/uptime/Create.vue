@@ -20,11 +20,11 @@ const form = useForm({
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
-        href: '/uptime-monitor',
+        href: '/monitor',
     },
     {
         title: 'Tambah Monitor',
-        href: '/uptime-monitor/create',
+        href: '/monitor/create',
     },
 ];
 
