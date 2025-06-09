@@ -16,6 +16,14 @@ const props = defineProps<{
   monitor: Monitor; // Menerima data monitor yang akan diedit
 }>();
 
+// Store initial values for dirty checking
+const initialValues = {
+  url: props.monitor.url,
+  uptime_check_enabled: props.monitor.uptime_check_enabled,
+  certificate_check_enabled: props.monitor.certificate_check_enabled,
+  check_interval: props.monitor.check_interval || 5,
+};
+
 // Inisialisasi form dengan data monitor yang ada
 const form = useForm({
   url: props.monitor.url,
@@ -38,6 +46,16 @@ const decrementInterval = () => {
   }
 };
 
+// Function to check if form is dirty
+const isFormDirty = () => {
+  return (
+    form.url !== initialValues.url ||
+    form.uptime_check_enabled !== initialValues.uptime_check_enabled ||
+    form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
+    form.check_interval !== initialValues.check_interval
+  );
+};
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
@@ -50,6 +68,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const submit = () => {
+  if (!isFormDirty()) {
+    // If form is not dirty, show a message or handle as needed
+    alert('No changes detected. Nothing to update.');
+    return;
+  }
+
   form.put(route('monitor.update', props.monitor.id), {
     onFinish: () => {},
   });
