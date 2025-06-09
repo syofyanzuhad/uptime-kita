@@ -21,8 +21,22 @@ const form = useForm({
   url: props.monitor.url,
   uptime_check_enabled: props.monitor.uptime_check_enabled,
   certificate_check_enabled: props.monitor.certificate_check_enabled,
+  check_interval: props.monitor.check_interval || 5, // Default to 5 minutes if not set
 });
 // console.log(form.url);
+
+// Add methods for interval control
+const incrementInterval = () => {
+  if (form.check_interval < 60) {
+    form.check_interval += 1;
+  }
+};
+
+const decrementInterval = () => {
+  if (form.check_interval > 1) {
+    form.check_interval -= 1;
+  }
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -66,6 +80,41 @@ const submit = () => {
                 autocomplete="url"
               />
               <div v-if="form.errors.url" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.url }}</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="check_interval" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
+              <div class="flex items-center mt-1">
+                <button
+                  type="button"
+                  @click="decrementInterval"
+                  class="inline-flex items-center justify-center h-10 w-10 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <span class="sr-only">Kurangi</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <input
+                  id="check_interval"
+                  type="number"
+                  min="1"
+                  max="60"
+                  v-model="form.check_interval"
+                  class="flex h-10 w-20 text-center border-t border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="button"
+                  @click="incrementInterval"
+                  class="inline-flex items-center justify-center h-10 w-10 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <span class="sr-only">Tambah</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              <div v-if="form.errors.check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.check_interval }}</div>
             </div>
 
             <div class="mb-4">
