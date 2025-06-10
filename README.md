@@ -11,4 +11,5 @@ Kita is the Indonesian word that means "Us"
 ## Roadmap
 
 - [ ] Notification
+- [ ] Status page
 - [ ] Any suggestions?
