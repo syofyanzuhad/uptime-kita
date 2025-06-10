@@ -53,15 +53,31 @@ class UptimeMonitorController extends Controller
      */
     public function store(Request $request)
     {
+        // sanitize url
+        $url = filter_var($request->url, FILTER_VALIDATE_URL);
+        if (!$url) {
+            return redirect()->back()
+                             ->with('flash', ['message' => 'URL tidak valid!', 'type' => 'error'])
+                             ->withInput();
+        }
+        $monitor = Monitor::withoutGlobalScope('user')->where('url', $url)->first();
+        if ($monitor) {
+            // attach to user
+            $monitor->users()->attach(auth()->id(), ['is_active' => true]);
+
+            return redirect()->route('monitor.index')
+                             ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
+        }
+
         $request->validate([
-            'url' => ['required', 'url', 'unique:monitors,url'],
+            'url' => ['required', 'url'],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
         ]);
 
         try {
-            $monitor = Monitor::create([
-                'url' => $request->url,
+            $monitor = Monitor::firstOrCreate([
+                'url' => $url,
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
             ]);
