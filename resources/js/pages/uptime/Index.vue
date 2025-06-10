@@ -3,9 +3,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
-import { Head, Link, usePage, router, usePoll } from '@inertiajs/vue3';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import type { Monitor, FlashMessage } from '@/types/monitor';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 
 const page = usePage();
 
@@ -26,6 +26,50 @@ const breadcrumbs: BreadcrumbItem[] = [
 const showNotification = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('');
+
+// Countdown timer state
+const countdown = ref(0);
+let countdownInterval: number | null = null;
+
+// Function to calculate seconds until next minute
+const calculateSecondsUntilNextMinute = () => {
+  const now = new Date();
+  return 60 - now.getSeconds();
+};
+
+// Function to start countdown
+const startCountdown = () => {
+  const updateCountdown = () => {
+    const secondsUntilNextMinute = calculateSecondsUntilNextMinute();
+    countdown.value = secondsUntilNextMinute;
+
+    // If we're at the start of a minute, trigger a refresh
+    if (secondsUntilNextMinute === 60) {
+      router.reload({ only: ['monitors'] });
+    }
+  };
+
+  // Initial update
+  updateCountdown();
+
+  // Update every second
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  countdownInterval = setInterval(updateCountdown, 1000);
+};
+
+// Start countdown when component is mounted
+onMounted(() => {
+  startCountdown();
+});
+
+// Clean up interval when component is unmounted
+onUnmounted(() => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+});
 
 // Watcher untuk properti flash
 watch(() => page.props.flash as FlashMessage | undefined, (newFlash) => {
@@ -48,9 +92,6 @@ const deleteMonitor = (monitorId: number) => {
     router.delete(route('monitor.destroy', monitorId));
   }
 };
-
-// Use Inertia's usePoll for auto-refresh
-usePoll(5000);
 </script>
 
 <template>
@@ -58,7 +99,9 @@ usePoll(5000);
         <Head title="Uptime Monitor" />
 
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Uptime Monitor</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Uptime Monitor</h2>
+            </div>
         </template>
 
         <div class="py-12">
@@ -76,6 +119,9 @@ usePoll(5000);
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Daftar Monitor</h3>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Next refresh in: {{ countdown }}s
+                </div>
                 <Link :href="route('monitor.create')" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md">
                 Tambah Monitor
                 </Link>
