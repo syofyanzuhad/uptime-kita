@@ -19,12 +19,12 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Github Repo',
-        href: 'https://github.com/syofyanzuhad/uptime-monitor',
+        href: 'https://github.com/syofyanzuhad/uptime-kita',
         icon: Folder,
     },
     {
         title: 'Documentation',
-        href: 'https://github.com/syofyanzuhad/uptime-monitor/blob/main/README.md',
+        href: 'https://github.com/syofyanzuhad/uptime-kita/blob/main/README.md',
         icon: BookOpen,
     },
 ];
