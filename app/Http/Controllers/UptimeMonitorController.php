@@ -110,6 +110,7 @@ class UptimeMonitorController extends Controller
                 'url' => $monitor->raw_url,
                 'uptime_check_enabled' => (bool) $monitor->uptime_check_enabled,
                 'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
             ]
         ]);
     }
