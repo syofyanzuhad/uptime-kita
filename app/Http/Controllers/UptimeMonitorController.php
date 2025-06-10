@@ -73,6 +73,7 @@ class UptimeMonitorController extends Controller
             'url' => ['required', 'url'],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
+            'uptime_check_interval' => ['required', 'integer', 'min:1'],
         ]);
 
         try {
@@ -80,6 +81,7 @@ class UptimeMonitorController extends Controller
                 'url' => $url,
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
+                'uptime_check_interval' => $request->uptime_check_interval,
             ]);
 
             // check certificate using command
@@ -121,6 +123,7 @@ class UptimeMonitorController extends Controller
             'url' => ['required', 'url', 'unique:monitors,url,' . $monitor->id],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
+            'uptime_check_interval' => ['required', 'integer', 'min:1'],
         ]);
 
         try {
@@ -128,6 +131,7 @@ class UptimeMonitorController extends Controller
                 'url' => $request->url,
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
+                'uptime_check_interval' => $request->uptime_check_interval,
             ]);
 
             return redirect()->route('monitor.index')
