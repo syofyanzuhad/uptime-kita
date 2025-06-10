@@ -10,7 +10,7 @@ export interface Monitor {
     certificate_expiration_date: string | null;
     down_for_events_count: number;
     uptime_check_enabled: boolean;
-    check_interval: number;
+    uptime_check_interval: number;
   }
 
   export interface FlashMessage {

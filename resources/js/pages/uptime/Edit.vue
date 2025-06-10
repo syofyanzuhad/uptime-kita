@@ -21,7 +21,7 @@ const initialValues = {
   url: props.monitor.url,
   uptime_check_enabled: props.monitor.uptime_check_enabled,
   certificate_check_enabled: props.monitor.certificate_check_enabled,
-  check_interval: props.monitor.check_interval || 5,
+  uptime_check_interval: props.monitor.uptime_check_interval || 5,
 };
 
 // Inisialisasi form dengan data monitor yang ada
@@ -29,20 +29,20 @@ const form = useForm({
   url: props.monitor.url,
   uptime_check_enabled: props.monitor.uptime_check_enabled,
   certificate_check_enabled: props.monitor.certificate_check_enabled,
-  check_interval: props.monitor.check_interval || 5, // Default to 5 minutes if not set
+  uptime_check_interval: props.monitor.uptime_check_interval || 5, // Default to 5 minutes if not set
 });
 // console.log(form.url);
 
 // Add methods for interval control
 const incrementInterval = () => {
-  if (form.check_interval < 60) {
-    form.check_interval += 1;
+  if (form.uptime_check_interval < 60) {
+    form.uptime_check_interval += 1;
   }
 };
 
 const decrementInterval = () => {
-  if (form.check_interval > 1) {
-    form.check_interval -= 1;
+  if (form.uptime_check_interval > 1) {
+    form.uptime_check_interval -= 1;
   }
 };
 
@@ -52,7 +52,7 @@ const isFormDirty = () => {
     form.url !== initialValues.url ||
     form.uptime_check_enabled !== initialValues.uptime_check_enabled ||
     form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
-    form.check_interval !== initialValues.check_interval
+    form.uptime_check_interval !== initialValues.uptime_check_interval
   );
 };
 
@@ -107,7 +107,7 @@ const submit = () => {
             </div>
 
             <div class="mb-4">
-              <label for="check_interval" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
+              <label for="uptime_check_interval" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
               <div class="flex items-center mt-1">
                 <button
                   type="button"
@@ -120,11 +120,11 @@ const submit = () => {
                   </svg>
                 </button>
                 <input
-                  id="check_interval"
+                  id="uptime_check_interval"
                   type="number"
                   min="1"
                   max="60"
-                  v-model="form.check_interval"
+                  v-model="form.uptime_check_interval"
                   class="flex h-10 w-20 text-center border-t border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <button
@@ -138,7 +138,7 @@ const submit = () => {
                   </svg>
                 </button>
               </div>
-              <div v-if="form.errors.check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.check_interval }}</div>
+              <div v-if="form.errors.uptime_check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.uptime_check_interval }}</div>
             </div>
 
             <div class="mb-4">

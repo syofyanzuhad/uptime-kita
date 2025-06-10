@@ -14,7 +14,7 @@ const form = useForm({
   url: '',
   uptime_check_enabled: true,
   certificate_check_enabled: true,
-  check_interval: 5,
+  uptime_check_interval: 5,
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,14 +29,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const decrementInterval = () => {
-  if (form.check_interval > 1) {
-    form.check_interval--;
+  if (form.uptime_check_interval > 1) {
+    form.uptime_check_interval--;
   }
 };
 
 const incrementInterval = () => {
-  if (form.check_interval < 60) {
-    form.check_interval++;
+  if (form.uptime_check_interval < 60) {
+    form.uptime_check_interval++;
   }
 };
 
@@ -74,7 +74,7 @@ const submit = () => {
             </div>
 
             <div class="mb-4">
-              <label for="check_interval" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
+              <label for="uptime_check_interval" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
               <div class="flex items-center mt-1">
                 <button
                   type="button"
@@ -87,11 +87,11 @@ const submit = () => {
                   </svg>
                 </button>
                 <input
-                  id="check_interval"
+                  id="uptime_check_interval"
                   type="number"
                   min="1"
                   max="60"
-                  v-model="form.check_interval"
+                  v-model="form.uptime_check_interval"
                   class="flex h-10 w-20 text-center border-t border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <button
@@ -105,7 +105,7 @@ const submit = () => {
                   </svg>
                 </button>
               </div>
-              <div v-if="form.errors.check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.check_interval }}</div>
+              <div v-if="form.errors.uptime_check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.uptime_check_interval }}</div>
             </div>
 
             <div class="mb-4">
