@@ -10,6 +10,8 @@ Kita is the Indonesian word that means "Us"
 
 ## Roadmap
 
+- [ ] Uptime monitoring
+- [ ] SSL Monitoring
 - [ ] Notification
 - [ ] Status page
 - [ ] Any suggestions?
