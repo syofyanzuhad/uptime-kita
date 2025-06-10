@@ -11,7 +11,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command(CheckUptime::class)->everyMinute();
-Schedule::command(CheckCertificates::class)->daily();
+Schedule::command(CheckCertificates::class)->everyMinute();
 
 // === LARAVEL HORIZON ===
 Schedule::command('horizon:snapshot')->everyFiveMinutes();

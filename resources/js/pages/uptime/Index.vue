@@ -37,7 +37,7 @@ watch(() => page.props.flash as FlashMessage | undefined, (newFlash) => {
         // Sembunyikan notifikasi setelah beberapa detik
         setTimeout(() => {
             showNotification.value = false;
-        }, 5000);
+        }, 60000);
     }
 }, { deep: true });
 
