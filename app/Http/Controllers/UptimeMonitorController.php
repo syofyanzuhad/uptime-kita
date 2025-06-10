@@ -29,6 +29,7 @@ class UptimeMonitorController extends Controller
                                    'certificate_status' => $monitor->certificate_status,
                                    'certificate_expiration_date' => $monitor->certificate_expiration_date,
                                    'down_for_events_count' => $monitor->down_for_events_count,
+                                   'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
                                ];
                            });
 
