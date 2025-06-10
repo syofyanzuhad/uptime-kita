@@ -56,12 +56,10 @@ class UptimeMonitorController extends Controller
     {
         // sanitize url
         $url = filter_var($request->url, FILTER_VALIDATE_URL);
-        if (!$url) {
-            return redirect()->back()
-                             ->with('flash', ['message' => 'URL tidak valid!', 'type' => 'error'])
-                             ->withInput();
-        }
-        $monitor = Monitor::withoutGlobalScope('user')->where('url', $url)->first();
+        $monitor = Monitor::withoutGlobalScope('user')
+            ->where('url', $url)
+            ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
+            ->first();
         if ($monitor) {
             // attach to user
             $monitor->users()->attach(auth()->id(), ['is_active' => true]);
@@ -78,7 +76,7 @@ class UptimeMonitorController extends Controller
         ]);
 
         try {
-            $monitor = Monitor::firstOrCreate([
+            $monitor = Monitor::create([
                 'url' => $url,
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
@@ -121,6 +119,19 @@ class UptimeMonitorController extends Controller
      */
     public function update(Request $request, Monitor $monitor)
     {
+        $url = filter_var($request->url, FILTER_VALIDATE_URL);
+        $monitorExists = Monitor::withoutGlobalScope('user')
+            ->where('url', $url)
+            ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
+            ->first();
+        if ($monitorExists) {
+            // attach to user
+            $monitorExists->users()->attach(auth()->id(), ['is_active' => true]);
+
+            return redirect()->route('monitor.index')
+                             ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
+        }
+
         $request->validate([
             'url' => ['required', 'url', 'unique:monitors,url,' . $monitor->id],
             'uptime_check_enabled' => ['boolean'],
