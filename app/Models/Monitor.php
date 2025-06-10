@@ -68,9 +68,11 @@ class Monitor extends SpatieMonitor
 
         // global scope based on logged in user
         static::addGlobalScope('user', function ($query) {
-            $query->whereHas('users', function ($query) {
-                $query->where('user_monitor.user_id', auth()->user()->id);
-            });
+            if (auth()->check()) {
+                $query->whereHas('users', function ($query) {
+                    $query->where('user_monitor.user_id', auth()->id());
+                });
+            }
         });
 
         static::created(function ($monitor) {
