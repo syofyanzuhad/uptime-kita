@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Monitor;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Validation\ValidationException;
 
 class UptimeMonitorController extends Controller
@@ -30,8 +31,6 @@ class UptimeMonitorController extends Controller
                                    'down_for_events_count' => $monitor->down_for_events_count,
                                ];
                            });
-
-        // dd($monitors);
 
         $flash = session('flash');
 
@@ -61,10 +60,15 @@ class UptimeMonitorController extends Controller
         ]);
 
         try {
-            Monitor::create([
+            $monitor = Monitor::create([
                 'url' => $request->url,
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
+            ]);
+
+            // check certificate using command
+            Artisan::call('monitor:check-certificate', [
+                '--url' => $monitor->url,
             ]);
 
             return redirect()->route('monitor.index')
