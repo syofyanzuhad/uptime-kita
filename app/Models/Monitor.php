@@ -41,4 +41,44 @@ class Monitor extends SpatieMonitor
     {
         return (string) $this->url;
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereHas('users', function ($query) {
+            $query->where('user_monitor.is_active', true);
+        });
+    }
+
+    public function scopeDisabled($query)
+    {
+        return $query->whereHas('users', function ($query) {
+            $query->where('user_monitor.is_active', false);
+        });
+    }
+
+    // boot
+    protected static function boot()
+    {
+        parent::boot();
+
+        // global scope based on logged in user
+        static::addGlobalScope('user', function ($query) {
+            $query->whereHas('users', function ($query) {
+                $query->where('user_monitor.user_id', auth()->user()->id);
+            });
+        });
+
+        static::created(function ($monitor) {
+            $monitor->users()->attach(auth()->user()->id, ['is_active' => true]);
+        });
+
+        static::deleting(function ($monitor) {
+            $monitor->users()->detach();
+        });
+    }
 }

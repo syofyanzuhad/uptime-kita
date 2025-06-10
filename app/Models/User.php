@@ -45,4 +45,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function monitors()
+    {
+        return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereHas('monitors', function ($query) {
+            $query->where('user_monitor.is_active', true);
+        });
+    }
 }
