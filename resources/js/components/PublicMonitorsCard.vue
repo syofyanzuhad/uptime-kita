@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import type { Monitor } from '@/types/monitor';
@@ -9,6 +9,10 @@ const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
+
+const refreshIconClass = computed(() => {
+    return loading.value || isPolling.value ? 'animate-spin' : '';
+});
 
 const fetchPublicMonitors = async (isInitialLoad = false) => {
     try {
@@ -83,13 +87,28 @@ onUnmounted(() => {
 <template>
     <Card class="w-full">
         <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-                <Icon name="globe" class="text-blue-500" />
-                Public Monitors
-                <div v-if="isPolling" class="flex items-center gap-1 ml-2">
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
-                    <span class="text-xs text-gray-500">Updating...</span>
+            <CardTitle class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <Icon name="globe" class="text-blue-500" />
+                    Public Monitors
+                    <div v-if="isPolling" class="flex items-center gap-1 ml-2">
+                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                        <span class="text-xs text-gray-500">Updating...</span>
+                    </div>
                 </div>
+                <button
+                    @click="fetchPublicMonitors(false)"
+                    :disabled="loading || isPolling"
+                    class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Refresh monitors"
+                >
+                    <Icon
+                        name="refresh-cw"
+                        :class="refreshIconClass"
+                        size="16"
+                    />
+                    Refresh
+                </button>
             </CardTitle>
         </CardHeader>
         <CardContent>
