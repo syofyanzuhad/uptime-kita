@@ -183,6 +183,13 @@ class UptimeMonitorController extends Controller
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($monitor) {
+                $isSubscribed = false;
+
+                // Check if user is authenticated and already subscribed
+                if (auth()->check()) {
+                    $isSubscribed = $monitor->users()->where('user_id', auth()->id())->exists();
+                }
+
                 return [
                     'id' => $monitor->id,
                     'url' => $monitor->raw_url,
@@ -193,9 +200,49 @@ class UptimeMonitorController extends Controller
                     'certificate_expiration_date' => $monitor->certificate_expiration_date,
                     'down_for_events_count' => $monitor->down_for_events_count,
                     'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
+                    'is_subscribed' => $isSubscribed,
                 ];
             });
 
         return response()->json($publicMonitors);
+    }
+
+    /**
+     * Subscribe to a public monitor.
+     */
+    public function subscribe(Monitor $monitor)
+    {
+        try {
+            // Check if monitor is public
+            if (!$monitor->is_public) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Monitor tidak tersedia untuk berlangganan'
+                ], 400);
+            }
+
+            // Check if user is already subscribed
+            $existingSubscription = $monitor->users()->where('user_id', auth()->id())->first();
+            if ($existingSubscription) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah berlangganan monitor ini'
+                ], 400);
+            }
+
+            // Attach monitor to user
+            $monitor->users()->attach(auth()->id(), ['is_active' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil berlangganan monitor!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal berlangganan monitor: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

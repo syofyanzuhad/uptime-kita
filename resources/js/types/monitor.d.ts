@@ -11,6 +11,7 @@ export interface Monitor {
     down_for_events_count: number;
     uptime_check_enabled: boolean;
     uptime_check_interval: number;
+    is_subscribed?: boolean;
   }
 
   export interface FlashMessage {

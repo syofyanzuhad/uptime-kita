@@ -3,12 +3,22 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import type { Monitor } from '@/types/monitor';
+import { usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 
 const publicMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
+const subscribingMonitors = ref<Set<number>>(new Set());
+
+const page = usePage<SharedData>();
+
+// Check if user is authenticated using Inertia's auth props
+const isAuthenticated = computed(() => {
+    return !!page.props.auth.user;
+});
 
 const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
@@ -33,6 +43,45 @@ const fetchPublicMonitors = async (isInitialLoad = false) => {
     } finally {
         loading.value = false;
         isPolling.value = false;
+    }
+};
+
+const subscribeToMonitor = async (monitorId: number) => {
+    if (!isAuthenticated.value) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        subscribingMonitors.value.add(monitorId);
+
+        const response = await fetch(`/monitor/${monitorId}/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update the monitor's subscription status
+            const monitor = publicMonitors.value.find(m => m.id === monitorId);
+            if (monitor) {
+                monitor.is_subscribed = true;
+            }
+            // Show success message
+            alert(result.message);
+        } else {
+            // Show error message
+            alert(result.message);
+        }
+    } catch {
+        alert('Terjadi kesalahan saat berlangganan monitor');
+    } finally {
+        subscribingMonitors.value.delete(monitorId);
     }
 };
 
@@ -183,6 +232,36 @@ onUnmounted(() => {
                             <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
                                 {{ monitor.down_for_events_count }} times
                             </span>
+                        </div>
+                    </div>
+
+                    <!-- Subscribe Button -->
+                    <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <button
+                            v-if="!monitor.is_subscribed"
+                            @click="subscribeToMonitor(monitor.id)"
+                            :disabled="subscribingMonitors.has(monitor.id)"
+                            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            :title="isAuthenticated ? 'Subscribe to this monitor' : 'Login to subscribe'"
+                        >
+                            <Icon
+                                name="plus"
+                                :class="subscribingMonitors.has(monitor.id) ? 'animate-spin' : ''"
+                                size="14"
+                            />
+                            <span v-if="subscribingMonitors.has(monitor.id)">
+                                Subscribing...
+                            </span>
+                            <span v-else>
+                                Subscribe
+                            </span>
+                        </button>
+                        <div
+                            v-else
+                            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg"
+                        >
+                            <Icon name="check" size="14" />
+                            <span>Already Subscribed</span>
                         </div>
                     </div>
                 </div>

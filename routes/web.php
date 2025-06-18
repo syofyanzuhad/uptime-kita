@@ -14,6 +14,9 @@ Route::get('/public-monitors', [UptimeMonitorController::class, 'public'])->name
 Route::middleware(['auth', 'verified'])->group(function () {
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
+
+    // Subscribe to public monitor
+    Route::post('/monitor/{monitor}/subscribe', [UptimeMonitorController::class, 'subscribe'])->name('monitor.subscribe');
 });
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
