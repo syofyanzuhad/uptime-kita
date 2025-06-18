@@ -88,9 +88,9 @@ const subscribeToMonitor = async (monitorId: number) => {
 const getStatusIcon = (status: string) => {
     switch (status) {
         case 'up':
-            return 'check-circle';
+            return 'checkCircle';
         case 'down':
-            return 'x-circle';
+            return 'xCircle';
         default:
             return 'clock';
     }
