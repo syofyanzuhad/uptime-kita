@@ -16,7 +16,8 @@ class CreateMonitorsTable extends Migration
     {
         Schema::create('monitors', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('url');
+            $table->string('url')->unique();
+            $table->boolean('is_public')->default(true);
 
             $table->boolean('uptime_check_enabled')->default(true);
             $table->string('look_for_string')->default('');
@@ -39,8 +40,6 @@ class CreateMonitorsTable extends Migration
             $table->string('certificate_check_failure_reason')->default('');
 
             $table->timestamps();
-
-            $table->unique(['url', 'uptime_check_interval_in_minutes']);
         });
     }
 
