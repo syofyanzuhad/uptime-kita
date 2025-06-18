@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('user_monitor', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('monitor_id')->constrained('monitors');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('monitor_id')->constrained('monitors')->onDelete('cascade');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            $table->unique(['user_id', 'monitor_id'], 'user_monitor_unique');
         });
     }
 
