@@ -58,7 +58,6 @@ class UptimeMonitorController extends Controller
         $url = filter_var($request->url, FILTER_VALIDATE_URL);
         $monitor = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
-            ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
             ->first();
         if ($monitor) {
             // attach to user
