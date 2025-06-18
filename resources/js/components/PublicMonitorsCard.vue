@@ -6,6 +6,14 @@ import type { Monitor } from '@/types/monitor';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 
+interface Props {
+    searchQuery?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    searchQuery: '',
+});
+
 const publicMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
@@ -22,6 +30,20 @@ const isAuthenticated = computed(() => {
 
 const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
+});
+
+// Filter monitors based on search query
+const filteredMonitors = computed(() => {
+    if (!props.searchQuery.trim()) {
+        return publicMonitors.value;
+    }
+
+    const query = props.searchQuery.toLowerCase().trim();
+    return publicMonitors.value.filter(monitor => {
+        const domain = getDomainFromUrl(monitor.url).toLowerCase();
+        const url = monitor.url.toLowerCase();
+        return domain.includes(query) || url.includes(query);
+    });
 });
 
 const fetchPublicMonitors = async (isInitialLoad = false) => {
@@ -161,6 +183,19 @@ onUnmounted(() => {
             </CardTitle>
         </CardHeader>
         <CardContent>
+            <!-- Search Results Counter -->
+            <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                <span v-if="filteredMonitors.length === 1">
+                    Ditemukan 1 monitor
+                </span>
+                <span v-else>
+                    Ditemukan {{ filteredMonitors.length }} monitor
+                </span>
+                <span v-if="publicMonitors.length !== filteredMonitors.length">
+                    dari {{ publicMonitors.length }} total monitor
+                </span>
+            </div>
+
             <div v-if="loading" class="flex items-center justify-center py-8">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
@@ -173,9 +208,17 @@ onUnmounted(() => {
                 No public monitors available
             </div>
 
+            <div v-else-if="props.searchQuery && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
+                <div class="flex flex-col items-center gap-2">
+                    <Icon name="search" class="h-8 w-8 text-gray-400" />
+                    <p>Tidak ada monitor yang ditemukan untuk "{{ props.searchQuery }}"</p>
+                    <p class="text-sm">Coba kata kunci yang berbeda</p>
+                </div>
+            </div>
+
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div
-                    v-for="monitor in publicMonitors"
+                    v-for="monitor in filteredMonitors"
                     :key="monitor.id"
                     class="p-4 border rounded-lg hover:shadow-md transition-shadow"
                 >
