@@ -42,6 +42,7 @@ class MonitorSeeder extends Seeder
                     'uptime_check_enabled' => $monitor['uptime_check_enabled'],
                     'certificate_check_enabled' => $monitor['certificate_check_enabled'],
                     'certificate_expiration_date' => $monitor['certificate_expiration_date'] ?? null,
+                    'is_public' => $monitor['is_public'] ?? true,
                 ]
             );
         }
