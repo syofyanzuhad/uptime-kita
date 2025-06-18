@@ -21,6 +21,9 @@ const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
 
+// Hardcoded pinned monitors - you can modify these IDs as needed
+const pinnedMonitors = ref<Set<number>>(new Set([1, 3, 5])); // Example: pin monitors with IDs 1, 3, and 5
+
 const page = usePage<SharedData>();
 
 // Check if user is authenticated using Inertia's auth props
@@ -45,6 +48,30 @@ const filteredMonitors = computed(() => {
         return domain.includes(query) || url.includes(query);
     });
 });
+
+// Sort monitors to show pinned ones first
+const sortedMonitors = computed(() => {
+    return [...filteredMonitors.value].sort((a, b) => {
+        const aPinned = pinnedMonitors.value.has(a.id);
+        const bPinned = pinnedMonitors.value.has(b.id);
+
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+        return 0;
+    });
+});
+
+const togglePin = (monitorId: number) => {
+    if (pinnedMonitors.value.has(monitorId)) {
+        pinnedMonitors.value.delete(monitorId);
+    } else {
+        pinnedMonitors.value.add(monitorId);
+    }
+};
+
+const isPinned = (monitorId: number) => {
+    return pinnedMonitors.value.has(monitorId);
+};
 
 const fetchPublicMonitors = async (isInitialLoad = false) => {
     try {
@@ -218,10 +245,27 @@ onUnmounted(() => {
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div
-                    v-for="monitor in filteredMonitors"
+                    v-for="monitor in sortedMonitors"
                     :key="monitor.id"
-                    class="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                    class="p-4 border rounded-lg hover:shadow-md transition-shadow relative"
                 >
+                    <!-- Pin Button - Top Right -->
+                    <button
+                        @click="togglePin(monitor.id)"
+                        :class="{
+                            'text-yellow-500': isPinned(monitor.id),
+                            'text-gray-400 hover:text-gray-600': !isPinned(monitor.id)
+                        }"
+                        class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        :title="isPinned(monitor.id) ? 'Unpin this monitor' : 'Pin this monitor'"
+                    >
+                        <Icon
+                            name="bookmark"
+                            :class="isPinned(monitor.id) ? 'fill-current' : ''"
+                            size="16"
+                        />
+                    </button>
+
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex-1 min-w-0">
                             <h3 class="font-medium text-sm truncate">
