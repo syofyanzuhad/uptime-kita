@@ -11,7 +11,9 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
-    Route::get('dashboard', [UptimeMonitorController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
