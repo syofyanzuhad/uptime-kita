@@ -8,6 +8,9 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// Public route for public monitors
+Route::get('/public-monitors', [UptimeMonitorController::class, 'public'])->name('monitor.public');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);

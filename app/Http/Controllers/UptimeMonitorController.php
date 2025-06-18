@@ -172,4 +172,30 @@ class UptimeMonitorController extends Controller
                              ->with('flash', ['message' => 'Gagal menghapus monitor: ' . $e->getMessage(), 'type' => 'error']);
         }
     }
+
+    /**
+     * Display a listing of public monitors.
+     */
+    public function public()
+    {
+        $publicMonitors = Monitor::withoutGlobalScope('user')
+            ->where('is_public', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($monitor) {
+                return [
+                    'id' => $monitor->id,
+                    'url' => $monitor->raw_url,
+                    'uptime_status' => $monitor->uptime_status,
+                    'last_check_date' => $monitor->uptime_last_check_date,
+                    'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                    'certificate_status' => $monitor->certificate_status,
+                    'certificate_expiration_date' => $monitor->certificate_expiration_date,
+                    'down_for_events_count' => $monitor->down_for_events_count,
+                    'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
+                ];
+            });
+
+        return response()->json($publicMonitors);
+    }
 }
