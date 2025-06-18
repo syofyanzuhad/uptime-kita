@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, CheckCircle, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, CheckCircle, Folder, LayoutGrid, LucideMonitorSmartphone, SquareActivity } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -22,6 +22,16 @@ const mainNavItems: NavItem[] = [
         title: 'Monitor',
         href: '/monitor',
         icon: CheckCircle,
+    },
+    {
+        title: 'Status Page (roadmap)',
+        href: '/status-page',
+        icon: SquareActivity,
+    },
+    {
+        title: 'Notifications (roadmap)',
+        href: '/notifications',
+        icon: LucideMonitorSmartphone,
     },
 ];
 
