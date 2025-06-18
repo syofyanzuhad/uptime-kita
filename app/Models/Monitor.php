@@ -76,7 +76,7 @@ class Monitor extends SpatieMonitor
         });
 
         static::created(function ($monitor) {
-            $monitor->users()->attach(auth()->user()->id, ['is_active' => true]);
+            $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
         });
 
         static::deleting(function ($monitor) {
