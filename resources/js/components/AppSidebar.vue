@@ -3,10 +3,14 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { type NavItem, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, CheckCircle, Folder, LayoutGrid } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+
+const page = usePage<SharedData>();
+const isAuthenticated = computed(() => !!page.props.auth.user);
 
 const mainNavItems: NavItem[] = [
     {
@@ -55,7 +59,16 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
-            <NavUser />
+            <hr v-if="isAuthenticated" class="my-2 border-sidebar-border/70 dark:border-sidebar-border" />
+            <NavUser v-if="isAuthenticated" />
+            <div v-else class="p-2">
+                <Link
+                    :href="route('login')"
+                    class="flex w-full items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                    Log in
+                </Link>
+            </div>
         </SidebarFooter>
     </Sidebar>
     <slot />
