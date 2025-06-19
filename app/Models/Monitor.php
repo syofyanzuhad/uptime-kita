@@ -47,6 +47,11 @@ class Monitor extends SpatieMonitor
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
     }
 
+    public function histories()
+    {
+        return $this->hasMany(MonitorHistory::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->whereHas('users', function ($query) {
@@ -77,6 +82,15 @@ class Monitor extends SpatieMonitor
 
         static::created(function ($monitor) {
             $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
+        });
+
+        static::updating(function ($monitor) {
+            // history log
+            if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
+                $monitor->histories()->create([
+                    'uptime_status' => $monitor->uptime_status,
+                ]);
+            }
         });
 
         static::deleting(function ($monitor) {
