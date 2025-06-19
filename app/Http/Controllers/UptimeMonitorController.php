@@ -210,18 +210,17 @@ class UptimeMonitorController extends Controller
      */
     public function public()
     {
-        $publicMonitors = Monitor::withoutGlobalScope('user')
-            ->where('is_public', true)
-            ->orderBy('created_at', 'desc')
+        $query = Monitor::query();
+        if (!auth()->check()) {
+            $query = $query->withoutGlobalScope('user')->where('is_public', true);
+        }
+        $publicMonitors = $query->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($monitor) {
                 $isSubscribed = false;
-
-                // Check if user is authenticated and already subscribed
                 if (auth()->check()) {
                     $isSubscribed = $monitor->users()->where('user_id', auth()->id())->exists();
                 }
-
                 return [
                     'id' => $monitor->id,
                     'url' => $monitor->raw_url,
