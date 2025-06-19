@@ -107,6 +107,7 @@ class UptimeMonitorController extends Controller
         try {
             $monitor = Monitor::create([
                 'url' => $url,
+                'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
@@ -171,6 +172,7 @@ class UptimeMonitorController extends Controller
         try {
             $monitor->update([
                 'url' => $request->url,
+                'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
