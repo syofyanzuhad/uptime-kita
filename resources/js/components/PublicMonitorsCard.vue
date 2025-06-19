@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Monitor } from '@/types/monitor';
 import { usePage, Link } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -283,7 +284,27 @@ onUnmounted(() => {
 
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-medium text-sm truncate">
+                            <h3 class="font-medium text-sm truncate flex items-center gap-2">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger as-child>
+                                            <span
+                                                v-if="monitor.is_public !== undefined"
+                                                :class="[
+                                                    'py-0.5 rounded-full text-xs font-semibold uppercase flex items-center',
+                                                    monitor.is_public
+                                                        ? 'text-green-800 dark:text-green-400'
+                                                        : 'text-gray-700 dark:text-gray-300'
+                                                ]"
+                                            >
+                                                <Icon :name="monitor.is_public ? 'lockOpen' : 'lock'" class="w-4 h-4" />
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <span>{{ monitor.is_public ? 'Public' : 'Private' }}</span>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 {{ getDomainFromUrl(monitor.url) }}
                             </h3>
                             <span
@@ -313,21 +334,21 @@ onUnmounted(() => {
                     </div>
 
                     <div class="text-xs text-gray-500 space-y-1">
-                        <div v-if="monitor.last_check_date">
-                            Last checked: {{ new Date(monitor.last_check_date).toLocaleString() }}
-                        </div>
-                        <div v-if="monitor.certificate_check_enabled" class="flex items-center gap-2">
-                            <span class="text-gray-500">SSL:</span>
+                        <div v-if="monitor.certificate_check_enabled" class="flex items-center gap-1">
                             <span
                                 :class="{
                                     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': monitor.certificate_status === 'valid',
                                     'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': monitor.certificate_status === 'invalid',
                                     'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': monitor.certificate_status === 'not applicable'
                                 }"
-                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                class="inline-flex uppercase items-center px-2 py-0.5 rounded-full text-xs font-medium"
                             >
+                                SSL
                                 {{ monitor.certificate_status }}
                             </span>
+                        </div>
+                        <div v-if="monitor.last_check_date">
+                            Last checked: {{ new Date(monitor.last_check_date).toLocaleString() }}
                         </div>
                         <div v-if="monitor.down_for_events_count > 0" class="flex items-center gap-2">
                             <span class="text-gray-500">Down events:</span>
