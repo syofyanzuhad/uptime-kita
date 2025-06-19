@@ -12,6 +12,7 @@ class MonitorHistory extends Model
     protected $fillable = [
         'monitor_id',
         'uptime_status',
+        'message',
     ];
 
     public function monitor()
