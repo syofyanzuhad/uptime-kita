@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 
 class MonitorHistory extends Model
 {
+    use Prunable;
+
     protected $fillable = [
         'monitor_id',
         'uptime_status',
@@ -27,5 +30,10 @@ class MonitorHistory extends Model
         return $query->whereIn('monitor_id', $monitorIds)
                      ->latest()
                      ->get();
+    }
+
+    public function prunable(): \Illuminate\Database\Eloquent\Builder
+    {
+        return static::where('created_at', '<', now()->subDays(30));
     }
 }
