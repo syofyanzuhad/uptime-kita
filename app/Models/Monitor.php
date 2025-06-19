@@ -42,6 +42,23 @@ class Monitor extends SpatieMonitor
         return (string) $this->url;
     }
 
+    public function getIsSubscribedAttribute(): bool
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        // return cache()->remember("is_subscribed_{$this->id}_" . auth()->id(), 60, function () {
+            // Gunakan koleksi jika relasi sudah dimuat (eager loaded)
+            if ($this->relationLoaded('users')) {
+                return $this->users->contains('id', auth()->id());
+            }
+        
+            // Fallback query jika relasi belum dimuat
+            return $this->users()->where('user_id', auth()->id())->exists();
+        // });
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');

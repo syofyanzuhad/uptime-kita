@@ -213,14 +213,12 @@ class UptimeMonitorController extends Controller
         $query = Monitor::query();
         if (!auth()->check()) {
             $query = $query->withoutGlobalScope('user')->where('is_public', true);
+        } else {
+            $query = $query->with('users');
         }
         $publicMonitors = $query->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($monitor) {
-                $isSubscribed = false;
-                if (auth()->check()) {
-                    $isSubscribed = $monitor->users()->where('user_id', auth()->id())->exists();
-                }
                 return [
                     'id' => $monitor->id,
                     'url' => $monitor->raw_url,
@@ -231,7 +229,8 @@ class UptimeMonitorController extends Controller
                     'certificate_expiration_date' => $monitor->certificate_expiration_date,
                     'down_for_events_count' => $monitor->down_for_events_count,
                     'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-                    'is_subscribed' => $isSubscribed,
+                    'is_subscribed' => $monitor->is_subscribed,
+                    'is_public' => $monitor->is_public,
                 ];
             });
 
