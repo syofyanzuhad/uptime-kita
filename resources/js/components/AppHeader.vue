@@ -18,8 +18,9 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Sun, Moon } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useAppearance } from '@/composables/useAppearance';
 
 interface Props {
     breadcrumbs?: BreadcrumbItem[];
@@ -58,6 +59,12 @@ const rightNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+const { appearance, updateAppearance } = useAppearance();
+const isDark = computed(() => appearance.value === 'dark');
+function toggleDarkMode() {
+    updateAppearance(isDark.value ? 'light' : 'dark');
+}
 </script>
 
 <template>
@@ -139,6 +146,21 @@ const rightNavItems: NavItem[] = [
                         <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer">
                             <Search class="size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
+
+                        <!-- Dark Mode Toggle Button -->
+                        <TooltipProvider :delay-duration="0">
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer" @click="toggleDarkMode">
+                                        <span class="sr-only">Toggle dark mode</span>
+                                        <component :is="isDark ? Sun : Moon" class="size-5 opacity-80 group-hover:opacity-100" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{{ isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
 
                         <div class="hidden space-x-1 lg:flex">
                             <template v-for="item in rightNavItems" :key="item.title">
