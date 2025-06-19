@@ -63,6 +63,7 @@ class UptimeMonitorController extends Controller
                 'id' => $history->id,
                 'uptime_status' => $history->uptime_status,
                 'created_at' => $history->created_at,
+                'keterangan' => $history->message,
             ];
         });
 

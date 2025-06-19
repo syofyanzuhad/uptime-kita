@@ -23,4 +23,5 @@ export interface Monitor {
     id: number;
     uptime_status: 'up' | 'down' | 'not yet checked';
     created_at: string;
+    keterangan?: string;
   }
