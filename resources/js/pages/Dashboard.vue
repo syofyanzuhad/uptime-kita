@@ -3,9 +3,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Icon from '@/components/Icon.vue';
 import { Button } from '@/components/ui/button';
+import type { Monitor } from '@/types/monitor';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,6 +17,34 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const searchQuery = ref('');
 const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
+
+// Monitor data for counts
+const publicMonitors = ref<Monitor[]>([]);
+const loadingMonitors = ref(false);
+const errorMonitors = ref<string | null>(null);
+
+async function fetchPublicMonitors() {
+    loadingMonitors.value = true;
+    try {
+        const response = await fetch('/public-monitors');
+        if (!response.ok) throw new Error('Failed to fetch public monitors');
+        publicMonitors.value = await response.json();
+        errorMonitors.value = null;
+    } catch (err) {
+        errorMonitors.value = err instanceof Error ? err.message : 'An error occurred';
+    } finally {
+        loadingMonitors.value = false;
+    }
+}
+
+onMounted(() => {
+    fetchPublicMonitors();
+});
+
+const allCount = computed(() => publicMonitors.value.length);
+const onlineCount = computed(() => publicMonitors.value.filter(m => m.uptime_status === 'up').length);
+const offlineCount = computed(() => publicMonitors.value.filter(m => m.uptime_status === 'down').length);
+const unsubscribedCount = computed(() => publicMonitors.value.filter(m => !m.is_subscribed).length);
 </script>
 
 <template>
@@ -29,25 +58,25 @@ const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
                     :variant="statusFilter === 'all' ? 'default' : 'outline'"
                     @click="statusFilter = 'all'"
                 >
-                    Semua
+                    Semua <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-400 text-xs">{{ allCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'up' ? 'default' : 'outline'"
                     @click="statusFilter = 'up'"
                 >
-                    Online
+                    Online <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-green-200 dark:bg-green-700 text-xs">{{ onlineCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'down' ? 'default' : 'outline'"
                     @click="statusFilter = 'down'"
                 >
-                    Offline
+                    Offline <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-red-200 dark:bg-red-700 text-xs">{{ offlineCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'unsubscribed' ? 'default' : 'outline'"
                     @click="statusFilter = 'unsubscribed'"
                 >
-                    Unsubscribed
+                    Unsubscribed <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-yellow-200 dark:bg-yellow-700 text-xs">{{ unsubscribedCount }}</span>
                 </Button>
             </div>
             <!-- Search Bar -->
