@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import Tooltip from '@/components/ui/tooltip/Tooltip.vue';
+import TooltipTrigger from '@/components/ui/tooltip/TooltipTrigger.vue';
+import TooltipContent from '@/components/ui/tooltip/TooltipContent.vue';
+import TooltipProvider from '@/components/ui/tooltip/TooltipProvider.vue';
 
 const props = defineProps<{
   monitor: Monitor;
@@ -13,6 +17,49 @@ const breadcrumbs = [
   { title: 'Uptime Monitor', href: '/monitor' },
   { title: props.monitor.url, href: '#' },
 ];
+
+// Ambil 100 menit terakhir (dari sekarang mundur 99 menit)
+const now = new Date();
+const last100Minutes = Array.from({ length: 100 }, (_, i) => {
+  const d = new Date(now);
+  d.setMinutes(now.getMinutes() - (99 - i));
+  d.setSeconds(0, 0);
+  return d;
+});
+
+// Map history by menit (YYYY-MM-DDTHH:MM)
+const historyMinuteMap = Object.fromEntries(
+  props.histories.map(h => [h.created_at.slice(0, 16), h])
+);
+
+function getMinuteStatus(date: Date) {
+  const key = date.toISOString().slice(0, 16);
+  const h = historyMinuteMap[key];
+  if (!h) return null;
+  return h;
+}
+
+// Auto reload setiap 1 menit
+let intervalId: ReturnType<typeof setInterval> | null = null;
+
+// Countdown state
+const countdown = ref(60);
+
+onMounted(() => {
+  intervalId = setInterval(() => {
+    router.reload({ preserveUrl: true });
+    countdown.value = 60;
+  }, 60000); // 60 detik
+  // Countdown detik
+  const countdownInterval = setInterval(() => {
+    if (countdown.value > 0) countdown.value--;
+  }, 1000);
+  // Cleanup
+  onUnmounted(() => {
+    if (intervalId) clearInterval(intervalId);
+    clearInterval(countdownInterval);
+  });
+});
 </script>
 
 <template>
@@ -54,6 +101,44 @@ const breadcrumbs = [
             <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span></div>
             <div><strong>Interval Cek:</strong> {{ props.monitor.uptime_check_interval }} menit</div>
             <div><strong>Jumlah Down Event:</strong> {{ props.monitor.down_for_events_count }}</div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            Timeline 100 Menit Terakhir
+            <span class="ml-2 text-xs text-gray-400">Refresh dalam {{ countdown }} detik</span>
+          </h4>
+          <TooltipProvider>
+            <div class="flex w-full h-16 items-end gap-[1px]">
+              <Tooltip v-for="(date, i) in last100Minutes" :key="i">
+                <TooltipTrigger
+                  class="h-full rounded cursor-pointer"
+                  :style="{
+                    width: 'calc(100% / 100)',
+                    background: getMinuteStatus(date)?.uptime_status === 'up'
+                      ? '#22c55e'
+                      : getMinuteStatus(date)?.uptime_status === 'down'
+                        ? '#ef4444'
+                        : '#d1d5db'
+                  }"
+                />
+                <TooltipContent>
+                  <div class="text-xs whitespace-nowrap">
+                    <div>{{ date.toLocaleString() }}</div>
+                    <div>
+                      Status: <span v-if="getMinuteStatus(date)">{{ getMinuteStatus(date)!.uptime_status }}</span>
+                      <span v-else>kosong</span>
+                    </div>
+                    <div v-if="getMinuteStatus(date)?.keterangan">Keterangan: {{ getMinuteStatus(date)!.keterangan }}</div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>{{ last100Minutes[0].toLocaleString() }}</span>
+            <span>{{ last100Minutes[last100Minutes.length - 1].toLocaleString() }}</span>
           </div>
         </div>
 
