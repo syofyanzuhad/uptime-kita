@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Subscribe to public monitor
     Route::post('/monitor/{monitor}/subscribe', [UptimeMonitorController::class, 'subscribe'])->name('monitor.subscribe');
+
+    // Get monitor history
+    Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
 });
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');

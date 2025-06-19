@@ -7,6 +7,7 @@ import Tooltip from '@/components/ui/tooltip/Tooltip.vue';
 import TooltipTrigger from '@/components/ui/tooltip/TooltipTrigger.vue';
 import TooltipContent from '@/components/ui/tooltip/TooltipContent.vue';
 import TooltipProvider from '@/components/ui/tooltip/TooltipProvider.vue';
+import axios from 'axios';
 
 const props = defineProps<{
   monitor: Monitor;
@@ -18,25 +19,44 @@ const breadcrumbs = [
   { title: props.monitor.url, href: '#' },
 ];
 
-// Ambil 100 menit terakhir (dari sekarang mundur 99 menit)
-const now = new Date();
-const last100Minutes = Array.from({ length: 100 }, (_, i) => {
-  const d = new Date(now);
-  d.setMinutes(now.getMinutes() - (99 - i));
-  d.setSeconds(0, 0);
-  return d;
-});
+// Function to get last 100 minutes
+function getLast100Minutes() {
+  const now = new Date();
+  return Array.from({ length: 100 }, (_, i) => {
+    const d = new Date(now);
+    d.setMinutes(now.getMinutes() - (99 - i));
+    d.setSeconds(0, 0);
+    return d;
+  });
+}
+
+// Make last100Minutes reactive
+const last100Minutes = ref(getLast100Minutes());
 
 // Map history by menit (YYYY-MM-DDTHH:MM)
-const historyMinuteMap = Object.fromEntries(
+const historyMinuteMap = ref(Object.fromEntries(
   props.histories.map(h => [h.created_at.slice(0, 16), h])
-);
+));
 
 function getMinuteStatus(date: Date) {
   const key = date.toISOString().slice(0, 16);
-  const h = historyMinuteMap[key];
+  const h = historyMinuteMap.value[key];
   if (!h) return null;
   return h;
+}
+
+// Function to fetch fresh history data
+async function updateHistoryData() {
+  try {
+    const response = await axios.get(route('monitor.history', props.monitor.id));
+    if (response.data.histories) {
+      historyMinuteMap.value = Object.fromEntries(
+        response.data.histories.map((h: MonitorHistory) => [h.created_at.slice(0, 16), h])
+      );
+    }
+  } catch (error) {
+    console.error('Failed to fetch history data:', error);
+  }
 }
 
 // Auto reload setiap 1 menit
@@ -50,10 +70,19 @@ onMounted(() => {
     router.reload({ preserveUrl: true });
     countdown.value = 60;
   }, 60000); // 60 detik
-  // Countdown detik
+
+  // Countdown detik dan update bar
   const countdownInterval = setInterval(() => {
-    if (countdown.value > 0) countdown.value--;
+    if (countdown.value > 0) {
+      countdown.value--;
+    }
+    // Update bar setiap menit
+    if (countdown.value === 0) {
+      last100Minutes.value = getLast100Minutes();
+      updateHistoryData(); // Fetch fresh history data
+    }
   }, 1000);
+
   // Cleanup
   onUnmounted(() => {
     if (intervalId) clearInterval(intervalId);
