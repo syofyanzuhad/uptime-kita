@@ -89,6 +89,7 @@ class Monitor extends SpatieMonitor
             if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
                 $monitor->histories()->create([
                     'uptime_status' => $monitor->uptime_status,
+                    'message' => $monitor->uptime_check_failure_reason,
                 ]);
             }
         });

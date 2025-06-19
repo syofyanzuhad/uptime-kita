@@ -17,6 +17,7 @@ return new class extends Migration
                 ->constrained('monitors')
                 ->onDelete('cascade');
             $table->string('uptime_status')->nullable();
+            $table->string('message')->nullable();
             $table->timestamps();
         });
     }
