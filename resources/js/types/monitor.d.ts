@@ -18,3 +18,9 @@ export interface Monitor {
     message: string;
     type: 'success' | 'error';
   }
+
+  export interface MonitorHistory {
+    id: number;
+    uptime_status: 'up' | 'down' | 'not yet checked';
+    created_at: string;
+  }

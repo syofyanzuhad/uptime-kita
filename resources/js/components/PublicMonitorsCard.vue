@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import type { Monitor } from '@/types/monitor';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, Link } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 
 interface Props {
@@ -247,8 +247,14 @@ onUnmounted(() => {
                 <div
                     v-for="monitor in sortedMonitors"
                     :key="monitor.id"
-                    class="p-4 border rounded-lg hover:shadow-md transition-shadow relative"
+                    class="relative group border rounded-lg hover:shadow-md transition-shadow cursor-pointer p-0"
                 >
+                    <Link
+                        :href="route('monitor.show', monitor.id)"
+                        class="block p-4 w-full h-full focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg"
+                        style="text-decoration: none; color: inherit;"
+                        tabindex="0"
+                    >
                     <!-- Pin Button - Top Right -->
                     <button
                         @click="togglePin(monitor.id)"
@@ -271,13 +277,13 @@ onUnmounted(() => {
                             <h3 class="font-medium text-sm truncate">
                                 {{ getDomainFromUrl(monitor.url) }}
                             </h3>
-                            <a
-                                :href="monitor.url"
-                                target="_blank"
+                            <span
                                 class="text-xs text-blue-500 hover:underline truncate block"
+                                @click.stop
+                                @keydown.stop
                             >
                                 {{ monitor.url }}
-                            </a>
+                            </span>
                         </div>
                         <div class="flex items-center ml-2">
                             <span
@@ -351,6 +357,7 @@ onUnmounted(() => {
                             <span>Already Subscribed</span>
                         </div>
                     </div>
+                    </Link>
                 </div>
             </div>
         </CardContent>

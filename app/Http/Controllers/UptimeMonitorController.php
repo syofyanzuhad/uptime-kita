@@ -42,6 +42,37 @@ class UptimeMonitorController extends Controller
     }
 
     /**
+     * Show the monitor by id.
+     */
+    public function show(Monitor $monitor)
+    {
+        $monitorData = [
+            'id' => $monitor->id,
+            'url' => $monitor->raw_url,
+            'uptime_status' => $monitor->uptime_status,
+            'last_check_date' => $monitor->uptime_last_check_date,
+            'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+            'certificate_status' => $monitor->certificate_status,
+            'certificate_expiration_date' => $monitor->certificate_expiration_date,
+            'down_for_events_count' => $monitor->down_for_events_count,
+            'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
+        ];
+
+        $histories = $monitor->histories()->orderBy('created_at', 'desc')->get()->map(function ($history) {
+            return [
+                'id' => $history->id,
+                'uptime_status' => $history->uptime_status,
+                'created_at' => $history->created_at,
+            ];
+        });
+
+        return Inertia::render('uptime/Show', [
+            'monitor' => $monitorData,
+            'histories' => $histories,
+        ]);
+    }
+
+    /**
      * Show the form for creating a new monitor.
      */
     public function create()
