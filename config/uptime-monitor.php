@@ -9,12 +9,12 @@ return [
     'notifications' => [
 
         'notifications' => [
-            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckFailed::class => ['slack'],
-            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckRecovered::class => ['slack'],
+            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckFailed::class => [],
+            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckRecovered::class => [],
             \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckSucceeded::class => [],
 
-            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckFailed::class => ['slack'],
-            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateExpiresSoon::class => ['slack'],
+            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckFailed::class => [],
+            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateExpiresSoon::class => [],
             \Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckSucceeded::class => [],
         ],
 
@@ -22,7 +22,7 @@ return [
          * The location from where you are running this Laravel application. This location will be
          * mentioned in all notifications that will be sent.
          */
-        'location' => '',
+        'location' => 'id',
 
         /*
          * To keep reminding you that a site is down, notifications
@@ -31,7 +31,7 @@ return [
         'resend_uptime_check_failed_notification_every_minutes' => 60,
 
         'mail' => [
-            'to' => ['your@email.com'],
+            'to' => ['mail@syofyanzuhad.dev'],
         ],
 
         'slack' => [
@@ -75,13 +75,13 @@ return [
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.
          */
-        'concurrent_checks' => 10,
+        'concurrent_checks' => 100,
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => 10,
+        'timeout_per_site' => 20,
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
