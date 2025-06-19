@@ -58,14 +58,7 @@ class UptimeMonitorController extends Controller
             'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
         ];
 
-        $histories = $monitor->histories()->orderBy('created_at', 'desc')->get()->map(function ($history) {
-            return [
-                'id' => $history->id,
-                'uptime_status' => $history->uptime_status,
-                'created_at' => $history->created_at,
-                'keterangan' => $history->message,
-            ];
-        });
+        $histories = $monitor->histories()->orderBy('created_at', 'desc')->get();
 
         return Inertia::render('uptime/Show', [
             'monitor' => $monitorData,

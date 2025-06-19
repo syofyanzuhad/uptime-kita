@@ -130,7 +130,7 @@ onMounted(() => {
                       Status: <span v-if="getMinuteStatus(date)">{{ getMinuteStatus(date)!.uptime_status }}</span>
                       <span v-else>kosong</span>
                     </div>
-                    <div v-if="getMinuteStatus(date)?.keterangan">Keterangan: {{ getMinuteStatus(date)!.keterangan }}</div>
+                    <div v-if="getMinuteStatus(date)?.message">Keterangan: {{ getMinuteStatus(date)!.message }}</div>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -151,6 +151,7 @@ onMounted(() => {
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status Uptime</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Keterangan</th>
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -163,6 +164,7 @@ onMounted(() => {
                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': history.uptime_status === 'not yet checked',
                     }" class="px-2.5 py-0.5 rounded-full text-sm font-medium">{{ history.uptime_status }}</span>
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ history.message ?? '-' }}</td>
                 </tr>
               </tbody>
             </table>
