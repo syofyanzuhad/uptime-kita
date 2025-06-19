@@ -5,6 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
 import { ref } from 'vue';
 import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,6 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const searchQuery = ref('');
+const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
 </script>
 
 <template>
@@ -21,6 +23,33 @@ const searchQuery = ref('');
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <!-- Status Filter Bar -->
+            <div class="flex gap-2 mb-2">
+                <Button
+                    :variant="statusFilter === 'all' ? 'default' : 'outline'"
+                    @click="statusFilter = 'all'"
+                >
+                    Semua
+                </Button>
+                <Button
+                    :variant="statusFilter === 'up' ? 'default' : 'outline'"
+                    @click="statusFilter = 'up'"
+                >
+                    Online
+                </Button>
+                <Button
+                    :variant="statusFilter === 'down' ? 'default' : 'outline'"
+                    @click="statusFilter = 'down'"
+                >
+                    Offline
+                </Button>
+                <Button
+                    :variant="statusFilter === 'unsubscribed' ? 'default' : 'outline'"
+                    @click="statusFilter = 'unsubscribed'"
+                >
+                    Unsubscribed
+                </Button>
+            </div>
             <!-- Search Bar -->
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -43,7 +72,7 @@ const searchQuery = ref('');
             </div>
 
             <!-- <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min"> -->
-                <PublicMonitorsCard :search-query="searchQuery" />
+                <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" />
             <!-- </div> -->
         </div>
     </AppLayout>

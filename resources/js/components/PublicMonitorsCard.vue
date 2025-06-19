@@ -8,10 +8,12 @@ import type { SharedData } from '@/types';
 
 interface Props {
     searchQuery?: string;
+    statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed';
 }
 
 const props = withDefaults(defineProps<Props>(), {
     searchQuery: '',
+    statusFilter: 'all',
 });
 
 const publicMonitors = ref<Monitor[]>([]);
@@ -35,18 +37,25 @@ const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
 });
 
-// Filter monitors based on search query
+// Filter monitors based on search query and status filter
 const filteredMonitors = computed(() => {
-    if (!props.searchQuery.trim()) {
-        return publicMonitors.value;
+    let monitors = publicMonitors.value;
+    // Filter by status
+    if (props.statusFilter === 'up' || props.statusFilter === 'down') {
+        monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
+    } else if (props.statusFilter === 'unsubscribed') {
+        monitors = monitors.filter(monitor => !monitor.is_subscribed);
     }
-
-    const query = props.searchQuery.toLowerCase().trim();
-    return publicMonitors.value.filter(monitor => {
-        const domain = getDomainFromUrl(monitor.url).toLowerCase();
-        const url = monitor.url.toLowerCase();
-        return domain.includes(query) || url.includes(query);
-    });
+    // Filter by search query
+    if (props.searchQuery.trim()) {
+        const query = props.searchQuery.toLowerCase().trim();
+        monitors = monitors.filter(monitor => {
+            const domain = getDomainFromUrl(monitor.url).toLowerCase();
+            const url = monitor.url.toLowerCase();
+            return domain.includes(query) || url.includes(query);
+        });
+    }
+    return monitors;
 });
 
 // Sort monitors to show pinned ones first
