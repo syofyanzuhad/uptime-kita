@@ -15,23 +15,25 @@ class UptimeMonitorController extends Controller
      */
     public function index()
     {
-        $monitors = Monitor::orderBy('created_at', 'desc')
-                           ->get()
-                           ->map(function ($monitor) {
-                               return [
-                                   'id' => $monitor->id,
-                                   'url' => $monitor->raw_url,
-                                   // Akses langsung atribut status dari model Monitor
-                                   'uptime_status' => $monitor->uptime_status,
-                                   'last_check_date' => $monitor->uptime_last_check_date,
-                                   'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-                                   // Akses langsung atribut status sertifikat dari model Monitor
-                                   'certificate_status' => $monitor->certificate_status,
-                                   'certificate_expiration_date' => $monitor->certificate_expiration_date,
-                                   'down_for_events_count' => $monitor->down_for_events_count,
-                                   'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-                               ];
-                           });
+        $monitors = cache()->remember('monitors_list', 60, function () {
+            return Monitor::orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($monitor) {
+                    return [
+                        'id' => $monitor->id,
+                        'url' => $monitor->raw_url,
+                        // Akses langsung atribut status dari model Monitor
+                        'uptime_status' => $monitor->uptime_status,
+                        'last_check_date' => $monitor->uptime_last_check_date,
+                        'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                        // Akses langsung atribut status sertifikat dari model Monitor
+                        'certificate_status' => $monitor->certificate_status,
+                        'certificate_expiration_date' => $monitor->certificate_expiration_date,
+                        'down_for_events_count' => $monitor->down_for_events_count,
+                        'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
+                    ];
+                });
+        });
 
         $flash = session('flash');
 
@@ -58,16 +60,36 @@ class UptimeMonitorController extends Controller
             'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
         ];
 
+        // implements cache for monitor data
+        $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitorData) {
+            return $monitorData;
+        });
+        // get histories and cache it
+        $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
+            return $monitor->histories()->latest()->take(100)->get();
+        });
+        $histories = $histories->map(function ($history) {
+            return [
+                'id' => $history->id,
+                'status' => $history->status,
+                'created_at' => $history->created_at->toIso8601String(),
+            ];
+        });
+
         return Inertia::render('uptime/Show', [
             'monitor' => $monitorData,
-            'histories' => $monitor->histories()->latest()->take(100)->get(),
+            'histories' => $histories,
         ]);
     }
 
     public function getHistory(Monitor $monitor)
     {
+        $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
+            return $monitor->histories()->latest()->take(100)->get();
+        });
+
         return response()->json([
-            'histories' => $monitor->histories()->latest()->take(100)->get()
+            'histories' => $histories
         ]);
     }
 
@@ -210,29 +232,36 @@ class UptimeMonitorController extends Controller
      */
     public function public()
     {
-        $query = Monitor::query();
-        if (!auth()->check()) {
-            $query = $query->withoutGlobalScope('user')->where('is_public', true);
-        } else {
-            $query = $query->with('users');
-        }
-        $publicMonitors = $query->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($monitor) {
-                return [
-                    'id' => $monitor->id,
-                    'url' => $monitor->raw_url,
-                    'uptime_status' => $monitor->uptime_status,
-                    'last_check_date' => $monitor->uptime_last_check_date,
-                    'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-                    'certificate_status' => $monitor->certificate_status,
-                    'certificate_expiration_date' => $monitor->certificate_expiration_date,
-                    'down_for_events_count' => $monitor->down_for_events_count,
-                    'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-                    'is_subscribed' => $monitor->is_subscribed,
-                    'is_public' => $monitor->is_public,
-                ];
-            });
+        $authenticated = auth()->check();
+        // Use cache to store public monitors for authenticated and guest users
+        // Differentiate cache keys for authenticated and guest users
+        $cacheKey = $authenticated ? 'public_monitors_authenticated_' . auth()->id() : 'public_monitors_guest';
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($authenticated) {
+            // Query monitors based on authentication status
+            $query = Monitor::query();
+            if (!$authenticated) {
+                $query = $query->withoutGlobalScope('user')->where('is_public', true);
+            } else {
+                $query = $query->with('users');
+            }
+            return $query->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($monitor) {
+                    return [
+                        'id' => $monitor->id,
+                        'url' => $monitor->raw_url,
+                        'uptime_status' => $monitor->uptime_status,
+                        'last_check_date' => $monitor->uptime_last_check_date,
+                        'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                        'certificate_status' => $monitor->certificate_status,
+                        'certificate_expiration_date' => $monitor->certificate_expiration_date,
+                        'down_for_events_count' => $monitor->down_for_events_count,
+                        'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
+                        'is_subscribed' => $monitor->is_subscribed,
+                        'is_public' => $monitor->is_public,
+                    ];
+                });
+        });
 
         return response()->json($publicMonitors);
     }
