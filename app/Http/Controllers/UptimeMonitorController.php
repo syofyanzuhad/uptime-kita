@@ -68,13 +68,6 @@ class UptimeMonitorController extends Controller
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
             return $monitor->histories()->latest()->take(100)->get();
         });
-        $histories = $histories->map(function ($history) {
-            return [
-                'id' => $history->id,
-                'status' => $history->status,
-                'created_at' => $history->created_at->toIso8601String(),
-            ];
-        });
 
         return Inertia::render('uptime/Show', [
             'monitor' => $monitorData,
