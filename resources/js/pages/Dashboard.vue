@@ -53,7 +53,7 @@ const unsubscribedCount = computed(() => publicMonitors.value.filter(m => !m.is_
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <!-- Status Filter Bar -->
-            <div class="flex gap-2 mb-2">
+            <div class="flex gap-2 mb-2 max-w-vw overflow-auto">
                 <Button
                     :variant="statusFilter === 'all' ? 'default' : 'outline'"
                     @click="statusFilter = 'all'"
