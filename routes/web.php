@@ -12,6 +12,7 @@ Route::get('/', function () {
 Route::get('/public-monitors', [UptimeMonitorController::class, 'public'])->name('monitor.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/private-monitors', [UptimeMonitorController::class, 'private'])->name('monitor.private');
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
 
