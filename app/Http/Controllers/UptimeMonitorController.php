@@ -257,6 +257,20 @@ class UptimeMonitorController extends Controller
     }
 
     /**
+     * Display a listing of private monitors.
+     */
+    public function private()
+    {
+        $monitors = Monitor::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->get();
+
+        return Inertia::render('uptime/PrivateMonitors', [
+            'monitors' => $monitors,
+        ]);
+    }
+
+    /**
      * Subscribe to a public monitor.
      */
     public function subscribe(Monitor $monitor)
