@@ -22,6 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
     :as-child="asChild"
     :class="cn(buttonVariants({ variant, size }), props.class)"
   >
-    <slot />
+    <span v-if="$slots.icon" class="mr-2 flex items-center"> <slot name="icon" /> </span>
+    <span><slot /></span>
   </Primitive>
 </template>
