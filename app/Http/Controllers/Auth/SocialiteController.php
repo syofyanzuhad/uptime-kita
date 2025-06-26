@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\SocialAccount;
-use App\User;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\SocialAccount;
+use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
