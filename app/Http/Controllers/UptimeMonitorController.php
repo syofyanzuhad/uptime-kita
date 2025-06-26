@@ -229,15 +229,12 @@ class UptimeMonitorController extends Controller
         // Use cache to store public monitors for authenticated and guest users
         // Differentiate cache keys for authenticated and guest users
         $cacheKey = $authenticated ? 'public_monitors_authenticated_' . auth()->id() : 'public_monitors_guest';
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($authenticated) {
-            // Query monitors based on authentication status
-            $query = Monitor::query();
-            if (!$authenticated) {
-                $query = $query->withoutGlobalScope('user')->where('is_public', true);
-            } else {
-                $query = $query->with('users');
-            }
-            return $query->orderBy('created_at', 'desc')
+        $publicMonitors = cache()->remember($cacheKey, 60, function () {
+            // Always only show public monitors
+            return Monitor::withoutGlobalScope('user')
+                ->with('users')
+                ->where('is_public', true)
+                ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($monitor) {
                     return [
