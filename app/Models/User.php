@@ -46,6 +46,14 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
     public function monitors()
     {
         return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active');
