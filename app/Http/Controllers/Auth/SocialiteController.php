@@ -35,10 +35,9 @@ class SocialiteController extends Controller
 
         $authUser = $this->findOrCreateUser($user, $provider);
 
-        Auth()->login($authUser, true);
+        auth()->login($authUser, true);
 
         return redirect()->route('home');
-
     }
 
     /**
@@ -53,11 +52,8 @@ class SocialiteController extends Controller
             ->first();
 
         if ($socialAccount) {
-
             return $socialAccount->user;
-
         } else {
-
             $user = User::where('email', $socialUser->getEmail())->first();
 
             if (! $user) {
@@ -73,7 +69,6 @@ class SocialiteController extends Controller
             ]);
 
             return $user;
-
         }
     }
 }
