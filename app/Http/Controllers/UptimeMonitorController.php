@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MonitorCollection;
+use App\Http\Resources\MonitorResource;
 use Inertia\Inertia;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
@@ -13,26 +15,11 @@ class UptimeMonitorController extends Controller
     /**
      * Display a listing of the monitors.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $monitors = cache()->remember('monitors_list', 60, function () {
-            return Monitor::orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($monitor) {
-                    return [
-                        'id' => $monitor->id,
-                        'url' => $monitor->raw_url,
-                        // Akses langsung atribut status dari model Monitor
-                        'uptime_status' => $monitor->uptime_status,
-                        'last_check_date' => $monitor->uptime_last_check_date,
-                        'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-                        // Akses langsung atribut status sertifikat dari model Monitor
-                        'certificate_status' => $monitor->certificate_status,
-                        'certificate_expiration_date' => $monitor->certificate_expiration_date,
-                        'down_for_events_count' => $monitor->down_for_events_count,
-                        'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-                    ];
-                });
+        $page = $request->input('page', 1);
+        $monitors = cache()->remember('monitors_list_page_'.$page, 60, function () {
+            return new MonitorCollection(Monitor::orderBy('created_at', 'desc')->paginate(12));
         });
 
         $flash = session('flash');
@@ -48,21 +35,9 @@ class UptimeMonitorController extends Controller
      */
     public function show(Monitor $monitor)
     {
-        $monitorData = [
-            'id' => $monitor->id,
-            'url' => $monitor->raw_url,
-            'uptime_status' => $monitor->uptime_status,
-            'last_check_date' => $monitor->uptime_last_check_date,
-            'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-            'certificate_status' => $monitor->certificate_status,
-            'certificate_expiration_date' => $monitor->certificate_expiration_date,
-            'down_for_events_count' => $monitor->down_for_events_count,
-            'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-        ];
-
         // implements cache for monitor data
-        $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitorData) {
-            return $monitorData;
+        $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
+            return new MonitorResource($monitor);
         });
         // get histories and cache it
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
@@ -149,13 +124,7 @@ class UptimeMonitorController extends Controller
     public function edit(Monitor $monitor)
     {
         return Inertia::render('uptime/Edit', [
-            'monitor' => [
-                'id' => $monitor->id,
-                'url' => $monitor->raw_url,
-                'uptime_check_enabled' => (bool) $monitor->uptime_check_enabled,
-                'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-                'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-            ]
+            'monitor' => new MonitorResource($monitor)
         ]);
     }
 

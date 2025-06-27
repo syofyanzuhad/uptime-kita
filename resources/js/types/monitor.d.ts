@@ -26,3 +26,29 @@ export interface Monitor {
     created_at: string;
     message?: string;
   }
+
+  export interface PaginatorLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+  }
+
+  export interface Paginator<T> {
+    data: T[];
+    links: {
+        first: string;
+        last: string;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        links: PaginatorLink[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+  }

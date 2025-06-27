@@ -4,14 +4,14 @@ import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
-import type { Monitor, FlashMessage } from '@/types/monitor';
+import type { Monitor, FlashMessage, Paginator } from '@/types/monitor';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 
 const page = usePage();
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
-  monitors: Monitor[];
+  monitors: Paginator<Monitor>;
   flash?: FlashMessage;
 }>();
 
@@ -127,7 +127,7 @@ const deleteMonitor = (monitorId: number) => {
                 </Link>
             </div>
 
-            <div v-if="props.monitors.length === 0" class="text-gray-600 dark:text-gray-400"> Belum ada monitor yang terdaftar.
+            <div v-if="props.monitors.data.length === 0" class="text-gray-600 dark:text-gray-400"> Belum ada monitor yang terdaftar.
             </div>
 
             <div v-else class="overflow-x-auto">
@@ -152,7 +152,7 @@ const deleteMonitor = (monitorId: number) => {
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr v-for="monitor in props.monitors" :key="monitor.id"> <td class="px-6 py-4 whitespace-nowrap">
+                    <tr v-for="monitor in props.monitors.data" :key="monitor.id"> <td class="px-6 py-4 whitespace-nowrap">
                         <a :href="monitor.url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ monitor.url }}</a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -195,6 +195,27 @@ const deleteMonitor = (monitorId: number) => {
                     </tr>
                 </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Links -->
+            <div v-if="props.monitors.meta.links.length > 3" class="mt-6">
+                <div class="flex flex-wrap -mb-1">
+                <template v-for="(link, key) in props.monitors.meta.links">
+                    <div
+                        v-if="link.url === null"
+                        :key="key"
+                        class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border border-black dark:border-white rounded"
+                        v-html="link.label"
+                    />
+                    <Link
+                        v-else
+                        :key="`link-${key}`"
+                        class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border border-black dark:border-white rounded focus:border-indigo-500 focus:text-indigo-500"
+                        :class="{ 'bg-blue-700 dark:bg-blue-600 text-white dark:text-white': link.active, 'hover:bg-gray-200 dark:hover:bg-gray-700': !link.active }"
+                        :href="link.url"
+                    ><span v-html="link.label" /></Link>
+                </template>
+                </div>
             </div>
             </div>
         </div>
