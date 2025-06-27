@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('monitor_uptimes', function (Blueprint $table) {
+        Schema::create('monitor_uptime_dailies', function (Blueprint $table) {
             $table->id();
             $table->foreignId('monitor_id')->constrained('monitors')->onDelete('cascade');
-            $table->enum('unit', ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ALL'])->default('DAILY')->comment('The unit of time for the uptime');
-            $table->double('uptime_percentage')->default(0)->comment('The percentage of uptime for the monitor');
+            $table->date('date')->index();
+            $table->double('uptime_percentage')->default(0);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('monitor_uptimes');
+        Schema::dropIfExists('monitor_uptime_dailies');
     }
 };
