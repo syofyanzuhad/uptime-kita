@@ -116,12 +116,12 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
             publicMonitors.value = [...publicMonitors.value, ...result.data];
         }
 
-        // Update pagination state
-        hasMorePages.value = result.pagination.has_more_pages;
-        totalMonitors.value = result.pagination.total;
-        showingFrom.value = result.pagination.from;
-        showingTo.value = result.pagination.to;
-        currentPage.value = result.pagination.current_page;
+        // Update pagination state using meta from resource
+        hasMorePages.value = result.meta.current_page < result.meta.last_page;
+        totalMonitors.value = result.meta.total;
+        showingFrom.value = result.meta.from;
+        showingTo.value = result.meta.to;
+        currentPage.value = result.meta.current_page;
 
         error.value = null;
     } catch (err) {
