@@ -24,6 +24,14 @@ const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
 
+// Pagination state
+const currentPage = ref(1);
+const hasMorePages = ref(false);
+const loadingMore = ref(false);
+const totalMonitors = ref(0);
+const showingFrom = ref(0);
+const showingTo = ref(0);
+
 // Hardcoded pinned monitors - you can modify these IDs as needed
 const pinnedMonitors = ref<Set<number>>(new Set([1, 3, 5])); // Example: pin monitors with IDs 1, 3, and 5
 
@@ -83,25 +91,51 @@ const isPinned = (monitorId: number) => {
     return pinnedMonitors.value.has(monitorId);
 };
 
-const fetchPublicMonitors = async (isInitialLoad = false) => {
+const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
     try {
         if (isInitialLoad) {
             loading.value = true;
+            currentPage.value = 1;
+        } else if (page > 1) {
+            loadingMore.value = true;
         } else {
             isPolling.value = true;
         }
 
-        const response = await fetch('/public-monitors');
+        const response = await fetch(`/public-monitors?page=${page}`);
         if (!response.ok) {
             throw new Error('Failed to fetch public monitors');
         }
-        publicMonitors.value = await response.json();
+
+        const result = await response.json();
+
+        if (isInitialLoad || page === 1) {
+            publicMonitors.value = result.data;
+        } else {
+            // Append new monitors to existing ones
+            publicMonitors.value = [...publicMonitors.value, ...result.data];
+        }
+
+        // Update pagination state
+        hasMorePages.value = result.pagination.has_more_pages;
+        totalMonitors.value = result.pagination.total;
+        showingFrom.value = result.pagination.from;
+        showingTo.value = result.pagination.to;
+        currentPage.value = result.pagination.current_page;
+
         error.value = null;
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'An error occurred';
     } finally {
         loading.value = false;
         isPolling.value = false;
+        loadingMore.value = false;
+    }
+};
+
+const loadMore = async () => {
+    if (hasMorePages.value && !loadingMore.value) {
+        await fetchPublicMonitors(false, currentPage.value + 1);
     }
 };
 
@@ -180,7 +214,7 @@ onMounted(() => {
 
     // Start polling every minute (60000ms)
     pollingInterval.value = setInterval(() => {
-        fetchPublicMonitors(false); // Polling update
+        fetchPublicMonitors(false, 1); // Polling update - always fetch first page
     }, 60000);
 });
 
@@ -231,6 +265,11 @@ onUnmounted(() => {
                 <span v-if="publicMonitors.length !== filteredMonitors.length">
                     dari {{ publicMonitors.length }} total monitor
                 </span>
+            </div>
+
+            <!-- Pagination Info -->
+            <div v-if="!loading && !error && publicMonitors.length > 0 && !props.searchQuery" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }} monitors
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
@@ -396,6 +435,31 @@ onUnmounted(() => {
                         </div>
                     </div>
                     </Link>
+                </div>
+            </div>
+
+            <!-- Load More Button -->
+            <div v-if="hasMorePages && !loading && !error && !props.searchQuery" class="mt-6 text-center">
+                <button
+                    @click="loadMore"
+                    :disabled="loadingMore"
+                    class="flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                    <Icon
+                        name="arrow-down"
+                        :class="loadingMore ? 'animate-spin' : ''"
+                        size="16"
+                    />
+                    <span v-if="loadingMore">Loading...</span>
+                    <span v-else>Load More Monitors</span>
+                </button>
+            </div>
+
+            <!-- Loading More Indicator -->
+            <div v-if="loadingMore" class="mt-4 text-center">
+                <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    Loading more monitors...
                 </div>
             </div>
         </CardContent>

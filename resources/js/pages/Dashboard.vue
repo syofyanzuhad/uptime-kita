@@ -1,54 +1,62 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
-import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
-import { ref, onMounted, computed } from 'vue';
-import Icon from '@/components/Icon.vue';
-import { Button } from '@/components/ui/button';
-import type { Monitor } from '@/types/monitor';
+    import AppLayout from '@/layouts/AppLayout.vue';
+    import { type BreadcrumbItem } from '@/types';
+    import { Head, usePage } from '@inertiajs/vue3';
+    import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
+    import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
+    import { ref, onMounted, computed } from 'vue';
+    import Icon from '@/components/Icon.vue';
+    import { Button } from '@/components/ui/button';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+    ];
 
-const searchQuery = ref('');
-const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
+    const searchQuery = ref('');
+    const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
 
-// Monitor data for counts
-const publicMonitors = ref<Monitor[]>([]);
-const loadingMonitors = ref(false);
-const errorMonitors = ref<string | null>(null);
+    // Monitor data for counts
+    const loadingMonitors = ref(false);
+    const errorMonitors = ref<string | null>(null);
+    const allCount = ref(0);
+    const onlineCount = ref(0);
+    const offlineCount = ref(0);
+    const unsubscribedCount = ref(0);
 
-const page = usePage();
-const isAuthenticated = computed(() => !!(page.props as any).auth?.user);
+    const page = usePage();
+    const isAuthenticated = computed(() => !!(page.props as any).auth?.user);
 
-async function fetchPublicMonitors() {
-    loadingMonitors.value = true;
-    try {
-        const response = await fetch('/public-monitors');
-        if (!response.ok) throw new Error('Failed to fetch public monitors');
-        publicMonitors.value = await response.json();
-        errorMonitors.value = null;
-    } catch (err) {
-        errorMonitors.value = err instanceof Error ? err.message : 'An error occurred';
-    } finally {
-        loadingMonitors.value = false;
+    async function fetchMonitorStatistics() {
+        loadingMonitors.value = true;
+        try {
+            const response = await fetch('/statistic-monitor');
+            if (!response.ok) throw new Error('Failed to fetch monitor statistics');
+            const stats = await response.json();
+            console.log('Monitor statistics:', stats);
+
+            if (isAuthenticated.value) {
+                allCount.value = stats.total_monitors;
+            } else {
+                allCount.value = stats.public_monitor_count;
+            }
+            onlineCount.value = stats.online_monitors;
+            offlineCount.value = stats.offline_monitors;
+            unsubscribedCount.value = stats.unsubscribed_monitors;
+
+            errorMonitors.value = null;
+        } catch (err) {
+            errorMonitors.value = err instanceof Error ? err.message : 'An error occurred';
+        } finally {
+            loadingMonitors.value = false;
+        }
     }
-}
 
-onMounted(() => {
-    fetchPublicMonitors();
-});
-
-const allCount = computed(() => publicMonitors.value.length);
-const onlineCount = computed(() => publicMonitors.value.filter(m => m.uptime_status === 'up').length);
-const offlineCount = computed(() => publicMonitors.value.filter(m => m.uptime_status === 'down').length);
-const unsubscribedCount = computed(() => publicMonitors.value.filter(m => !m.is_subscribed).length);
+    onMounted(() => {
+        fetchMonitorStatistics();
+    });
 </script>
 
 <template>
