@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
@@ -7,12 +6,11 @@ use Illuminate\Http\Request;
 
 class SubscribeMonitorController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
-    public function __invoke(Monitor $monitor)
+    public function __invoke($monitorId)
     {
         try {
+            $monitor = Monitor::withoutGlobalScopes()->findOrFail($monitorId);
+
             $errorMessage = null;
 
             if (!$monitor->is_public) {
@@ -28,19 +26,20 @@ class SubscribeMonitorController extends Controller
                 ], 400);
             }
 
-            // Attach monitor to user
             $monitor->users()->attach(auth()->id(), ['is_active' => true]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Berhasil berlangganan monitor!',
-            ]);
+            // clear monitor cache
+            cache()->forget('public_monitors_authenticated_' . auth()->id());
 
+            return redirect()->back()->with('flash', [
+                'type' => 'success',
+                'message' => 'Berhasil berlangganan monitor: ' . $monitor->name,
+            ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
+            return redirect()->back()->with('flash', [
+                'type' => 'error',
                 'message' => 'Gagal berlangganan monitor: ' . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 }
