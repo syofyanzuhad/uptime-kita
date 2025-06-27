@@ -12,18 +12,14 @@ Route::get('/', function () {
     return Inertia::render('Dashboard');
 })->name('home');
 
-// Public route for public monitors
-Route::get('/public-monitors', [UptimeMonitorController::class, 'public'])->name('monitor.public');
+Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
+Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Route untuk public monitor
-    Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
     // Route untuk subscribe monitor
     Route::post('/monitor/{monitor}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
-    // Route untuk statistik monitor
-    Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
 
