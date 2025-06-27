@@ -53,7 +53,7 @@ class Monitor extends SpatieMonitor
             if ($this->relationLoaded('users')) {
                 return $this->users->contains('id', auth()->id());
             }
-        
+
             // Fallback query jika relasi belum dimuat
             return $this->users()->where('user_id', auth()->id())->exists();
         // });
@@ -67,6 +67,11 @@ class Monitor extends SpatieMonitor
     public function histories()
     {
         return $this->hasMany(MonitorHistory::class);
+    }
+
+    public function uptimes()
+    {
+        return $this->hasMany(MonitorUptime::class);
     }
 
     public function scopeActive($query)
