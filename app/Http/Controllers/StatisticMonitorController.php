@@ -20,7 +20,7 @@ class StatisticMonitorController extends Controller
         $privateMonitorCount = Monitor::whereHas('users', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->where('is_public', false)->count();
-        $totalMonitors = $publicMonitorCount + $privateMonitorCount;
+        $totalMonitors = Monitor::withoutGlobalScope('user')->count();
 
         $nowInMinutes = now()->timestamp / 60;
         // get online monitors
