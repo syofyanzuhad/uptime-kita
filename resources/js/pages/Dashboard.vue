@@ -70,7 +70,7 @@
                     :variant="statusFilter === 'all' ? 'default' : 'outline'"
                     @click="statusFilter = 'all'"
                 >
-                    Semua <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-400 text-xs">{{ allCount }}</span>
+                    All <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-400 text-xs">{{ allCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'up' ? 'default' : 'outline'"

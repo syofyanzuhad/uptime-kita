@@ -194,6 +194,14 @@ watch(() => props.searchQuery, () => {
                         <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-500"></div>
                         <span class="text-xs text-gray-500">Updating...</span>
                     </div>
+                    <Link
+                        :href="route('monitor.create')"
+                        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ml-2"
+                        title="Add Monitor"
+                    >
+                        <Icon name="plus" size="16" />
+                        Add Monitor
+                    </Link>
                 </div>
                 <button
                     @click="fetchPrivateMonitors(false)"
