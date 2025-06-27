@@ -27,6 +27,15 @@ class MonitorResource extends JsonResource
             'uptime_check_interval' => $this->uptime_check_interval_in_minutes,
             'is_subscribed' => $this->is_subscribed,
             'is_public' => $this->is_public,
+            'histories' => $this->whenLoaded('histories', function () {
+                return $this->histories->map(function ($history) {
+                    return [
+                        'id' => $history->id,
+                        'status' => $history->status,
+                        'created_at' => $history->created_at,
+                    ];
+                });
+            }),
         ];
     }
 }
