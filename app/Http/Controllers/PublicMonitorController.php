@@ -19,9 +19,8 @@ class PublicMonitorController extends Controller
         $page = $request->get('page', 1);
         $perPage = 12; // Number of monitors per page
 
-        // Use cache to store public monitors for authenticated and guest users
-        // Differentiate cache keys for authenticated and guest users
-        $cacheKey = $authenticated ? 'public_monitors_authenticated_' . auth()->id() : 'public_monitors_guest';
+        // Differentiate cache keys for authenticated and guest users, and also by page number
+        $cacheKey = ($authenticated ? 'public_monitors_authenticated_' . auth()->id() : 'public_monitors_guest') . '_page_' . $page;
 
         $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage) {
             // Always only show public monitors
