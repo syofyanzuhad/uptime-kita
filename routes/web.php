@@ -18,13 +18,10 @@ Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monit
 Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
-    // Route untuk subscribe monitor
-    Route::post('/monitor/{monitor}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
-
-    // Subscribe to public monitor
-    Route::post('/monitor/{monitor}/subscribe', [UptimeMonitorController::class, 'subscribe'])->name('monitor.subscribe');
+    // Route untuk subscribe monitor
+    Route::post('/monitor/{monitorId}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
 
     // Get monitor history
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
