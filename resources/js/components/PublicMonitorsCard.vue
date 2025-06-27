@@ -118,8 +118,8 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         // Update pagination state using meta from resource
         hasMorePages.value = result.meta.current_page < result.meta.last_page;
         totalMonitors.value = result.meta.total;
-        showingFrom.value = result.meta.from;
-        showingTo.value = result.meta.to;
+        showingFrom.value = publicMonitors.value.length > 0 ? 1 : 0;
+        showingTo.value = publicMonitors.value.length;
         currentPage.value = result.meta.current_page;
 
         error.value = null;
@@ -456,7 +456,7 @@ onUnmounted(() => {
 
             <!-- Load More Button -->
             <div v-if="hasMorePages && !loading && !error && !props.searchQuery" class="mt-6 text-center">
-                <button
+                <Button
                     @click="loadMore"
                     :disabled="loadingMore"
                     class="flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
@@ -468,7 +468,7 @@ onUnmounted(() => {
                     />
                     <span v-if="loadingMore">Loading...</span>
                     <span v-else>Load More Monitors</span>
-                </button>
+                </Button>
             </div>
 
             <!-- Loading More Indicator -->
