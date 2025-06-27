@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -57,15 +57,7 @@ const filteredMonitors = computed(() => {
     } else if (props.statusFilter === 'unsubscribed') {
         monitors = monitors.filter(monitor => !monitor.is_subscribed);
     }
-    // Filter by search query
-    if (props.searchQuery.trim()) {
-        const query = props.searchQuery.toLowerCase().trim();
-        monitors = monitors.filter(monitor => {
-            const domain = getDomainFromUrl(monitor.url).toLowerCase();
-            const url = monitor.url.toLowerCase();
-            return domain.includes(query) || url.includes(query);
-        });
-    }
+    // Remove client-side search filter here
     return monitors;
 });
 
@@ -104,7 +96,12 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
             isPolling.value = true;
         }
 
-        const response = await fetch(`/public-monitors?page=${page}`);
+        const params = new URLSearchParams();
+        params.append('page', String(page));
+        if (props.searchQuery && props.searchQuery.trim().length >= 3) {
+            params.append('search', props.searchQuery.trim());
+        }
+        const response = await fetch(`/public-monitors?${params.toString()}`);
         if (!response.ok) {
             throw new Error('Failed to fetch public monitors');
         }
@@ -134,6 +131,14 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         loadingMore.value = false;
     }
 };
+
+// Watch for searchQuery changes and refetch
+watch(() => props.searchQuery, () => {
+    // Only search if 3+ chars or empty (reset)
+    if (props.searchQuery.trim().length === 0 || props.searchQuery.trim().length >= 3) {
+        fetchPublicMonitors(true, 1);
+    }
+});
 
 const loadMore = async () => {
     if (hasMorePages.value && !loadingMore.value) {

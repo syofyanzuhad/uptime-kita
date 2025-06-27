@@ -35,7 +35,7 @@ class PublicMonitorController extends Controller
                 ->with('users:id')
                 ->where('is_public', true);
             if ($search) {
-                $query->where('name', 'like', "%$search%");
+                $query->search($search);
             }
             return new MonitorCollection(
                 $query->paginate($perPage, ['*'], 'page', $page)
