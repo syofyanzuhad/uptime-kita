@@ -1,8 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
+use App\Http\Controllers\PrivateMonitorController;
+use App\Http\Controllers\StatisticMonitorController;
+use App\Http\Controllers\SubscribeMonitorController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -12,7 +16,14 @@ Route::get('/', function () {
 Route::get('/public-monitors', [UptimeMonitorController::class, 'public'])->name('monitor.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/private-monitors', [UptimeMonitorController::class, 'private'])->name('monitor.private');
+    // Route untuk public monitor
+    Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
+    // Route untuk private monitor
+    Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
+    // Route untuk subscribe monitor
+    Route::post('/monitor/{monitor}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
+    // Route untuk statistik monitor
+    Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
 
