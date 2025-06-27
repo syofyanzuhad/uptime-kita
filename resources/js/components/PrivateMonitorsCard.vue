@@ -9,11 +9,19 @@ import { Link } from '@inertiajs/vue3';
 interface Props {
     searchQuery?: string;
     statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed';
+    allCount?: number;
+    onlineCount?: number;
+    offlineCount?: number;
+    unsubscribedCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     searchQuery: '',
     statusFilter: 'all',
+    allCount: 0,
+    onlineCount: 0,
+    offlineCount: 0,
+    unsubscribedCount: 0,
 });
 
 const privateMonitors = ref<Monitor[]>([]);
@@ -219,6 +227,31 @@ watch(() => props.searchQuery, () => {
             </CardTitle>
         </CardHeader>
         <CardContent>
+            <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                <template v-if="filteredMonitors.length">
+                    Showing {{ filteredMonitors.length }} of
+                    {{
+                        props.statusFilter === 'all' ? props.allCount
+                        : props.statusFilter === 'up' ? props.onlineCount
+                        : props.statusFilter === 'down' ? props.offlineCount
+                        : props.statusFilter === 'unsubscribed' ? props.unsubscribedCount
+                        : props.allCount
+                    }}
+                    monitor<span v-if="filteredMonitors.length !== 1">s</span>
+                </template>
+                <template v-else>
+                    No
+                    {{
+                        props.statusFilter === 'all' ? ''
+                        : props.statusFilter === 'up' ? 'online'
+                        : props.statusFilter === 'down' ? 'offline'
+                        : props.statusFilter === 'unsubscribed' ? 'unsubscribed'
+                        : ''
+                    }}
+                    monitors found.
+                </template>
+            </div>
+
             <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="filteredMonitors.length === 1">
                     Ditemukan 1 monitor
@@ -229,11 +262,6 @@ watch(() => props.searchQuery, () => {
                 <span v-if="privateMonitors.length !== filteredMonitors.length">
                     dari {{ privateMonitors.length }} total monitor
                 </span>
-            </div>
-
-            <!-- Pagination Info -->
-            <div v-if="!loading && !error && privateMonitors.length > 0 && !props.searchQuery" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }} monitors
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">

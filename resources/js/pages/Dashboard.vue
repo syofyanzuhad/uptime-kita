@@ -112,8 +112,8 @@
                 </div>
             </div>
 
-            <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" />
-            <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" />
+            <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" />
+            <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" />
         </div>
     </AppLayout>
 </template>

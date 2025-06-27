@@ -12,11 +12,19 @@ import { Plus } from 'lucide-vue-next';
 interface Props {
     searchQuery?: string;
     statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed';
+    allCount?: number;
+    onlineCount?: number;
+    offlineCount?: number;
+    unsubscribedCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     searchQuery: '',
     statusFilter: 'all',
+    allCount: 0,
+    onlineCount: 0,
+    offlineCount: 0,
+    unsubscribedCount: 0,
 });
 
 const publicMonitors = ref<Monitor[]>([]);
@@ -264,6 +272,31 @@ onUnmounted(() => {
             </CardTitle>
         </CardHeader>
         <CardContent>
+            <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                <template v-if="filteredMonitors.length">
+                    Showing {{ filteredMonitors.length }} of
+                    {{
+                        props.statusFilter === 'all' ? props.allCount
+                        : props.statusFilter === 'up' ? props.onlineCount
+                        : props.statusFilter === 'down' ? props.offlineCount
+                        : props.statusFilter === 'unsubscribed' ? props.unsubscribedCount
+                        : props.allCount
+                    }}
+                    monitor<span v-if="filteredMonitors.length !== 1">s</span>
+                </template>
+                <template v-else>
+                    No
+                    {{
+                        props.statusFilter === 'all' ? ''
+                        : props.statusFilter === 'up' ? 'online'
+                        : props.statusFilter === 'down' ? 'offline'
+                        : props.statusFilter === 'unsubscribed' ? 'unsubscribed'
+                        : ''
+                    }}
+                    monitors found.
+                </template>
+            </div>
+
             <!-- Search Results Counter -->
             <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="filteredMonitors.length === 1">
@@ -275,11 +308,6 @@ onUnmounted(() => {
                 <span v-if="publicMonitors.length !== filteredMonitors.length">
                     dari {{ publicMonitors.length }} total monitor
                 </span>
-            </div>
-
-            <!-- Pagination Info -->
-            <div v-if="!loading && !error && publicMonitors.length > 0 && !props.searchQuery" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }} monitors
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
