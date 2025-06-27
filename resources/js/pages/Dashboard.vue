@@ -25,6 +25,8 @@
     const onlineCount = ref(0);
     const offlineCount = ref(0);
     const unsubscribedCount = ref(0);
+    const userId = computed(() => (page.props as any).auth?.user?.id);
+    const userCount = ref<number|null>(null);
 
     const page = usePage();
     const isAuthenticated = computed(() => !!(page.props as any).auth?.user);
@@ -45,6 +47,11 @@
             onlineCount.value = stats.online_monitors;
             offlineCount.value = stats.offline_monitors;
             unsubscribedCount.value = stats.unsubscribed_monitors;
+            if ('user_count' in stats) {
+                userCount.value = stats.user_count;
+            } else {
+                userCount.value = null;
+            }
 
             errorMonitors.value = null;
         } catch (err) {
@@ -64,6 +71,11 @@
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <!-- Admin User Count Card -->
+            <div v-if="userId === 1 && userCount !== null" class="rounded-lg border bg-white dark:bg-gray-800 p-4 shadow flex flex-col items-center mb-2">
+                <div class="text-lg font-semibold mb-1">Total Users</div>
+                <div class="text-3xl font-bold">{{ userCount }}</div>
+            </div>
             <!-- Status Filter Bar -->
             <div class="flex gap-2 mb-2 max-w-vw overflow-auto">
                 <Button

@@ -44,7 +44,7 @@ class StatisticMonitorController extends Controller
                 })
                 ->count();
 
-            return [
+            $data = [
                 'public_monitor_count' => $publicMonitorCount,
                 'private_monitor_count' => $privateMonitorCount,
                 'total_monitors' => $totalMonitors,
@@ -52,6 +52,10 @@ class StatisticMonitorController extends Controller
                 'offline_monitors' => $offlineMonitors,
                 'unsubscribed_monitors' => $unsubscribedMonitors,
             ];
+            if ($user && $user->id === 1) {
+                $data['user_count'] = \App\Models\User::count();
+            }
+            return $data;
         });
 
         return response()->json($statistics);
