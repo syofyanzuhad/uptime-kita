@@ -13,23 +13,25 @@ import { Head, useForm } from '@inertiajs/vue3';
 import type { Monitor } from '@/types/monitor';
 
 const props = defineProps<{
-  monitor: Monitor; // Menerima data monitor yang akan diedit
+  monitor: {
+      data: Monitor,
+  }; // Menerima data monitor yang akan diedit
 }>();
 
 // Store initial values for dirty checking
 const initialValues = {
-  url: props.monitor.url,
-  uptime_check_enabled: props.monitor.uptime_check_enabled,
-  certificate_check_enabled: props.monitor.certificate_check_enabled,
-  uptime_check_interval: props.monitor.uptime_check_interval || 5,
+  url: props.monitor.data.url,
+  uptime_check_enabled: props.monitor.data.uptime_check_enabled,
+  certificate_check_enabled: props.monitor.data.certificate_check_enabled,
+  uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
 };
 
 // Inisialisasi form dengan data monitor yang ada
 const form = useForm({
-  url: props.monitor.url,
-  uptime_check_enabled: props.monitor.uptime_check_enabled,
-  certificate_check_enabled: props.monitor.certificate_check_enabled,
-  uptime_check_interval: props.monitor.uptime_check_interval || 5, // Default to 5 minutes if not set
+  url: props.monitor.data.url,
+  uptime_check_enabled: props.monitor.data.uptime_check_enabled,
+  certificate_check_enabled: props.monitor.data.certificate_check_enabled,
+  uptime_check_interval: props.monitor.data.uptime_check_interval || 5, // Default to 5 minutes if not set
 });
 // console.log(form.url);
 
@@ -62,8 +64,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/monitor',
     },
     {
-        title: `Edit: ${props.monitor.url}`,
-        href: `/monitor/${props.monitor.id}/edit`,
+        title: `Edit: ${props.monitor.data.url}`,
+        href: `/monitor/${props.monitor.data.id}/edit`,
     },
 ];
 
@@ -74,7 +76,7 @@ const submit = () => {
     return;
   }
 
-  form.put(route('monitor.update', props.monitor.id), {
+  form.put(route('monitor.update', props.monitor.data.id), {
     onFinish: () => {},
   });
 };
