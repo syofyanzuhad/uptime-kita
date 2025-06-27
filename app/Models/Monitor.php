@@ -37,6 +37,11 @@ class Monitor extends SpatieMonitor
         return Url::fromString($this->attributes['url']);
     }
 
+    public function getFaviconAttribute(): ?string
+    {
+        return $this->url ? "https://icons.duckduckgo.com/ip3/{$this->url->getHost()}.ico" : null;
+    }
+
     public function getRawUrlAttribute(): string
     {
         return (string) $this->url;

@@ -13,6 +13,7 @@ export interface Monitor {
     uptime_check_interval: number;
     is_subscribed?: boolean;
     is_public?: boolean;
+    favicon?: string;
   }
 
   export interface FlashMessage {
