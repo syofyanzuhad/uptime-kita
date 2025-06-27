@@ -93,6 +93,18 @@ class Monitor extends SpatieMonitor
         });
     }
 
+    public function scopeSearch($query, $search)
+    {
+        if (!$search || mb_strlen($search) < 3) {
+            return $query;
+        }
+        return $query->where(function ($q) use ($search) {
+            $q->where('url', 'like', "%$search%")
+              ->orWhere('name', 'like', "%$search%")
+              ->orWhereRaw('REPLACE(REPLACE(url, "https://", ""), "http://", "") LIKE ?', ["%$search%"]);
+        });
+    }
+
     // boot
     protected static function boot()
     {

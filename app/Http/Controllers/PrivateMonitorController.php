@@ -14,14 +14,17 @@ class PrivateMonitorController extends Controller
     {
         $page = $request->get('page', 1);
         $perPage = 12; // Number of monitors per page
+        $search = $request->get('search');
 
-        $privateMonitors = Monitor::whereHas('users', function ($query) {
+        $query = Monitor::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })
         ->where('is_public', false)
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function ($monitor) {
+        ->search($search)
+        ->orderBy('created_at', 'desc');
+
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $privateMonitors = $paginator->getCollection()->map(function ($monitor) {
             return [
                 'id' => $monitor->id,
                 'url' => $monitor->raw_url,
@@ -35,25 +38,16 @@ class PrivateMonitorController extends Controller
             ];
         });
 
-        // Apply pagination manually
-        $total = $privateMonitors->count();
-        $offset = ($page - 1) * $perPage;
-        $paginatedMonitors = $privateMonitors->slice($offset, $perPage);
-
-        $hasMorePages = ($offset + $perPage) < $total;
-        $currentPage = (int) $page;
-        $lastPage = ceil($total / $perPage);
-
         return response()->json([
-            'data' => $paginatedMonitors->values(),
+            'data' => $privateMonitors->values(),
             'pagination' => [
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
-                'per_page' => $perPage,
-                'total' => $total,
-                'has_more_pages' => $hasMorePages,
-                'from' => $offset + 1,
-                'to' => min($offset + $perPage, $total),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'has_more_pages' => $paginator->hasMorePages(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
             ]
         ]);
     }

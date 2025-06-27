@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -90,7 +90,13 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
             isPolling.value = true;
         }
 
-        const response = await fetch(`/private-monitors?page=${page}`);
+        // Add search query to request if present
+        const params = new URLSearchParams();
+        params.append('page', String(page));
+        if (props.searchQuery && props.searchQuery.trim().length > 0) {
+            params.append('search', props.searchQuery.trim());
+        }
+        const response = await fetch(`/private-monitors?${params.toString()}`);
         if (!response.ok) {
             throw new Error('Failed to fetch private monitors');
         }
@@ -169,6 +175,11 @@ onUnmounted(() => {
     if (pollingInterval.value) {
         clearInterval(pollingInterval.value);
     }
+});
+
+// Watch for searchQuery changes and refetch
+watch(() => props.searchQuery, () => {
+    fetchPrivateMonitors(true, 1);
 });
 </script>
 
