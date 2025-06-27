@@ -18,6 +18,7 @@ class MonitorResource extends JsonResource
             'id' => $this->id,
             'url' => $this->raw_url,
             'uptime_status' => $this->uptime_status,
+            'uptime_check_enabled' => (bool) $this->uptime_check_enabled,
             'last_check_date' => $this->uptime_last_check_date,
             'certificate_check_enabled' => (bool) $this->certificate_check_enabled,
             'certificate_status' => $this->certificate_status,
