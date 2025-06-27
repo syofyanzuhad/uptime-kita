@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
+import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
 import { ref, onMounted, computed } from 'vue';
 import Icon from '@/components/Icon.vue';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,9 @@ const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
 const publicMonitors = ref<Monitor[]>([]);
 const loadingMonitors = ref(false);
 const errorMonitors = ref<string | null>(null);
+
+const page = usePage();
+const isAuthenticated = computed(() => !!(page.props as any).auth?.user);
 
 async function fetchPublicMonitors() {
     loadingMonitors.value = true;
@@ -100,9 +104,8 @@ const unsubscribedCount = computed(() => publicMonitors.value.filter(m => !m.is_
                 </div>
             </div>
 
-            <!-- <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min"> -->
-                <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" />
-            <!-- </div> -->
+            <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" />
+            <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" />
         </div>
     </AppLayout>
 </template>
