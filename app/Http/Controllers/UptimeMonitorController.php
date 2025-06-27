@@ -261,7 +261,7 @@ class UptimeMonitorController extends Controller
      */
     public function private()
     {
-        $monitors = Monitor::whereHas('users', function ($query) {
+        $privateMonitors = Monitor::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })
         ->where('is_public', false)
@@ -280,7 +280,7 @@ class UptimeMonitorController extends Controller
             ];
         });
 
-        return response()->json($monitors);
+        return response()->json($privateMonitors);
     }
 
     /**
