@@ -20,7 +20,9 @@ class UptimeMonitorController extends Controller
     {
         $page = $request->input('page', 1);
         $monitors = cache()->remember('monitors_list_page_'.$page, 60, function () {
-            return new MonitorCollection(Monitor::with('uptimeDaily')->orderBy('created_at', 'desc')->paginate(12));
+            return new MonitorCollection(Monitor::with(['uptimeDaily', 'histories' => function ($query) {
+                $query->latest()->take(100);
+            }])->orderBy('created_at', 'desc')->paginate(12));
         });
 
         $flash = session('flash');
@@ -122,7 +124,9 @@ class UptimeMonitorController extends Controller
     public function edit(Monitor $monitor)
     {
         return Inertia::render('uptime/Edit', [
-            'monitor' => new MonitorResource($monitor)
+            'monitor' => new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
+                $query->latest()->take(100);
+            }]))
         ]);
     }
 

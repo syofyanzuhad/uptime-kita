@@ -32,7 +32,9 @@ class PublicMonitorController extends Controller
         $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily'])
+                ->with(['users:id', 'uptimeDaily', 'histories' => function ($query) {
+                    $query->latest()->take(100);
+                }])
                 ->public();
             if ($search) {
                 $query->search($search);
