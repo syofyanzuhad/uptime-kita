@@ -18,8 +18,6 @@ const props = defineProps<{
 
 const monitorData = computed(() => props.monitor.data);
 
-console.log('Monitor Detail:', monitorData.value);
-
 const breadcrumbs = [
   { title: 'Uptime Monitor', href: '/monitor' },
   { title: getDomainFromUrl(monitorData.value.url), href: '#' },
@@ -35,8 +33,6 @@ const statusColor = computed(() => {
   }
 });
 
-console.log('Monitor Status:', monitorData.value.uptime_status);
-
 const statusBgColor = computed(() => {
   switch (monitorData.value.uptime_status) {
     case 'up': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
@@ -44,8 +40,6 @@ const statusBgColor = computed(() => {
     default: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
   }
 });
-
-console.log('Monitor Certificate Status:', monitorData.value.certificate_status);
 
 const certificateColor = computed(() => {
   switch (monitorData.value.certificate_status) {
@@ -55,8 +49,6 @@ const certificateColor = computed(() => {
   }
 });
 
-console.log('Monitor Uptime Percentage:', monitorData.value.today_uptime_percentage);
-
 const uptimePercentageColor = computed(() => {
   if (!monitorData.value.today_uptime_percentage) return 'text-gray-600 dark:text-gray-400';
   if (monitorData.value.today_uptime_percentage >= 99.5) return 'text-green-600 dark:text-green-400';
@@ -64,14 +56,10 @@ const uptimePercentageColor = computed(() => {
   return 'text-red-600 dark:text-red-400';
 });
 
-console.log('Monitor Check Interval:', monitorData.value.uptime_check_interval);
-
 // Get histories from monitor object with fallback
 const histories = computed(() => {
   return monitorData.value.histories || [];
 });
-
-console.log('Monitor Histories:', histories.value);
 
 // Function to get last 100 minutes
 function getLast100Minutes() {
