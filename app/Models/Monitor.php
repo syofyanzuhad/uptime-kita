@@ -93,6 +93,16 @@ class Monitor extends SpatieMonitor
         });
     }
 
+    public function scopePublic($query)
+    {
+        return $query->where('is_public', true);
+    }
+
+    public function scopePrivate($query)
+    {
+        return $query->where('is_public', false);
+    }
+
     public function scopeSearch($query, $search)
     {
         if (!$search || mb_strlen($search) < 3) {
