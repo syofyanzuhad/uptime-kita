@@ -79,6 +79,16 @@ class Monitor extends SpatieMonitor
         return $this->hasMany(MonitorUptime::class);
     }
 
+    public function uptimeDaily()
+    {
+        return $this->hasOne(MonitorUptimeDaily::class)->whereDate('date', now()->toDateString());
+    }
+
+    public function getTodayUptimePercentageAttribute()
+    {
+        return $this->uptimeDaily?->uptime_percentage ?? 0;
+    }
+
     public function scopeActive($query)
     {
         return $query->whereHas('users', function ($query) {
