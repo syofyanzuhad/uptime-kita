@@ -144,6 +144,9 @@ const deleteMonitor = (monitorId: number) => {
                         Terakhir Dicek
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Today's Uptime
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Sertifikat
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -169,6 +172,9 @@ const deleteMonitor = (monitorId: number) => {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : '-' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {{ monitor.today_uptime_percentage ? monitor.today_uptime_percentage + '%' : '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <template v-if="monitor.certificate_check_enabled">

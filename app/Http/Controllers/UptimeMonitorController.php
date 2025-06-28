@@ -19,7 +19,7 @@ class UptimeMonitorController extends Controller
     {
         $page = $request->input('page', 1);
         $monitors = cache()->remember('monitors_list_page_'.$page, 60, function () {
-            return new MonitorCollection(Monitor::orderBy('created_at', 'desc')->paginate(12));
+            return new MonitorCollection(Monitor::with('uptimeDaily')->orderBy('created_at', 'desc')->paginate(12));
         });
 
         $flash = session('flash');
@@ -37,7 +37,7 @@ class UptimeMonitorController extends Controller
     {
         // implements cache for monitor data
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
-            return new MonitorResource($monitor);
+            return new MonitorResource($monitor->load('uptimeDaily'));
         });
         // get histories and cache it
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
