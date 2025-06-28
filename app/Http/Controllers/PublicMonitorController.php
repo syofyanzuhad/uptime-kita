@@ -33,7 +33,7 @@ class PublicMonitorController extends Controller
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
                 ->with('users:id')
-                ->where('is_public', true);
+                ->public();
             if ($search) {
                 $query->search($search);
             }
