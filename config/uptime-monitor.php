@@ -75,27 +75,40 @@ return [
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.
          */
-        'concurrent_checks' => 100,
+        'concurrent_checks' => 150,
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => 20,
+        'timeout_per_site' => 8,
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
          * to connect to a server in one uptime check. You can specify the time in
          * milliseconds between each attempt.
          */
-        'retry_connection_after_milliseconds' => 100,
+        'retry_connection_after_milliseconds' => 50,
 
         /*
          * If you want to change the default Guzzle client behaviour, you can do so by
          * passing custom options that will be used when making requests.
          */
         'guzzle_options' => [
-            // 'allow_redirects' => false,
+            'timeout' => 8,
+            'connect_timeout' => 3,
+            'http_errors' => false,
+            'allow_redirects' => [
+                'max' => 2,
+                'strict' => false,
+                'referer' => false,
+                'protocols' => ['http', 'https'],
+            ],
+            'curl' => [
+                CURLOPT_TCP_NODELAY => true,
+                CURLOPT_TCP_FASTOPEN => true,
+                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+            ],
         ],
 
         /*
