@@ -37,7 +37,6 @@
             const response = await fetch('/statistic-monitor');
             if (!response.ok) throw new Error('Failed to fetch monitor statistics');
             const stats = await response.json();
-            console.log('Monitor statistics:', stats);
 
             if (isAuthenticated.value) {
                 allCount.value = stats.total_monitors;
