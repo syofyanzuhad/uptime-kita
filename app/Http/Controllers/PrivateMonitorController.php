@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Monitor;
 use Illuminate\Http\Request;
+use App\Http\Resources\MonitorCollection;
 
 class PrivateMonitorController extends Controller
 {
@@ -12,43 +13,28 @@ class PrivateMonitorController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $page = $request->get('page', 1);
-        $perPage = 12; // Number of monitors per page
-        $search = $request->get('search');
+        $page = $request->input('page', 1);
+        $search = $request->input('search');
 
-        $query = Monitor::whereHas('users', function ($query) {
-            $query->where('user_id', auth()->id());
-        })
-        ->where('is_public', false)
-        ->search($search)
-        ->orderBy('created_at', 'desc');
+        // Build cache key based on search query
+        $cacheKey = 'private_monitors_page_' . auth()->id() . '_' . $page;
+        if ($search) {
+            $cacheKey .= '_search_' . md5($search);
+        }
 
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-        $privateMonitors = $paginator->getCollection()->map(function ($monitor) {
-            return [
-                'id' => $monitor->id,
-                'url' => $monitor->raw_url,
-                'uptime_status' => $monitor->uptime_status,
-                'last_check_date' => $monitor->uptime_last_check_date,
-                'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
-                'certificate_status' => $monitor->certificate_status,
-                'certificate_expiration_date' => $monitor->certificate_expiration_date,
-                'down_for_events_count' => $monitor->down_for_events_count,
-                'uptime_check_interval' => $monitor->uptime_check_interval_in_minutes,
-            ];
+        $monitors = cache()->remember($cacheKey, 60, function () use ($search) {
+            $query = Monitor::private()
+                ->with('users:id')
+                ->orderBy('created_at', 'desc');
+
+            // Apply search filter if provided
+            if ($search && strlen($search) >= 3) {
+                $query->search($search);
+            }
+
+            return new MonitorCollection($query->paginate(12));
         });
 
-        return response()->json([
-            'data' => $privateMonitors->values(),
-            'pagination' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-                'has_more_pages' => $paginator->hasMorePages(),
-                'from' => $paginator->firstItem(),
-                'to' => $paginator->lastItem(),
-            ]
-        ]);
+        return response()->json($monitors);
     }
 }
