@@ -189,6 +189,16 @@ const getDomainFromUrl = (url: string) => {
     }
 };
 
+const formatUptimePercentage = (percentage: number) => {
+    return percentage.toFixed(1);
+};
+
+const getUptimePercentageColor = (percentage: number) => {
+    if (percentage >= 99.5) return 'text-green-600 dark:text-green-400';
+    if (percentage >= 95) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+};
+
 const openMonitorUrl = (url: string) => {
     window.open(url, '_blank');
 };
@@ -352,6 +362,32 @@ onUnmounted(() => {
                             </span>
                         </div>
                     </div>
+
+                    <!-- Today's Uptime Percentage -->
+                    <div v-if="monitor.today_uptime_percentage !== undefined" class="mb-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Today's Uptime:</span>
+                            <span
+                                :class="getUptimePercentageColor(monitor.today_uptime_percentage)"
+                                class="text-xs font-medium"
+                            >
+                                {{ formatUptimePercentage(monitor.today_uptime_percentage) }}%
+                            </span>
+                        </div>
+                        <!-- Progress bar -->
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                            <div
+                                :class="{
+                                    'bg-green-500': monitor.today_uptime_percentage >= 99.5,
+                                    'bg-yellow-500': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
+                                    'bg-red-500': monitor.today_uptime_percentage < 95
+                                }"
+                                class="h-1.5 rounded-full transition-all duration-300"
+                                :style="{ width: `${monitor.today_uptime_percentage}%` }"
+                            ></div>
+                        </div>
+                    </div>
+
                     <div class="text-xs text-gray-500 space-y-1">
                         <div v-if="monitor.certificate_check_enabled" class="flex items-center gap-1">
                             <TooltipProvider :delay-duration="0">
