@@ -24,7 +24,7 @@ class MonitorResource extends JsonResource
             'certificate_check_enabled' => (bool) $this->certificate_check_enabled,
             'certificate_status' => $this->certificate_status,
             'certificate_expiration_date' => $this->certificate_expiration_date,
-            'down_for_events_count' => $this->down_for_events_count,
+            'down_for_events_count' => $this->getDownEventsCount(),
             'uptime_check_interval' => $this->uptime_check_interval_in_minutes,
             'is_subscribed' => $this->is_subscribed,
             'is_public' => $this->is_public,
@@ -35,5 +35,19 @@ class MonitorResource extends JsonResource
             'updated_at' => $this->updated_at,
             'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
         ];
+    }
+
+    /**
+     * Get the count of down events from histories.
+     */
+    protected function getDownEventsCount(): int
+    {
+        // If histories are loaded, count from the collection
+        if ($this->relationLoaded('histories')) {
+            return $this->histories->where('uptime_status', 'down')->count();
+        }
+
+        // Otherwise, query the database
+        return $this->histories()->where('uptime_status', 'down')->count();
     }
 }
