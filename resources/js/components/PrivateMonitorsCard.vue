@@ -172,6 +172,10 @@ const getDomainFromUrl = (url: string) => {
     }
 };
 
+const openMonitorUrl = (url: string) => {
+    window.open(url, '_blank');
+};
+
 onMounted(() => {
     fetchPrivateMonitors(true);
     pollingInterval.value = setInterval(() => {
@@ -310,6 +314,14 @@ watch(() => props.searchQuery, () => {
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex-1 min-w-0">
                             <h3 class="font-medium text-sm truncate flex items-center gap-2">
+                                <img
+                                    v-if="monitor.favicon"
+                                    :src="monitor.favicon"
+                                    alt="Favicon"
+                                    class="w-4 h-4 rounded-full"
+                                    @click.stop.prevent="openMonitorUrl(monitor.url)"
+                                    @keydown.stop
+                                />
                                 {{ getDomainFromUrl(monitor.url) }}
                             </h3>
                             <span
