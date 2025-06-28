@@ -45,7 +45,7 @@ const refreshIconClass = computed(() => {
 });
 
 const filteredMonitors = computed(() => {
-    if (!privateMonitors.value.length) {
+    if (!privateMonitors.value || privateMonitors.value.length === 0) {
         return [];
     }
     let monitors = privateMonitors.value;
@@ -54,7 +54,7 @@ const filteredMonitors = computed(() => {
         monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
     }
     // Filter by search query
-    if (props.searchQuery.trim()) {
+    if (props.searchQuery && props.searchQuery.trim().length >= 3) {
         const query = props.searchQuery.toLowerCase().trim();
         monitors = monitors.filter(monitor => {
             const domain = getDomainFromUrl(monitor.url).toLowerCase();
@@ -101,7 +101,7 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
         // Add search query to request if present
         const params = new URLSearchParams();
         params.append('page', String(page));
-        if (props.searchQuery && props.searchQuery.trim().length > 0) {
+        if (props.searchQuery && props.searchQuery.trim().length >= 3) {
             params.append('search', props.searchQuery.trim());
         }
         const response = await fetch(`/private-monitors?${params.toString()}`);
@@ -118,12 +118,12 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
             privateMonitors.value = [...privateMonitors.value, ...result.data];
         }
 
-        // Update pagination state
-        hasMorePages.value = result.pagination.has_more_pages;
-        totalMonitors.value = result.pagination.total;
-        showingFrom.value = result.pagination.from;
-        showingTo.value = result.pagination.to;
-        currentPage.value = result.pagination.current_page;
+        // Update pagination state using meta from MonitorResource
+        hasMorePages.value = result.meta.current_page < result.meta.last_page;
+        totalMonitors.value = result.meta.total;
+        showingFrom.value = result.meta.from || 0;
+        showingTo.value = result.meta.to || 0;
+        currentPage.value = result.meta.current_page;
 
         error.value = null;
     } catch (err) {
@@ -134,6 +134,23 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
         loadingMore.value = false;
     }
 };
+
+// Watch for searchQuery changes and refetch
+watch(() => props.searchQuery, (newQuery, oldQuery) => {
+    // Reset pagination state when search changes
+    if (newQuery !== oldQuery) {
+        currentPage.value = 1;
+        hasMorePages.value = false;
+        showingFrom.value = 0;
+        showingTo.value = 0;
+        totalMonitors.value = 0;
+    }
+
+    // Only search if 3+ chars or empty (reset)
+    if (newQuery.trim().length === 0 || newQuery.trim().length >= 3) {
+        fetchPrivateMonitors(true, 1);
+    }
+});
 
 const loadMore = async () => {
     if (hasMorePages.value && !loadingMore.value) {
@@ -188,11 +205,6 @@ onUnmounted(() => {
         clearInterval(pollingInterval.value);
     }
 });
-
-// Watch for searchQuery changes and refetch
-watch(() => props.searchQuery, () => {
-    fetchPrivateMonitors(true, 1);
-});
 </script>
 
 <template>
@@ -232,40 +244,31 @@ watch(() => props.searchQuery, () => {
         </CardHeader>
         <CardContent>
             <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                <template v-if="filteredMonitors.length">
-                    Showing {{ filteredMonitors.length }} of
-                    {{
-                        props.statusFilter === 'all' ? props.allCount
-                        : props.statusFilter === 'up' ? props.onlineCount
-                        : props.statusFilter === 'down' ? props.offlineCount
-                        : props.statusFilter === 'unsubscribed' ? props.unsubscribedCount
-                        : props.allCount
-                    }}
-                    monitor<span v-if="filteredMonitors.length !== 1">s</span>
+                <template v-if="!loading && !error">
+                    <template v-if="props.searchQuery && props.searchQuery.trim().length >= 3">
+                        <!-- Search results info -->
+                        <span v-if="filteredMonitors.length === 1">
+                            Found 1 monitor
+                        </span>
+                        <span v-else>
+                            Found {{ filteredMonitors.length }} monitors
+                        </span>
+                        <span v-if="totalMonitors !== filteredMonitors.length">
+                            from {{ totalMonitors }} total monitors
+                        </span>
+                    </template>
+                    <template v-else>
+                        <!-- Regular pagination info -->
+                        <template v-if="totalMonitors > 0">
+                            Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }}
+                            monitor<span v-if="totalMonitors !== 1">s</span>
+                            <span v-if="hasMorePages"> ({{ privateMonitors.length }} loaded)</span>
+                        </template>
+                        <template v-else>
+                            No monitors found
+                        </template>
+                    </template>
                 </template>
-                <template v-else>
-                    No
-                    {{
-                        props.statusFilter === 'all' ? ''
-                        : props.statusFilter === 'up' ? 'online'
-                        : props.statusFilter === 'down' ? 'offline'
-                        : props.statusFilter === 'unsubscribed' ? 'unsubscribed'
-                        : ''
-                    }}
-                    monitors found.
-                </template>
-            </div>
-
-            <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                <span v-if="filteredMonitors.length === 1">
-                    Ditemukan 1 monitor
-                </span>
-                <span v-else>
-                    Ditemukan {{ filteredMonitors.length }} monitor
-                </span>
-                <span v-if="privateMonitors.length !== filteredMonitors.length">
-                    dari {{ privateMonitors.length }} total monitor
-                </span>
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
@@ -277,11 +280,11 @@ watch(() => props.searchQuery, () => {
             <div v-else-if="privateMonitors.length === 0" class="text-center py-8 text-gray-500">
                 No private monitors available
             </div>
-            <div v-else-if="props.searchQuery && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
+            <div v-else-if="props.searchQuery && props.searchQuery.trim().length >= 3 && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
                 <div class="flex flex-col items-center gap-2">
                     <Icon name="search" class="h-8 w-8 text-gray-400" />
-                    <p>Tidak ada monitor yang ditemukan untuk "{{ props.searchQuery }}"</p>
-                    <p class="text-sm">Coba kata kunci yang berbeda</p>
+                    <p>No monitors found for "{{ props.searchQuery }}"</p>
+                    <p class="text-sm">Try different keywords</p>
                 </div>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -406,7 +409,7 @@ watch(() => props.searchQuery, () => {
             </div>
 
             <!-- Load More Button -->
-            <div v-if="hasMorePages && !loading && !error && !props.searchQuery" class="mt-6 text-center">
+            <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 text-center">
                 <button
                     @click="loadMore"
                     :disabled="loadingMore"
