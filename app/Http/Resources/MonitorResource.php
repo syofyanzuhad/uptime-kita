@@ -47,7 +47,7 @@ class MonitorResource extends JsonResource
             return $this->histories->where('uptime_status', 'down')->count();
         }
 
-        // Otherwise, query the database
-        return $this->histories()->where('uptime_status', 'down')->count();
+        // Otherwise, don't return anything
+        return 0;
     }
 }

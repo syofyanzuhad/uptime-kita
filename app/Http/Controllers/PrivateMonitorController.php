@@ -24,9 +24,7 @@ class PrivateMonitorController extends Controller
 
         $monitors = cache()->remember($cacheKey, 60, function () use ($search) {
             $query = Monitor::private()
-                ->with(['users:id', 'uptimeDaily', 'histories' => function ($query) {
-                    $query->latest()->take(100);
-                }])
+                ->with(['users:id', 'uptimeDaily'])
                 ->orderBy('created_at', 'desc');
 
             // Apply search filter if provided

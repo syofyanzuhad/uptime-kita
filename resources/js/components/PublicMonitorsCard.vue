@@ -478,12 +478,6 @@ onUnmounted(() => {
                             <div v-if="monitor.last_check_date">
                                 Last checked: {{ new Date(monitor.last_check_date).toLocaleString() }}
                             </div>
-                            <div v-if="monitor.down_for_events_count > 0" class="flex items-center gap-2">
-                                <span class="text-gray-500">Down events:</span>
-                                <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
-                                    {{ monitor.down_for_events_count }} times
-                                </span>
-                            </div>
                         </div>
 
                         <!-- Subscribe Button -->
