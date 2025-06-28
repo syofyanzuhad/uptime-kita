@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MonitorCollection;
 use App\Http\Resources\MonitorResource;
+use App\Http\Resources\MonitorHistoryResource;
 use Inertia\Inertia;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
@@ -35,29 +36,26 @@ class UptimeMonitorController extends Controller
      */
     public function show(Monitor $monitor)
     {
-        // implements cache for monitor data
+        // implements cache for monitor data with histories included
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
-            return new MonitorResource($monitor->load('uptimeDaily'));
-        });
-        // get histories and cache it
-        $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            return $monitor->histories()->latest()->take(100)->get();
+            return new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
+                $query->latest()->take(100);
+            }]));
         });
 
         return Inertia::render('uptime/Show', [
             'monitor' => $monitorData,
-            'histories' => $histories,
         ]);
     }
 
     public function getHistory(Monitor $monitor)
     {
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            return $monitor->histories()->latest()->take(100)->get();
+            return MonitorHistoryResource::collection($monitor->histories()->latest()->take(100)->get());
         });
 
         return response()->json([
-            'histories' => $histories
+            'histories' => $histories->toArray(request())
         ]);
     }
 

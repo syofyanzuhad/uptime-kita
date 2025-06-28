@@ -29,15 +29,11 @@ class MonitorResource extends JsonResource
             'is_subscribed' => $this->is_subscribed,
             'is_public' => $this->is_public,
             'today_uptime_percentage' => $this->today_uptime_percentage,
-            'histories' => $this->whenLoaded('histories', function () {
-                return $this->histories->map(function ($history) {
-                    return [
-                        'id' => $history->id,
-                        'status' => $history->status,
-                        'created_at' => $history->created_at,
-                    ];
-                });
-            }),
+            'uptime_status_last_change_date' => $this->uptime_status_last_change_date,
+            'uptime_check_failure_reason' => $this->uptime_check_failure_reason,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
         ];
     }
 }
