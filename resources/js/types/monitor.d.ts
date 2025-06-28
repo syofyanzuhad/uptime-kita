@@ -14,6 +14,7 @@ export interface Monitor {
     is_subscribed?: boolean;
     is_public?: boolean;
     favicon?: string;
+    today_uptime_percentage?: number;
   }
 
   export interface FlashMessage {
