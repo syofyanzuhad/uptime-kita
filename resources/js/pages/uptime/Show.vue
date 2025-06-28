@@ -143,6 +143,23 @@ function getStatusText(status: string) {
   }
 }
 
+// New functions for history table status colors
+function getHistoryStatusColor(status: string) {
+  switch (status) {
+    case 'up': return 'text-green-600 dark:text-green-400';
+    case 'down': return 'text-red-600 dark:text-red-400';
+    default: return 'text-yellow-600 dark:text-yellow-400';
+  }
+}
+
+function getHistoryStatusBgColor(status: string) {
+  switch (status) {
+    case 'up': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    case 'down': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    default: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+  }
+}
+
 onMounted(() => {
   intervalId = setInterval(() => {
     router.reload({ preserveUrl: true });
@@ -390,8 +407,8 @@ onMounted(() => {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center gap-2">
-                        <Icon :name="getStatusIcon(history.uptime_status)" class="w-4 h-4" :class="statusColor" />
-                        <span :class="statusBgColor" class="px-2.5 py-0.5 rounded-full text-sm font-medium">
+                        <Icon :name="getStatusIcon(history.uptime_status)" class="w-4 h-4" :class="getHistoryStatusColor(history.uptime_status)" />
+                        <span :class="getHistoryStatusBgColor(history.uptime_status)" class="px-2.5 py-0.5 rounded-full text-sm font-medium">
                           {{ getStatusText(history.uptime_status) }}
                         </span>
                       </div>
