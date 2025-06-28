@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Monitor;
 use App\Models\MonitorUptime;
+use App\Models\MonitorUptimeDaily;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,23 +30,27 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
     public function handle(): void
     {
         $today = Carbon::today();
-        $monitors = \App\Models\Monitor::all();
-        foreach ($monitors as $monitor) {
-            $histories = $monitor->histories()
-                ->whereDate('created_at', $today)
-                ->get();
-            $totalChecks = $histories->count();
-            $upChecks = $histories->where('uptime_status', 'up')->count();
-            $uptimePercentage = $totalChecks > 0 ? ($upChecks / $totalChecks) * 100 : 0;
-            \App\Models\MonitorUptimeDaily::updateOrCreate(
-                [
-                    'monitor_id' => $monitor->id,
-                    'date' => $today,
-                ],
-                [
-                    'uptime_percentage' => $uptimePercentage,
-                ]
-            );
-        }
+
+        // Process monitors in chunks for better memory management
+        Monitor::chunk(50, function ($monitors) use ($today) {
+            foreach ($monitors as $monitor) {
+                $histories = $monitor->histories()
+                    ->whereDate('created_at', $today)
+                    ->get();
+                $totalChecks = $histories->count();
+                $upChecks = $histories->where('uptime_status', 'up')->count();
+                $uptimePercentage = $totalChecks > 0 ? ($upChecks / $totalChecks) * 100 : 0;
+
+                MonitorUptimeDaily::updateOrCreate(
+                    [
+                        'monitor_id' => $monitor->id,
+                        'date' => $today,
+                    ],
+                    [
+                        'uptime_percentage' => $uptimePercentage,
+                    ]
+                );
+            }
+        });
     }
 }
