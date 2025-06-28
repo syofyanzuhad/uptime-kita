@@ -39,7 +39,7 @@ class Monitor extends SpatieMonitor
 
     public function getFaviconAttribute(): ?string
     {
-        return $this->url ? "https://icons.duckduckgo.com/ip3/{$this->url->getHost()}.ico" : null;
+        return $this->url ? "https://s2.googleusercontent.com/s2/favicons?domain={$this->url->getHost()}&sz=32" : null;
     }
 
     public function getRawUrlAttribute(): string
