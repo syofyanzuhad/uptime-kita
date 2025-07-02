@@ -69,9 +69,19 @@ class Monitor extends SpatieMonitor
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
     }
 
+    public function statusPages()
+    {
+        return $this->belongsToMany(StatusPage::class, 'status_page_monitor');
+    }
+
     public function histories()
     {
         return $this->hasMany(MonitorHistory::class);
+    }
+
+    public function latestHistory()
+    {
+        return $this->hasOne(MonitorHistory::class)->latest();
     }
 
     public function uptimes()
