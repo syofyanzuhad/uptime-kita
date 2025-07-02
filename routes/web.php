@@ -33,6 +33,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Status page management routes
     Route::resource('status-pages', StatusPageController::class);
+
+    // Status page monitor association routes
+    Route::post('/status-pages/{statusPage}/monitors', \App\Http\Controllers\StatusPageAssociateMonitorController::class)->name('status-pages.monitors.associate');
+    Route::delete('/status-pages/{statusPage}/monitors/{monitor}', \App\Http\Controllers\StatusPageDisassociateMonitorController::class)->name('status-pages.monitors.disassociate');
+    Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
 });
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
