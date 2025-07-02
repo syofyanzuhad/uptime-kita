@@ -35,6 +35,9 @@ class MonitorResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
+            'latest_history' => $this->whenLoaded('latestHistory', function () {
+                return $this->latestHistory ? new MonitorHistoryResource($this->latestHistory) : null;
+            }),
         ];
     }
 
