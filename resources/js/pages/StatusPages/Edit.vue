@@ -1,4 +1,6 @@
 <template>
+  <Head title="Edit Status Page" />
+
   <AppLayout>
     <template #header>
       <Heading title="Edit Status Page" />
@@ -86,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { useForm, router } from '@inertiajs/vue3'
+import { useForm, router, Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'

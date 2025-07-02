@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
@@ -176,6 +176,8 @@ const disassociateMonitor = async (monitorId: number) => {
 </script>
 
 <template>
+  <Head title="Status Page" />
+
   <AppLayout>
     <template #header>
       <div class="flex items-center justify-between">

@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'
@@ -42,6 +42,8 @@ const deleteStatusPage = (statusPage: StatusPage) => {
 </script>
 
 <template>
+  <Head title="Status Pages" />
+
   <AppLayout>
     <template #header>
       <Heading title="Status Pages" />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import Icon from '@/components/Icon.vue'
+import { Head } from '@inertiajs/vue3';
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -140,6 +141,8 @@
 </script>
 
 <template>
+  <Head :title="`${statusPage.title} - Status Page`" />
+
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
