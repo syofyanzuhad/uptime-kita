@@ -6,6 +6,15 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import type { Monitor, FlashMessage, Paginator } from '@/types/monitor';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+// Import Dialog and Button components for modal
+import Dialog from '@/components/ui/dialog/Dialog.vue';
+import DialogContent from '@/components/ui/dialog/DialogContent.vue';
+import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
+import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
+import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
+import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
+import Button from '@/components/ui/button/Button.vue';
+import Icon from '@/components/Icon.vue';
 
 const page = usePage();
 
@@ -86,10 +95,26 @@ watch(() => page.props.flash as FlashMessage | undefined, (newFlash) => {
 }, { deep: true });
 
 // Fungsi untuk menghapus monitor
-const deleteMonitor = (monitorId: number) => {
-  if (confirm('Apakah Anda yakin ingin menghapus monitor ini?')) {
-    // Menggunakan 'router.delete()' yang sudah diimpor dari @inertiajs/vue3
-    router.delete(route('monitor.destroy', monitorId));
+// Modal state
+const isDeleteModalOpen = ref(false);
+const monitorToDelete = ref<Monitor | null>(null);
+
+const openDeleteModal = (monitor: Monitor) => {
+  monitorToDelete.value = monitor;
+  isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  isDeleteModalOpen.value = false;
+  monitorToDelete.value = null;
+};
+
+const confirmDeleteMonitor = () => {
+  if (monitorToDelete.value) {
+    router.delete(route('monitor.destroy', monitorToDelete.value.id), {
+      onSuccess: () => closeDeleteModal(),
+      onFinish: () => closeDeleteModal(),
+    });
   }
 };
 </script>
@@ -196,7 +221,7 @@ const deleteMonitor = (monitorId: number) => {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <Link :href="route('monitor.edit', monitor.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
-                            <button @click="deleteMonitor(monitor.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 cursor-pointer">Hapus</button>
+                            <button @click="openDeleteModal(monitor)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 cursor-pointer">Hapus</button>
                         </td>
                         </tr>
                     </tbody>
@@ -226,5 +251,25 @@ const deleteMonitor = (monitorId: number) => {
                 </div>
             </div>
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <Dialog v-model:open="isDeleteModalOpen">
+          <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Hapus Monitor?</DialogTitle>
+              <DialogDescription>
+                Apakah Anda yakin ingin menghapus monitor ini? Tindakan ini tidak dapat dibatalkan.<br>
+                <span v-if="monitorToDelete" class="block mt-2 text-sm text-gray-700 dark:text-gray-300">
+                  <Icon name="alert-triangle" class="inline mr-1 text-red-500" />
+                  <b>{{ monitorToDelete.url }}</b>
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" @click="closeDeleteModal">Batal</Button>
+              <Button variant="destructive" @click="confirmDeleteMonitor">Hapus</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>
