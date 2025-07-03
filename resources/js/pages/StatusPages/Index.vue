@@ -174,6 +174,7 @@ const goToPage = (page: number) => {
                   v-if="item.type === 'page'"
                   :value="item.value"
                   :is-active="item.value === props.statusPages.meta.current_page"
+                  class="w-9 h-9 flex items-center justify-center bg-transparent cursor-pointer hover:bg-white dark:hover:bg-stone-700/70 transition disabled:opacity-50 rounded-lg text-gray-500 dark:text-gray-400"
                 >
                   {{ item.value }}
                 </PaginationListItem>
