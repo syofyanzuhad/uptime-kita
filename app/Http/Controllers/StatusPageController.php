@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Http\Resources\StatusPageResource;
+use App\Http\Resources\StatusPageCollection;
 
 class StatusPageController extends Controller
 {
@@ -16,12 +17,12 @@ class StatusPageController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $statusPages = auth()->user()->statusPages()->latest()->get();
+        $statusPages = auth()->user()->statusPages()->latest()->paginate(9);
 
         return Inertia::render('StatusPages/Index', [
-            'statusPages' => $statusPages,
+            'statusPages' => new StatusPageCollection($statusPages),
         ]);
     }
 
