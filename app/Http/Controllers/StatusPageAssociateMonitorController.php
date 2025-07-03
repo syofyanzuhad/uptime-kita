@@ -14,20 +14,12 @@ class StatusPageAssociateMonitorController extends Controller
 
     public function __invoke(Request $request, StatusPage $statusPage)
     {
-        try {
-            $this->authorize('update', $statusPage);
-        } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
-        }
+        $this->authorize('update', $statusPage);
 
-        try {
-            $validated = $request->validate([
-                'monitor_ids' => 'required|array',
-                'monitor_ids.*' => 'exists:monitors,id',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['message' => 'Validation failed.', 'errors' => $e->errors()], 422);
-        }
+        $validated = $request->validate([
+            'monitor_ids' => 'required|array',
+            'monitor_ids.*' => 'exists:monitors,id',
+        ]);
 
         $statusPage->monitors()->syncWithoutDetaching($validated['monitor_ids']);
 
