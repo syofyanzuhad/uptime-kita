@@ -103,14 +103,14 @@ const getStatusColor = (status?: string) => {
   }
 }
 
-const copyToClipboard = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    // Anda bisa menambahkan notifikasi toast di sini
-  } catch (err) {
-    console.error('Failed to copy text: ', err)
-  }
-}
+// const copyToClipboard = async (text: string) => {
+//   try {
+//     await navigator.clipboard.writeText(text)
+//     // Anda bisa menambahkan notifikasi toast di sini
+//   } catch (err) {
+//     console.error('Failed to copy text: ', err)
+//   }
+// }
 
 // --- CORE LOGIC FUNCTIONS ---
 const openAddMonitorModal = async () => {
