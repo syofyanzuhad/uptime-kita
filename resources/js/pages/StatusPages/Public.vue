@@ -56,10 +56,10 @@ import { Head } from '@inertiajs/vue3';
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, locale: string = navigator.language || 'en-US') => {
     if (!dateString) return ''
     // Mengembalikan format tanggal dan waktu yang lengkap
-    return new Date(dateString).toLocaleString('id-ID', {
+    return new Date(dateString).toLocaleString(locale, {
       dateStyle: 'medium',
       timeStyle: 'short'
     })

@@ -20,7 +20,11 @@ class StatusPageAvailableMonitorsController extends Controller
         }
 
         $availableMonitors = auth()->user()->monitors()
-            ->whereNotIn('monitors.id', $statusPage->monitors->pluck('id'))
+            ->whereNotIn('monitors.id', function ($query) use ($statusPage) {
+                $query->select('monitor_id')
+                      ->from('status_page_monitor')
+                      ->where('status_page_id', $statusPage->id);
+            })
             ->get();
 
         return response()->json(MonitorResource::collection($availableMonitors));
