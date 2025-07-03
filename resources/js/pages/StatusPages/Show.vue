@@ -32,7 +32,7 @@ interface Monitor {
   uptime_check_failure_reason?: string | null
   created_at: string
   updated_at: string
-  histories?: any[]
+  histories?: MonitorHistory[]
 }
 
 interface StatusPage {
@@ -46,6 +46,17 @@ interface StatusPage {
   monitors?: {
     data: Monitor[]
   }
+}
+
+interface MonitorHistory {
+  id: number
+  monitor_id: number
+  status: string
+  checked_at: string // ISO date string
+  response_time?: number // in milliseconds, optional
+  reason?: string | null // reason for failure, if any
+  created_at: string
+  updated_at: string
 }
 
 interface Props {
