@@ -24,8 +24,8 @@ const mainNavItems: NavItem[] = [
         icon: CheckCircle,
     },
     {
-        title: 'Status Page (roadmap)',
-        href: '/status-page',
+        title: 'Status Pages',
+        href: '/status-pages',
         icon: SquareActivity,
     },
     {

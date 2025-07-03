@@ -7,6 +7,8 @@ use App\Http\Controllers\UptimeMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
 use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\StatusPageController;
+use App\Http\Controllers\PublicStatusPageController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -14,6 +16,9 @@ Route::get('/', function () {
 
 Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
+
+// Public status page route
+Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk private monitor
@@ -25,6 +30,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Get monitor history
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
+
+    // Status page management routes
+    Route::resource('status-pages', StatusPageController::class);
+
+    // Status page monitor association routes
+    Route::post('/status-pages/{statusPage}/monitors', \App\Http\Controllers\StatusPageAssociateMonitorController::class)->name('status-pages.monitors.associate');
+    Route::delete('/status-pages/{statusPage}/monitors/{monitor}', \App\Http\Controllers\StatusPageDisassociateMonitorController::class)->name('status-pages.monitors.disassociate');
+    Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
 });
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');

@@ -16,6 +16,7 @@ class MonitorResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->raw_url,
             'url' => $this->raw_url,
             'uptime_status' => $this->uptime_status,
             'uptime_check_enabled' => (bool) $this->uptime_check_enabled,
@@ -28,12 +29,15 @@ class MonitorResource extends JsonResource
             'uptime_check_interval' => $this->uptime_check_interval_in_minutes,
             'is_subscribed' => $this->is_subscribed,
             'is_public' => $this->is_public,
-            'today_uptime_percentage' => $this->today_uptime_percentage,
+            'today_uptime_percentage' => $this->getTodayUptimePercentage(),
             'uptime_status_last_change_date' => $this->uptime_status_last_change_date,
             'uptime_check_failure_reason' => $this->uptime_check_failure_reason,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
+            'latest_history' => $this->whenLoaded('latestHistory', function () {
+                return $this->latestHistory ? new MonitorHistoryResource($this->latestHistory) : null;
+            }),
         ];
     }
 
@@ -48,6 +52,20 @@ class MonitorResource extends JsonResource
         }
 
         // Otherwise, don't return anything
+        return 0;
+    }
+
+    /**
+     * Get today's uptime percentage safely.
+     */
+    protected function getTodayUptimePercentage(): float
+    {
+        // If uptimeDaily is loaded, use it
+        if ($this->relationLoaded('uptimeDaily')) {
+            return $this->uptimeDaily?->uptime_percentage ?? 0;
+        }
+
+        // Otherwise, return 0 to avoid lazy loading
         return 0;
     }
 }

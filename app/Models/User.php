@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active');
     }
 
+    public function statusPages()
+    {
+        return $this->hasMany(StatusPage::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->whereHas('monitors', function ($query) {
