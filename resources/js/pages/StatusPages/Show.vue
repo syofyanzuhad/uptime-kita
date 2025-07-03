@@ -309,7 +309,7 @@ const confirmDisassociateMonitor = async () => {
         </CardContent>
       </Card>
 
-      <Card>
+      <!-- <Card>
         <CardHeader>
           <CardTitle>Embed Code</CardTitle>
           <CardDescription>
@@ -342,7 +342,7 @@ const confirmDisassociateMonitor = async () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> -->
 
       <Dialog v-model:open="isModalOpen">
         <DialogContent class="sm:max-w-md">
