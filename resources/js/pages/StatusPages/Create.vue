@@ -101,6 +101,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import InputError from '@/components/InputError.vue'
 import Icon from '@/components/Icon.vue'
+import { watch } from 'vue'
 
 const form = useForm({
   title: '',
@@ -108,6 +109,27 @@ const form = useForm({
   icon: '',
   path: '',
 })
+
+let pathManuallyEdited = false
+
+watch(
+  () => form.path,
+  (newValue, oldValue) => {
+    if (newValue !== oldValue) {
+      pathManuallyEdited = true
+    }
+    form.path = newValue.replace(/\s+/g, '-').toLowerCase()
+  }
+)
+
+watch(
+  () => form.title,
+  (newTitle) => {
+    if (!pathManuallyEdited) {
+      form.path = newTitle.toLowerCase().replace(/\s+/g, '-')
+    }
+  }
+)
 
 const submit = () => {
   form.post(route('status-pages.store'))
