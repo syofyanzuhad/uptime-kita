@@ -14,11 +14,7 @@ class StatusPageAssociateMonitorController extends Controller
 
     public function __invoke(Request $request, StatusPage $statusPage)
     {
-        try {
-            $this->authorize('update', $statusPage);
-        } catch (AuthorizationException $e) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
-        }
+        $this->authorize('update', $statusPage);
 
         try {
             $validated = $request->validate([
