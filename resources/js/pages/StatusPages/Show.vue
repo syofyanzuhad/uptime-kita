@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'
@@ -43,7 +43,9 @@ interface StatusPage {
   path: string
   created_at: string
   updated_at: string
-  monitors?: Monitor[]
+  monitors?: {
+    data: Monitor[]
+  }
 }
 
 interface Props {
@@ -57,6 +59,8 @@ const isModalOpen = ref(false)
 const availableMonitors = ref<Monitor[]>([])
 const selectedMonitors = ref<number[]>([])
 const isLoading = ref(false)
+const isDisassociateModalOpen = ref(false)
+const monitorToDisassociate = ref<number | null>(null)
 
 // --- COMPUTED PROPERTIES ---
 const baseUrl = computed(() => {
@@ -159,17 +163,22 @@ const associateMonitors = async () => {
   }
 }
 
-const disassociateMonitor = async (monitorId: number) => {
-  if (!confirm('Are you sure you want to remove this monitor from the status page?')) {
-    return
-  }
+const openDisassociateModal = (monitorId: number) => {
+  monitorToDisassociate.value = monitorId
+  isDisassociateModalOpen.value = true
+}
 
+const confirmDisassociateMonitor = async () => {
+  if (monitorToDisassociate.value === null) return
   try {
-    await router.delete(route('status-pages.monitors.disassociate', [props.statusPage.id, monitorId]), {
+    await router.delete(route('status-pages.monitors.disassociate', [props.statusPage.id, monitorToDisassociate.value]), {
       onSuccess: () => router.reload()
     })
   } catch (error) {
     console.error('Failed to disassociate monitor:', error)
+  } finally {
+    isDisassociateModalOpen.value = false
+    monitorToDisassociate.value = null
   }
 }
 
@@ -232,7 +241,7 @@ const disassociateMonitor = async (monitorId: number) => {
             </div>
             <div>
               <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Monitors</Label>
-              <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">{{ statusPage.monitors?.length || 0 }} monitors</p>
+              <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">{{ statusPage.monitors?.data.length || 0 }} monitors</p>
             </div>
           </div>
         </CardContent>
@@ -251,8 +260,8 @@ const disassociateMonitor = async (monitorId: number) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div v-if="statusPage.monitors && statusPage.monitors.length > 0" class="space-y-3">
-            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="flex items-center justify-between p-3 border rounded-lg">
+          <div v-if="statusPage.monitors && statusPage.monitors.data.length > 0" class="space-y-3">
+            <div v-for="monitor in statusPage.monitors.data" :key="monitor.id" class="flex items-center justify-between p-3 border rounded-lg">
               <div class="flex items-center space-x-3">
                 <img v-if="monitor.favicon" :src="monitor.favicon" alt="favicon" class="w-5 h-5 mr-2 rounded" />
                 <div class="w-3 h-3 rounded-full" :class="getStatusColor(monitor.uptime_status)"></div>
@@ -269,7 +278,7 @@ const disassociateMonitor = async (monitorId: number) => {
                 </div>
               </div>
               <div class="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" @click="disassociateMonitor(monitor.id)">
+                <Button variant="ghost" size="sm" @click="openDisassociateModal(monitor.id)">
                   <Icon name="x" class="w-4 h-4" />
                 </Button>
               </div>
@@ -377,6 +386,25 @@ const disassociateMonitor = async (monitorId: number) => {
                 <Icon name="plus" class="w-4 h-4 mr-2" />
                 Add Selected ({{ selectedMonitors.length }})
               </span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog v-model:open="isDisassociateModalOpen">
+        <DialogContent class="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove Monitor from Status Page?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this monitor from the status page? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" @click="isDisassociateModalOpen = false">
+              Cancel
+            </Button>
+            <Button variant="destructive" @click="confirmDisassociateMonitor">
+              Remove
             </Button>
           </DialogFooter>
         </DialogContent>

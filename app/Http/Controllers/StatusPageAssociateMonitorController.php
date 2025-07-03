@@ -31,6 +31,7 @@ class StatusPageAssociateMonitorController extends Controller
 
         $statusPage->monitors()->syncWithoutDetaching($validated['monitor_ids']);
 
-        return response()->json(['message' => 'Monitors associated successfully.']);
+        return redirect()->route('status-pages.show', $statusPage)
+            ->with('success', 'Monitor berhasil dihubungkan.');
     }
 }
