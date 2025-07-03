@@ -5,7 +5,7 @@
       <Heading title="Create Status Page" />
     </template>
 
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto min-h-screen flex items-center justify-center">
       <Card>
         <CardHeader>
           <CardTitle>New Status Page</CardTitle>
