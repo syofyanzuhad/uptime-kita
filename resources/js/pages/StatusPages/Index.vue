@@ -115,7 +115,7 @@ const goToPage = (page: number) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem as-child>
-                      <Link :href="route('status-page.public', statusPage.path)" target="_blank">
+                      <Link :href="route('status-page.public', statusPage.path)" target="_blank" rel="noopener noreferrer">
                         <Icon name="external-link" class="w-4 h-4 mr-2" />
                         View Public
                       </Link>
