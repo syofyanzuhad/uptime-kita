@@ -18,6 +18,7 @@
         "laravel/telescope": "^5.9",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.6",
+        "opcodesio/log-viewer": "^3.18",
         "predis/predis": "^3.0",
         "spatie/laravel-uptime-monitor": "^4.5",
         "tightenco/ziggy": "^2.4"
