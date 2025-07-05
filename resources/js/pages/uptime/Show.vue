@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
-import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import Tooltip from '@/components/ui/tooltip/Tooltip.vue';
 import TooltipTrigger from '@/components/ui/tooltip/TooltipTrigger.vue';
 import TooltipContent from '@/components/ui/tooltip/TooltipContent.vue';
@@ -105,7 +105,29 @@ async function updateHistoryData() {
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 // Countdown state
-const countdown = ref(60);
+const checkIntervalSeconds = computed(() => (monitorData.value.uptime_check_interval || 1) * 60);
+const countdown = ref(checkIntervalSeconds.value);
+
+// Add refresh countdown state
+const refreshCountdown = ref(60);
+
+// Utility for next check countdown
+function getSecondsUntilNextCheck(lastCheckDate: string | null, intervalSeconds: number) {
+  if (!lastCheckDate) return intervalSeconds;
+  const lastCheck = new Date(lastCheckDate).getTime();
+  const now = Date.now();
+  const elapsed = Math.floor((now - lastCheck) / 1000);
+  const remaining = intervalSeconds - elapsed;
+  return remaining > 0 ? remaining : 0;
+}
+
+// Next check countdown state
+const nextCheckCountdown = ref(
+  getSecondsUntilNextCheck(monitorData.value.last_check_date, checkIntervalSeconds.value)
+);
+
+let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
+let nextCheckIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // Utility functions
 function getDomainFromUrl(url: string) {
@@ -163,25 +185,54 @@ function getHistoryStatusBgColor(status: string) {
 onMounted(() => {
   intervalId = setInterval(() => {
     router.reload({ preserveUrl: true });
-    countdown.value = 60;
-  }, 60000); // 60 seconds
+    countdown.value = checkIntervalSeconds.value;
+  }, checkIntervalSeconds.value * 1000); // Use dynamic interval
 
   // Countdown seconds and update bar
   const countdownInterval = setInterval(() => {
     if (countdown.value > 0) {
       countdown.value--;
     }
-    // Update bar every minute
+    // Update bar every interval
     if (countdown.value === 0) {
       last100Minutes.value = getLast100Minutes();
       updateHistoryData(); // Fetch fresh history data
+      countdown.value = checkIntervalSeconds.value; // Reset countdown
     }
+  }, 1000);
+
+  // Watch for changes in check interval and reset countdown
+  watch(checkIntervalSeconds, (newVal) => {
+    countdown.value = newVal;
+    if (intervalId) clearInterval(intervalId);
+    intervalId = setInterval(() => {
+      router.reload({ preserveUrl: true });
+      countdown.value = checkIntervalSeconds.value;
+    }, checkIntervalSeconds.value * 1000);
+  });
+
+  // Refresh countdown (always 1 minute)
+  refreshIntervalId = setInterval(() => {
+    if (refreshCountdown.value > 0) {
+      refreshCountdown.value--;
+    }
+    if (refreshCountdown.value === 0) {
+      router.reload({ preserveUrl: true });
+      refreshCountdown.value = 60;
+    }
+  }, 1000);
+
+  // Next check countdown (dynamic)
+  nextCheckIntervalId = setInterval(() => {
+    nextCheckCountdown.value = getSecondsUntilNextCheck(monitorData.value.last_check_date, checkIntervalSeconds.value);
   }, 1000);
 
   // Cleanup
   onUnmounted(() => {
     if (intervalId) clearInterval(intervalId);
     clearInterval(countdownInterval);
+    if (refreshIntervalId) clearInterval(refreshIntervalId);
+    if (nextCheckIntervalId) clearInterval(nextCheckIntervalId);
   });
 });
 </script>
@@ -210,7 +261,7 @@ onMounted(() => {
             variant="outline"
             size="sm"
             @click="router.reload({ preserveUrl: true })"
-            :disabled="countdown < 60"
+            :disabled="countdown < checkIntervalSeconds"
           >
             <Icon name="refresh-cw" class="w-4 h-4 mr-2" />
             Refresh
@@ -296,7 +347,7 @@ onMounted(() => {
                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Check Interval</h4>
                 <p class="text-lg font-semibold">{{ monitorData.uptime_check_interval }} minutes</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Next check in {{ countdown }} seconds
+                  Next check in {{ nextCheckCountdown }} seconds
                 </p>
               </div>
 
@@ -338,7 +389,9 @@ onMounted(() => {
                 <Icon name="clock" class="w-5 h-5" />
                 Last 100 Minutes Timeline
               </div>
-              <span class="text-sm text-gray-500">Refresh in {{ countdown }} seconds</span>
+              <div class="flex flex-col items-end">
+                <span class="text-sm text-gray-500">Refresh in {{ refreshCountdown }} seconds</span>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
