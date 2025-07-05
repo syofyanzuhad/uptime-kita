@@ -19,6 +19,13 @@ return new class extends Migration
             $table->boolean('is_enabled')->default(true);
             $table->json('metadata')->nullable(); // optional, for additional info
             $table->timestamps();
+            
+            // Add indexes for performance
+            $table->index(['user_id', 'is_enabled']);
+            $table->index(['type', 'is_enabled']);
+            
+            // Prevent duplicate channels
+            $table->unique(['user_id', 'type', 'destination']);
         });
     }
 
