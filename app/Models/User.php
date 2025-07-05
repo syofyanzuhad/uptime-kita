@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -49,19 +51,24 @@ class User extends Authenticatable
     /**
     * @return \Illuminate\Database\Eloquent\Relations\HasMany
     */
-    public function socialAccounts()
+    public function socialAccounts(): HasMany
     {
         return $this->hasMany(SocialAccount::class);
     }
 
-    public function monitors()
+    public function monitors(): BelongsToMany
     {
         return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active');
     }
 
-    public function statusPages()
+    public function statusPages(): HasMany
     {
         return $this->hasMany(StatusPage::class);
+    }
+
+    public function notificationChannels(): HasMany
+    {
+        return $this->hasMany(NotificationChannel::class);
     }
 
     public function scopeActive($query)
