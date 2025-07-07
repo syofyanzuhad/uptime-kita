@@ -18,20 +18,27 @@ class TelegramRateLimitService
     /**
      * Check if Telegram notification should be sent
      */
-    public function shouldSendNotification(User $user, NotificationChannel $telegramChannel): bool
-    {
-        $rateLimitKey = $this->getRateLimitKey($user, $telegramChannel);
-        $rateLimitData = $this->getRateLimitData($rateLimitKey);
+public function shouldSendNotification(User $user, NotificationChannel $telegramChannel): bool
+{
+    if ($telegramChannel->type !== 'telegram') {
+        throw new \InvalidArgumentException('NotificationChannel must be of type telegram');
+    }
 
-        // Check if we're in a backoff period
-        if ($this->isInBackoffPeriod($rateLimitData)) {
-            Log::info('Telegram notification blocked due to backoff period', [
-                'user_id' => $user->id,
-                'telegram_destination' => $telegramChannel->destination,
-                'backoff_until' => $rateLimitData['backoff_until'] ?? null,
-            ]);
-            return false;
-        }
+    $rateLimitKey = $this->getRateLimitKey($user, $telegramChannel);
+    $rateLimitData = $this->getRateLimitData($rateLimitKey);
+
+    // Check if we're in a backoff period
+    if ($this->isInBackoffPeriod($rateLimitData)) {
+        Log::info('Telegram notification blocked due to backoff period', [
+            'user_id' => $user->id,
+            'telegram_destination' => $telegramChannel->destination,
+            'backoff_until' => $rateLimitData['backoff_until'] ?? null,
+        ]);
+        return false;
+    }
+
+    // …rest of method…
+}
 
         // Check minute rate limit
         if (!$this->checkMinuteRateLimit($rateLimitData)) {
