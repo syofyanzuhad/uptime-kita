@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import type { Monitor } from '@/types/monitor';
 import { usePage, Link, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -33,6 +34,9 @@ const isPolling = ref(false);
 const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
+
+// Toggle active state
+const togglingMonitors = ref<Set<number>>(new Set());
 
 // Pagination state
 const currentPage = ref(1);
@@ -189,6 +193,44 @@ const subscribeToMonitor = async (monitorId: number) => {
         );
     } catch {
         alert('Terjadi kesalahan saat berlangganan monitor');
+    }
+};
+
+const toggleActive = async (monitorId: number) => {
+    if (!isAuthenticated.value) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        togglingMonitors.value.add(monitorId);
+
+        router.post(
+            `/monitor/${monitorId}/toggle-active`,
+            {
+                _token: page.props.csrf_token as string,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Update the monitor's uptime_check_enabled status
+                    const monitor = publicMonitors.value.find(m => m.id === monitorId);
+                    if (monitor) {
+                        monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
+                    }
+                },
+                onError: () => {
+                    alert('Terjadi kesalahan saat mengubah status monitor');
+                },
+                onFinish: () => {
+                    togglingMonitors.value.delete(monitorId);
+                }
+            }
+        );
+    } catch {
+        alert('Terjadi kesalahan saat mengubah status monitor');
+        togglingMonitors.value.delete(monitorId);
     }
 };
 
@@ -505,6 +547,33 @@ onUnmounted(() => {
                             >
                                 <Icon name="check" size="14" />
                                 <span>Already Subscribed</span>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Uptime Check Button - Bottom -->
+                        <div
+                            v-if="monitor.is_subscribed"
+                            class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700"
+                        >
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600 dark:text-gray-400">Uptime Check:</span>
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger as-child>
+                                            <Switch
+                                                :model-value="monitor.uptime_check_enabled"
+                                                :disabled="togglingMonitors.has(monitor.id)"
+                                                @update:model-value="toggleActive(monitor.id)"
+                                                @click.stop.prevent
+                                            />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p class="text-sm">
+                                                {{ monitor.uptime_check_enabled ? 'Disable uptime check' : 'Enable uptime check' }}
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
                         </div>
                     </Link>

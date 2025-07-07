@@ -3,8 +3,10 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import type { Monitor } from '@/types/monitor';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 
 interface Props {
     searchQuery?: string;
@@ -30,6 +32,9 @@ const isPolling = ref(false);
 const error = ref<string | null>(null);
 const pollingInterval = ref<number | null>(null);
 
+// Toggle active state
+const togglingMonitors = ref<Set<number>>(new Set());
+
 // Pagination state
 const currentPage = ref(1);
 const hasMorePages = ref(false);
@@ -39,6 +44,13 @@ const showingFrom = ref(0);
 const showingTo = ref(0);
 
 const pinnedMonitors = ref<Set<number>>(new Set());
+
+const page = usePage<SharedData>();
+
+// Check if user is authenticated using Inertia's auth props
+const isAuthenticated = computed(() => {
+    return !!page.props.auth.user;
+});
 
 const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
@@ -203,6 +215,42 @@ const openMonitorUrl = (url: string) => {
     window.open(url, '_blank');
 };
 
+const toggleActive = async (monitorId: number) => {
+    if (!isAuthenticated.value) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        togglingMonitors.value.add(monitorId);
+
+        const response = await fetch(`/monitor/${monitorId}/toggle-active`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': page.props.csrf_token as string,
+            },
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update the monitor's active status
+            const monitor = privateMonitors.value.find(m => m.id === monitorId);
+            if (monitor && result.monitor) {
+                monitor.uptime_check_enabled = result.monitor.uptime_check_enabled;
+            }
+        } else {
+            alert(result.message || 'Terjadi kesalahan saat mengubah status monitor');
+        }
+    } catch {
+        alert('Terjadi kesalahan saat mengubah status monitor');
+    } finally {
+        togglingMonitors.value.delete(monitorId);
+    }
+};
+
 onMounted(() => {
     fetchPrivateMonitors(true);
     pollingInterval.value = setInterval(() => {
@@ -324,6 +372,7 @@ onUnmounted(() => {
                             size="16"
                         />
                     </button>
+
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex-1 min-w-0">
                             <h3 class="font-medium text-sm truncate flex items-center gap-2">
@@ -438,6 +487,29 @@ onUnmounted(() => {
                             <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
                                 {{ monitor.down_for_events_count }} times
                             </span>
+                        </div>
+                    </div>
+
+                    <!-- Toggle Active Button - Bottom -->
+                    <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Monitor Status:</span>
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger as-child>
+                                        <Switch
+                                            :model-value="monitor.uptime_check_enabled"
+                                            :disabled="togglingMonitors.has(monitor.id)"
+                                            @update:model-value="toggleActive(monitor.id)"
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p class="text-sm">
+                                            {{ monitor.uptime_check_enabled ? 'Deactivate monitor' : 'Activate monitor' }}
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     </div>
                     </Link>
