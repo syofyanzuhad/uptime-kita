@@ -3,9 +3,8 @@
 namespace App\Listeners;
 
 use App\Notifications\MonitorStatusChanged;
-use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
-use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Illuminate\Support\Facades\Log;
+use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 
 class SendCustomMonitorNotification
 {
@@ -44,6 +43,7 @@ class SendCustomMonitorNotification
                 'monitor_id' => $monitor->id,
                 'monitor_url' => $monitor->url,
             ]);
+
             return;
         }
 

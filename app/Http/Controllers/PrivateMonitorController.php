@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
-use App\Http\Resources\MonitorCollection;
 
 class PrivateMonitorController extends Controller
 {
@@ -17,9 +17,9 @@ class PrivateMonitorController extends Controller
         $search = $request->input('search');
 
         // Build cache key based on search query
-        $cacheKey = 'private_monitors_page_' . auth()->id() . '_' . $page;
+        $cacheKey = 'private_monitors_page_'.auth()->id().'_'.$page;
         if ($search) {
-            $cacheKey .= '_search_' . md5($search);
+            $cacheKey .= '_search_'.md5($search);
         }
 
         $monitors = cache()->remember($cacheKey, 60, function () use ($search) {

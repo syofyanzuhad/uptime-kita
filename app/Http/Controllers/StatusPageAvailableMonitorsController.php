@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StatusPage;
 use App\Http\Resources\MonitorResource;
-use Illuminate\Http\Request;
+use App\Models\StatusPage;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class StatusPageAvailableMonitorsController extends Controller
 {
     use AuthorizesRequests;
+
     public function __invoke(Request $request, StatusPage $statusPage)
     {
         try {
@@ -22,8 +23,8 @@ class StatusPageAvailableMonitorsController extends Controller
         $availableMonitors = auth()->user()->monitors()
             ->whereNotIn('monitors.id', function ($query) use ($statusPage) {
                 $query->select('monitor_id')
-                      ->from('status_page_monitor')
-                      ->where('status_page_id', $statusPage->id);
+                    ->from('status_page_monitor')
+                    ->where('status_page_id', $statusPage->id);
             })
             ->get();
 

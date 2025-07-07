@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Spatie\Url\Url;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
+use Spatie\Url\Url;
 
 class Monitor extends SpatieMonitor
 {
@@ -49,18 +48,18 @@ class Monitor extends SpatieMonitor
 
     public function getIsSubscribedAttribute(): bool
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return false;
         }
 
         // return cache()->remember("is_subscribed_{$this->id}_" . auth()->id(), 60, function () {
-            // Gunakan koleksi jika relasi sudah dimuat (eager loaded)
-            if ($this->relationLoaded('users')) {
-                return $this->users->contains('id', auth()->id());
-            }
+        // Gunakan koleksi jika relasi sudah dimuat (eager loaded)
+        if ($this->relationLoaded('users')) {
+            return $this->users->contains('id', auth()->id());
+        }
 
-            // Fallback query jika relasi belum dimuat
-            return $this->users()->where('user_id', auth()->id())->exists();
+        // Fallback query jika relasi belum dimuat
+        return $this->users()->where('user_id', auth()->id())->exists();
         // });
     }
 
@@ -125,13 +124,14 @@ class Monitor extends SpatieMonitor
 
     public function scopeSearch($query, $search)
     {
-        if (!$search || mb_strlen($search) < 3) {
+        if (! $search || mb_strlen($search) < 3) {
             return $query;
         }
+
         return $query->where(function ($q) use ($search) {
             $q->where('url', 'like', "%$search%")
-              ->orWhere('name', 'like', "%$search%")
-              ->orWhereRaw('REPLACE(REPLACE(url, "https://", ""), "http://", "") LIKE ?', ["%$search%"]);
+                ->orWhere('name', 'like', "%$search%")
+                ->orWhereRaw('REPLACE(REPLACE(url, "https://", ""), "http://", "") LIKE ?', ["%$search%"]);
         });
     }
 

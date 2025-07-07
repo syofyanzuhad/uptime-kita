@@ -23,14 +23,15 @@ class MonitorHistory extends Model
     public function scopeLatestByMonitorId($query, $monitorId)
     {
         return $query->where('monitor_id', $monitorId)
-                     ->latest()
-                     ->first();
+            ->latest()
+            ->first();
     }
+
     public function scopeLatestByMonitorIds($query, $monitorIds)
     {
         return $query->whereIn('monitor_id', $monitorIds)
-                     ->latest()
-                     ->get();
+            ->latest()
+            ->get();
     }
 
     public function prunable(): \Illuminate\Database\Eloquent\Builder

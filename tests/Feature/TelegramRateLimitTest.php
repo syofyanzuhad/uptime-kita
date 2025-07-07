@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Models\NotificationChannel;
+use App\Models\User;
 use App\Services\TelegramRateLimitService;
 use Illuminate\Support\Facades\Cache;
 

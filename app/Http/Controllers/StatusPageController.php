@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StatusPageCollection;
+use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Http\Resources\StatusPageResource;
-use App\Http\Resources\StatusPageCollection;
 
 class StatusPageController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */

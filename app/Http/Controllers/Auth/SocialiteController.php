@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Models\SocialAccount;
 use App\Http\Controllers\Controller;
+use App\Models\SocialAccount;
+use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
 {
     /**
-     * @param $provider
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function redirectToProvider($provider)
@@ -20,7 +18,6 @@ class SocialiteController extends Controller
     }
 
     /**
-     * @param $provider
      * @return \Illuminate\Http\RedirectResponse
      */
     public function handleProvideCallback($provider)
@@ -29,7 +26,7 @@ class SocialiteController extends Controller
 
             $user = Socialite::driver($provider)->user();
 
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             return redirect()->back();
         }
 
@@ -41,8 +38,6 @@ class SocialiteController extends Controller
     }
 
     /**
-     * @param $socialUser
-     * @param $provider
      * @return mixed
      */
     public function findOrCreateUser($socialUser, $provider)
@@ -58,14 +53,14 @@ class SocialiteController extends Controller
 
             if (! $user) {
                 $user = User::create([
-                    'name'  => $socialUser->getName(),
-                    'email' => $socialUser->getEmail()
+                    'name' => $socialUser->getName(),
+                    'email' => $socialUser->getEmail(),
                 ]);
             }
 
             $user->socialAccounts()->create([
-                'provider_id'   => $socialUser->getId(),
-                'provider_name' => $provider
+                'provider_id' => $socialUser->getId(),
+                'provider_name' => $provider,
             ]);
 
             return $user;

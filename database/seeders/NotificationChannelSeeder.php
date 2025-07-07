@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\NotificationChannel;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class NotificationChannelSeeder extends Seeder
 {
@@ -12,8 +12,9 @@ class NotificationChannelSeeder extends Seeder
     {
         $user = User::first();
 
-        if (!$user) {
+        if (! $user) {
             $this->command->info('No users found, skipping notification channel seeding.');
+
             return;
         }
 

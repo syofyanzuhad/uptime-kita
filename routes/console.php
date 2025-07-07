@@ -1,13 +1,13 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
 use App\Jobs\CalculateMonitorUptimeDailyJob;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
-use Spatie\UptimeMonitor\Commands\CheckUptime;
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
+use Spatie\UptimeMonitor\Commands\CheckUptime;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -19,12 +19,13 @@ Artisan::command('test:telegram-notification', function () {
     // Get the first user with Telegram notification channel enabled
     $user = User::whereHas('notificationChannels', function ($query) {
         $query->where('type', 'telegram')
-              ->where('is_enabled', true);
+            ->where('is_enabled', true);
     })->first();
 
-    if (!$user) {
+    if (! $user) {
         $this->error('No user found with enabled Telegram notification channel.');
         $this->info('Please ensure you have a user with Telegram notification channel configured.');
+
         return 1;
     }
 
@@ -55,6 +56,7 @@ Artisan::command('test:telegram-notification', function () {
     } catch (\Exception $e) {
         $this->error('❌ Failed to send Telegram notification:');
         $this->error($e->getMessage());
+
         return 1;
     }
 })->purpose('Test Telegram notification functionality');
@@ -66,22 +68,24 @@ Artisan::command('test:telegram-notification-advanced {--user=} {--url=} {--stat
     $user = null;
     if ($this->option('user')) {
         $user = User::where('id', $this->option('user'))
-                   ->orWhere('email', $this->option('user'))
-                   ->first();
+            ->orWhere('email', $this->option('user'))
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("User not found: {$this->option('user')}");
+
             return 1;
         }
     } else {
         $user = User::whereHas('notificationChannels', function ($query) {
             $query->where('type', 'telegram')
-                  ->where('is_enabled', true);
+                ->where('is_enabled', true);
         })->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error('No user found with enabled Telegram notification channel.');
             $this->info('Please ensure you have a user with Telegram notification channel configured.');
+
             return 1;
         }
     }
@@ -94,8 +98,9 @@ Artisan::command('test:telegram-notification-advanced {--user=} {--url=} {--stat
         ->where('is_enabled', true)
         ->first();
 
-    if (!$telegramChannel) {
+    if (! $telegramChannel) {
         $this->error("User {$user->name} does not have enabled Telegram notification channel.");
+
         return 1;
     }
 
@@ -108,7 +113,7 @@ Artisan::command('test:telegram-notification-advanced {--user=} {--url=} {--stat
         'status' => $this->option('status') ?: 'DOWN',
     ];
 
-    $this->info("Test data:");
+    $this->info('Test data:');
     $this->info("- URL: {$testData['url']}");
     $this->info("- Status: {$testData['status']}");
 
@@ -122,6 +127,7 @@ Artisan::command('test:telegram-notification-advanced {--user=} {--url=} {--stat
     } catch (\Exception $e) {
         $this->error('❌ Failed to send Telegram notification:');
         $this->error($e->getMessage());
+
         return 1;
     }
 })->purpose('Test Telegram notification with custom parameters');
@@ -133,6 +139,7 @@ Artisan::command('list:notification-channels', function () {
 
     if ($users->isEmpty()) {
         $this->info('No users found.');
+
         return;
     }
 
@@ -141,6 +148,7 @@ Artisan::command('list:notification-channels', function () {
 
         if ($user->notificationChannels->isEmpty()) {
             $this->comment('  No notification channels configured');
+
             continue;
         }
 
@@ -160,21 +168,23 @@ Artisan::command('telegram:rate-limit-status {--user=}', function () {
     $user = null;
     if ($this->option('user')) {
         $user = User::where('id', $this->option('user'))
-                   ->orWhere('email', $this->option('user'))
-                   ->first();
+            ->orWhere('email', $this->option('user'))
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("User not found: {$this->option('user')}");
+
             return 1;
         }
     } else {
         $user = User::whereHas('notificationChannels', function ($query) {
             $query->where('type', 'telegram')
-                  ->where('is_enabled', true);
+                ->where('is_enabled', true);
         })->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error('No user found with enabled Telegram notification channel.');
+
             return 1;
         }
     }
@@ -187,8 +197,9 @@ Artisan::command('telegram:rate-limit-status {--user=}', function () {
         ->where('is_enabled', true)
         ->first();
 
-    if (!$telegramChannel) {
+    if (! $telegramChannel) {
         $this->error("User {$user->name} does not have enabled Telegram notification channel.");
+
         return 1;
     }
 
@@ -207,15 +218,15 @@ Artisan::command('telegram:rate-limit-status {--user=}', function () {
         $backoffUntil = $stats['backoff_until'] ? date('Y-m-d H:i:s', $stats['backoff_until']) : 'Unknown';
         $this->warn("⚠️  In backoff period until: {$backoffUntil}");
     } else {
-        $this->info("✅ Not in backoff period");
+        $this->info('✅ Not in backoff period');
     }
 
     if ($stats['minute_count'] >= $stats['minute_limit']) {
-        $this->warn("⚠️  Minute rate limit reached");
+        $this->warn('⚠️  Minute rate limit reached');
     }
 
     if ($stats['hour_count'] >= $stats['hour_limit']) {
-        $this->warn("⚠️  Hour rate limit reached");
+        $this->warn('⚠️  Hour rate limit reached');
     }
 
     $this->info("\n💡 Use 'php artisan test:telegram-notification' to test notifications");
@@ -228,21 +239,23 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $user = null;
     if ($this->option('user')) {
         $user = User::where('id', $this->option('user'))
-                   ->orWhere('email', $this->option('user'))
-                   ->first();
+            ->orWhere('email', $this->option('user'))
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("User not found: {$this->option('user')}");
+
             return 1;
         }
     } else {
         $user = User::whereHas('notificationChannels', function ($query) {
             $query->where('type', 'telegram')
-                  ->where('is_enabled', true);
+                ->where('is_enabled', true);
         })->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error('No user found with enabled Telegram notification channel.');
+
             return 1;
         }
     }
@@ -255,8 +268,9 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
         ->where('is_enabled', true)
         ->first();
 
-    if (!$telegramChannel) {
+    if (! $telegramChannel) {
         $this->error("User {$user->name} does not have enabled Telegram notification channel.");
+
         return 1;
     }
 
@@ -282,7 +296,7 @@ Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob())->everyMinute();
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyMinute();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();

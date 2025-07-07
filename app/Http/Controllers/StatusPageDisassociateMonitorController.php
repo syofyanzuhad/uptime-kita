@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StatusPage;
 use App\Models\Monitor;
-use Illuminate\Http\Request;
-use Illuminate\Auth\Access\AuthorizationException;
+use App\Models\StatusPage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class StatusPageDisassociateMonitorController extends Controller
 {
