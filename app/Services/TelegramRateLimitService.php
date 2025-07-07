@@ -95,9 +95,11 @@ class TelegramRateLimitService
         $rateLimitData = $this->getRateLimitData($rateLimitKey);
 
         $currentTime = now()->timestamp;
+        $currentTime = now()->timestamp;
         $backoffCount = ($rateLimitData['backoff_count'] ?? 0) + 1;
-        $backoffMinutes = min(self::BACKOFF_MULTIPLIER ** $backoffCount, self::MAX_BACKOFF_MINUTES);
-
+        // Cap backoff count to prevent overflow (2^6 = 64, which is > MAX_BACKOFF_MINUTES)
+        $cappedCount = min($backoffCount, 6);
+        $backoffMinutes = min(self::BACKOFF_MULTIPLIER ** $cappedCount, self::MAX_BACKOFF_MINUTES);
         $rateLimitData['backoff_until'] = $currentTime + ($backoffMinutes * 60);
         $rateLimitData['backoff_count'] = $backoffCount;
 
