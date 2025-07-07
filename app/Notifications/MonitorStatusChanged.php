@@ -63,7 +63,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         ->line("🔗 URL: {$this->data['url']}")
         ->line("⚠️ Status: {$this->data['status']}")
         ->action('Lihat Detail', url('/monitors/' . $this->data['id']))
-        ->action('Uptime Kita', url('/'))
+        ->line("Kunjungi [Uptime Kita](" . url('/') . ") untuk informasi lebih lanjut.")
         ->salutation('Terima kasih,');
     }
 
