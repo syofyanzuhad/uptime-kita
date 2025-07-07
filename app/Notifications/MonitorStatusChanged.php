@@ -94,9 +94,12 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         }
 
         try {
+            $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
+            $statusText  = $this->data['status'] === 'DOWN' ? 'Website DOWN' : 'Website UP';
+
             $message = TelegramMessage::create()
                 ->to($telegramChannel->destination)
-                ->content("🔴 *Website DOWN*\n\nURL: `{$this->data['url']}`\nStatus: *{$this->data['status']}*")
+                ->content("{$statusEmoji} *{$statusText}*\n\nURL: `{$this->data['url']}`\nStatus: *{$this->data['status']}*")
                 ->options(['parse_mode' => 'Markdown']);
 
             // Track successful notification
