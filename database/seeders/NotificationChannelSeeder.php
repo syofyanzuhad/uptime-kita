@@ -16,7 +16,7 @@ class NotificationChannelSeeder extends Seeder
             'user_id' => $user->id,
         ], [
             'type' => 'telegram',
-            'destination' => '-1002075830228', // chat ID Telegram
+            'destination' => env('TELEGRAM_DEFAULT_CHAT_ID', '-1002075830228'), // chat ID Telegram
             'metadata' => ['note' => 'Telegram utama'],
         ]);
 
