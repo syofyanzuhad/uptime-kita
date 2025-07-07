@@ -10,7 +10,12 @@ class NotificationChannelSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::first(); // contoh pakai user pertama
+        $user = User::first();
+
+        if (!$user) {
+            $this->command->info('No users found, skipping notification channel seeding.');
+            return;
+        }
 
         NotificationChannel::firstOrCreate([
             'user_id' => $user->id,
