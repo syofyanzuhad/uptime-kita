@@ -145,6 +145,15 @@ class TelegramRateLimitService
     }
 
     /**
+     * Reset the rate limit for a user and Telegram channel
+     */
+    public function resetRateLimit(User $user, NotificationChannel $telegramChannel): void
+    {
+        $rateLimitKey = $this->getRateLimitKey($user, $telegramChannel);
+        \Illuminate\Support\Facades\Cache::forget($rateLimitKey);
+    }
+
+    /**
      * Get the cache key for rate limiting
      */
     private function getRateLimitKey(User $user, NotificationChannel $telegramChannel): string

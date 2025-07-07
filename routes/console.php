@@ -277,8 +277,8 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $this->info("Telegram destination: {$telegramChannel->destination}");
 
     // Reset rate limit by clearing cache
-    $cacheKey = "telegram_rate_limit:{$user->id}:{$telegramChannel->destination}";
-    \Illuminate\Support\Facades\Cache::forget($cacheKey);
+    $rateLimitService = app(\App\Services\TelegramRateLimitService::class);
+    $rateLimitService->resetRateLimit($user, $telegramChannel);
 
     $this->info("✅ Rate limit reset successfully for user {$user->name}");
     $this->info("💡 Use 'php artisan telegram:rate-limit-status --user={$user->id}' to verify");
