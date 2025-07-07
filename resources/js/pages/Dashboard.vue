@@ -76,28 +76,32 @@
                 <div class="text-3xl font-bold">{{ userCount }}</div>
             </div>
             <!-- Status Filter Bar -->
-            <div class="flex gap-2 mb-2 max-w-vw overflow-auto">
+            <div class="flex gap-2 mb-2 max-w-vw overflow-auto py-3">
                 <Button
                     :variant="statusFilter === 'all' ? 'default' : 'outline'"
                     @click="statusFilter = 'all'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
                 >
                     All <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-400 text-xs">{{ allCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'up' ? 'default' : 'outline'"
                     @click="statusFilter = 'up'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
                 >
                     Online <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-green-200 dark:bg-green-700 text-xs">{{ onlineCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'down' ? 'default' : 'outline'"
                     @click="statusFilter = 'down'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
                 >
                     Offline <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-red-200 dark:bg-red-700 text-xs">{{ offlineCount }}</span>
                 </Button>
                 <Button
                     :variant="statusFilter === 'unsubscribed' ? 'default' : 'outline'"
                     @click="statusFilter = 'unsubscribed'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
                 >
                     Unsubscribed <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-yellow-200 dark:bg-yellow-700 text-xs">{{ unsubscribedCount }}</span>
                 </Button>
