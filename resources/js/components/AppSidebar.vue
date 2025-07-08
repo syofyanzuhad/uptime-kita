@@ -29,7 +29,7 @@ const mainNavItems: NavItem[] = [
         icon: SquareActivity,
     },
     {
-        title: 'Notifications (roadmap)',
+        title: 'Notifications',
         href: '/notifications',
         icon: LucideMonitorSmartphone,
     },
