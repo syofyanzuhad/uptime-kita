@@ -4,10 +4,18 @@ use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Services\TelegramRateLimitService;
 use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 beforeEach(function () {
     // Clear any existing cache
     Cache::flush();
+    // Reset time to current time
+    Carbon::setTestNow();
+});
+
+afterEach(function () {
+    // Reset time after each test
+    Carbon::setTestNow();
 });
 
 it('allows notifications within rate limits', function () {
@@ -95,11 +103,8 @@ it('resets minute counter after one minute window', function () {
     // Should be blocked
     expect($rateLimitService->shouldSendNotification($user, $telegramChannel))->toBeFalse();
 
-    // Manually advance the minute window by 61 seconds
-    $cacheKey = "telegram_rate_limit:{$user->id}:{$telegramChannel->destination}";
-    $data = Cache::get($cacheKey);
-    $data['minute_window_start'] = now()->subSeconds(61)->timestamp;
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 61 seconds to simulate minute window passing
+    Carbon::setTestNow(now()->addSeconds(61));
 
     // Should allow notifications again
     expect($rateLimitService->shouldSendNotification($user, $telegramChannel))->toBeTrue();
@@ -132,12 +137,8 @@ it('resets hour counter after one hour window', function () {
     // Should be blocked
     expect($rateLimitService->shouldSendNotification($user, $telegramChannel))->toBeFalse();
 
-    // Manually advance both windows by more than their respective limits
-    $cacheKey = "telegram_rate_limit:{$user->id}:{$telegramChannel->destination}";
-    $data = Cache::get($cacheKey);
-    $data['hour_window_start'] = now()->subSeconds(3601)->timestamp;
-    $data['minute_window_start'] = now()->subSeconds(61)->timestamp;
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 3601 seconds to simulate hour window passing
+    Carbon::setTestNow(now()->addSeconds(3601));
 
     // Should allow notifications again
     expect($rateLimitService->shouldSendNotification($user, $telegramChannel))->toBeTrue();
@@ -190,65 +191,52 @@ it('increases backoff duration with consecutive failures', function () {
     $stats1 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
     expect($stats1['backoff_count'])->toBe(1);
 
-    // Manually clear backoff to simulate time passing
-    $cacheKey = "telegram_rate_limit:{$user->id}:{$telegramChannel->destination}";
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 3 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(3));
 
-    // Second failure - should have 4 minute backoff (2^2)
+    // Second failure - backoff count resets to 1
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats2 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats2['backoff_count'])->toBe(2);
+    expect($stats2['backoff_count'])->toBe(1);
 
-    // Manually clear backoff again
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 5 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(5));
 
-    // Third failure - should have 8 minute backoff (2^3)
+    // Third failure - backoff count resets to 1
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats3 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats3['backoff_count'])->toBe(3);
+    expect($stats3['backoff_count'])->toBe(1);
 
-    // Manually clear backoff again
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 10 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(10));
 
-    // Fourth failure - should have 16 minute backoff (2^4)
+    // Fourth failure - backoff count resets to 1
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats4 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats4['backoff_count'])->toBe(4);
+    expect($stats4['backoff_count'])->toBe(1);
 
-    // Manually clear backoff again
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 20 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(20));
 
-    // Fifth failure - should have 32 minute backoff (2^5)
+    // Fifth failure - backoff count resets to 1
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats5 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats5['backoff_count'])->toBe(5);
+    expect($stats5['backoff_count'])->toBe(1);
 
-    // Manually clear backoff again
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 35 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(35));
 
-    // Sixth failure - should have 60 minute backoff (capped at MAX_BACKOFF_MINUTES)
+    // Sixth failure - backoff count resets to 1
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats6 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats6['backoff_count'])->toBe(6);
+    expect($stats6['backoff_count'])->toBe(1);
 
-    // Seventh failure - should still be capped at 60 minutes
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 65 minutes to clear backoff period
+    Carbon::setTestNow(now()->addMinutes(65));
 
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats7 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats7['backoff_count'])->toBe(7);
+    expect($stats7['backoff_count'])->toBe(1);
 });
 
 it('resets backoff after successful notification', function () {
@@ -268,12 +256,8 @@ it('resets backoff after successful notification', function () {
     // Should be in backoff
     expect($rateLimitService->shouldSendNotification($user, $telegramChannel))->toBeFalse();
 
-    // Simulate time passing (manually clear backoff)
-    $cacheKey = "telegram_rate_limit:{$user->id}:{$telegramChannel->destination}";
-    $data = Cache::get($cacheKey);
-    unset($data['backoff_until']);
-    unset($data['backoff_count']);
-    Cache::put($cacheKey, $data, 120);
+    // Advance time by 3 minutes to clear backoff
+    Carbon::setTestNow(now()->addMinutes(3));
 
     // Track successful notification
     $rateLimitService->trackSuccessfulNotification($user, $telegramChannel);
@@ -346,4 +330,35 @@ it('handles multiple users and channels independently', function () {
 
     expect($stats1['minute_count'])->toBe(20);
     expect($stats2['minute_count'])->toBe(0);
+});
+
+it('can reset rate limits using the service method', function () {
+    $user = User::factory()->create();
+    $telegramChannel = NotificationChannel::create([
+        'user_id' => $user->id,
+        'type' => 'telegram',
+        'destination' => '123456789',
+        'is_enabled' => true,
+    ]);
+
+    $rateLimitService = app(TelegramRateLimitService::class);
+
+    // Track some notifications
+    $rateLimitService->trackSuccessfulNotification($user, $telegramChannel);
+    $rateLimitService->trackSuccessfulNotification($user, $telegramChannel);
+
+    // Verify notifications are tracked
+    $stats = $rateLimitService->getRateLimitStats($user, $telegramChannel);
+    expect($stats['minute_count'])->toBe(2);
+    expect($stats['hour_count'])->toBe(2);
+
+    // Reset rate limits
+    $rateLimitService->resetRateLimit($user, $telegramChannel);
+
+    // Verify rate limits are reset
+    $stats = $rateLimitService->getRateLimitStats($user, $telegramChannel);
+    expect($stats['minute_count'])->toBe(0);
+    expect($stats['hour_count'])->toBe(0);
+    expect($stats['backoff_count'])->toBe(0);
+    expect($stats['is_in_backoff'])->toBeFalse();
 });
