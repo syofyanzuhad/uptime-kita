@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\StatusPage;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class StatusPageAssociateMonitorController extends Controller
 {

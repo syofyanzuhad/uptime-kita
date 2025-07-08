@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\MonitorCollection;
-use App\Http\Resources\MonitorResource;
 use App\Http\Resources\MonitorHistoryResource;
-use Inertia\Inertia;
+use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class UptimeMonitorController extends Controller
 {
@@ -57,7 +56,7 @@ class UptimeMonitorController extends Controller
         });
 
         return response()->json([
-            'histories' => $histories->toArray(request())
+            'histories' => $histories->toArray(request()),
         ]);
     }
 
@@ -84,7 +83,7 @@ class UptimeMonitorController extends Controller
             $monitor->users()->attach(auth()->id(), ['is_active' => true]);
 
             return redirect()->route('monitor.index')
-                             ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
+                ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
         }
 
         $request->validate([
@@ -109,12 +108,12 @@ class UptimeMonitorController extends Controller
             ]);
 
             return redirect()->route('monitor.index')
-                             ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
+                ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
 
         } catch (\Exception $e) {
             return redirect()->back()
-                             ->with('flash', ['message' => 'Gagal menambahkan monitor: ' . $e->getMessage(), 'type' => 'error'])
-                             ->withInput();
+                ->with('flash', ['message' => 'Gagal menambahkan monitor: '.$e->getMessage(), 'type' => 'error'])
+                ->withInput();
         }
     }
 
@@ -126,7 +125,7 @@ class UptimeMonitorController extends Controller
         return Inertia::render('uptime/Edit', [
             'monitor' => new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
                 $query->latest()->take(100);
-            }]))
+            }])),
         ]);
     }
 
@@ -145,11 +144,11 @@ class UptimeMonitorController extends Controller
             $monitorExists->users()->attach(auth()->id(), ['is_active' => true]);
 
             return redirect()->route('monitor.index')
-                             ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
+                ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
         }
 
         $request->validate([
-            'url' => ['required', 'url', 'unique:monitors,url,' . $monitor->id],
+            'url' => ['required', 'url', 'unique:monitors,url,'.$monitor->id],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
@@ -165,12 +164,12 @@ class UptimeMonitorController extends Controller
             ]);
 
             return redirect()->route('monitor.index')
-                             ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
+                ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
 
         } catch (\Exception $e) {
             return redirect()->back()
-                             ->with('flash', ['message' => 'Gagal memperbarui monitor: ' . $e->getMessage(), 'type' => 'error'])
-                             ->withInput();
+                ->with('flash', ['message' => 'Gagal memperbarui monitor: '.$e->getMessage(), 'type' => 'error'])
+                ->withInput();
         }
     }
 
@@ -183,11 +182,11 @@ class UptimeMonitorController extends Controller
             $monitor->delete();
 
             return redirect()->route('monitor.index')
-                             ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);
+                ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);
 
         } catch (\Exception $e) {
             return redirect()->back()
-                             ->with('flash', ['message' => 'Gagal menghapus monitor: ' . $e->getMessage(), 'type' => 'error']);
+                ->with('flash', ['message' => 'Gagal menghapus monitor: '.$e->getMessage(), 'type' => 'error']);
         }
     }
 }

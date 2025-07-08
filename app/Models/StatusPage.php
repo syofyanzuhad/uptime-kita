@@ -41,7 +41,7 @@ class StatusPage extends Model
         $counter = 1;
 
         while (static::where('path', $path)->exists()) {
-            $path = $basePath . '-' . $counter;
+            $path = $basePath.'-'.$counter;
             $counter++;
         }
 

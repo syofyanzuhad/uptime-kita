@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Monitor;
-use App\Models\MonitorUptime;
 use App\Models\MonitorUptimeDaily;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,10 +18,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     /**
      * Execute the job.

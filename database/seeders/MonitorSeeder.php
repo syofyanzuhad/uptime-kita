@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Monitor;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class MonitorSeeder extends Seeder
 {
@@ -18,6 +17,7 @@ class MonitorSeeder extends Seeder
         // add 1 minute key to each monitor
         $oneMinuteMonitors = array_map(function ($monitor) {
             $monitor['uptime_check_interval_in_minutes'] = 1;
+
             return $monitor;
         }, $monitors);
 

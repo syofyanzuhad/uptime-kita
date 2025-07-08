@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StatusPageResource;
+use App\Models\StatusPage;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\StatusPage;
-use App\Http\Resources\StatusPageResource;
 
 class PublicStatusPageController extends Controller
 {

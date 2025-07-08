@@ -55,6 +55,7 @@ class StatisticMonitorController extends Controller
             if ($user && $user->id === 1) {
                 $data['user_count'] = \App\Models\User::count();
             }
+
             return $data;
         });
 

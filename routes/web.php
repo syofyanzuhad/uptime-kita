@@ -1,14 +1,14 @@
 <?php
 
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PublicMonitorController;
-use App\Http\Controllers\UptimeMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
-use App\Http\Controllers\StatisticMonitorController;
-use App\Http\Controllers\SubscribeMonitorController;
-use App\Http\Controllers\StatusPageController;
+use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicStatusPageController;
+use App\Http\Controllers\StatisticMonitorController;
+use App\Http\Controllers\StatusPageController;
+use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\UptimeMonitorController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
