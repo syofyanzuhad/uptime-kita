@@ -24,7 +24,7 @@ export interface Monitor {
 
 export interface FlashMessage {
     message: string;
-    type: 'success' | 'error';
+    type: 'success' | 'error' | 'warning' | 'info';
 }
 
 export interface MonitorHistory {
