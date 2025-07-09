@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Monitor;
 use App\Models\StatusPage;
+use App\Policies\MonitorPolicy;
 use App\Policies\StatusPagePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -14,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        Monitor::class => MonitorPolicy::class,
         StatusPage::class => StatusPagePolicy::class,
     ];
 

@@ -135,6 +135,23 @@ class Monitor extends SpatieMonitor
         });
     }
 
+    /**
+     * Get the owner of this monitor (the first user who was attached to it)
+     */
+    public function getOwnerAttribute()
+    {
+        return $this->users()->orderBy('user_monitor.created_at', 'asc')->first();
+    }
+
+    /**
+     * Check if the given user is the owner of this monitor
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        $owner = $this->owner;
+        return $owner && $owner->id === $user->id;
+    }
+
     // boot
     protected static function boot()
     {
