@@ -5,7 +5,7 @@ import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
 import type { Monitor } from '@/types/monitor';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 
 interface Props {
@@ -225,28 +225,30 @@ const toggleActive = async (monitorId: number) => {
     try {
         togglingMonitors.value.add(monitorId);
 
-        const response = await fetch(`/monitor/${monitorId}/toggle-active`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': page.props.csrf_token as string,
+        router.post(
+            route('monitor.toggle-active', monitorId),
+            {
+                _token: page.props.csrf_token as string,
             },
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            // Update the monitor's active status
-            const monitor = privateMonitors.value.find(m => m.id === monitorId);
-            if (monitor && result.monitor) {
-                monitor.uptime_check_enabled = result.monitor.uptime_check_enabled;
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Update the monitor's uptime_check_enabled status
+                    const monitor = privateMonitors.value.find(m => m.id === monitorId);
+                    if (monitor) {
+                        monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
+                    }
+                },
+                onError: () => {
+                    alert('Terjadi kesalahan saat mengubah status monitor');
+                },
+                onFinish: () => {
+                    togglingMonitors.value.delete(monitorId);
+                }
             }
-        } else {
-            alert(result.message || 'Terjadi kesalahan saat mengubah status monitor');
-        }
+        );
     } catch {
         alert('Terjadi kesalahan saat mengubah status monitor');
-    } finally {
         togglingMonitors.value.delete(monitorId);
     }
 };
@@ -493,7 +495,7 @@ onUnmounted(() => {
                     <!-- Toggle Active Button - Bottom -->
                     <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-600 dark:text-gray-400">Monitor Status:</span>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Uptime Check:</span>
                             <TooltipProvider :delay-duration="0">
                                 <Tooltip>
                                     <TooltipTrigger as-child>
@@ -501,7 +503,8 @@ onUnmounted(() => {
                                             :model-value="monitor.uptime_check_enabled"
                                             :disabled="togglingMonitors.has(monitor.id)"
                                             @update:model-value="toggleActive(monitor.id)"
-                                        />
+                                            @click.stop.prevent
+                                            />
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p class="text-sm">
