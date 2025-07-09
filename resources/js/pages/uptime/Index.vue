@@ -3,9 +3,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
-import type { Monitor, FlashMessage, Paginator } from '@/types/monitor';
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import type { Monitor, Paginator } from '@/types/monitor';
+import { ref, onMounted, onUnmounted } from 'vue';
 // Import Dialog and Button components for modal
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';
@@ -15,13 +15,11 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Icon from '@/components/Icon.vue';
-
-const page = usePage();
+import FlashMessage from '@/components/FlashMessage.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
   monitors: Paginator<Monitor>;
-  flash?: FlashMessage;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -30,11 +28,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/monitor',
     },
 ];
-
-// State untuk notifikasi
-const showNotification = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('');
 
 // Countdown timer state
 const countdown = ref(0);
@@ -80,20 +73,6 @@ onUnmounted(() => {
   }
 });
 
-// Watcher untuk properti flash
-watch(() => page.props.flash as FlashMessage | undefined, (newFlash) => {
-    if (newFlash) {
-        notificationMessage.value = newFlash.message;
-        notificationType.value = newFlash.type;
-        showNotification.value = true;
-
-        // Sembunyikan notifikasi setelah beberapa detik
-        setTimeout(() => {
-            showNotification.value = false;
-        }, 60000);
-    }
-}, { deep: true });
-
 // Fungsi untuk menghapus monitor
 // Modal state
 const isDeleteModalOpen = ref(false);
@@ -131,15 +110,7 @@ const confirmDeleteMonitor = () => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div v-if="showNotification" :class="{
-                'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200': notificationType === 'success',
-                'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-200': notificationType === 'error',
-                }" role="alert" class="px-4 py-3 rounded relative mb-4">
-                <span class="block sm:inline">{{ notificationMessage }}</span>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" @click="showNotification = false">
-                    <svg class="fill-current h-6 w-6 text-gray-500 dark:text-gray-400" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.103l-2.651 3.746a1.2 1.2 0 1 1-1.697-1.697l3.746-2.651-3.746-2.651a1.2 1.2 0 0 1 1.697-1.697l2.651 3.746 2.651-3.746a1.2 1.2 0 0 1 1.697 1.697L11.103 10l3.746 2.651a1.2 1.2 0 0 1 0 1.698z"/></svg>
-                </span>
-                </div>
+                <FlashMessage />
 
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="flex justify-between items-center mb-4">
