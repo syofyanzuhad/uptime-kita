@@ -284,7 +284,7 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $this->info("💡 Use 'php artisan telegram:rate-limit-status --user={$user->id}' to verify");
 })->purpose('Reset Telegram rate limit for a user (for testing)');
 
-Schedule::command(CheckUptime::class)->everyMinute();
+Schedule::command(CheckUptime::class)->everyTwoMinutes();
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
