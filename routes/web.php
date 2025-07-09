@@ -46,5 +46,13 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->name('dashboard');
 
+// Test route for flash messages
+Route::get('/test-flash', function () {
+    return redirect()->route('dashboard')->with('flash', [
+        'message' => 'This is a test flash message!',
+        'type' => 'success'
+    ]);
+})->name('test.flash');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
