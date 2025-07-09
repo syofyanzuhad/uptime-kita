@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 
 class ToggleMonitorActiveController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Handle the incoming request.
      */
@@ -28,9 +31,12 @@ class ToggleMonitorActiveController extends Controller
                     ->with('flash', ['message' => 'User is not subscribed to this monitor', 'type' => 'error']);
             }
 
+            // Use policy authorization
+            $this->authorize('update', $monitor);
+
             // Toggle the active status
-            $newStatus = !$userMonitor->pivot->is_active;
-            $monitor->users()->updateExistingPivot($user->id, ['is_active' => $newStatus]);
+            $newStatus = !$monitor->uptime_check_enabled;
+            $monitor->update(['uptime_check_enabled' => $newStatus]);
 
             // Clear cache
             cache()->forget('public_monitors_authenticated_' . $user->id);

@@ -6,12 +6,15 @@ use App\Http\Resources\MonitorCollection;
 use App\Http\Resources\MonitorHistoryResource;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 
 class UptimeMonitorController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the monitors.
      */
@@ -134,6 +137,8 @@ class UptimeMonitorController extends Controller
      */
     public function update(Request $request, Monitor $monitor)
     {
+        $this->authorize('update', $monitor);
+
         $url = filter_var($request->url, FILTER_VALIDATE_URL);
         $monitorExists = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
@@ -178,6 +183,8 @@ class UptimeMonitorController extends Controller
      */
     public function destroy(Monitor $monitor)
     {
+        $this->authorize('delete', $monitor);
+
         try {
             $monitor->delete();
 
