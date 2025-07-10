@@ -12,11 +12,13 @@ import { Plus } from 'lucide-vue-next';
 
 interface Props {
     searchQuery?: string;
-    statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed';
+    statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed' | 'globally_enabled' | 'globally_disabled';
     allCount?: number;
     onlineCount?: number;
     offlineCount?: number;
     unsubscribedCount?: number;
+    enabledCount?: number;
+    disabledCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,6 +28,8 @@ const props = withDefaults(defineProps<Props>(), {
     onlineCount: 0,
     offlineCount: 0,
     unsubscribedCount: 0,
+    enabledCount: 0,
+    disabledCount: 0,
 });
 
 const publicMonitors = ref<Monitor[]>([]);
@@ -68,6 +72,12 @@ const filteredMonitors = computed(() => {
         monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
     } else if (props.statusFilter === 'unsubscribed') {
         monitors = monitors.filter(monitor => !monitor.is_subscribed);
+    } else if (props.statusFilter === 'globally_enabled') {
+        // Filter for globally enabled monitors (uptime_check_enabled is true)
+        monitors = monitors.filter(monitor => monitor.uptime_check_enabled);
+    } else if (props.statusFilter === 'globally_disabled') {
+        // Filter for globally disabled monitors (uptime_check_enabled is false)
+        monitors = monitors.filter(monitor => !monitor.uptime_check_enabled);
     }
     // Remove client-side search filter here
     return monitors;
@@ -113,6 +123,9 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         if (props.searchQuery && props.searchQuery.trim().length >= 3) {
             params.append('search', props.searchQuery.trim());
         }
+        if (props.statusFilter !== 'all') {
+            params.append('status_filter', props.statusFilter);
+        }
         const response = await fetch(`/public-monitors?${params.toString()}`);
         if (!response.ok) {
             throw new Error('Failed to fetch public monitors');
@@ -144,10 +157,19 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
     }
 };
 
-// Watch for searchQuery changes and refetch
-watch(() => props.searchQuery, () => {
+// Watch for searchQuery and statusFilter changes and refetch
+watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter], [oldQuery, oldFilter]) => {
+    // Reset pagination state when search or filter changes
+    if (newQuery !== oldQuery || newFilter !== oldFilter) {
+        currentPage.value = 1;
+        hasMorePages.value = false;
+        showingFrom.value = 0;
+        showingTo.value = 0;
+        totalMonitors.value = 0;
+    }
+
     // Only search if 3+ chars or empty (reset)
-    if (props.searchQuery.trim().length === 0 || props.searchQuery.trim().length >= 3) {
+    if (newQuery.trim().length === 0 || newQuery.trim().length >= 3) {
         fetchPublicMonitors(true, 1);
     }
 });
@@ -332,6 +354,8 @@ onUnmounted(() => {
                         : props.statusFilter === 'up' ? props.onlineCount
                         : props.statusFilter === 'down' ? props.offlineCount
                         : props.statusFilter === 'unsubscribed' ? props.unsubscribedCount
+                        : props.statusFilter === 'globally_enabled' ? props.enabledCount
+                        : props.statusFilter === 'globally_disabled' ? props.disabledCount
                         : props.allCount
                     }}
                     monitor<span v-if="filteredMonitors.length !== 1">s</span>
@@ -343,6 +367,8 @@ onUnmounted(() => {
                         : props.statusFilter === 'up' ? 'online'
                         : props.statusFilter === 'down' ? 'offline'
                         : props.statusFilter === 'unsubscribed' ? 'unsubscribed'
+                        : props.statusFilter === 'globally_enabled' ? 'enabled'
+                        : props.statusFilter === 'globally_disabled' ? 'disabled'
                         : ''
                     }}
                     monitors found.

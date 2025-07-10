@@ -10,11 +10,13 @@ import type { SharedData } from '@/types';
 
 interface Props {
     searchQuery?: string;
-    statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed';
+    statusFilter?: 'all' | 'up' | 'down' | 'unsubscribed' | 'globally_enabled' | 'globally_disabled';
     allCount?: number;
     onlineCount?: number;
     offlineCount?: number;
     unsubscribedCount?: number;
+    disabledCount?: number;
+    enabledCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,6 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
     onlineCount: 0,
     offlineCount: 0,
     unsubscribedCount: 0,
+    disabledCount: 0,
+    enabledCount: 0,
 });
 
 const privateMonitors = ref<Monitor[]>([]);
@@ -64,6 +68,12 @@ const filteredMonitors = computed(() => {
     // Filter by status
     if (props.statusFilter === 'up' || props.statusFilter === 'down') {
         monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
+    } else if (props.statusFilter === 'globally_enabled') {
+        // Filter for globally enabled monitors (uptime_check_enabled is true)
+        monitors = monitors.filter(monitor => monitor.uptime_check_enabled);
+    } else if (props.statusFilter === 'globally_disabled') {
+        // Filter for globally disabled monitors (uptime_check_enabled is false)
+        monitors = monitors.filter(monitor => !monitor.uptime_check_enabled);
     }
     // Filter by search query
     if (props.searchQuery && props.searchQuery.trim().length >= 3) {
@@ -110,11 +120,14 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
             isPolling.value = true;
         }
 
-        // Add search query to request if present
+        // Add search query and status filter to request if present
         const params = new URLSearchParams();
         params.append('page', String(page));
         if (props.searchQuery && props.searchQuery.trim().length >= 3) {
             params.append('search', props.searchQuery.trim());
+        }
+        if (props.statusFilter !== 'all') {
+            params.append('status_filter', props.statusFilter);
         }
         const response = await fetch(`/private-monitors?${params.toString()}`);
         if (!response.ok) {
@@ -147,10 +160,10 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
     }
 };
 
-// Watch for searchQuery changes and refetch
-watch(() => props.searchQuery, (newQuery, oldQuery) => {
-    // Reset pagination state when search changes
-    if (newQuery !== oldQuery) {
+// Watch for searchQuery and statusFilter changes and refetch
+watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter], [oldQuery, oldFilter]) => {
+    // Reset pagination state when search or filter changes
+    if (newQuery !== oldQuery || newFilter !== oldFilter) {
         currentPage.value = 1;
         hasMorePages.value = false;
         showingFrom.value = 0;

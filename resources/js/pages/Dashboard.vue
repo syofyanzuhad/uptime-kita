@@ -18,7 +18,7 @@
     ];
 
     const searchQuery = ref('');
-    const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed'>('all');
+    const statusFilter = ref<'all' | 'up' | 'down' | 'unsubscribed' | 'globally_enabled' | 'globally_disabled'>('all');
 
     // Monitor data for counts
     const loadingMonitors = ref(false);
@@ -27,6 +27,8 @@
     const onlineCount = ref(0);
     const offlineCount = ref(0);
     const unsubscribedCount = ref(0);
+    const enabledCount = ref(0);
+    const disabledCount = ref(0);
     const userId = computed(() => (page.props as any).auth?.user?.id);
     const userCount = ref<number|null>(null);
 
@@ -48,6 +50,8 @@
             onlineCount.value = stats.online_monitors;
             offlineCount.value = stats.offline_monitors;
             unsubscribedCount.value = stats.unsubscribed_monitors;
+            enabledCount.value = stats.globally_enabled_monitors || 0;
+            disabledCount.value = stats.globally_disabled_monitors || 0;
             if ('user_count' in stats) {
                 userCount.value = stats.user_count;
             } else {
@@ -113,6 +117,20 @@
                 >
                     Unsubscribed <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-yellow-200 dark:bg-yellow-700 text-xs">{{ unsubscribedCount }}</span>
                 </Button>
+                <Button
+                    :variant="statusFilter === 'globally_enabled' ? 'default' : 'outline'"
+                    @click="statusFilter = 'globally_enabled'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
+                >
+                    Enabled <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-blue-200 dark:bg-blue-700 text-xs">{{ enabledCount }}</span>
+                </Button>
+                <Button
+                    :variant="statusFilter === 'globally_disabled' ? 'default' : 'outline'"
+                    @click="statusFilter = 'globally_disabled'"
+                    class="text-black bg-white dark:bg-gray-800 dark:text-white border-grey-300 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:shadow-white"
+                >
+                    Disabled <span v-if="!loadingMonitors" class="ml-1 px-2 py-0.5 rounded-full bg-gray-300 dark:bg-gray-600 text-xs">{{ disabledCount }}</span>
+                </Button>
             </div>
             <!-- Search Bar -->
             <div class="relative">
@@ -135,8 +153,8 @@
                 </div>
             </div>
 
-            <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" />
-            <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" />
+            <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" :disabled-count="disabledCount" :enabled-count="enabledCount" />
+            <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" :disabled-count="disabledCount" :enabled-count="enabledCount" />
         </div>
     </AppLayout>
 </template>
