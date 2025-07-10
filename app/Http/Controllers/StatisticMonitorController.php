@@ -44,6 +44,18 @@ class StatisticMonitorController extends Controller
                 })
                 ->count();
 
+            // get globally enabled monitors (uptime_check_enabled = true)
+            $globallyEnabledMonitors = Monitor::withoutGlobalScope('user')
+                ->withoutGlobalScope('enabled')
+                ->where('uptime_check_enabled', true)
+                ->count();
+
+            // get globally disabled monitors (uptime_check_enabled = false)
+            $globallyDisabledMonitors = Monitor::withoutGlobalScope('user')
+                ->withoutGlobalScope('enabled')
+                ->where('uptime_check_enabled', false)
+                ->count();
+
             $data = [
                 'public_monitor_count' => $publicMonitorCount,
                 'private_monitor_count' => $privateMonitorCount,
@@ -51,6 +63,8 @@ class StatisticMonitorController extends Controller
                 'online_monitors' => $onlineMonitors,
                 'offline_monitors' => $offlineMonitors,
                 'unsubscribed_monitors' => $unsubscribedMonitors,
+                'globally_enabled_monitors' => $globallyEnabledMonitors,
+                'globally_disabled_monitors' => $globallyDisabledMonitors,
             ];
             if ($user && $user->id === 1) {
                 $data['user_count'] = \App\Models\User::count();
