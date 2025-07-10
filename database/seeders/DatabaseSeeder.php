@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            MonitorSeeder::class,
-            NotificationChannelSeeder::class,
+            // MonitorSeeder::class,
+            // NotificationChannelSeeder::class,
         ]);
     }
 }
