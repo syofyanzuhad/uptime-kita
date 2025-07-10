@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Monitor;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class ToggleMonitorActiveController extends Controller
 {
@@ -13,7 +14,7 @@ class ToggleMonitorActiveController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Monitor $monitor): RedirectResponse
+    public function __invoke(Request $request, $monitorId): RedirectResponse
     {
         try {
             $user = auth()->user();
@@ -21,6 +22,16 @@ class ToggleMonitorActiveController extends Controller
             if (!$user) {
                 return redirect()->back()
                     ->with('flash', ['message' => 'User not authenticated', 'type' => 'error']);
+            }
+
+            // Get monitor without global scopes
+            $monitor = Monitor::withoutGlobalScopes()
+                ->where('id', $monitorId)
+                ->first();
+
+            if (!$monitor) {
+                return redirect()->back()
+                    ->with('flash', ['message' => 'Monitor not found', 'type' => 'error']);
             }
 
             // Check if user is subscribed to this monitor
