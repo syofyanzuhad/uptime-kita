@@ -23,8 +23,7 @@ class Monitor extends SpatieMonitor
     public function scopeEnabled($query)
     {
         return $query
-            ->where('uptime_check_enabled', true)
-            ->orWhere('certificate_check_enabled', true);
+            ->where('uptime_check_enabled', true);
     }
 
     public function getUrlAttribute(): ?Url
@@ -164,6 +163,9 @@ class Monitor extends SpatieMonitor
                     $query->where('user_monitor.user_id', auth()->id());
                 });
             }
+        });
+        static::addGlobalScope('enabled', function ($query) {
+            $query->where('uptime_check_enabled', true);
         });
 
         static::created(function ($monitor) {
