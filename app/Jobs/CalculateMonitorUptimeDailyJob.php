@@ -28,24 +28,10 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
         $today = Carbon::today();
 
         // Process monitors in chunks for better memory management
-        Monitor::chunk(50, function ($monitors) use ($today) {
+        Monitor::chunk(50, function ($monitors) {
             foreach ($monitors as $monitor) {
-                $histories = $monitor->histories()
-                    ->whereDate('created_at', $today)
-                    ->get();
-                $totalChecks = $histories->count();
-                $upChecks = $histories->where('uptime_status', 'up')->count();
-                $uptimePercentage = $totalChecks > 0 ? ($upChecks / $totalChecks) * 100 : 0;
-
-                MonitorUptimeDaily::updateOrCreate(
-                    [
-                        'monitor_id' => $monitor->id,
-                        'date' => $today,
-                    ],
-                    [
-                        'uptime_percentage' => $uptimePercentage,
-                    ]
-                );
+                // Dispatch a job for each monitor
+                \App\Jobs\CalculateSingleMonitorUptimeJob::dispatch($monitor->id);
             }
         });
     }
