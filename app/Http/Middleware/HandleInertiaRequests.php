@@ -52,6 +52,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => $request->session()->get('flash'),
+            // Add last update date for UI
+            'lastUpdate' => config('app.last_update'),
         ];
     }
 }

@@ -69,6 +69,9 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
+            <div class="text-xs text-gray-500 dark:text-gray-400 px-4 pt-1 pb-2">
+              Last update: {{ page.props.lastUpdate }}
+            </div>
             <hr v-if="isAuthenticated" class="my-2 border-sidebar-border/70 dark:border-sidebar-border" />
             <NavUser v-if="isAuthenticated" />
             <div v-else class="p-2">

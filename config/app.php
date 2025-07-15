@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    // Custom: Last update date for display in the UI
+    'last_update' => env('APP_LAST_UPDATE', '2025-07-15'),
+
 ];
