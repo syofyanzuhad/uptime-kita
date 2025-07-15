@@ -126,4 +126,10 @@ return [
     // Custom: Last update date for display in the UI
     'last_update' => env('APP_LAST_UPDATE', '2025-07-15'),
 
+    // Admin credentials
+    'admin_credentials' => [
+        'email' => env('ADMIN_EMAIL', 'mail@syofyanzuhad.dev'),
+        'password' => env('ADMIN_PASSWORD', 'password'),
+    ],
+
 ];
