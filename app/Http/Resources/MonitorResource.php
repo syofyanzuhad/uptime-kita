@@ -38,6 +38,14 @@ class MonitorResource extends JsonResource
             'latest_history' => $this->whenLoaded('latestHistory', function () {
                 return $this->latestHistory ? new MonitorHistoryResource($this->latestHistory) : null;
             }),
+            'uptimes_daily' => $this->whenLoaded('uptimesDaily', function () {
+                return $this->uptimesDaily->map(function ($uptime) {
+                    return [
+                        'date' => $uptime->date->toDateString(),
+                        'uptime_percentage' => $uptime->uptime_percentage,
+                    ];
+                });
+            }),
         ];
     }
 
