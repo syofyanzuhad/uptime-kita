@@ -15,6 +15,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('home');
 
 Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
@@ -42,7 +43,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
 
 });
-Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Test route for flash messages
 Route::get('/test-flash', TestFlashController::class)->name('test.flash');
