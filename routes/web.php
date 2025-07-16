@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TestFlashController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PrivateMonitorController;
 use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicStatusPageController;
@@ -7,12 +10,8 @@ use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\SubscribeMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Dashboard');
-})->name('home');
+Route::get('/', [DashboardController::class, 'index'])->name('home');
 
 Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
@@ -41,18 +40,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/status-pages/{statusPage}/monitors', \App\Http\Controllers\StatusPageAssociateMonitorController::class)->name('status-pages.monitors.associate');
     Route::delete('/status-pages/{statusPage}/monitors/{monitor}', \App\Http\Controllers\StatusPageDisassociateMonitorController::class)->name('status-pages.monitors.disassociate');
     Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
+
 });
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Test route for flash messages
-Route::get('/test-flash', function () {
-    return redirect()->route('dashboard')->with('flash', [
-        'message' => 'This is a test flash message!',
-        'type' => 'success'
-    ]);
-})->name('test.flash');
+Route::get('/test-flash', TestFlashController::class)->name('test.flash');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
