@@ -109,7 +109,7 @@ function handleSubmit() {
             <div v-if="form.errors.type" class="text-red-500 text-sm mt-1">{{ form.errors.type }}</div>
         </div>
         <div>
-            <label class="block font-medium mb-1">Destination<span class="text-red-500">*</span></label>
+            <label class="block font-medium mb-1">Destination<span class="text-red-500">*</span> (Telegram: chat_id, Email: email, Slack: webhook url)</label>
             <Input v-model="form.destination" type="text" class="w-full" placeholder="chat_id, email, webhook, etc." />
             <div v-if="form.errors.destination" class="text-red-500 text-sm mt-1">{{ form.errors.destination }}</div>
         </div>
