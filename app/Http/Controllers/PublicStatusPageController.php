@@ -14,7 +14,7 @@ class PublicStatusPageController extends Controller
      */
     public function show(string $path): Response
     {
-        $statusPage = StatusPage::with(['monitors.latestHistory'])->where('path', $path)->firstOrFail();
+        $statusPage = StatusPage::with(['monitors.latestHistory', 'monitors.uptimesDaily'])->where('path', $path)->firstOrFail();
         $statusPageResource = new StatusPageResource($statusPage);
 
         return Inertia::render('StatusPages/Public', [

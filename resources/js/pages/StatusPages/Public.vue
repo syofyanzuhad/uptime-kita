@@ -35,6 +35,7 @@ import { Head } from '@inertiajs/vue3';
     updated_at: string;
     histories?: MonitorHistory[];
     latest_history?: MonitorHistory | null;
+    uptimes_daily?: { date: string; uptime_percentage: number }[];
   }
 
   interface StatusPage {
@@ -131,13 +132,25 @@ import { Head } from '@inertiajs/vue3';
     const hasDown = props.statusPage.monitors.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'down');
     const hasWarning = props.statusPage.monitors.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'warning');
     if (hasDown) {
-      return { color: 'bg-red-500', text: 'System Outage' };
+      return { color: 'bg-red-500', text: 'Some Systems Are Down' };
     }
     if (hasWarning) {
-      return { color: 'bg-yellow-500', text: 'Partial System Outage' };
+      return { color: 'bg-yellow-500', text: 'Some Systems Are Degraded' };
     }
     return { color: 'bg-green-500', text: 'All Systems Operational' };
   })
+
+// Helper to generate the latest 100 days as YYYY-MM-DD
+function getLatest100Days() {
+  const dates = []
+  const today = new Date()
+  for (let i = 99; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    dates.push(d.toISOString().slice(0, 10))
+  }
+  return dates
+}
 </script>
 
 <template>
@@ -163,8 +176,8 @@ import { Head } from '@inertiajs/vue3';
           <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">System Status</h2>
             <div class="flex items-center space-x-3">
-              <div class="w-4 h-4 rounded-full" :class="overallStatus.color"></div>
-              <span class="text-lg font-medium">{{ overallStatus.text }}</span>
+              <div class="w-4 h-4 rounded-full animate-pulse" :class="overallStatus.color"></div>
+              <span class="text-lg font-medium text-gray-900">{{ overallStatus.text }}</span>
             </div>
           </div>
         </div>
@@ -203,12 +216,49 @@ import { Head } from '@inertiajs/vue3';
                   </div>
                 </div>
               </div>
+
+              <!-- Daily History Bar Chart for Latest 100 Days -->
+              <div v-if="monitor.uptimes_daily" class="mt-2">
+                <div class="flex items-end h-16 bg-gray-50 rounded p-2 border border-gray-200 w-full">
+                  <template v-for="date in getLatest100Days()" :key="date">
+                    <template v-if="monitor.uptimes_daily.some(u => u.date === date)">
+                      <div
+                        v-for="uptime in monitor.uptimes_daily.filter(u => u.date === date)"
+                        :key="uptime.date"
+                        class="relative group flex flex-col items-center flex-1 min-w-0 mx-px"
+                      >
+                        <div
+                          :class="[
+                            'h-8 w-full rounded transition-all duration-200',
+                            uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
+                          ]"
+                        ></div>
+                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white text-xs text-gray-700 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                          {{ uptime.date }}<br />{{ uptime.uptime_percentage.toFixed(2) }}%
+                        </div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="relative group flex flex-col items-center flex-1 min-w-0 mx-px">
+                        <div class="h-8 w-full bg-gray-300 rounded"></div>
+                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white text-xs text-gray-700 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                          {{ date }}<br />No data
+                        </div>
+                      </div>
+                    </template>
+                  </template>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                  <span>{{ getLatest100Days()[0] }}</span>
+                  <span>{{ getLatest100Days()[getLatest100Days().length-1] }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="mt-8 text-center text-sm text-gray-500">
-          <p>Powered by Uptime Kita</p>
+          <p>Powered by <a href="https://uptime.syofyanzuhad.dev" target="_blank" class="text-blue-600 hover:text-blue-800">Uptime Kita</a></p>
         </div>
       </main>
     </div>
