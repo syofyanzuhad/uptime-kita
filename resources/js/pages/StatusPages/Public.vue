@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
+  import { computed, ref, onMounted, onUnmounted } from 'vue'
   import Icon from '@/components/Icon.vue'
 import { Head } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -151,6 +152,31 @@ function getLatest100Days() {
   }
   return dates
 }
+
+// --- AUTO REFRESH COUNTDOWN ---
+const countdown = ref(60)
+let intervalId: number | undefined
+
+function startCountdown() {
+  intervalId = window.setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      refetchStatusPage()
+      countdown.value = 60
+    }
+  }, 1000)
+}
+
+function refetchStatusPage() {
+  router.reload()
+}
+
+onMounted(() => {
+  startCountdown()
+})
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId)
+})
 </script>
 
 <template>
@@ -175,9 +201,15 @@ function getLatest100Days() {
         <div class="mb-8">
           <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">System Status</h2>
-            <div class="flex items-center space-x-3">
-              <div class="w-4 h-4 rounded-full animate-pulse" :class="overallStatus.color"></div>
-              <span class="text-lg font-medium text-gray-900">{{ overallStatus.text }}</span>
+            <div class="flex items-center space-x-3 justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 rounded-full animate-pulse" :class="overallStatus.color"></div>
+                <span class="text-lg font-medium text-gray-900">{{ overallStatus.text }}</span>
+              </div>
+              <div class="text-xs text-gray-500 flex items-center space-x-1" title="Auto refresh">
+                <Icon name="clock" class="h-4 w-4" />
+                <span>{{ countdown }}</span>
+              </div>
             </div>
           </div>
         </div>
