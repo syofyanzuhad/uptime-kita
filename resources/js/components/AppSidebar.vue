@@ -30,7 +30,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Notifications',
-        href: '/notifications',
+        href: '/settings/notifications',
         icon: LucideMonitorSmartphone,
     },
 ];
