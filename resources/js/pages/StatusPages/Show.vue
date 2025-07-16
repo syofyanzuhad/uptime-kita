@@ -72,6 +72,17 @@ const isLoading = ref(false)
 const isDisassociateModalOpen = ref(false)
 const monitorToDisassociate = ref<number | null>(null)
 
+// --- SEARCH STATE FOR MODAL ---
+const searchQuery = ref('')
+const filteredAvailableMonitors = computed(() => {
+  if (!searchQuery.value.trim()) return availableMonitors.value
+  const q = searchQuery.value.toLowerCase()
+  return availableMonitors.value.filter(m =>
+    m.name.toLowerCase().includes(q) ||
+    m.url.toLowerCase().includes(q)
+  )
+})
+
 // --- COMPUTED PROPERTIES ---
 const baseUrl = computed(() => {
   if (typeof window !== 'undefined') {
@@ -353,6 +364,15 @@ const confirmDisassociateMonitor = async () => {
           </DialogHeader>
 
           <div class="space-y-4">
+            <!-- Search input -->
+            <div v-if="availableMonitors.length > 0 && !isLoading" class="mb-2">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search monitors by name or URL..."
+                class="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
+              />
+            </div>
             <div v-if="isLoading" class="text-center py-4">
               <p class="text-gray-500 dark:text-gray-400">Loading available monitors...</p>
             </div>
@@ -363,7 +383,10 @@ const confirmDisassociateMonitor = async () => {
             </div>
 
             <div v-else class="space-y-3 max-h-60 overflow-y-auto">
-              <div v-for="monitor in availableMonitors" :key="monitor.id" class="flex items-center space-x-3 p-3 border rounded-lg">
+              <div v-if="filteredAvailableMonitors.length === 0" class="text-center text-gray-400 py-4">
+                No monitors match your search.
+              </div>
+              <div v-for="monitor in filteredAvailableMonitors" :key="monitor.id" class="flex items-center space-x-3 p-3 border rounded-lg">
                 <Checkbox
                   :id="`monitor-${monitor.id}`"
                   :checked="selectedMonitors.includes(monitor.id)"
