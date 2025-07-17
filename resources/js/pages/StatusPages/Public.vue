@@ -213,7 +213,15 @@ const { isDark, toggleTheme } = useTheme()
             <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">System Status</h2>
             <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 justify-between">
               <div class="flex items-center space-x-3">
-                <div class="w-4 h-4 rounded-full animate-pulse" :class="overallStatus.color"></div>
+                <div class="w-4 h-4 rounded-full animate-pulse"
+                  :class="[
+                    overallStatus.color,
+                    overallStatus.text === 'All Systems Operational' ? 'shadow-[0_0_10px_3px_rgba(34,197,94,0.7)]' :
+                    overallStatus.text === 'Some Systems Are Down' ? 'shadow-[0_0_10px_3px_rgba(239,68,68,0.7)]' :
+                    overallStatus.text === 'Some Systems Are Degraded' ? 'shadow-[0_0_10px_3px_rgba(250,204,21,0.7)]' :
+                    'shadow-[0_0_10px_3px_rgba(156,163,175,0.5)]'
+                  ]"
+                ></div>
                 <span class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ overallStatus.text }}</span>
               </div>
               <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1" title="Auto refresh">
@@ -235,7 +243,15 @@ const { isDark, toggleTheme } = useTheme()
                   <img v-if="monitor.favicon" :src="monitor.favicon" class="w-5 h-5 rounded-full" alt="favicon" @error="($event.target as HTMLImageElement).style.display='none'" />
                   <div v-else class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
 
-                  <div class="w-3 h-3 rounded-full flex-shrink-0" :class="getStatusColor(monitor.latest_history?.uptime_status)"></div>
+                  <div class="w-3 h-3 rounded-full flex-shrink-0 animate-pulse"
+                    :class="[
+                      getStatusColor(monitor.latest_history?.uptime_status),
+                      monitor.latest_history?.uptime_status?.toLowerCase() === 'up' ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]' :
+                      monitor.latest_history?.uptime_status?.toLowerCase() === 'down' ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]' :
+                      monitor.latest_history?.uptime_status?.toLowerCase() === 'warning' ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]' :
+                      'shadow-[0_0_8px_2px_rgba(156,163,175,0.5)]'
+                    ]"
+                  ></div>
 
                   <div class="flex-grow min-w-0">
                     <h4 class="font-medium text-gray-900 dark:text-gray-100 flex items-center flex-wrap">
