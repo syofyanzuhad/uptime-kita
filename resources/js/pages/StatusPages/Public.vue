@@ -182,31 +182,31 @@ onUnmounted(() => {
 <template>
   <Head :title="`${statusPage.title} - Status Page`" />
 
-    <div class="min-h-screen bg-gray-50">
-      <header class="bg-white shadow-sm border-b">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Icon :name="statusPage.icon" class="w-6 h-6 text-blue-600" />
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+              <Icon :name="statusPage.icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">{{ statusPage.title }}</h1>
-              <p class="text-gray-600">{{ statusPage.description }}</p>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statusPage.title }}</h1>
+              <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8">
         <div class="mb-8">
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">System Status</h2>
-            <div class="flex items-center space-x-3 justify-between">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">System Status</h2>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 justify-between">
               <div class="flex items-center space-x-3">
                 <div class="w-4 h-4 rounded-full animate-pulse" :class="overallStatus.color"></div>
-                <span class="text-lg font-medium text-gray-900">{{ overallStatus.text }}</span>
+                <span class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ overallStatus.text }}</span>
               </div>
-              <div class="text-xs text-gray-500 flex items-center space-x-1" title="Auto refresh">
+              <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1" title="Auto refresh">
                 <Icon name="clock" class="h-4 w-4" />
                 <span>{{ countdown }}</span>
               </div>
@@ -214,44 +214,44 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Services</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+          <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
-          <div class="divide-y divide-gray-200">
-            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="px-6 py-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
+          <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="px-4 sm:px-6 py-4">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div class="flex items-center space-x-4 w-full min-w-0">
                   <img v-if="monitor.favicon" :src="monitor.favicon" class="w-5 h-5 rounded-full" alt="favicon" @error="($event.target as HTMLImageElement).style.display='none'" />
-                  <div v-else class="w-5 h-5 bg-gray-200 rounded-full"></div>
+                  <div v-else class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
 
                   <div class="w-3 h-3 rounded-full flex-shrink-0" :class="getStatusColor(monitor.latest_history?.uptime_status)"></div>
 
-                  <div class="flex-grow">
-                    <h4 class="font-medium text-gray-900 flex items-center">
+                  <div class="flex-grow min-w-0">
+                    <h4 class="font-medium text-gray-900 dark:text-gray-100 flex items-center flex-wrap">
                       {{ monitor.name }}
                       <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
                         :class="getCertStatusColor(monitor.certificate_status)">
                         {{ monitor.certificate_status }}
                       </span>
                     </h4>
-                    <a class="text-sm text-gray-500 hover:text-gray-700 hover:underline" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                    <a class="block break-all text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
                   </div>
                 </div>
 
-                <div class="text-right flex-shrink-0 ml-4">
-                  <div class="text-sm font-medium" :class="getStatusTextColor(monitor.latest_history?.uptime_status)">
+                <div class="text-right flex-shrink-0 ml-0 sm:ml-4 w-full sm:w-auto">
+                  <div class="text-sm font-medium" :class="getStatusTextColor(monitor.latest_history?.uptime_status) + ' dark:text-inherit'">
                     {{ getStatusText(monitor.latest_history?.uptime_status) }}
                   </div>
-                  <div v-if="monitor.latest_history?.created_at" class="text-xs text-gray-500" :title="formatDate(monitor.latest_history.created_at)">
+                  <div v-if="monitor.latest_history?.created_at" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(monitor.latest_history.created_at)">
                     Last check: {{ timeAgo(monitor.latest_history.created_at) }}
                   </div>
                 </div>
               </div>
 
               <!-- Daily History Bar Chart for Latest 100 Days -->
-              <div v-if="monitor.uptimes_daily" class="mt-2">
-                <div class="flex items-end h-16 bg-gray-50 rounded p-2 border border-gray-200 w-full">
+              <div v-if="monitor.uptimes_daily" class="mt-2 overflow-x-auto">
+                <div class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
                   <template v-for="date in getLatest100Days()" :key="date">
                     <template v-if="monitor.uptimes_daily.some(u => u.date === date)">
                       <div
@@ -265,22 +265,22 @@ onUnmounted(() => {
                             uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
                           ]"
                         ></div>
-                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white text-xs text-gray-700 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
                           {{ uptime.date }}<br />{{ uptime.uptime_percentage.toFixed(2) }}%
                         </div>
                       </div>
                     </template>
                     <template v-else>
                       <div class="relative group flex flex-col items-center flex-1 min-w-0 mx-px">
-                        <div class="h-8 w-full bg-gray-300 rounded"></div>
-                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white text-xs text-gray-700 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                        <div class="h-8 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
+                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
                           {{ date }}<br />No data
                         </div>
                       </div>
                     </template>
                   </template>
                 </div>
-                <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                <div class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                   <span>{{ getLatest100Days()[0] }}</span>
                   <span>{{ getLatest100Days()[getLatest100Days().length-1] }}</span>
                 </div>
@@ -289,8 +289,8 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="mt-8 text-center text-sm text-gray-500">
-          <p>Powered by <a href="https://uptime.syofyanzuhad.dev" target="_blank" class="text-blue-600 hover:text-blue-800">Uptime Kita</a></p>
+        <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p>Powered by <a href="https://uptime.syofyanzuhad.dev" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Uptime Kita</a></p>
         </div>
       </main>
     </div>
