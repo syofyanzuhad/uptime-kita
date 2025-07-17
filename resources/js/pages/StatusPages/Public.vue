@@ -3,6 +3,7 @@
   import Icon from '@/components/Icon.vue'
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3'
+import { useTheme } from '@/composables/useTheme'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -177,6 +178,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
 })
+
+const { isDark, toggleTheme } = useTheme()
 </script>
 
 <template>
@@ -185,14 +188,21 @@ onUnmounted(() => {
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-              <Icon :name="statusPage.icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <div class="flex items-center space-x-4 justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <Icon :name="statusPage.icon" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statusPage.title }}</h1>
+                <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
+              </div>
             </div>
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statusPage.title }}</h1>
-              <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
-            </div>
+            <!-- Theme Toggle Button -->
+            <button @click="toggleTheme" class="ml-4 p-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+              <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
+              <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+            </button>
           </div>
         </div>
       </header>
