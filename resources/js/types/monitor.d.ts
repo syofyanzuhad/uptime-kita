@@ -6,6 +6,7 @@ export interface Monitor {
     uptime_status: 'up' | 'down' | 'not yet checked';
     uptime_check_enabled: boolean;
     last_check_date: string | null;
+    last_check_date_human: string | null;
     certificate_check_enabled: boolean;
     certificate_status: 'valid' | 'invalid' | 'not applicable' | null;
     certificate_expiration_date: string | null;

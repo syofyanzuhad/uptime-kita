@@ -494,8 +494,8 @@ onUnmounted(() => {
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <div v-if="monitor.last_check_date">
-                            Last checked: {{ new Date(monitor.last_check_date).toLocaleString() }}
+                        <div v-if="monitor.last_check_date_human" :title="`Last checked: ${monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : ''}`">
+                            Last checked: {{ monitor.last_check_date_human }}
                         </div>
                         <div v-if="monitor.down_for_events_count > 0" class="flex items-center gap-2">
                             <span class="text-gray-500">Down events:</span>
