@@ -237,7 +237,7 @@ const { isDark, toggleTheme } = useTheme()
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
           <div class="divide-y divide-gray-200 dark:divide-gray-700">
-            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="px-4 sm:px-6 py-4">
+            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="px-4 sm:px-6 py-4 overflow-auto">
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div class="flex items-center space-x-4 w-full min-w-0">
                   <img v-if="monitor.favicon" :src="monitor.favicon" class="w-5 h-5 rounded-full" alt="favicon" @error="($event.target as HTMLImageElement).style.display='none'" />
