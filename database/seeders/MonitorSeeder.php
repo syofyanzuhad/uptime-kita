@@ -13,6 +13,10 @@ class MonitorSeeder extends Seeder
     public function run(): void
     {
         $monitors = require database_path('seeders/monitors.php');
+        $collages = require database_path('seeders/collage.php');
+
+        // merge monitors and collages
+        $monitors = array_merge($monitors, $collages);
 
         // add 1 minute key to each monitor
         $oneMinuteMonitors = array_map(function ($monitor) {
