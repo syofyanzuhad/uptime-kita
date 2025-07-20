@@ -110,31 +110,31 @@ const goToPage = (page: number) => {
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>
                     <Button variant="ghost" size="sm">
-                      <Icon name="more-horizontal" class="w-4 h-4" />
+                      <Icon name="moreHorizontal" class="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem as-child>
-                      <Link :href="route('status-page.public', statusPage.path)" target="_blank" rel="noopener noreferrer">
-                        <Icon name="external-link" class="w-4 h-4 mr-2" />
+                      <a :href="route('status-page.public', statusPage.path)" target="_blank" rel="noopener noreferrer" class="flex items-center cursor-pointer hover:bg-gray-100/30">
+                        <Icon name="externalLink" class="w-4 h-4 mr-2" />
                         View Public
-                      </Link>
+                      </a>
                     </DropdownMenuItem>
                     <DropdownMenuItem as-child>
-                      <Link :href="route('status-pages.show', statusPage.id)">
+                      <Link :href="route('status-pages.show', statusPage.id)" class="flex items-center cursor-pointer hover:bg-gray-100/30">
                         <Icon name="eye" class="w-4 h-4 mr-2" />
                         View Details
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem as-child>
-                      <Link :href="route('status-pages.edit', statusPage.id)">
+                      <Link :href="route('status-pages.edit', statusPage.id)" class="flex items-center cursor-pointer hover:bg-gray-100/30">
                         <Icon name="edit" class="w-4 h-4 mr-2" />
                         Edit
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem @click="deleteStatusPage(statusPage)" class="text-red-600">
-                      <Icon name="trash" class="w-4 h-4 mr-2" />
+                    <DropdownMenuItem @click="deleteStatusPage(statusPage)" class="text-red-600 flex items-center cursor-pointer hover:bg-red-600/10">
+                      <Icon name="trash" class="w-4 h-4 mr-2 text-red-600" />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
