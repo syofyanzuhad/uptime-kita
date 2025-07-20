@@ -37,7 +37,7 @@ class MonitorSeeder extends Seeder
         );
 
         foreach ($monitors as $monitor) {
-            Monitor::firstOrCreate(
+            Monitor::withoutGlobalScopes()->firstOrCreate(
                 [
                     'url' => $monitor['url'],
                 ],
