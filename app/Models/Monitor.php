@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasTags;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 use Spatie\Url\Url;
 
 class Monitor extends SpatieMonitor
 {
+    use HasTags;
+
     protected $casts = [
         'uptime_check_enabled' => 'boolean',
         'certificate_check_enabled' => 'boolean',
