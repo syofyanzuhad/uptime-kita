@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Traits\HasTags;
-use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 use Spatie\Url\Url;
+use Spatie\Tags\HasTags;
+use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 
 class Monitor extends SpatieMonitor
 {
