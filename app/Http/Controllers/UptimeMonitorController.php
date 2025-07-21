@@ -21,10 +21,20 @@ class UptimeMonitorController extends Controller
     public function index(Request $request)
     {
         $page = $request->input('page', 1);
-        $monitors = cache()->remember('monitors_list_page_'.$page, 60, function () {
-            return new MonitorCollection(Monitor::with(['uptimeDaily', 'histories' => function ($query) {
-                $query->latest()->take(100);
-            }])->orderBy('created_at', 'desc')->paginate(12));
+        $search = $request->input('search');
+        $cacheKey = 'monitors_list_page_' . $page;
+        if ($search) {
+            $cacheKey .= '_search_' . md5($search);
+        }
+        $monitors = cache()->remember($cacheKey, 60, function () use ($search) {
+            return new MonitorCollection(
+                Monitor::with(['uptimeDaily', 'histories' => function ($query) {
+                    $query->latest()->take(100);
+                }])
+                ->search($search)
+                ->orderBy('created_at', 'desc')
+                ->paginate(12)
+            );
         });
 
         $flash = session('flash');
@@ -32,6 +42,7 @@ class UptimeMonitorController extends Controller
         return Inertia::render('uptime/Index', [
             'monitors' => $monitors,
             'flash' => $flash,
+            'search' => $search,
         ]);
     }
 

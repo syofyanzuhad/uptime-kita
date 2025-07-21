@@ -20,6 +20,7 @@ import FlashMessage from '@/components/FlashMessage.vue';
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
   monitors: Paginator<Monitor>;
+  search?: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -96,6 +97,17 @@ const confirmDeleteMonitor = () => {
     });
   }
 };
+
+const search = ref(props.search || '');
+
+function submitSearch() {
+  router.get(route('monitor.index'), { search: search.value }, { preserveState: true, only: ['monitors', 'search'] });
+}
+
+function clearSearch() {
+  search.value = '';
+  submitSearch();
+}
 </script>
 
 <template>
@@ -122,6 +134,23 @@ const confirmDeleteMonitor = () => {
                     Tambah Monitor
                     </Link>
                 </div>
+
+                <!-- Search Bar -->
+                <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2">
+                  <input
+                    v-model="search"
+                    type="text"
+                    placeholder="Cari monitor (min 3 karakter)..."
+                    class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
+                  />
+                  <button
+                    v-if="search"
+                    type="button"
+                    @click="clearSearch"
+                    class="ml-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+                  >Bersihkan</button>
+                  <button type="submit" class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded">Cari</button>
+                </form>
 
                 <div v-if="props.monitors.data.length === 0" class="text-gray-600 dark:text-gray-400"> Belum ada monitor yang terdaftar.
                 </div>
