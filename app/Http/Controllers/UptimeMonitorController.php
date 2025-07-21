@@ -23,7 +23,8 @@ class UptimeMonitorController extends Controller
         $page = $request->input('page', 1);
         $search = $request->input('search');
         $statusFilter = $request->input('status_filter', 'all');
-        $perPage = (int) $request->input('per_page', 12);
+        $perPage = $request->input('per_page', '15');
+        $visibilityFilter = $request->input('visibility_filter', 'all');
         $cacheKey = 'monitors_list_page_' . $page . '_per_page_' . $perPage;
         if ($search) {
             $cacheKey .= '_search_' . md5($search);
@@ -31,12 +32,18 @@ class UptimeMonitorController extends Controller
         if ($statusFilter !== 'all') {
             $cacheKey .= '_filter_' . $statusFilter;
         }
-        $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $perPage) {
-            $query = Monitor::with(['uptimeDaily', 'histories' => function ($query) {
-                $query->latest()->take(100);
-            }])->search($search);
+        if ($visibilityFilter !== 'all') {
+            $cacheKey .= '_visibility_' . $visibilityFilter;
+        }
+        $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $visibilityFilter, $perPage) {
+            $query = Monitor::with(['uptimeDaily'])->search($search);
             if ($statusFilter === 'up' || $statusFilter === 'down') {
                 $query->where('uptime_status', $statusFilter);
+            }
+            if ($visibilityFilter === 'public') {
+                $query->public();
+            } elseif ($visibilityFilter === 'private') {
+                $query->private();
             }
             return new MonitorCollection(
                 $query->orderBy('created_at', 'desc')->paginate($perPage)
@@ -51,6 +58,7 @@ class UptimeMonitorController extends Controller
             'search' => $search,
             'statusFilter' => $statusFilter,
             'perPage' => $perPage,
+            'visibilityFilter' => $visibilityFilter,
         ]);
     }
 

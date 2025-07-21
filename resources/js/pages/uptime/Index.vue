@@ -22,6 +22,7 @@ const props = defineProps<{
   monitors: Paginator<Monitor>;
   search?: string;
   statusFilter?: string;
+  visibilityFilter?: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -101,14 +102,16 @@ const confirmDeleteMonitor = () => {
 
 const search = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
+const visibilityFilter = ref(props.visibilityFilter || 'all');
 const perPage = ref((props.monitors?.meta?.per_page as number) || 12);
 
 function submitSearch() {
   router.get(route('monitor.index'), {
     search: search.value,
     status_filter: statusFilter.value,
+    visibility_filter: visibilityFilter.value,
     per_page: perPage.value,
-  }, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage'] });
+  }, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter'] });
 }
 
 function clearSearch() {
@@ -117,6 +120,10 @@ function clearSearch() {
 }
 
 function onStatusFilterChange() {
+  submitSearch();
+}
+
+function onVisibilityFilterChange() {
   submitSearch();
 }
 
@@ -160,18 +167,31 @@ function onPaginationLinkClick(link: PaginatorLink) {
                 </div>
 
                 <!-- Search Bar & Filter -->
-                <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2">
+                <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2 overflow-auto">
                   <input
                     v-model="search"
                     type="text"
                     placeholder="Cari monitor (min 3 karakter)..."
-                    class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
+                    class="border border-gray-300 dark:border-gray-700 min-w-52 rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
                   />
                   <select v-model="statusFilter" @change="onStatusFilterChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
                     <option value="all">Semua Status</option>
                     <option value="up">Up</option>
                     <option value="down">Down</option>
                   </select>
+                  <select v-model="visibilityFilter" @change="onVisibilityFilterChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+                    <option value="all">Semua Visibilitas</option>
+                    <option value="public">Publik</option>
+                    <option value="private">Privat</option>
+                  </select>
+                    <select v-model="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+                        <option value="5">5 / halaman</option>
+                        <option value="10">10 / halaman</option>
+                        <option value="15">15 / halaman</option>
+                        <option value="20">20 / halaman</option>
+                        <option value="50">50 / halaman</option>
+                        <option value="100">100 / halaman</option>
+                    </select>
                   <button
                     v-if="search"
                     type="button"
@@ -276,15 +296,6 @@ function onPaginationLinkClick(link: PaginatorLink) {
                             v-html="link.label"
                         />
                     </template>
-                    <select v-model="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
-                        <option disabled selected>per page</option>
-                        <option :value="5">5 / halaman</option>
-                        <option :value="10">10 / halaman</option>
-                        <option :value="12">12 / halaman</option>
-                        <option :value="20">20 / halaman</option>
-                        <option :value="50">50 / halaman</option>
-                        <option :value="100">100 / halaman</option>
-                    </select>
                     </div>
                 </div>
                 </div>
