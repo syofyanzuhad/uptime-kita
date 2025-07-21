@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
   import Icon from '@/components/Icon.vue'
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { useTheme } from '@/composables/useTheme'
 
   // --- INTERFACES (Struktur Data Anda) ---
@@ -283,6 +283,9 @@ onUnmounted(() => {
 })
 
 const { isDark, toggleTheme } = useTheme()
+
+const firstDay = computed(() => getLatest100Days()[0] || '')
+const lastDay = computed(() => getLatest100Days()[getLatest100Days().length-1] || '')
 </script>
 
 <template>
@@ -384,41 +387,48 @@ const { isDark, toggleTheme } = useTheme()
 
               <!-- Daily History Bar Chart for Latest 100 Days -->
               <div class="mt-2 overflow-x-auto">
-                <div v-if="props.isAuthenticated && uptimesDailyLoading[monitor.id]" class="text-xs text-gray-400">Loading uptime history...</div>
-                <div v-else-if="props.isAuthenticated && uptimesDailyError[monitor.id]" class="text-xs text-red-400">{{ uptimesDailyError[monitor.id] }}</div>
-                <div v-if="props.isAuthenticated && uptimesDaily[monitor.id]" class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
-                  <template v-for="date in getLatest100Days()" :key="date">
-                    <template v-if="uptimesDaily[monitor.id].some(u => u.date === date)">
-                      <div
-                        v-for="uptime in uptimesDaily[monitor.id].filter(u => u.date === date)"
-                        :key="uptime.date"
-                        class="relative group flex flex-col items-center flex-1 min-w-0 mx-px"
-                      >
+                <template v-if="props.isAuthenticated">
+                  <div v-if="uptimesDailyLoading[monitor.id]" class="text-xs text-gray-400">Loading uptime history...</div>
+                  <div v-else-if="uptimesDailyError[monitor.id]" class="text-xs text-red-400">{{ uptimesDailyError[monitor.id] }}</div>
+                  <div v-if="uptimesDaily[monitor.id]" class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
+                    <template v-for="date in getLatest100Days()" :key="date">
+                      <template v-if="uptimesDaily[monitor.id].some(u => u.date === date)">
                         <div
-                          :class="[
-                            'h-8 w-full rounded transition-all duration-200',
-                            uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
-                          ]"
-                        ></div>
-                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
-                          {{ uptime.date }}<br />{{ uptime.uptime_percentage.toFixed(2) }}%
+                          v-for="uptime in uptimesDaily[monitor.id].filter(u => u.date === date)"
+                          :key="uptime.date"
+                          class="relative group flex flex-col items-center flex-1 min-w-0 mx-px"
+                        >
+                          <div
+                            :class="[
+                              'h-8 w-full rounded transition-all duration-200',
+                              uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
+                            ]"
+                          ></div>
+                          <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                            {{ uptime.date }}<br />{{ uptime.uptime_percentage.toFixed(2) }}%
+                          </div>
                         </div>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <div class="relative group flex flex-col items-center flex-1 min-w-0 mx-px">
-                        <div class="h-8 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
-                        <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
-                          {{ date }}<br />No data
+                      </template>
+                      <template v-else>
+                        <div class="relative group flex flex-col items-center flex-1 min-w-0 mx-px">
+                          <div class="h-8 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
+                          <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
+                            {{ date }}<br />No data
+                          </div>
                         </div>
-                      </div>
+                      </template>
                     </template>
-                  </template>
-                </div>
-                <div v-if="props.isAuthenticated && uptimesDaily[monitor.id]" class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                  <span>{{ getLatest100Days()[0] }}</span>
-                  <span>{{ getLatest100Days()[getLatest100Days().length-1] }}</span>
-                </div>
+                  </div>
+                  <div v-if="uptimesDaily[monitor.id]" class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                    <span>{{ firstDay.value }}</span>
+                    <span>{{ lastDay.value }}</span>
+                  </div>
+                </template>
+                <template v-else>
+                  <p class="text-xs text-gray-400 italic mt-2">
+                    <Link :href="route('login')" class="text-blue-600 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Login</Link> to see uptime history
+                  </p>
+                </template>
               </div>
             </div>
           </div>
