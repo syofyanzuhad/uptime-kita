@@ -2,7 +2,6 @@
   import { computed, ref, onMounted, onUnmounted } from 'vue'
   import Icon from '@/components/Icon.vue'
 import { Head } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3'
 import { useTheme } from '@/composables/useTheme'
 
   // --- INTERFACES (Struktur Data Anda) ---
@@ -56,6 +55,27 @@ import { useTheme } from '@/composables/useTheme'
   }
 
   const props = defineProps<Props>()
+
+  // --- MONITORS ASYNC LOADING ---
+  const monitors = ref<Monitor[]>([])
+  const monitorsLoading = ref(true)
+  const monitorsError = ref<string | null>(null)
+
+  async function fetchMonitors() {
+    monitorsLoading.value = true
+    monitorsError.value = null
+    try {
+      const res = await fetch(`/status/${props.statusPage.path}/monitors`)
+      if (!res.ok) throw new Error('Failed to load monitors')
+      const data = await res.json()
+      // If data is wrapped in {data: [...]}, unwrap
+      monitors.value = Array.isArray(data) ? data : data.data || []
+    } catch (e: any) {
+      monitorsError.value = e.message || 'Unknown error'
+    } finally {
+      monitorsLoading.value = false
+    }
+  }
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
 
@@ -128,11 +148,11 @@ import { useTheme } from '@/composables/useTheme'
   }
 
   const overallStatus = computed(() => {
-    if (!props.statusPage?.monitors || props.statusPage.monitors.length === 0) {
+    if (!monitors.value || monitors.value.length === 0) {
       return { color: 'bg-green-500', text: 'All Systems Operational' };
     }
-    const hasDown = props.statusPage.monitors.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'down');
-    const hasWarning = props.statusPage.monitors.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'warning');
+    const hasDown = monitors.value.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'down');
+    const hasWarning = monitors.value.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'warning');
     if (hasDown) {
       return { color: 'bg-red-500', text: 'Some Systems Are Down' };
     }
@@ -169,10 +189,11 @@ function startCountdown() {
 }
 
 function refetchStatusPage() {
-  router.reload()
+  fetchMonitors()
 }
 
 onMounted(() => {
+  fetchMonitors()
   startCountdown()
 })
 onUnmounted(() => {
@@ -236,8 +257,10 @@ const { isDark, toggleTheme } = useTheme()
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
-          <div class="divide-y divide-gray-200 dark:divide-gray-700">
-            <div v-for="monitor in statusPage.monitors" :key="monitor.id" class="px-4 sm:px-6 py-4 overflow-auto">
+          <div v-if="monitorsLoading" class="p-6 text-center text-gray-500 dark:text-gray-400">Loading monitors...</div>
+          <div v-else-if="monitorsError" class="p-6 text-center text-red-500">{{ monitorsError }}</div>
+          <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+            <div v-for="monitor in monitors" :key="monitor.id" class="px-4 sm:px-6 py-4 overflow-auto">
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div class="flex items-center space-x-4 w-full min-w-0">
                   <img v-if="monitor.favicon" :src="monitor.favicon" class="w-5 h-5 rounded-full" alt="favicon" @error="($event.target as HTMLImageElement).style.display='none'" />

@@ -19,6 +19,7 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
 
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
+Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk private monitor
