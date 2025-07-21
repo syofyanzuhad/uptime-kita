@@ -22,6 +22,7 @@ class PublicStatusPageController extends Controller
 
         return Inertia::render('StatusPages/Public', [
             'statusPage' => $statusPageResource,
+            'isAuthenticated' => auth()->check(),
         ]);
     }
 
@@ -33,7 +34,7 @@ class PublicStatusPageController extends Controller
         $statusPage = StatusPage::where('path', $path)->firstOrFail();
         $monitors = cache()->remember('public_status_page_monitors_' . $path, 60, function () use ($statusPage) {
             return $statusPage->monitors()
-                ->with(['latestHistory', 'uptimesDaily'])
+                ->with(['latestHistory'])
                 ->get();
         });
         return response()->json(

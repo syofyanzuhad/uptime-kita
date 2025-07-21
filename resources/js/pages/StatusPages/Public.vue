@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref, onMounted, onUnmounted } from 'vue'
+  import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
   import Icon from '@/components/Icon.vue'
 import { Head } from '@inertiajs/vue3';
 import { useTheme } from '@/composables/useTheme'
@@ -52,6 +52,7 @@ import { useTheme } from '@/composables/useTheme'
 
   interface Props {
     statusPage: StatusPage;
+    isAuthenticated: boolean;
   }
 
   const props = defineProps<Props>()
@@ -60,6 +61,11 @@ import { useTheme } from '@/composables/useTheme'
   const monitors = ref<Monitor[]>([])
   const monitorsLoading = ref(true)
   const monitorsError = ref<string | null>(null)
+
+  // --- UPTIMES DAILY PER MONITOR ---
+  const uptimesDaily = ref<Record<number, { date: string; uptime_percentage: number }[]>>({})
+  const uptimesDailyLoading = ref<Record<number, boolean>>({})
+  const uptimesDailyError = ref<Record<number, string | null>>({})
 
   async function fetchMonitors() {
     monitorsLoading.value = true
@@ -76,6 +82,32 @@ import { useTheme } from '@/composables/useTheme'
       monitorsLoading.value = false
     }
   }
+
+  async function fetchUptimesDaily(monitorId: number) {
+    uptimesDailyLoading.value[monitorId] = true
+    uptimesDailyError.value[monitorId] = null
+    try {
+      const res = await fetch(`/monitor/${monitorId}/uptimes-daily`)
+      if (!res.ok) throw new Error('Failed to load uptimes')
+      const data = await res.json()
+      uptimesDaily.value[monitorId] = data.uptimes_daily || []
+    } catch (e: any) {
+      uptimesDailyError.value[monitorId] = e.message || 'Unknown error'
+    } finally {
+      uptimesDailyLoading.value[monitorId] = false
+    }
+  }
+
+  // Only fetch uptimesDaily for all monitors if authenticated
+  watch(monitors, (newMonitors) => {
+    if (props.isAuthenticated) {
+      newMonitors.forEach(monitor => {
+        if (uptimesDaily.value[monitor.id] === undefined) {
+          fetchUptimesDaily(monitor.id)
+        }
+      })
+    }
+  })
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
 
@@ -299,12 +331,14 @@ const { isDark, toggleTheme } = useTheme()
               </div>
 
               <!-- Daily History Bar Chart for Latest 100 Days -->
-              <div v-if="monitor.uptimes_daily" class="mt-2 overflow-x-auto">
-                <div class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
+              <div class="mt-2 overflow-x-auto">
+                <div v-if="props.isAuthenticated && uptimesDailyLoading[monitor.id]" class="text-xs text-gray-400">Loading uptime history...</div>
+                <div v-else-if="props.isAuthenticated && uptimesDailyError[monitor.id]" class="text-xs text-red-400">{{ uptimesDailyError[monitor.id] }}</div>
+                <div v-if="props.isAuthenticated && uptimesDaily[monitor.id]" class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
                   <template v-for="date in getLatest100Days()" :key="date">
-                    <template v-if="monitor.uptimes_daily.some(u => u.date === date)">
+                    <template v-if="uptimesDaily[monitor.id].some(u => u.date === date)">
                       <div
-                        v-for="uptime in monitor.uptimes_daily.filter(u => u.date === date)"
+                        v-for="uptime in uptimesDaily[monitor.id].filter(u => u.date === date)"
                         :key="uptime.date"
                         class="relative group flex flex-col items-center flex-1 min-w-0 mx-px"
                       >
@@ -329,7 +363,7 @@ const { isDark, toggleTheme } = useTheme()
                     </template>
                   </template>
                 </div>
-                <div class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                <div v-if="props.isAuthenticated && uptimesDaily[monitor.id]" class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                   <span>{{ getLatest100Days()[0] }}</span>
                   <span>{{ getLatest100Days()[getLatest100Days().length-1] }}</span>
                 </div>

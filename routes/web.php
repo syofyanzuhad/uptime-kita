@@ -34,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Get monitor history
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
+    Route::get('/monitor/{monitor}/uptimes-daily', \App\Http\Controllers\UptimesDailyController::class)->name('monitor.uptimes-daily');
 
     // Status page management routes
     Route::resource('status-pages', StatusPageController::class);
