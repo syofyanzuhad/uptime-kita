@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
 // --- INTERFACES ---
@@ -9,13 +9,34 @@ interface Uptime {
 }
 
 // --- PROPS ---
-defineProps<{
+const scrollContainer = ref<HTMLDivElement | null>(null)
+
+const props = defineProps<{
   monitorId: number;
   isAuthenticated: boolean;
   uptimesDaily?: Uptime[];
   isLoading: boolean;
   error?: string | null;
 }>()
+
+// Auto-scroll to right when uptimesDaily or isLoading changes
+watch(
+  () => [props.uptimesDaily, props.isLoading],
+  () => {
+    setTimeout(() => {
+      if (scrollContainer.value) {
+        scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
+      }
+    }, 0)
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
+  }
+})
 
 // --- HELPER FUNCTIONS ---
 function getLatest100Days() {
@@ -39,7 +60,7 @@ const lastDay = computed(() => getLatest100Days()[getLatest100Days().length - 1]
       <div v-if="isLoading" class="text-xs text-gray-400">Loading uptime history...</div>
       <div v-else-if="error" class="text-xs text-red-400">{{ error }}</div>
       <div v-else-if="uptimesDaily && uptimesDaily.length > 0">
-          <div class="flex overflow-x-auto items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
+          <div ref="scrollContainer" class="flex overflow-x-auto items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
             <template v-for="date in getLatest100Days()" :key="date">
               <template v-if="uptimesDaily.some(u => u.date === date)">
                 <div
