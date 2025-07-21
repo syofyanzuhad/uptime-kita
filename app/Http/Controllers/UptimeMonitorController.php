@@ -168,10 +168,14 @@ class UptimeMonitorController extends Controller
         $monitorExists = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
             ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
+            ->where('is_public', 0)
+            ->whereDoesntHave('users', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
             ->first();
         if ($monitorExists) {
             // attach to user
-            $monitorExists->users()->attach(auth()->id(), ['is_active' => true]);
+            $monitorExists->users()->sync(auth()->id(), ['is_active' => true]);
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
