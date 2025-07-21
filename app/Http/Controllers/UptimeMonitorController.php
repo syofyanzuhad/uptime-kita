@@ -145,9 +145,7 @@ class UptimeMonitorController extends Controller
     public function edit(Monitor $monitor)
     {
         return Inertia::render('uptime/Edit', [
-            'monitor' => new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
-                $query->latest()->take(100);
-            }])),
+            'monitor' => new MonitorResource($monitor->load(['uptimeDaily'])),
         ]);
     }
 

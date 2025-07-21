@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 
 // Hapus impor komponen yang tidak ada
 // import TextInput from '@/Components/TextInput.vue';
@@ -11,6 +11,10 @@ import { Head, useForm } from '@inertiajs/vue3';
 // import Checkbox from '@/Components/Checkbox.vue';
 
 import type { Monitor } from '@/types/monitor';
+import type { SharedData } from '@/types';
+
+const page = usePage<SharedData>();
+const userId = page.props.auth?.user?.id;
 
 const props = defineProps<{
   monitor: {
@@ -24,6 +28,7 @@ const initialValues = {
   uptime_check_enabled: props.monitor.data.uptime_check_enabled,
   certificate_check_enabled: props.monitor.data.certificate_check_enabled,
   uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
+  is_public: props.monitor.data.is_public ?? false,
 };
 
 // Inisialisasi form dengan data monitor yang ada
@@ -32,6 +37,7 @@ const form = useForm({
   uptime_check_enabled: props.monitor.data.uptime_check_enabled,
   certificate_check_enabled: props.monitor.data.certificate_check_enabled,
   uptime_check_interval: props.monitor.data.uptime_check_interval || 5, // Default to 5 minutes if not set
+  is_public: props.monitor.data.is_public ?? false,
 });
 // console.log(form.url);
 
@@ -54,7 +60,8 @@ const isFormDirty = () => {
     form.url !== initialValues.url ||
     form.uptime_check_enabled !== initialValues.uptime_check_enabled ||
     form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
-    form.uptime_check_interval !== initialValues.uptime_check_interval
+    form.uptime_check_interval !== initialValues.uptime_check_interval ||
+    form.is_public !== initialValues.is_public
   );
 };
 
@@ -155,6 +162,21 @@ const submit = () => {
                 <input type="checkbox" name="certificate_check_enabled" v-model="form.certificate_check_enabled" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm focus:ring-indigo-500">
                 <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Sertifikat SSL</span>
               </label>
+            </div>
+
+            <div v-if="userId === 1" class="mb-4">
+              <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Visibilitas Monitor</label>
+              <div class="flex gap-4">
+                <label class="inline-flex items-center">
+                  <input type="radio" name="is_public" :value="1" v-model="form.is_public" class="form-radio text-indigo-600 dark:text-indigo-400">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Publik</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input type="radio" name="is_public" :value="0" v-model="form.is_public" class="form-radio text-indigo-600 dark:text-indigo-400">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Privat</span>
+                </label>
+              </div>
+              <div v-if="form.errors.is_public" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.is_public }}</div>
             </div>
 
             <div class="flex items-center justify-end mt-4">
