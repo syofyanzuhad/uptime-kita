@@ -8,9 +8,9 @@ Kita is the Indonesian word that means "Us"
 
 - [x] Uptime monitoring
 - [x] SSL Monitoring
-- [ ] Monitoring history
-- [ ] Notification
-- [ ] Status page
+- [x] Monitoring history
+- [x] Notification
+- [x] Status page
 - [ ] Do you have any suggestions?
 
 ## Screenshots
