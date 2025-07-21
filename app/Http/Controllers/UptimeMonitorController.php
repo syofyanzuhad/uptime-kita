@@ -22,18 +22,23 @@ class UptimeMonitorController extends Controller
     {
         $page = $request->input('page', 1);
         $search = $request->input('search');
+        $statusFilter = $request->input('status_filter', 'all');
         $cacheKey = 'monitors_list_page_' . $page;
         if ($search) {
             $cacheKey .= '_search_' . md5($search);
         }
-        $monitors = cache()->remember($cacheKey, 60, function () use ($search) {
+        if ($statusFilter !== 'all') {
+            $cacheKey .= '_filter_' . $statusFilter;
+        }
+        $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter) {
+            $query = Monitor::with(['uptimeDaily', 'histories' => function ($query) {
+                $query->latest()->take(100);
+            }])->search($search);
+            if ($statusFilter === 'up' || $statusFilter === 'down') {
+                $query->where('uptime_status', $statusFilter);
+            }
             return new MonitorCollection(
-                Monitor::with(['uptimeDaily', 'histories' => function ($query) {
-                    $query->latest()->take(100);
-                }])
-                ->search($search)
-                ->orderBy('created_at', 'desc')
-                ->paginate(12)
+                $query->orderBy('created_at', 'desc')->paginate(12)
             );
         });
 
@@ -43,6 +48,7 @@ class UptimeMonitorController extends Controller
             'monitors' => $monitors,
             'flash' => $flash,
             'search' => $search,
+            'statusFilter' => $statusFilter,
         ]);
     }
 

@@ -21,6 +21,7 @@ import FlashMessage from '@/components/FlashMessage.vue';
 const props = defineProps<{
   monitors: Paginator<Monitor>;
   search?: string;
+  statusFilter?: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -99,13 +100,18 @@ const confirmDeleteMonitor = () => {
 };
 
 const search = ref(props.search || '');
+const statusFilter = ref(props.statusFilter || 'all');
 
 function submitSearch() {
-  router.get(route('monitor.index'), { search: search.value }, { preserveState: true, only: ['monitors', 'search'] });
+  router.get(route('monitor.index'), { search: search.value, status_filter: statusFilter.value }, { preserveState: true, only: ['monitors', 'search', 'statusFilter'] });
 }
 
 function clearSearch() {
   search.value = '';
+  submitSearch();
+}
+
+function onStatusFilterChange() {
   submitSearch();
 }
 </script>
@@ -135,7 +141,7 @@ function clearSearch() {
                     </Link>
                 </div>
 
-                <!-- Search Bar -->
+                <!-- Search Bar & Filter -->
                 <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2">
                   <input
                     v-model="search"
@@ -143,6 +149,11 @@ function clearSearch() {
                     placeholder="Cari monitor (min 3 karakter)..."
                     class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
                   />
+                  <select v-model="statusFilter" @change="onStatusFilterChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+                    <option value="all">Semua Status</option>
+                    <option value="up">Up</option>
+                    <option value="down">Down</option>
+                  </select>
                   <button
                     v-if="search"
                     type="button"
