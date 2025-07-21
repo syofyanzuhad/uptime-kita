@@ -67,6 +67,11 @@ import { useTheme } from '@/composables/useTheme'
   const uptimesDailyLoading = ref<Record<number, boolean>>({})
   const uptimesDailyError = ref<Record<number, string | null>>({})
 
+  // --- LATEST HISTORY PER MONITOR ---
+  const latestHistory = ref<Record<number, MonitorHistory | null>>({})
+  const latestHistoryLoading = ref<Record<number, boolean>>({})
+  const latestHistoryError = ref<Record<number, string | null>>({})
+
   async function fetchMonitors() {
     monitorsLoading.value = true
     monitorsError.value = null
@@ -97,6 +102,37 @@ import { useTheme } from '@/composables/useTheme'
       uptimesDailyLoading.value[monitorId] = false
     }
   }
+
+  async function fetchLatestHistory(monitorId: number) {
+    latestHistoryLoading.value[monitorId] = true
+    latestHistoryError.value[monitorId] = null
+    try {
+      const res = await fetch(`/monitor/${monitorId}/latest-history`)
+      if (!res.ok) throw new Error('Failed to load latest history')
+      const data = await res.json()
+      latestHistory.value[monitorId] = data.latest_history || null
+    } catch (e: any) {
+      latestHistoryError.value[monitorId] = e.message || 'Unknown error'
+    } finally {
+      latestHistoryLoading.value[monitorId] = false
+    }
+  }
+
+  // Fetch latestHistory for all monitors after loading
+  watch(monitors, (newMonitors) => {
+    newMonitors.forEach(monitor => {
+      if (latestHistory.value[monitor.id] === undefined) {
+        fetchLatestHistory(monitor.id)
+      }
+    })
+    if (props.isAuthenticated) {
+      newMonitors.forEach(monitor => {
+        if (uptimesDaily.value[monitor.id] === undefined) {
+          fetchUptimesDaily(monitor.id)
+        }
+      })
+    }
+  })
 
   // Only fetch uptimesDaily for all monitors if authenticated
   watch(monitors, (newMonitors) => {
@@ -183,8 +219,8 @@ import { useTheme } from '@/composables/useTheme'
     if (!monitors.value || monitors.value.length === 0) {
       return { color: 'bg-green-500', text: 'All Systems Operational' };
     }
-    const hasDown = monitors.value.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'down');
-    const hasWarning = monitors.value.some(m => m.latest_history?.uptime_status?.toLowerCase() === 'warning');
+    const hasDown = monitors.value.some(m => latestHistory.value[m.id]?.uptime_status?.toLowerCase() === 'down');
+    const hasWarning = monitors.value.some(m => latestHistory.value[m.id]?.uptime_status?.toLowerCase() === 'warning');
     if (hasDown) {
       return { color: 'bg-red-500', text: 'Some Systems Are Down' };
     }
@@ -222,10 +258,24 @@ function startCountdown() {
 
 function refetchStatusPage() {
   fetchMonitors()
+  monitors.value.forEach(monitor => {
+    fetchLatestHistory(monitor.id)
+  })
+  if (props.isAuthenticated) {
+    monitors.value.forEach(monitor => {
+      fetchUptimesDaily(monitor.id)
+    })
+  }
 }
 
 onMounted(() => {
   fetchMonitors()
+  if (props.isAuthenticated) {
+    // Initial fetch for uptimesDaily
+    monitors.value.forEach(monitor => {
+      fetchUptimesDaily(monitor.id)
+    })
+  }
   startCountdown()
 })
 onUnmounted(() => {
@@ -300,10 +350,10 @@ const { isDark, toggleTheme } = useTheme()
 
                   <div class="w-3 h-3 rounded-full flex-shrink-0 animate-pulse"
                     :class="[
-                      getStatusColor(monitor.latest_history?.uptime_status),
-                      monitor.latest_history?.uptime_status?.toLowerCase() === 'up' ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]' :
-                      monitor.latest_history?.uptime_status?.toLowerCase() === 'down' ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]' :
-                      monitor.latest_history?.uptime_status?.toLowerCase() === 'warning' ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]' :
+                      getStatusColor(latestHistory[monitor.id]?.uptime_status),
+                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'up' ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]' :
+                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'down' ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]' :
+                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'warning' ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]' :
                       'shadow-[0_0_8px_2px_rgba(156,163,175,0.5)]'
                     ]"
                   ></div>
@@ -321,11 +371,13 @@ const { isDark, toggleTheme } = useTheme()
                 </div>
 
                 <div class="text-right flex-shrink-0 ml-0 sm:ml-4 w-full sm:w-auto">
-                  <div class="text-sm font-medium" :class="getStatusTextColor(monitor.latest_history?.uptime_status) + ' dark:text-inherit'">
-                    {{ getStatusText(monitor.latest_history?.uptime_status) }}
+                  <div class="text-sm font-medium" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status) + ' dark:text-inherit'">
+                    <template v-if="latestHistoryLoading[monitor.id]">Loading...</template>
+                    <template v-else-if="latestHistoryError[monitor.id]">Error</template>
+                    <template v-else>{{ getStatusText(latestHistory[monitor.id]?.uptime_status) }}</template>
                   </div>
-                  <div v-if="monitor.latest_history?.created_at" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(monitor.latest_history.created_at)">
-                    Last check: {{ timeAgo(monitor.latest_history.created_at) }}
+                  <div v-if="latestHistory[monitor.id]?.created_at" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at)">
+                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at) }}
                   </div>
                 </div>
               </div>

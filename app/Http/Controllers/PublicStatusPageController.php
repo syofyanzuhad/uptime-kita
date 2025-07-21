@@ -34,8 +34,7 @@ class PublicStatusPageController extends Controller
         $statusPage = StatusPage::where('path', $path)->firstOrFail();
         $monitors = cache()->remember('public_status_page_monitors_' . $path, 60, function () use ($statusPage) {
             return $statusPage->monitors()
-                ->with(['latestHistory'])
-                ->get();
+                ->get(); // No eager loading
         });
         return response()->json(
             \App\Http\Resources\MonitorResource::collection($monitors)
