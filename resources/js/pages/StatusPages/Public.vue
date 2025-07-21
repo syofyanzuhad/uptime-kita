@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
   import Icon from '@/components/Icon.vue'
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { useTheme } from '@/composables/useTheme'
+import DailyUptimeChart from '@/components/DailyUptimeChart.vue'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -147,7 +148,7 @@ import { useTheme } from '@/composables/useTheme'
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
 
-  const formatDate = (dateString: string, locale: string = navigator.language || 'en-US') => {
+  const formatDate = (dateString?: string, locale: string = navigator.language || 'en-US') => {
     if (!dateString) return ''
     // Mengembalikan format tanggal dan waktu yang lengkap
     return new Date(dateString).toLocaleString(locale, {
@@ -157,7 +158,7 @@ import { useTheme } from '@/composables/useTheme'
   }
 
   // Fungsi baru untuk format "waktu yang lalu"
-  const timeAgo = (dateString: string) => {
+  const timeAgo = (dateString?: string) => {
       if (!dateString) return '';
       const date = new Date(dateString);
       const now = new Date();
@@ -230,18 +231,6 @@ import { useTheme } from '@/composables/useTheme'
     return { color: 'bg-green-500', text: 'All Systems Operational' };
   })
 
-// Helper to generate the latest 100 days as YYYY-MM-DD
-function getLatest100Days() {
-  const dates = []
-  const today = new Date()
-  for (let i = 99; i >= 0; i--) {
-    const d = new Date(today)
-    d.setDate(today.getDate() - i)
-    dates.push(d.toISOString().slice(0, 10))
-  }
-  return dates
-}
-
 // --- AUTO REFRESH COUNTDOWN ---
 const countdown = ref(60)
 let intervalId: number | undefined
@@ -283,13 +272,13 @@ onUnmounted(() => {
 })
 
 const { isDark, toggleTheme } = useTheme()
-
-const firstDay = computed(() => getLatest100Days()[0] || '')
-const lastDay = computed(() => getLatest100Days()[getLatest100Days().length-1] || '')
 </script>
 
 <template>
-  <Head :title="`${statusPage.title} - Status Page`" />
+  <Head
+    :title="`${statusPage.title} - Status Page`"
+    :description="statusPage.description || 'Status Page'"
+  />
 
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -305,7 +294,7 @@ const lastDay = computed(() => getLatest100Days()[getLatest100Days().length-1] |
               </div>
             </div>
             <!-- Theme Toggle Button -->
-            <button @click="toggleTheme" class="ml-4 p-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+            <button @click="toggleTheme" class="ml-4 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
               <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
               <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
             </button>
@@ -338,14 +327,14 @@ const lastDay = computed(() => getLatest100Days()[getLatest100Days().length-1] |
           </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
           <div v-if="monitorsLoading" class="p-6 text-center text-gray-500 dark:text-gray-400">Loading monitors...</div>
           <div v-else-if="monitorsError" class="p-6 text-center text-red-500">{{ monitorsError }}</div>
           <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-            <div v-for="monitor in monitors" :key="monitor.id" class="px-4 sm:px-6 py-4 overflow-auto">
+            <div v-for="monitor in monitors" :key="monitor.id" class="px-4 sm:px-6 py-4">
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div class="flex items-center space-x-4 w-full min-w-0">
                   <img v-if="monitor.favicon" :src="monitor.favicon" class="w-5 h-5 rounded-full" alt="favicon" @error="($event.target as HTMLImageElement).style.display='none'" />
@@ -386,50 +375,13 @@ const lastDay = computed(() => getLatest100Days()[getLatest100Days().length-1] |
               </div>
 
               <!-- Daily History Bar Chart for Latest 100 Days -->
-              <div class="mt-2 overflow-x-auto">
-                <template v-if="props.isAuthenticated">
-                  <div v-if="uptimesDailyLoading[monitor.id]" class="text-xs text-gray-400">Loading uptime history...</div>
-                  <div v-else-if="uptimesDailyError[monitor.id]" class="text-xs text-red-400">{{ uptimesDailyError[monitor.id] }}</div>
-                  <div v-if="uptimesDaily[monitor.id]" class="flex items-end h-16 bg-gray-50 dark:bg-gray-900 rounded p-2 border border-gray-200 dark:border-gray-700 w-full min-w-[320px]">
-                    <template v-for="date in getLatest100Days()" :key="date">
-                      <template v-if="uptimesDaily[monitor.id].some(u => u.date === date)">
-                        <div
-                          v-for="uptime in uptimesDaily[monitor.id].filter(u => u.date === date)"
-                          :key="uptime.date"
-                          class="relative group flex flex-col items-center flex-1 min-w-0 mx-px"
-                        >
-                          <div
-                            :class="[
-                              'h-8 w-full rounded transition-all duration-200',
-                              uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
-                            ]"
-                          ></div>
-                          <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
-                            {{ uptime.date }}<br />{{ uptime.uptime_percentage.toFixed(2) }}%
-                          </div>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <div class="relative group flex flex-col items-center flex-1 min-w-0 mx-px">
-                          <div class="h-8 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
-                          <div class="absolute bottom-full mb-1 hidden group-hover:block bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow z-10 whitespace-nowrap">
-                            {{ date }}<br />No data
-                          </div>
-                        </div>
-                      </template>
-                    </template>
-                  </div>
-                  <div v-if="uptimesDaily[monitor.id]" class="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                    <span>{{ firstDay.value }}</span>
-                    <span>{{ lastDay.value }}</span>
-                  </div>
-                </template>
-                <template v-else>
-                  <p class="text-xs text-gray-400 italic mt-2">
-                    <Link :href="route('login')" class="text-blue-600 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Login</Link> to see uptime history
-                  </p>
-                </template>
-              </div>
+              <DailyUptimeChart
+                :monitor-id="monitor.id"
+                :is-authenticated="props.isAuthenticated"
+                :uptimes-daily="uptimesDaily[monitor.id]"
+                :is-loading="uptimesDailyLoading[monitor.id]"
+                :error="uptimesDailyError[monitor.id]"
+              />
             </div>
           </div>
         </div>
