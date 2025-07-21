@@ -36,19 +36,16 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             ->toArray();
 
         // Sesuaikan nama channel database dengan nama channel Laravel Notification
-        $mappedChannels = collect($channels)->map(function ($channel) {
-            $mapped = match ($channel) {
-                'telegram' => 'telegram',
+        return collect($channels)->map(function ($channel) use ($notifiable) {
+            return match ($channel) {
+                'telegram' => $notifiable->notificationChannels()->where('type', 'telegram')->where('is_enabled', true)->exists()
+                    ? 'telegram' : null,
                 'email' => 'mail',
                 'slack' => 'slack',
-                'sms' => 'nexmo', // atau vonage tergantung setup
-                default => null
+                'sms' => 'nexmo',
+                default => null,
             };
-
-            return $mapped;
         })->filter()->unique()->values()->all();
-
-        return $mappedChannels;
     }
 
     /**
