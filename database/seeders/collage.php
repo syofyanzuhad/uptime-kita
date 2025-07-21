@@ -51,7 +51,7 @@ return [
 
     ['url' => 'https://universitaspertamina.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://president.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
-    ['url' => 'https://universitas123.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
+    ['url' => 'https://ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://unsrat.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://untan.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
 
@@ -67,7 +67,7 @@ return [
     ['url' => 'https://unsri.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://unib.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
 
-    ['url' => 'https://upri.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
+    ['url' => 'https://web.upri.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://untad.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://unram.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://unud.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
