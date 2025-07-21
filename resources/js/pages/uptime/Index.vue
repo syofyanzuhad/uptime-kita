@@ -4,7 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
 import { Head, Link, router } from '@inertiajs/vue3';
-import type { Monitor, Paginator } from '@/types/monitor';
+import type { Monitor, Paginator, PaginatorLink } from '@/types/monitor';
 import { ref, onMounted, onUnmounted } from 'vue';
 // Import Dialog and Button components for modal
 import Dialog from '@/components/ui/dialog/Dialog.vue';
@@ -101,9 +101,14 @@ const confirmDeleteMonitor = () => {
 
 const search = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
+const perPage = ref((props.monitors?.meta?.per_page as number) || 12);
 
 function submitSearch() {
-  router.get(route('monitor.index'), { search: search.value, status_filter: statusFilter.value }, { preserveState: true, only: ['monitors', 'search', 'statusFilter'] });
+  router.get(route('monitor.index'), {
+    search: search.value,
+    status_filter: statusFilter.value,
+    per_page: perPage.value,
+  }, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage'] });
 }
 
 function clearSearch() {
@@ -113,6 +118,19 @@ function clearSearch() {
 
 function onStatusFilterChange() {
   submitSearch();
+}
+
+function onPerPageChange() {
+  submitSearch();
+}
+
+function onPaginationLinkClick(link: PaginatorLink) {
+  if (link.url) {
+    // Append per_page to pagination link
+    const url = new URL(link.url, window.location.origin);
+    url.searchParams.set('per_page', perPage.value.toString());
+    router.visit(url.pathname + url.search, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage'] });
+  }
 }
 </script>
 
@@ -249,14 +267,24 @@ function onStatusFilterChange() {
                             class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border border-black dark:border-white rounded"
                             v-html="link.label"
                         />
-                        <Link
+                        <button
                             v-else
                             :key="`link-${key}`"
                             class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border border-black dark:border-white rounded focus:border-indigo-500 focus:text-indigo-500"
                             :class="{ 'bg-blue-700 dark:bg-blue-600 text-white dark:text-white': link.active, 'hover:bg-gray-200 dark:hover:bg-gray-700': !link.active }"
-                            :href="link.url"
-                        ><span v-html="link.label" /></Link>
+                            @click="onPaginationLinkClick(link)"
+                            v-html="link.label"
+                        />
                     </template>
+                    <select v-model="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+                        <option disabled selected>per page</option>
+                        <option :value="5">5 / halaman</option>
+                        <option :value="10">10 / halaman</option>
+                        <option :value="12">12 / halaman</option>
+                        <option :value="20">20 / halaman</option>
+                        <option :value="50">50 / halaman</option>
+                        <option :value="100">100 / halaman</option>
+                    </select>
                     </div>
                 </div>
                 </div>
