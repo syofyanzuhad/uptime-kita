@@ -23,6 +23,7 @@ const props = defineProps<{
   search?: string;
   statusFilter?: string;
   visibilityFilter?: string;
+  perPage?: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -103,7 +104,7 @@ const confirmDeleteMonitor = () => {
 const search = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
 const visibilityFilter = ref(props.visibilityFilter || 'all');
-const perPage = ref((props.monitors?.meta?.per_page as number) || 12);
+const perPage = ref((props.perPage as number) || 15);
 
 function submitSearch() {
   router.get(route('monitor.index'), {
@@ -184,13 +185,13 @@ function onPaginationLinkClick(link: PaginatorLink) {
                     <option value="public">Publik</option>
                     <option value="private">Privat</option>
                   </select>
-                    <select v-model="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
-                        <option value="5">5 / halaman</option>
-                        <option value="10">10 / halaman</option>
-                        <option value="15">15 / halaman</option>
-                        <option value="20">20 / halaman</option>
-                        <option value="50">50 / halaman</option>
-                        <option value="100">100 / halaman</option>
+                    <select v-model.number="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+                        <option :value="5">5 / halaman</option>
+                        <option :value="10">10 / halaman</option>
+                        <option :value="15">15 / halaman</option>
+                        <option :value="20">20 / halaman</option>
+                        <option :value="50">50 / halaman</option>
+                        <option :value="100">100 / halaman</option>
                     </select>
                   <button
                     v-if="search"
