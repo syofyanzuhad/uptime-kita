@@ -51,6 +51,7 @@ return [
     ['url' => 'https://ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://myut.ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://admisi-sia.ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
+    ['url' => 'https://elearning.ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://tmk.ut.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
     ['url' => 'https://untan.ac.id', 'uptime_check_enabled' => true, 'certificate_check_enabled' => true, 'is_public' => true],
 
