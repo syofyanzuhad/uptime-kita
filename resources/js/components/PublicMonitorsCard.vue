@@ -36,7 +36,7 @@ const publicMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
-const pollingInterval = ref<number | null>(null);
+// const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
 
 // Toggle active state
@@ -303,18 +303,15 @@ const openMonitorUrl = (url: string) => {
 
 onMounted(() => {
     fetchPublicMonitors(true); // Initial load
-
-    // Start polling every minute (60000ms)
-    pollingInterval.value = setInterval(() => {
-        fetchPublicMonitors(false, 1); // Polling update - always fetch first page
-    }, 60000);
+    // pollingInterval.value = setInterval(() => {
+    //     fetchPublicMonitors(false, 1); // Polling update - always fetch first page
+    // }, 60000);
 });
 
 onUnmounted(() => {
-    // Clean up polling interval when component unmounts
-    if (pollingInterval.value) {
-        clearInterval(pollingInterval.value);
-    }
+    // if (pollingInterval.value) {
+    //     clearInterval(pollingInterval.value);
+    // }
 });
 </script>
 

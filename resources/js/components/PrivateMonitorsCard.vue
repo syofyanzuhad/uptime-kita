@@ -34,7 +34,7 @@ const privateMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
-const pollingInterval = ref<number | null>(null);
+// const pollingInterval = ref<number | null>(null);
 
 // Toggle active state
 const togglingMonitors = ref<Set<number>>(new Set());
@@ -268,15 +268,15 @@ const toggleActive = async (monitorId: number) => {
 
 onMounted(() => {
     fetchPrivateMonitors(true);
-    pollingInterval.value = setInterval(() => {
-        fetchPrivateMonitors(false, 1); // Polling update - always fetch first page
-    }, 60000);
+    // pollingInterval.value = setInterval(() => {
+    //     fetchPrivateMonitors(false, 1); // Polling update - always fetch first page
+    // }, 60000);
 });
 
 onUnmounted(() => {
-    if (pollingInterval.value) {
-        clearInterval(pollingInterval.value);
-    }
+    // if (pollingInterval.value) {
+    //     clearInterval(pollingInterval.value);
+    // }
 });
 </script>
 
