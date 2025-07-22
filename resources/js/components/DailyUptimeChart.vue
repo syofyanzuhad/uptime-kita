@@ -149,7 +149,7 @@ const toggleTooltip = (event: MouseEvent, data: TooltipData) => {
                   :class="[
                     'h-8 w-full rounded transition-all duration-200 min-w-1.5',
                     'pointer-events-none',
-                    uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
+                    uptime.uptime_percentage == 100 ? 'bg-green-500' : uptime.uptime_percentage >= 99 ? 'bg-green-300' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
                   ]"
                 ></div>
               </div>
