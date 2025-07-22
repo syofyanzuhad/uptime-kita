@@ -30,7 +30,9 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Uptime Kita') }}</title>
+        <meta name="description" content="{{ config('app.description', 'Uptime Kita - Simple Uptime Monitoring (open-source)') }}">
+        <meta name="author" content="syofyanzuhad">
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
