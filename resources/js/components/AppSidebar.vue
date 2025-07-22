@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, CheckCircle, Github, LayoutGrid, LucideMonitorSmartphone, SquareActivity } from 'lucide-vue-next';
+import { BookOpen, CheckCircle, Coffee, Github, LayoutGrid, LucideMonitorSmartphone, SquareActivity } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -36,6 +36,11 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Buy me a coffee',
+        href: 'https://www.buymeacoffee.com/syofyanzuhad',
+        icon: Coffee,
+    },
     {
         title: 'Github Repo',
         href: 'https://github.com/syofyanzuhad/uptime-kita',
