@@ -1,5 +1,24 @@
+Untuk membuat tooltip muncul saat diklik di HP (perangkat sentuh), Anda perlu menambahkan event `@click` selain `@mouseover` dan juga menyediakan cara untuk menutup tooltip tersebut, misalnya dengan mengetuk di luar area chart.
+
+Berikut adalah langkah-langkah dan kode lengkap untuk mengimplementasikannya.
+
+-----
+
+### Perubahan Utama
+
+1.  **Menambah Event `@click`**: Setiap bar pada chart akan diberi event `@click` untuk memicu fungsi `toggleTooltip`.
+2.  **Membuat Fungsi `toggleTooltip`**: Fungsi ini akan menampilkan tooltip jika tersembunyi, atau menyembunyikannya jika sudah tampil untuk bar yang sama.
+3.  **Menangani "Click Away"**: Kita akan menambahkan event listener global saat komponen dimuat (`onMounted`) untuk mendeteksi klik di mana pun di luar area chart dan tooltip. Jika terdeteksi, tooltip akan ditutup. Listener ini akan dihapus saat komponen dihancurkan (`onUnmounted`) untuk mencegah kebocoran memori.
+
+-----
+
+### Kode Lengkap yang Telah Diperbarui
+
+Salin dan ganti kode Anda dengan yang di bawah ini.
+
+```vue
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue' // Import onUnmounted
 import { Link } from '@inertiajs/vue3'
 
 // --- INTERFACES ---
@@ -8,7 +27,6 @@ interface Uptime {
   uptime_percentage: number;
 }
 
-// Interface untuk data yang akan ditampilkan di tooltip
 interface TooltipData {
   date: string;
   uptime_percentage: number | null;
@@ -25,6 +43,7 @@ const props = defineProps<{
 
 // --- REFS ---
 const scrollContainer = ref<HTMLDivElement | null>(null)
+const tooltipRef = ref<HTMLDivElement | null>(null) // Ref untuk elemen tooltip itu sendiri
 
 // State untuk mengelola tooltip
 const tooltip = ref({
@@ -50,10 +69,32 @@ watch(
   { immediate: true }
 )
 
+/**
+ * Menangani klik di luar area chart dan tooltip untuk menutupnya.
+ */
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    tooltip.value.visible &&
+    tooltipRef.value &&
+    scrollContainer.value &&
+    !tooltipRef.value.contains(event.target as Node) &&
+    !scrollContainer.value.contains(event.target as Node)
+  ) {
+    hideTooltip()
+  }
+}
+
 onMounted(() => {
   if (scrollContainer.value) {
     scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
   }
+  // Tambahkan event listener saat komponen dimuat
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  // Hapus event listener untuk mencegah memory leak
+  document.removeEventListener('click', handleClickOutside)
 })
 
 // --- HELPER FUNCTIONS ---
@@ -73,30 +114,34 @@ const lastDay = computed(() => getLatest100Days()[getLatest100Days().length - 1]
 
 // --- TOOLTIP FUNCTIONS ---
 
-/**
- * Menampilkan tooltip saat mouse hover di atas bar
- * @param event - Mouse event untuk mendapatkan posisi elemen
- * @param data - Data untuk ditampilkan di tooltip
- */
 const showTooltip = (event: MouseEvent, data: TooltipData) => {
-  const targetEl = event.target as HTMLElement
+  const targetEl = event.currentTarget as HTMLElement // Gunakan currentTarget
   const rect = targetEl.getBoundingClientRect()
 
   tooltip.value = {
     visible: true,
     date: data.date,
     content: data.uptime_percentage !== null ? `${data.uptime_percentage.toFixed(2)}%` : 'No data',
-    // Posisi tooltip di atas tengah bar
-    top: rect.top, // rect.top sudah relatif terhadap viewport
-    left: rect.left + rect.width / 2, // rect.left juga relatif terhadap viewport
+    top: rect.top,
+    left: rect.left + rect.width / 2,
   }
 }
 
-/**
- * Menyembunyikan tooltip saat mouse meninggalkan bar
- */
 const hideTooltip = () => {
   tooltip.value.visible = false
+}
+
+/**
+ * Toggle tooltip untuk perangkat sentuh (HP)
+ */
+const toggleTooltip = (event: MouseEvent, data: TooltipData) => {
+  // Jika tooltip sudah terlihat untuk bar yang sama, sembunyikan
+  if (tooltip.value.visible && tooltip.value.date === data.date) {
+    hideTooltip()
+  } else {
+    // Jika tidak, tampilkan
+    showTooltip(event, data)
+  }
 }
 </script>
 
@@ -115,27 +160,29 @@ const hideTooltip = () => {
               <div
                 v-for="uptime in uptimesDaily.filter(u => u.date === date)"
                 :key="uptime.date"
-                class="flex flex-col items-center flex-1 min-w-1.5 mx-px"
+                class="flex flex-col items-center flex-1 min-w-1.5 mx-px cursor-pointer"
                 @mouseover="showTooltip($event, uptime)"
                 @mouseleave="hideTooltip"
+                @click="toggleTooltip($event, uptime)"
               >
                 <div
                   :class="[
                     'h-8 w-full rounded transition-all duration-200 min-w-1.5',
-                    'pointer-events-none', // Mencegah div ini menangkap event mouse
+                    'pointer-events-none',
                     uptime.uptime_percentage >= 99 ? 'bg-green-500' : uptime.uptime_percentage >= 90 ? 'bg-yellow-400' : 'bg-red-500'
                   ]"
                 ></div>
-                </div>
+              </div>
             </template>
             <template v-else>
               <div 
-                class="flex flex-col items-center flex-1 min-w-1.5 mx-px"
+                class="flex flex-col items-center flex-1 min-w-1.5 mx-px cursor-pointer"
                 @mouseover="showTooltip($event, { date, uptime_percentage: null })"
                 @mouseleave="hideTooltip"
+                @click="toggleTooltip($event, { date, uptime_percentage: null })"
               >
                 <div class="h-8 w-full bg-gray-300 dark:bg-gray-700 rounded min-w-1.5 pointer-events-none"></div>
-                 </div>
+              </div>
             </template>
           </template>
         </div>
@@ -146,13 +193,11 @@ const hideTooltip = () => {
       </div>
     </template>
     <template v-else>
-      <p class="text-xs text-gray-400 italic mt-2">
-        <Link :href="route('login')" class="text-blue-600 cursor-pointer dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Login</Link> to see uptime history
-      </p>
-    </template>
+       </template>
 
     <Teleport to="body">
       <div
+        ref="tooltipRef"
         v-if="tooltip.visible"
         :style="{ top: `${tooltip.top}px`, left: `${tooltip.left}px` }"
         class="fixed bg-white dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-200 px-2 py-1 rounded shadow-lg z-50 whitespace-nowrap transition-opacity duration-200 -translate-x-1/2 -translate-y-full -mt-1"
@@ -163,3 +208,4 @@ const hideTooltip = () => {
     </Teleport>
   </div>
 </template>
+```
