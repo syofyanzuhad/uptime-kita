@@ -4,6 +4,7 @@
 import { Head } from '@inertiajs/vue3';
 import { useTheme } from '@/composables/useTheme'
 import DailyUptimeChart from '@/components/DailyUptimeChart.vue'
+import OfflineBanner from '@/components/OfflineBanner.vue'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -235,17 +236,26 @@ import DailyUptimeChart from '@/components/DailyUptimeChart.vue'
 const countdown = ref(60)
 let intervalId: number | undefined
 
+const isOnline = ref(navigator.onLine)
+
+function updateOnlineStatus() {
+  isOnline.value = navigator.onLine
+}
+
 function startCountdown() {
   intervalId = window.setInterval(() => {
     countdown.value--
     if (countdown.value <= 0) {
-      refetchStatusPage()
+      if (isOnline.value) {
+        refetchStatusPage()
+      }
       countdown.value = 60
     }
   }, 1000)
 }
 
 function refetchStatusPage() {
+  if (!isOnline.value) return
   fetchMonitors()
   monitors.value.forEach(monitor => {
     fetchLatestHistory(monitor.id)
@@ -258,6 +268,8 @@ function refetchStatusPage() {
 }
 
 onMounted(() => {
+  window.addEventListener('online', updateOnlineStatus)
+  window.addEventListener('offline', updateOnlineStatus)
   fetchMonitors()
   if (props.isAuthenticated) {
     // Initial fetch for uptimesDaily
@@ -269,12 +281,15 @@ onMounted(() => {
 })
 onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
+  window.removeEventListener('online', updateOnlineStatus)
+  window.removeEventListener('offline', updateOnlineStatus)
 })
 
 const { isDark, toggleTheme } = useTheme()
 </script>
 
 <template>
+  <OfflineBanner v-if="!isOnline" />
   <Head
     :title="`${statusPage.title} - Status Page`"
     :description="statusPage.description || 'Status Page'"
