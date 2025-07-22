@@ -1,25 +1,5 @@
-Untuk membuat tooltip muncul saat diklik di HP (perangkat sentuh), Anda perlu menambahkan event `@click` selain `@mouseover` dan juga menyediakan cara untuk menutup tooltip tersebut, misalnya dengan mengetuk di luar area chart.
-
-Berikut adalah langkah-langkah dan kode lengkap untuk mengimplementasikannya.
-
------
-
-### Perubahan Utama
-
-1.  **Menambah Event `@click`**: Setiap bar pada chart akan diberi event `@click` untuk memicu fungsi `toggleTooltip`.
-2.  **Membuat Fungsi `toggleTooltip`**: Fungsi ini akan menampilkan tooltip jika tersembunyi, atau menyembunyikannya jika sudah tampil untuk bar yang sama.
-3.  **Menangani "Click Away"**: Kita akan menambahkan event listener global saat komponen dimuat (`onMounted`) untuk mendeteksi klik di mana pun di luar area chart dan tooltip. Jika terdeteksi, tooltip akan ditutup. Listener ini akan dihapus saat komponen dihancurkan (`onUnmounted`) untuk mencegah kebocoran memori.
-
------
-
-### Kode Lengkap yang Telah Diperbarui
-
-Salin dan ganti kode Anda dengan yang di bawah ini.
-
-```vue
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue' // Import onUnmounted
-import { Link } from '@inertiajs/vue3'
 
 // --- INTERFACES ---
 interface Uptime {
