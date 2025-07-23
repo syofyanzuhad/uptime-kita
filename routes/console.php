@@ -52,7 +52,6 @@ Artisan::command('test:telegram-notification', function () {
 
         $this->info('✅ Telegram notification sent successfully!');
         $this->info('Check your Telegram chat for the test message.');
-
     } catch (\Exception $e) {
         $this->error('❌ Failed to send Telegram notification:');
         $this->error($e->getMessage());
@@ -123,7 +122,6 @@ Artisan::command('test:telegram-notification-advanced {--user=} {--url=} {--stat
 
         $this->info('✅ Telegram notification sent successfully!');
         $this->info('Check your Telegram chat for the test message.');
-
     } catch (\Exception $e) {
         $this->error('❌ Failed to send Telegram notification:');
         $this->error($e->getMessage());
@@ -296,7 +294,7 @@ Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyMinute();
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinute();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
