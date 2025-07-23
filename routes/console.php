@@ -294,7 +294,7 @@ Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinute();
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
