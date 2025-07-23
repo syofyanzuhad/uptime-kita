@@ -1,20 +1,44 @@
 # Simple Uptime Monitoring
 
-## Uptime Kita
+## 🟩 Uptime Kita
+
+<p align='center'>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+	  <img src='  https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2Fsyofyanzuhad%2Fuptime-kita.json%3Fcolor%3Dgreen'>
+	</a>
+  <a target="_blank" href="https://github.com/syofyanzuhad/uptime-kita">
+    <img src="https://img.shields.io/github/last-commit/syofyanzuhad/uptime-kita" />
+  </a>
+	<a href="https://github.com/syofyanzuhad/uptime-kita/issues">
+    <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/syofyanzuhad/uptime-kita">
+  </a>
+	<a href="https://github.com/syofyanzuhad/uptime-kita/pulls">
+		<img src="https://img.shields.io/github/issues-pr/syofyanzuhad/uptime-kita" alt="Pull Requests Badge"/>
+	</a>
+  <a href="https://github.com/syofyanzuhad/uptime-kita/graphs/contributors">
+		<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/syofyanzuhad/uptime-kita?color=2b9348">
+	</a>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+		<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
+	</a>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+		<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
+	</a>
+</p>
 
 Kita is the Indonesian word that means "Us"; this means that the uptime can be used for all of us
 
 ## 🥔 Live Demo
 
-U can try it [here](https://uptime.syofyanzuhad.dev)
+U can try it [here](https://uptime.syofyanzuhad.dev) (Server located on Germany)
 
 ## ⭐ Features
 
 - Monitoring uptime for HTTP(s)
+- Certificate check
 - Fancy, Reactive, Fast UI/UX
 - Notifications via Telegram, Slack, Email (SMTP), and the others are still in progress
 - Multiple status pages
-- Certificate check
 
 ## 🔧 How to Install
 
@@ -50,6 +74,17 @@ cd uptime-kita
 
 # copy .env file from .env.example
 cp .env.example .env
+```
+```bash
+# google oauth https://developers.google.com/identity/protocols/oauth2?hl=id
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# telegram bot token https://t.me/botfather
+TELEGRAM_BOT_TOKEN=
+
+# email configuration with https://resend.com/
+RESEND_API_KEY=
 ```
 - Generate application key: 
 ```bash
@@ -104,7 +139,7 @@ sudo supervisorctl start horizon
 
 Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installing-supervisor)
 
-## Roadmap
+## 🛣️ Roadmap
 
 - [x] Uptime monitoring
 - [x] SSL Monitoring
@@ -117,7 +152,7 @@ Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installi
 - [x] Status page
 - [ ] Do you have any suggestions?
 
-## Screenshots
+## 📸 Screenshots
 
 ### Private monitors
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_dashboard (1)" src="https://github.com/user-attachments/assets/812d9b8a-869d-4f7d-9e54-828c1e41a27c" />
