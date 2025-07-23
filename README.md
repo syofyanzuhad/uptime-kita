@@ -4,7 +4,7 @@
 
 <p align='center'>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
-	  <img src='  https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2Fsyofyanzuhad%2Fuptime-kita.json%3Fcolor%3Dgreen'>
+	  <img src='https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2Fsyofyanzuhad%2Fuptime-kita.json%3Fcolor%3Dgreen'>
 	</a>
   <a target="_blank" href="https://github.com/syofyanzuhad/uptime-kita">
     <img src="https://img.shields.io/github/last-commit/syofyanzuhad/uptime-kita" />
