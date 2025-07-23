@@ -4,6 +4,106 @@
 
 Kita is the Indonesian word that means "Us"; this means that the uptime can be used for all of us
 
+## 🥔 Live Demo
+
+U can try it [here](https://uptime.syofyanzuhad.dev)
+
+## ⭐ Features
+
+- Monitoring uptime for HTTP(s)
+- Fancy, Reactive, Fast UI/UX
+- Notifications via Telegram, Slack, Email (SMTP), and the others are still in progress
+- Multiple status pages
+- Certificate check
+
+## 🔧 How to Install
+
+### Requirements:
+- php ^8.2 (and meet [Laravel 12.x requirements](https://laravel.com/docs/12.x/deployment#server-requirements)).
+- Node.js ^22
+- Redis
+- SQLite
+- Crontab
+- Supervisord
+
+### Installation:
+- Clone repository:
+```bash
+git clone https://github.com/syofyanzuhad/uptime-kita
+```
+- Install PHP dependencies: 
+```bash
+composer install
+```
+- Install javscript dependencies and build assets:
+```bash
+# install dependencies
+npm install
+
+# build assetes
+npm run build
+```
+- Setup .env file
+```bash
+# change directory to the uptime-kita
+cd uptime-kita
+
+# copy .env file from .env.example
+cp .env.example .env
+```
+- Generate application key: 
+```bash
+php artisan key:generate
+```
+- Run migration and seeder (this will prompt to create database.sqlite file if it doesn't exists)
+```bash
+php artisan migrate --seed --force
+```
+- Run the scheduler using cron job:
+```bash
+# open cron configuration
+crontab -e
+```
+```bash
+# copy this text to the end of line 
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+> [!NOTE]
+> change the path to your project path
+
+Read more about [laravel scheduler](https://laravel.com/docs/12.x/scheduling#running-the-scheduler)
+- Run the background job using supervisord:
+```bash
+# install supervisord
+sudo apt-get install supervisor
+
+# add new file on /etc/supervisor/conf.d directory
+touch /etc/supervisor/conf.d/horizon.conf
+```
+```bash
+# copy this text
+[program:horizon]
+process_name=%(program_name)s
+command=php /home/path-to-project/artisan horizon
+autostart=true
+autorestart=true
+user=forge
+redirect_stderr=true
+stdout_logfile=/home/path-to-project/horizon.log
+stopwaitsecs=3600
+```
+> [!NOTE]
+> change the path to your project path
+```bash
+sudo supervisorctl reread
+
+sudo supervisorctl update
+
+sudo supervisorctl start horizon
+```
+
+Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installing-supervisor)
+
 ## Roadmap
 
 - [x] Uptime monitoring
