@@ -287,6 +287,7 @@ Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
+Schedule::command('horizon:forget --all')->daily();
 
 // === LARAVEL TELOSCOPE ===
 Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
