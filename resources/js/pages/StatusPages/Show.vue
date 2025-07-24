@@ -340,8 +340,10 @@ const updateMonitorOrder = async () => {
           <div class="flex items-center justify-between">
             <CardTitle>Associated Monitors</CardTitle>
             <Button @click="openAddMonitorModal" v-if="draggableMonitors && draggableMonitors.length > 0">
-              <Icon name="plus" class="w-4 h-4 mr-2" />
-              Add Monitor
+              <span class="flex items-center">
+                <Icon name="plus" class="w-4 h-4 mr-2" />
+                Add Monitor
+              </span>
             </Button>
           </div>
         </CardHeader>
