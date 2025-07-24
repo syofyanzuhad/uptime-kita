@@ -94,7 +94,8 @@ autorestart=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/log/supervisor/nightwatch-agent.log
+stdout_logfile=/var/log/nightwatch-agent.log
+stderr_logfile=/var/log/nightwatch-agent.log
 '''
 
 "php-fpm.conf" = '''
