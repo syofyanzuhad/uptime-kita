@@ -28,8 +28,13 @@ class StatusPageOrderController extends Controller
                 ->where('monitor_id', $monitorId)
                 ->first();
 
+            if ($statusPageMonitor->order === $order) {
+                // If the order is the same, skip updating
+                continue;
+            }
+
             // If the entry exists and different from the current order, update it
-            if ($statusPageMonitor && $statusPageMonitor->order !== $order) {
+            if ($statusPageMonitor) {
                 StatusPageMonitor::where('status_page_id', $statusPage->id)
                     ->where('monitor_id', $monitorId)
                     ->update(['order' => $order]);
