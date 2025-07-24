@@ -84,19 +84,6 @@ stdout_logfile=/var/log/worker-laravel.log
 stderr_logfile=/var/log/worker-laravel.log
 '''
 
-"worker-nightwatch.conf" = '''
-[program:nightwatch-agent]
-process_name=%(program_name)s
-command=bash -c 'exec php /app/artisan nightwatch:agent'
-directory=/app
-autostart=true
-autorestart=true
-user=www-data
-numprocs=1
-redirect_stderr=true
-stdout_logfile=/var/log/supervisor/nightwatch-agent.log
-'''
-
 "php-fpm.conf" = '''
 [www]
 listen = 127.0.0.1:9000
