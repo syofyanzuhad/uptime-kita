@@ -32,7 +32,7 @@ return new class extends Migration
             // 2. Hapus index lama jika ada (opsional, tergantung struktur Anda)
             // Pastikan nama indexnya benar. Anda bisa cek di database client.
             // Jika tidak yakin, Anda bisa comment baris ini.
-            $table->dropIndex('monitor_uptime_dailies_date_index');
+            // $table->dropIndex('monitor_uptime_dailies_date_index');
 
             // 3. Sekarang aman untuk menambahkan unique constraint
             $table->unique(['monitor_id', 'date'], 'monitor_uptime_daily_unique');
