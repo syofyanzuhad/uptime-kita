@@ -36,6 +36,7 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 
 ## ⭐ Features
 
+- Google Oauth authentication
 - Monitoring uptime for HTTP(s)
 - Certificate check
 - Fancy, Reactive, Fast UI/UX
