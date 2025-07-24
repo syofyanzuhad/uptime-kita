@@ -22,7 +22,7 @@ class StatusPageController extends Controller
     {
         $statusPages = auth()->user()->statusPages()->latest()->paginate(9);
 
-        return Inertia::render('StatusPages/Index', [
+        return Inertia::render('status-pages/Index', [
             'statusPages' => new StatusPageCollection($statusPages),
         ]);
     }
@@ -32,7 +32,7 @@ class StatusPageController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('StatusPages/Create');
+        return Inertia::render('status-pages/Create');
     }
 
     /**
@@ -71,7 +71,7 @@ class StatusPageController extends Controller
     {
         $this->authorize('view', $statusPage);
 
-        return Inertia::render('StatusPages/Show', [
+        return Inertia::render('status-pages/Show', [
             'statusPage' => (new StatusPageResource($statusPage->load([
                 'monitors' => function ($query) {
                     $query->orderBy('status_page_monitor.order', 'asc')
@@ -88,7 +88,7 @@ class StatusPageController extends Controller
     {
         $this->authorize('update', $statusPage);
 
-        return Inertia::render('StatusPages/Edit', [
+        return Inertia::render('status-pages/Edit', [
             'statusPage' => $statusPage,
         ]);
     }
