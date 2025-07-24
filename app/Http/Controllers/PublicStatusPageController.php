@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
+use App\Models\StatusPageMonitor;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,10 +32,16 @@ class PublicStatusPageController extends Controller
      */
     public function monitors(string $path)
     {
-        $statusPage = StatusPage::where('path', $path)->firstOrFail();
-        $monitors = cache()->remember('public_status_page_monitors_' . $path, 60, function () use ($statusPage) {
-            return $statusPage->monitors()
-                ->get(); // No eager loading
+        $monitors = cache()->remember('public_status_page_monitors_' . $path, 60, function () {
+            return StatusPageMonitor::with(['monitor'])
+                ->whereHas('statusPage', function ($query) {
+                    $query->where('path', request()->route('path'));
+                })
+                ->orderBy('order')
+                ->get()
+                ->map(function ($statusPageMonitor) {
+                    return $statusPageMonitor->monitor;
+                });
         });
         return response()->json(
             \App\Http\Resources\MonitorResource::collection($monitors)

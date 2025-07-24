@@ -72,7 +72,12 @@ class StatusPageController extends Controller
         $this->authorize('view', $statusPage);
 
         return Inertia::render('StatusPages/Show', [
-            'statusPage' => (new StatusPageResource($statusPage->load('monitors.uptimeDaily')))->toArray(request()),
+            'statusPage' => (new StatusPageResource($statusPage->load([
+                'monitors' => function ($query) {
+                    $query->orderBy('status_page_monitor.order', 'asc')
+                        ->with(['latestHistory']);
+                },
+            ])))->toArray(request()),
         ]);
     }
 
