@@ -47,7 +47,7 @@ return new class extends Migration
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
             // Urutan di 'down' adalah kebalikan dari 'up'
             $table->dropUnique('monitor_uptime_daily_unique');
-            $table->index('date', 'monitor_uptime_dailies_date_index');
+            // $table->index('date', 'monitor_uptime_dailies_date_index');
         });
     }
 };
