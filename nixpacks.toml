@@ -87,7 +87,7 @@ stderr_logfile=/var/log/worker-laravel.log
 "worker-nightwatch.conf" = '''
 [program:nightwatch-agent]
 process_name=%(program_name)s
-command=php /app/artisan nightwatch:agent
+command=bash -c 'exec php /app/artisan nightwatch:agent'
 directory=/app
 autostart=true
 autorestart=true
