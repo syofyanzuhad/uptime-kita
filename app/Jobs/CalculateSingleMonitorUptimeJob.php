@@ -59,6 +59,12 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue
      */
     private function updateUptimeRecord(float $uptimePercentage): void
     {
+        // delete all records for the monitor on this date first
+        MonitorUptimeDaily::where('monitor_id', $this->monitorId)
+            ->where('date', $this->date)
+            ->delete();
+
+        // Then create or update the record
         MonitorUptimeDaily::updateOrCreate(
             [
                 'monitor_id' => $this->monitorId,
