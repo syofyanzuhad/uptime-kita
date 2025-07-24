@@ -54,92 +54,127 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 
 ### Installation:
 - Clone repository:
-```bash
-git clone https://github.com/syofyanzuhad/uptime-kita
-```
+    ```bash
+    git clone https://github.com/syofyanzuhad/uptime-kita
+    ```
 - Install PHP dependencies: 
-```bash
-composer install
-```
+    ```bash
+    composer install
+    ```
 - Install javscript dependencies and build assets:
-```bash
-# install dependencies
-npm install
-
-# build assetes
-npm run build
-```
+    ```bash
+    # install dependencies
+    npm install
+    
+    # build assetes
+    npm run build
+    ```
 - Setup .env file
-```bash
-# change directory to the uptime-kita
-cd uptime-kita
-
-# copy .env file from .env.example
-cp .env.example .env
-```
-```bash
-# google oauth https://developers.google.com/identity/protocols/oauth2?hl=id
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-# telegram bot token https://t.me/botfather
-TELEGRAM_BOT_TOKEN=
-
-# email configuration with https://resend.com/
-RESEND_API_KEY=
-```
+    ```bash
+    # change directory to the uptime-kita
+    cd uptime-kita
+    
+    # copy .env file from .env.example
+    cp .env.example .env
+    ```
+    ```bash
+    # admin credential
+    ADMIN_EMAIL=admin@syofyanzuhad.dev
+    ADMIN_PASSWORD=password123
+    
+    # google oauth https://developers.google.com/identity/protocols/oauth2?hl=id
+    GOOGLE_CLIENT_ID=
+    GOOGLE_CLIENT_SECRET=
+    
+    # telegram bot token https://t.me/botfather
+    TELEGRAM_BOT_TOKEN=
+    
+    # email configuration with https://resend.com/
+    RESEND_API_KEY=
+    ```
 - Generate application key: 
-```bash
-php artisan key:generate
-```
+    ```bash
+    php artisan key:generate
+    ```
 - Run migration and seeder (this will prompt to create database.sqlite file if it doesn't exists)
-```bash
-php artisan migrate --seed --force
-```
+    ```bash
+    php artisan migrate --seed --force
+    ```
 - Run the scheduler using cron job:
-```bash
-# open cron configuration
-crontab -e
-```
-```bash
-# copy this text to the end of line 
-* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
-```
+    ```bash
+    # open cron configuration
+    crontab -e
+    ```
+    ```bash
+    # copy this text to the end of line (change the path to your project path)
+    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+    ```
+
+    > Read more about [laravel scheduler](https://laravel.com/docs/12.x/scheduling#running-the-scheduler)
+
+- There are 2 ways to run the background job:
+
+  1. Laravel Queue
+
+        ```bash
+        # install supervisord
+        sudo apt-get install supervisor
+        
+        # add new file on /etc/supervisor/conf.d directory
+        touch /etc/supervisor/conf.d/laravel-worker.conf
+        ```
+        ```bash
+        # copy this text (change the path to your project path)
+        [program:laravel-worker]
+        process_name=%(program_name)s_%(process_num)02d
+        command=php /home/path-to-project/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
+        autostart=true
+        autorestart=true
+        stopasgroup=true
+        killasgroup=true
+        user=forge
+        numprocs=8
+        redirect_stderr=true
+        stdout_logfile=/home/forge/app.com/worker.log
+        stopwaitsecs=3600
+        ```
+
+        > Read more about [laravel queue](https://laravel.com/docs/12.x/queues#supervisor-configuration)
+
+  2. Laravel Horizon
+  
+        ```bash
+        # install supervisord
+        sudo apt-get install supervisor
+        
+        # add new file on /etc/supervisor/conf.d directory
+        touch /etc/supervisor/conf.d/horizon.conf
+        ```
+        ```bash
+        # copy this text (change the path to your project path)
+        [program:horizon]
+        process_name=%(program_name)s
+        command=php /home/path-to-project/artisan horizon
+        autostart=true
+        autorestart=true
+        user=forge
+        redirect_stderr=true
+        stdout_logfile=/home/path-to-project/horizon.log
+        stopwaitsecs=3600
+        ```
+
+        ```bash
+        sudo supervisorctl reread
+        
+        sudo supervisorctl update
+        
+        sudo supervisorctl start horizon
+        ```
+
+        > Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installing-supervisor)
+
 > [!NOTE]
 > change the path to your project path
-
-Read more about [laravel scheduler](https://laravel.com/docs/12.x/scheduling#running-the-scheduler)
-- Run the background job using supervisord:
-```bash
-# install supervisord
-sudo apt-get install supervisor
-
-# add new file on /etc/supervisor/conf.d directory
-touch /etc/supervisor/conf.d/horizon.conf
-```
-```bash
-# copy this text
-[program:horizon]
-process_name=%(program_name)s
-command=php /home/path-to-project/artisan horizon
-autostart=true
-autorestart=true
-user=forge
-redirect_stderr=true
-stdout_logfile=/home/path-to-project/horizon.log
-stopwaitsecs=3600
-```
-> [!NOTE]
-> change the path to your project path
-```bash
-sudo supervisorctl reread
-
-sudo supervisorctl update
-
-sudo supervisorctl start horizon
-```
-
-Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installing-supervisor)
 
 ## 🛣️ Roadmap
 
@@ -171,3 +206,13 @@ Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installi
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status-pages_1" src="https://github.com/user-attachments/assets/8102d0bc-978f-4888-8503-d8e6a2923130" />
 
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
+
+## Star History
+
+<a href="https://www.star-history.com/#syofyanzuhad/uptime-kita&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date" />
+ </picture>
+</a>
