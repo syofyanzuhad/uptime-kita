@@ -37,8 +37,8 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue
         $result = DB::table('monitor_histories')
             ->selectRaw('
                 COUNT(*) as total_checks,
-                SUM(CASE WHEN uptime_status = ? THEN 1 ELSE 0 END) as up_checks
-            ', ['up'])
+                SUM(CASE WHEN uptime_status = "up" THEN 1 ELSE 0 END) as up_checks
+            ')
             ->where('monitor_id', $this->monitorId)
             ->whereDate('created_at', $this->date)
             ->first();
