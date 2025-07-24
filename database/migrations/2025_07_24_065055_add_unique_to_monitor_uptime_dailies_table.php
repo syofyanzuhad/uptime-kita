@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
-            // Check if the unique constraint already exists
-            // if (Schema::hasColumn('monitor_uptime_dailies', 'monitor_id') && Schema::hasColumn('monitor_uptime_dailies', 'date')) {
-            //     return; // Unique constraint already exists, no need to add it again
+            // drop index on date if it exists
+            // if (Schema::hasIndex('monitor_uptime_dailies', 'monitor_uptime_dailies_date_index')) {
+            $table->dropIndex('monitor_uptime_dailies_date_index');
             // }
             $table->unique(['monitor_id', 'date'], 'monitor_uptime_daily_unique');
         });
@@ -26,10 +26,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
-            // Check if the unique constraint exists before dropping it
-            if (Schema::hasColumn('monitor_uptime_dailies', 'monitor_id') || Schema::hasColumn('monitor_uptime_dailies', 'date')) {
-                return; // Columns do not exist, no need to drop the constraint
-            }
+            // Recreate the index on date
+            // if (!Schema::hasIndex('monitor_uptime_dailies', 'monitor_uptime_dailies_date_index')) {
+            $table->index('date', 'monitor_uptime_dailies_date_index');
+            // }
             // Drop the unique constraint on monitor_id and date
             $table->dropUnique('monitor_uptime_daily_unique');
         });
