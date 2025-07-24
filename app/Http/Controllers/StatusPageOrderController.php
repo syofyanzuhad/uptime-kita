@@ -26,23 +26,22 @@ class StatusPageOrderController extends Controller
             // Find the status page monitor pivot table entry
             $statusPageMonitor = StatusPageMonitor::where('status_page_id', $statusPage->id)
                 ->where('monitor_id', $monitorId)
-                ->first();
+                ->firstOr(function () {
+                    $monitorId = request()->route('monitorId');
+                    $statusPage = request()->route('statusPage');
+
+                    // If the monitor ID is not found, return an error
+                    return redirect()->back()->withErrors(['error' => "Monitor ID {$monitorId} not found in status page {$statusPage->id}."]);
+                });
 
             if ($statusPageMonitor->order === $order) {
                 // If the order is the same, skip updating
                 continue;
             }
 
-            // If the entry exists and different from the current order, update it
-            if ($statusPageMonitor) {
-                StatusPageMonitor::where('status_page_id', $statusPage->id)
-                    ->where('monitor_id', $monitorId)
-                    ->update(['order' => $order]);
-            } else {
-                // If the entry does not exist, you may choose to handle it
-                // For example, you could log an error or throw an exception
-                return redirect()->back()->withErrors(['error' => "Monitor ID {$monitorId} not found in status page {$statusPage->id}."]);
-            }
+            StatusPageMonitor::where('status_page_id', $statusPage->id)
+                ->where('monitor_id', $monitorId)
+                ->update(['order' => $order]);
         }
 
         // Return a success response
