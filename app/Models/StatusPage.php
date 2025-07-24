@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,12 +37,12 @@ class StatusPage extends Model
      */
     public static function generateUniquePath(string $title): string
     {
-        $basePath = \Str::slug($title);
+        $basePath = Str::slug($title);
         $path = $basePath;
         $counter = 1;
 
         while (static::where('path', $path)->exists()) {
-            $path = $basePath.'-'.$counter;
+            $path = $basePath . '-' . $counter;
             $counter++;
         }
 
