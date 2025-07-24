@@ -42,7 +42,7 @@ const footerNavItems: NavItem[] = [
         icon: Coffee,
     },
     {
-        title: 'Github Repo',
+        title: 'Github Repo ⭐️',
         href: 'https://github.com/syofyanzuhad/uptime-kita',
         icon: Github,
     },
