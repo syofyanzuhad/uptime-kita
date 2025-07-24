@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+// Removed sortablejs-vue3 import - using native drag & drop
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'
@@ -51,9 +52,9 @@ interface MonitorHistory {
   id: number
   monitor_id: number
   status: string
-  checked_at: string // ISO date string
-  response_time?: number // in milliseconds, optional
-  reason?: string | null // reason for failure, if any
+  checked_at: string
+  response_time?: number
+  reason?: string | null
   created_at: string
   updated_at: string
 }
@@ -71,6 +72,22 @@ const selectedMonitors = ref<number[]>([])
 const isLoading = ref(false)
 const isDisassociateModalOpen = ref(false)
 const monitorToDisassociate = ref<number | null>(null)
+
+// State untuk daftar monitor yang bisa di-drag
+const draggableMonitors = ref<Monitor[]>([])
+
+// Drag and drop state
+const draggedItem = ref<Monitor | null>(null)
+const draggedOverIndex = ref<number>(-1)
+const isUpdatingOrder = ref(false)
+const lastOrderIds = ref<number[]>([]) // Track last saved order
+
+// Gunakan 'watch' untuk mengisi dan menyinkronkan draggableMonitors dengan props
+watch(() => props.statusPage.monitors?.data, (newMonitors) => {
+  draggableMonitors.value = newMonitors ? [...newMonitors] : []
+  // Initialize lastOrderIds when monitors load
+  lastOrderIds.value = newMonitors ? newMonitors.map(m => m.id) : []
+}, { immediate: true, deep: true })
 
 // --- SEARCH STATE FOR MODAL ---
 const searchQuery = ref('')
@@ -113,18 +130,9 @@ const getStatusColor = (status?: string) => {
   }
 }
 
-// const copyToClipboard = async (text: string) => {
-//   try {
-//     await navigator.clipboard.writeText(text)
-//     // Anda bisa menambahkan notifikasi toast di sini
-//   } catch (err) {
-//     console.error('Failed to copy text: ', err)
-//   }
-// }
-
 // --- CORE LOGIC FUNCTIONS ---
 const openAddMonitorModal = async () => {
-  selectedMonitors.value = [] // Reset pilihan saat modal dibuka
+  selectedMonitors.value = []
   isModalOpen.value = true
   await fetchAvailableMonitors()
 }
@@ -142,19 +150,15 @@ const fetchAvailableMonitors = async () => {
   }
 }
 
-// ** INI BAGIAN YANG DIPERBAIKI **
-// Logika dipindahkan ke method tersendiri untuk kebersihan kode.
 const handleMonitorSelection = (checked: boolean, monitorId: number) => {
   const index = selectedMonitors.value.indexOf(monitorId)
   console.log(checked, monitorId)
 
   if (checked) {
-    // Jika dicentang dan belum ada di array, tambahkan
     if (index === -1) {
       selectedMonitors.value.push(monitorId)
     }
   } else {
-    // Jika tidak dicentang dan ada di array, hapus
     if (index > -1) {
       selectedMonitors.value.splice(index, 1)
     }
@@ -166,15 +170,13 @@ const associateMonitors = async () => {
 
   try {
     isLoading.value = true
-    // Lebih efisien mengirim semua ID sekaligus jika backend mendukung
     await router.post(route('status-pages.monitors.associate', props.statusPage.id), {
-      monitor_ids: selectedMonitors.value // Kirim sebagai array
+      monitor_ids: selectedMonitors.value
     }, {
       onSuccess: () => {
-        // Reset dan tutup modal
         selectedMonitors.value = []
         isModalOpen.value = false
-        router.reload() // Refresh halaman untuk menampilkan monitor terbaru
+        router.reload()
       }
     })
   } catch (error) {
@@ -203,6 +205,71 @@ const confirmDisassociateMonitor = async () => {
   }
 }
 
+// Native drag & drop handlers
+const handleDragStart = (event: DragEvent, monitor: Monitor) => {
+  draggedItem.value = monitor
+  event.dataTransfer!.effectAllowed = 'move'
+  event.dataTransfer!.setData('text/html', '')
+}
+
+const handleDragOver = (event: DragEvent, index: number) => {
+  event.preventDefault()
+  draggedOverIndex.value = index
+  event.dataTransfer!.dropEffect = 'move'
+}
+
+const handleDragLeave = () => {
+  draggedOverIndex.value = -1
+}
+
+const handleDrop = (event: DragEvent, targetIndex: number) => {
+  event.preventDefault()
+  
+  if (!draggedItem.value) return
+  
+  const draggedIndex = draggableMonitors.value.findIndex(m => m.id === draggedItem.value!.id)
+  
+  if (draggedIndex !== -1 && draggedIndex !== targetIndex) {
+    // Remove item from old position
+    const [movedItem] = draggableMonitors.value.splice(draggedIndex, 1)
+    // Insert at new position
+    draggableMonitors.value.splice(targetIndex, 0, movedItem)
+    
+    // Debounce the update call to prevent multiple rapid calls
+    setTimeout(() => {
+      updateMonitorOrder()
+    }, 100)
+  }
+  
+  // Reset drag state
+  draggedItem.value = null
+  draggedOverIndex.value = -1
+}
+
+const handleDragEnd = () => {
+  draggedItem.value = null
+  draggedOverIndex.value = -1
+}
+
+// Function to update monitor order on the server
+const updateMonitorOrder = async () => {
+  // The list is automatically updated by sortablejs-vue3
+  const orderedMonitorIds = draggableMonitors.value.map(monitor => monitor.id)
+
+  router.post(route('status-page-monitor.reorder', props.statusPage.id), {
+    monitor_ids: orderedMonitorIds
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      console.log('Monitor order updated successfully!')
+    },
+    onError: (errors) => {
+      console.error('Failed to update monitor order:', errors)
+      draggableMonitors.value = props.statusPage.monitors?.data ? [...props.statusPage.monitors.data] : []
+    }
+  })
+}
 </script>
 
 <template>
@@ -272,40 +339,14 @@ const confirmDisassociateMonitor = async () => {
         <CardHeader>
           <div class="flex items-center justify-between">
             <CardTitle>Associated Monitors</CardTitle>
-            <Button variant="outline" size="sm" @click="openAddMonitorModal">
-              <span class="flex items-center">
-                <Icon name="plus" class="w-4 h-4 mr-2" />
-                Add Monitor
-              </span>
+            <Button @click="openAddMonitorModal" v-if="draggableMonitors && draggableMonitors.length > 0">
+              <Icon name="plus" class="w-4 h-4 mr-2" />
+              Add Monitor
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div v-if="statusPage.monitors && statusPage.monitors.data.length > 0" class="space-y-3">
-            <div v-for="monitor in statusPage.monitors.data" :key="monitor.id" class="flex items-center justify-between p-3 border rounded-lg">
-              <div class="flex items-center space-x-3">
-                <img v-if="monitor.favicon" :src="monitor.favicon" alt="favicon" class="w-5 h-5 mr-2 rounded" />
-                <div class="w-3 h-3 rounded-full" :class="getStatusColor(monitor.uptime_status)"></div>
-                <div>
-                  <p class="font-medium">{{ monitor.name }}</p>
-                  <p class="text-sm text-gray-500">{{ monitor.url }}</p>
-                  <div class="flex flex-wrap gap-2 mt-1 text-xs text-gray-500">
-                    <span>Uptime: {{ monitor.today_uptime_percentage?.toFixed(2) }}%</span>
-                    <span>Status: <span :class="getStatusColor(monitor.uptime_status)"></span> {{ monitor.uptime_status || 'Unknown' }}</span>
-                    <span v-if="monitor.last_check_date">Last Check: {{ formatDate(monitor.last_check_date) }}</span>
-                    <span v-if="monitor.down_for_events_count > 0">Down Events: {{ monitor.down_for_events_count }}</span>
-                    <span v-if="monitor.certificate_check_enabled">Cert: {{ monitor.certificate_status || 'N/A' }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" @click="openDisassociateModal(monitor.id)">
-                  <Icon name="x" class="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div v-else class="text-center py-8">
+          <div v-if="!draggableMonitors || draggableMonitors.length === 0" class="text-center py-8">
             <Icon name="monitor" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No monitors added</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Add monitors to display their status on this page.</p>
@@ -316,44 +357,69 @@ const confirmDisassociateMonitor = async () => {
               </span>
             </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      <!-- <Card>
-        <CardHeader>
-          <CardTitle>Embed Code</CardTitle>
-          <CardDescription>
-            Embed this status page on your website or share the link with your users.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-4">
-            <div>
-              <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Direct Link</Label>
-              <div class="flex mt-1">
-                <Input :value="`${baseUrl}/status/${statusPage.path}`" readonly class="rounded-r-none" />
-                <Button variant="outline" class="rounded-l-none" @click="copyToClipboard(`${baseUrl}/status/${statusPage.path}`)">
-                  <Icon name="copy" class="w-4 h-4" />
-                </Button>
+          <!-- Native HTML5 drag & drop implementation -->
+          <div v-else class="space-y-3">
+            <div
+              v-for="(monitor, index) in draggableMonitors"
+              :key="monitor.id"
+              :draggable="true"
+              @dragstart="handleDragStart($event, monitor, index)"
+              @dragover="handleDragOver($event, index)"
+              @dragleave="handleDragLeave"
+              @drop="handleDrop($event, index)"
+              @dragend="handleDragEnd"
+              :class="[
+                'flex items-center justify-between p-3 border rounded-lg bg-white dark:bg-gray-800 transition-all duration-200',
+                {
+                  'opacity-50 scale-95': draggedItem?.id === monitor.id,
+                  'border-blue-400 bg-blue-50 dark:bg-blue-900/20': draggedOverIndex === index && draggedItem?.id !== monitor.id,
+                  'hover:bg-gray-50 dark:hover:bg-gray-700': draggedItem?.id !== monitor.id,
+                  'cursor-grabbing': draggedItem?.id === monitor.id,
+                  'cursor-grab': !draggedItem
+                }
+              ]"
+            >
+              <div class="flex items-center space-x-3">
+                <div class="text-gray-400 hover:text-gray-600 transition-colors">
+                  <Icon name="gripVertical" class="w-5 h-5" />
+                </div>
+                <div class="flex items-center space-x-2">
+                  <img 
+                    v-if="monitor.favicon" 
+                    :src="monitor.favicon" 
+                    alt="favicon" 
+                    class="w-4 h-4 rounded"
+                  />
+                  <span 
+                    :class="getStatusColor(monitor.uptime_status)" 
+                    class="w-3 h-3 rounded-full"
+                  ></span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-gray-100">{{ monitor.name }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ monitor.url }}</p>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Embed iframe</Label>
-              <div class="flex mt-1">
-                <Input
-                  :value="`<iframe src='${baseUrl}/status/${statusPage.path}' width='100%' height='600' frameborder='0'></iframe>`"
-                  readonly
-                  class="rounded-r-none"
-                />
-                <Button variant="outline" class="rounded-l-none" @click="copyToClipboard(`<iframe src='${baseUrl}/status/${statusPage.path}' width='100%' height='600' frameborder='0'></iframe>`)">
-                  <Icon name="copy" class="w-4 h-4" />
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ monitor.today_uptime_percentage?.toFixed(1) }}%
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  @click="openDisassociateModal(monitor.id)"
+                  :disabled="!!draggedItem || isUpdatingOrder"
+                >
+                  <Icon name="x" class="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </div>
         </CardContent>
-      </Card> -->
+      </Card>
 
+      <!-- Add Monitor Modal -->
       <Dialog v-model:open="isModalOpen">
         <DialogContent class="sm:max-w-md">
           <DialogHeader>
@@ -424,6 +490,7 @@ const confirmDisassociateMonitor = async () => {
         </DialogContent>
       </Dialog>
 
+      <!-- Disassociate Modal -->
       <Dialog v-model:open="isDisassociateModalOpen">
         <DialogContent class="sm:max-w-md">
           <DialogHeader>
