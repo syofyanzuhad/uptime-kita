@@ -43,6 +43,11 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue
             ->whereDate('created_at', $this->date)
             ->first();
 
+        // delete all records for the monitor on this date first
+        MonitorUptimeDaily::where('monitor_id', $this->monitorId)
+            ->where('date', $this->date)
+            ->delete();
+
         // Early return if no checks found
         if (!$result || $result->total_checks === 0) {
             // Still create/update record with 0% uptime if no data
@@ -59,11 +64,6 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue
      */
     private function updateUptimeRecord(float $uptimePercentage): void
     {
-        // delete all records for the monitor on this date first
-        MonitorUptimeDaily::where('monitor_id', $this->monitorId)
-            ->where('date', $this->date)
-            ->delete();
-
         // Then create or update the record
         MonitorUptimeDaily::updateOrCreate(
             [
