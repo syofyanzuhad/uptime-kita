@@ -366,7 +366,7 @@ const updateMonitorOrder = async () => {
               v-for="(monitor, index) in draggableMonitors"
               :key="monitor.id"
               :draggable="true"
-              @dragstart="handleDragStart($event, monitor, index)"
+              @dragstart="handleDragStart($event, monitor)"
               @dragover="handleDragOver($event, index)"
               @dragleave="handleDragLeave"
               @drop="handleDrop($event, index)"
