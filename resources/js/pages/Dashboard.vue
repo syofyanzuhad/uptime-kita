@@ -4,8 +4,6 @@
     import { Head, usePage } from '@inertiajs/vue3';
     import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
     import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
-    import ValidationAlert from '../components/ValidationAlert.vue';
-    import FlashMessage from '../components/FlashMessage.vue';
     import { ref, onMounted, computed } from 'vue';
     import Icon from '@/components/Icon.vue';
     import { Button } from '@/components/ui/button';
@@ -76,12 +74,6 @@
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <!-- Flash Message -->
-            <FlashMessage />
-
-            <!-- Validation Alert -->
-            <ValidationAlert :errors="(page.props as any).errors" />
-
             <!-- Admin User Count Card -->
             <div v-if="userId === 1 && userCount !== null" class="rounded-lg border bg-white dark:bg-gray-800 p-4 shadow flex flex-col items-center mb-2">
                 <div class="text-lg font-semibold mb-1">Total Users</div>
