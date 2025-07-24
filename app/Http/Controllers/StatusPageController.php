@@ -75,7 +75,7 @@ class StatusPageController extends Controller
             'statusPage' => (new StatusPageResource($statusPage->load([
                 'monitors' => function ($query) {
                     $query->orderBy('status_page_monitor.order', 'asc')
-                        ->with(['latestHistory']);
+                        ->with(['uptimeDaily']);
                 },
             ])))->toArray(request()),
         ]);
