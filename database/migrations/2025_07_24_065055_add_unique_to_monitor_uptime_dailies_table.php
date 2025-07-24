@@ -27,7 +27,7 @@ return new class extends Migration
     {
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
             // Check if the unique constraint exists before dropping it
-            if (!Schema::hasColumn('monitor_uptime_dailies', 'monitor_id') || !Schema::hasColumn('monitor_uptime_dailies', 'date')) {
+            if (Schema::hasColumn('monitor_uptime_dailies', 'monitor_id') || Schema::hasColumn('monitor_uptime_dailies', 'date')) {
                 return; // Columns do not exist, no need to drop the constraint
             }
             // Drop the unique constraint on monitor_id and date
