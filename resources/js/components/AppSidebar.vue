@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, CheckCircle, Coffee, Github, LayoutGrid, LucideMonitorSmartphone, SquareActivity } from 'lucide-vue-next';
+import { BookOpen, CheckCircle, Coffee, Github, LayoutGrid, LucideMonitorSmartphone, SquareActivity, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -34,6 +34,14 @@ const mainNavItems: NavItem[] = [
         icon: LucideMonitorSmartphone,
     },
 ];
+
+if (isAuthenticated.value) {
+    mainNavItems.push({
+        title: 'Users',
+        href: '/users',
+        icon: User,
+    });
+}
 
 const footerNavItems: NavItem[] = [
     {
