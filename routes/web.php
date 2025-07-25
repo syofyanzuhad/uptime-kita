@@ -45,6 +45,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/status-pages/{statusPage}/monitors/{monitor}', \App\Http\Controllers\StatusPageDisassociateMonitorController::class)->name('status-pages.monitors.disassociate');
     Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
     Route::post('/status-page-monitor/reorder/{statusPage}', \App\Http\Controllers\StatusPageOrderController::class)->name('status-page-monitor.reorder');
+
+    // User management routes
+    Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 
 // Test route for flash messages
