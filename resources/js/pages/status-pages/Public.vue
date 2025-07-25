@@ -425,9 +425,33 @@ const { isDark, toggleTheme } = useTheme()
                   <div class="flex-grow min-w-0">
                     <h4 class="font-medium text-gray-900 dark:text-gray-100 flex items-center flex-wrap">
                       {{ monitor.name }}
-                      <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                        :class="getCertStatusColor(monitor.certificate_status)" :title="'SSL is '+monitor.certificate_status">
-                        {{ monitor.certificate_status }}
+                      <span
+                        v-if="monitor.certificate_check_enabled && monitor.certificate_status"
+                        class="ml-2 px-1 py-0.5 rounded-full text-xs font-semibold uppercase flex items-center gap-1"
+                        :class="getCertStatusColor(monitor.certificate_status)"
+                        :title="'SSL is ' + monitor.certificate_status"
+                      >
+                        <Icon
+                          v-if="monitor.certificate_status.toLowerCase() === 'valid'"
+                          name="lock"
+                          class="w-4 h-4 inline-block"
+                        />
+                        <Icon
+                          v-else-if="['invalid', 'expired'].includes(monitor.certificate_status.toLowerCase())"
+                          name="lock-open"
+                          class="w-4 h-4 inline-block"
+                        />
+                        <Icon
+                          v-else-if="monitor.certificate_status.toLowerCase() === 'expiring soon'"
+                          name="lock"
+                          class="w-4 h-4 inline-block"
+                        />
+                        <Icon
+                          v-else
+                          name="clock"
+                          class="w-4 h-4 inline-block"
+                        />
+                        <span class="sr-only">SSL {{ monitor.certificate_status }}</span>
                       </span>
                     </h4>
                     <a class="block break-all text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
