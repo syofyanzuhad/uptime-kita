@@ -21,7 +21,7 @@ class PublicStatusPageController extends Controller
             return new StatusPageResource($statusPage);
         });
 
-        return Inertia::render('StatusPages/Public', [
+        return Inertia::render('status-pages/Public', [
             'statusPage' => $statusPageResource,
             'isAuthenticated' => auth()->check(),
         ]);
