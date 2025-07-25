@@ -97,6 +97,28 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
     ```bash
     php artisan key:generate
     ```
+- Update default monitor on `database/seeder/monitors/` directory and `MonitorSeeder.php` file
+    ```
+    - seeders
+      |_ monitors
+      |  |_monitors.php
+      |  |_collages.php
+      |_ MonitorSeeer.php
+    ```
+    ```php
+        // MonitorSeeder.php
+
+        /**
+        * Run the database seeds.
+        */
+        public function run(): void
+        {
+            $monitors = require database_path('seeders/monitors/monitors.php');
+            $collages = require database_path('seeders/monitors/collage.php');
+
+            // others code
+        }
+    ```
 - Run migration and seeder (this will prompt to create database.sqlite file if it doesn't exists)
     ```bash
     php artisan migrate --seed --force
