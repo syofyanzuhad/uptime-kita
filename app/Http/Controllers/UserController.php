@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::whereNot('id', 1)->paginate(10);
 
         return Inertia::render('users/Index', [
             'users' => $users,
@@ -39,7 +39,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
+        User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
@@ -63,6 +63,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        // Ensure the user is not the default admin user
+        if ($user->id === 1) {
+            return redirect()->route('users.index')->with('error', 'Cannot edit the default admin user.');
+        }
         return Inertia::render('users/Edit', [
             'user' => $user,
         ]);
@@ -73,6 +77,10 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // Ensure the user is not the default admin user
+        if ($user->id === 1) {
+            return redirect()->route('users.index')->with('error', 'Cannot edit the default admin user.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
@@ -94,6 +102,20 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        $errorMessage = null;
+
+        if ($user->id === 1) {
+            $errorMessage = 'Cannot delete the default admin user.';
+        } elseif ($user->monitors()->count() > 0) {
+            $errorMessage = 'Cannot delete user with associated monitors.';
+        } elseif ($user->statusPages()->count() > 0) {
+            $errorMessage = 'Cannot delete user with associated status pages.';
+        }
+
+        if ($errorMessage) {
+            return redirect()->route('users.index')->with('error', $error);
+        }
+
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
