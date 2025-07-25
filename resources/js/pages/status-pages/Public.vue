@@ -363,7 +363,7 @@ const { isDark, toggleTheme } = useTheme()
                   <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
                   <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
                 </button>
-                <button @click="toggleFullscreen" class="ml-2 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'">
+                <button @click="toggleFullscreen" class="ml-2 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'" :title="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'">
                   <Icon v-if="isFullscreen" name="minimize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
                   <Icon v-else name="maximize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
                 </button>
@@ -426,7 +426,7 @@ const { isDark, toggleTheme } = useTheme()
                     <h4 class="font-medium text-gray-900 dark:text-gray-100 flex items-center flex-wrap">
                       {{ monitor.name }}
                       <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                        :class="getCertStatusColor(monitor.certificate_status)">
+                        :class="getCertStatusColor(monitor.certificate_status)" :title="'SSL is '+monitor.certificate_status">
                         {{ monitor.certificate_status }}
                       </span>
                     </h4>
