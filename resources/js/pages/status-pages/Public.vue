@@ -279,9 +279,43 @@ function refetchStatusPage() {
   }
 }
 
+const isFullscreen = ref(false)
+
+function toggleFullscreen() {
+  const elem = document.documentElement
+  if (!isFullscreen.value) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen()
+    } else if ((elem as any).webkitRequestFullscreen) {
+      (elem as any).webkitRequestFullscreen()
+    } else if ((elem as any).msRequestFullscreen) {
+      (elem as any).msRequestFullscreen()
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+    } else if ((document as any).webkitExitFullscreen) {
+      (document as any).webkitExitFullscreen()
+    } else if ((document as any).msExitFullscreen) {
+      (document as any).msExitFullscreen()
+    }
+  }
+}
+
+function fullscreenChangeHandler() {
+  isFullscreen.value = !!(
+    document.fullscreenElement ||
+    (document as any).webkitFullscreenElement ||
+    (document as any).msFullscreenElement
+  )
+}
+
 onMounted(() => {
   window.addEventListener('online', updateOnlineStatus)
   window.addEventListener('offline', updateOnlineStatus)
+  document.addEventListener('fullscreenchange', fullscreenChangeHandler)
+  document.addEventListener('webkitfullscreenchange', fullscreenChangeHandler)
+  document.addEventListener('msfullscreenchange', fullscreenChangeHandler)
   fetchMonitors()
   if (props.isAuthenticated) {
     // Initial fetch for uptimesDaily (all days)
@@ -295,6 +329,9 @@ onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
   window.removeEventListener('online', updateOnlineStatus)
   window.removeEventListener('offline', updateOnlineStatus)
+  document.removeEventListener('fullscreenchange', fullscreenChangeHandler)
+  document.removeEventListener('webkitfullscreenchange', fullscreenChangeHandler)
+  document.removeEventListener('msfullscreenchange', fullscreenChangeHandler)
 })
 
 const { isDark, toggleTheme } = useTheme()
@@ -320,11 +357,17 @@ const { isDark, toggleTheme } = useTheme()
                 <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
               </div>
             </div>
-            <!-- Theme Toggle Button -->
-            <button @click="toggleTheme" class="ml-4 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
-              <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
-              <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
-            </button>
+            <div>
+                <!-- Theme Toggle Button -->
+                <button @click="toggleTheme" class="ml-4 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+                  <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
+                  <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+                </button>
+                <button @click="toggleFullscreen" class="ml-2 p-2 rounded-full cursor-pointer border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'">
+                  <Icon v-if="isFullscreen" name="minimize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+                  <Icon v-else name="maximize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+                </button>
+            </div>
           </div>
         </div>
       </header>
@@ -358,9 +401,11 @@ const { isDark, toggleTheme } = useTheme()
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
-          <div v-if="monitorsLoading" class="p-6 text-center text-gray-500 dark:text-gray-400">Loading monitors...</div>
-          <div v-else-if="monitorsError" class="p-6 text-center text-red-500">{{ monitorsError }}</div>
-          <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+          <div v-if="monitorsError" class="p-6 text-center text-red-500">{{ monitorsError }}</div>
+          <div v-else class="divide-y divide-gray-200 dark:divide-gray-700 relative">
+            <div v-if="monitorsLoading" class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 flex items-center justify-center z-10">
+              <span class="text-gray-500 dark:text-gray-400">Refreshing...</span>
+            </div>
             <div v-for="monitor in monitors" :key="monitor.id" class="px-4 sm:px-6 py-4">
               <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div class="flex items-center space-x-4 w-full min-w-0">
