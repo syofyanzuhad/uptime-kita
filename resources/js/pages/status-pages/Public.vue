@@ -90,14 +90,34 @@ import OfflineBanner from '@/components/OfflineBanner.vue'
     }
   }
 
-  async function fetchUptimesDaily(monitorId: number) {
+  async function fetchUptimesDaily(monitorId: number, date?: string) {
     uptimesDailyLoading.value[monitorId] = true
     uptimesDailyError.value[monitorId] = null
     try {
-      const res = await fetch(`/monitor/${monitorId}/uptimes-daily`)
+      let url = `/monitor/${monitorId}/uptimes-daily`
+      if (date) {
+        url += `?date=${date}`
+      }
+      const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to load uptimes')
       const data = await res.json()
-      uptimesDaily.value[monitorId] = data.uptimes_daily || []
+      if (date) {
+        // Only update today's entry
+        const todayEntry = (data.uptimes_daily || [])[0]
+        const arr = uptimesDaily.value[monitorId] || []
+        if (todayEntry) {
+          const idx = arr.findIndex(d => d.date === date)
+          if (idx !== -1) {
+            arr[idx] = todayEntry
+          } else {
+            arr.push(todayEntry)
+          }
+          uptimesDaily.value[monitorId] = arr
+        }
+      } else {
+        // Initial load: set the whole array
+        uptimesDaily.value[monitorId] = data.uptimes_daily || []
+      }
     } catch (e: any) {
       uptimesDailyError.value[monitorId] = e.message || 'Unknown error'
     } finally {
@@ -127,24 +147,15 @@ import OfflineBanner from '@/components/OfflineBanner.vue'
         fetchLatestHistory(monitor.id)
       }
     })
-    if (props.isAuthenticated) {
-      newMonitors.forEach(monitor => {
-        if (uptimesDaily.value[monitor.id] === undefined) {
-          fetchUptimesDaily(monitor.id)
-        }
-      })
-    }
   })
 
-  // Only fetch uptimesDaily for all monitors if authenticated
+  // Remove uptimesDaily fetch from watchers to avoid double-fetching
   watch(monitors, (newMonitors) => {
-    if (props.isAuthenticated) {
-      newMonitors.forEach(monitor => {
-        if (uptimesDaily.value[monitor.id] === undefined) {
-          fetchUptimesDaily(monitor.id)
-        }
-      })
-    }
+    newMonitors.forEach(monitor => {
+      if (uptimesDaily.value[monitor.id] === undefined) {
+        fetchUptimesDaily(monitor.id)
+      }
+    })
   })
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
@@ -261,8 +272,9 @@ function refetchStatusPage() {
     fetchLatestHistory(monitor.id)
   })
   if (props.isAuthenticated) {
+    const today = new Date().toISOString().slice(0, 10)
     monitors.value.forEach(monitor => {
-      fetchUptimesDaily(monitor.id)
+      fetchUptimesDaily(monitor.id, today)
     })
   }
 }
@@ -272,7 +284,7 @@ onMounted(() => {
   window.addEventListener('offline', updateOnlineStatus)
   fetchMonitors()
   if (props.isAuthenticated) {
-    // Initial fetch for uptimesDaily
+    // Initial fetch for uptimesDaily (all days)
     monitors.value.forEach(monitor => {
       fetchUptimesDaily(monitor.id)
     })
