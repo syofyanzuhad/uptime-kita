@@ -451,7 +451,7 @@ const { isDark, toggleTheme } = useTheme()
                           name="clock"
                           class="w-4 h-4 inline-block"
                         />
-                        <span class="sr-only">SSL {{ monitor.certificate_status }}</span>
+                        <span class="sr-only uppercase">SSL {{ monitor.certificate_status }}</span>
                       </span>
                     </h4>
                     <a class="block break-all text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline" :href="monitor.url" target="_blank">{{ monitor.url }}</a>

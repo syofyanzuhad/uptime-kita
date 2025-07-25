@@ -14,7 +14,7 @@ class UptimesDailyController extends Controller
     {
         $date = $request->query('date');
         if ($date) {
-            $uptime = $monitor->uptimesDaily()->where('date', $date)->first();
+            $uptime = $monitor->uptimesDaily()->whereDate('date', $date)->first();
             if ($uptime) {
                 return response()->json([
                     'uptimes_daily' => [[
@@ -26,6 +26,7 @@ class UptimesDailyController extends Controller
                 return response()->json(['uptimes_daily' => []]);
             }
         }
+
         $uptimes = cache()->remember("monitor_{$monitor->id}_uptimes_daily", 60, function () use ($monitor) {
             return $monitor->uptimesDaily()->get()->map(function ($uptime) {
                 return [
