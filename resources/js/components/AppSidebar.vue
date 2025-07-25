@@ -35,7 +35,7 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-if (isAuthenticated.value) {
+if (isAuthenticated.value && page.props.auth.user?.is_admin) {
     mainNavItems.push({
         title: 'Users',
         href: '/users',
