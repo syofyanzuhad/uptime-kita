@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Monitor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class MonitorSeeder extends Seeder
 {
@@ -14,16 +15,25 @@ class MonitorSeeder extends Seeder
     {
         $monitors = require database_path('seeders/monitors/monitors.php');
         $collages = require database_path('seeders/monitors/collage.php');
+        $goverments = require database_path('seeders/monitors/goverments.php');
 
         // merge monitors and collages
-        $monitors = array_merge($monitors, $collages);
+        $allMonitors = array_merge($monitors, $collages, $goverments);
 
-        // add 1 minute key to each monitor
-        $oneMinuteMonitors = array_map(function ($monitor) {
-            $monitor['uptime_check_interval_in_minutes'] = 1;
-
-            return $monitor;
-        }, $monitors);
+        // create an array from monitor strings
+        // and convert them to an array of associative arrays
+        // with url, name, status, and uptime_check_interval_in_minutes
+        // map each monitor to an associative array
+        $allMonitors = array_map(function ($monitor) {
+            // If it's a string, treat as URL
+            return [
+                'url' => $monitor,
+                'uptime_check_enabled' => 1,
+                'certificate_check_enabled' => 1,
+                'is_public' => 1,
+                'uptime_check_interval_in_minutes' => 1,
+            ];
+        }, $allMonitors);
 
         // add 5 minute key to each monitor
         // $fiveMinuteMonitors = array_map(function ($monitor) {
@@ -31,24 +41,21 @@ class MonitorSeeder extends Seeder
         //     return $monitor;
         // }, $monitors);
 
-        $monitors = array_merge(
-            $oneMinuteMonitors,
-            // $fiveMinuteMonitors
-        );
+        // $monitors = array_merge(
+        //     $oneMinuteMonitors,
+        //     // $fiveMinuteMonitors
+        // );
 
-        foreach ($monitors as $monitor) {
-            Monitor::withoutGlobalScopes()->firstOrCreate(
-                [
-                    'url' => $monitor['url'],
-                ],
-                [
-                    'uptime_check_interval_in_minutes' => $monitor['uptime_check_interval_in_minutes'],
-                    'uptime_check_enabled' => $monitor['uptime_check_enabled'],
-                    'certificate_check_enabled' => $monitor['certificate_check_enabled'],
-                    'certificate_expiration_date' => $monitor['certificate_expiration_date'] ?? null,
-                    'is_public' => $monitor['is_public'] ?? true,
-                ]
-            );
-        }
+        // upsert
+        DB::table('monitors')->upsert(
+            $allMonitors,
+            ['url'], // unique by url
+            [
+                'uptime_check_enabled',
+                'certificate_check_enabled',
+                'is_public',
+                'uptime_check_interval_in_minutes',
+            ]
+        );
     }
 }
