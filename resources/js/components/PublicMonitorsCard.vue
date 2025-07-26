@@ -8,7 +8,7 @@ import type { Monitor } from '@/types/monitor';
 import { usePage, Link, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import Button from './ui/button/Button.vue';
-import { Plus } from 'lucide-vue-next';
+import { Plus, Minus } from 'lucide-vue-next';
 
 interface Props {
     searchQuery?: string;
@@ -38,6 +38,7 @@ const isPolling = ref(false);
 const error = ref<string | null>(null);
 // const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
+const unsubscribingMonitors = ref<Set<number>>(new Set());
 
 // Toggle active state
 const togglingMonitors = ref<Set<number>>(new Set());
@@ -215,6 +216,45 @@ const subscribeToMonitor = async (monitorId: number) => {
         );
     } catch {
         alert('Terjadi kesalahan saat berlangganan monitor');
+    }
+};
+
+const unsubscribeFromMonitor = async (monitorId: number) => {
+    if (!isAuthenticated.value) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        unsubscribingMonitors.value.add(monitorId);
+
+        router.post(
+            '/monitor/' + monitorId + '/unsubscribe',
+            {
+                _token: page.props.csrf_token as string,
+                _method: 'DELETE', // Use DELETE method for unsubscribe
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Update the monitor's subscription status
+                    const monitor = publicMonitors.value.find(m => m.id === monitorId);
+                    if (monitor) {
+                        monitor.is_subscribed = false;
+                    }
+                    alert('Berhasil berhenti berlangganan monitor');
+                },
+                onError: () => {
+                    alert('Terjadi kesalahan saat berhenti berlangganan monitor');
+                },
+                onFinish: () => {
+                    unsubscribingMonitors.value.delete(monitorId);
+                }
+            }
+        );
+    } catch {
+        alert('Terjadi kesalahan saat berhenti berlangganan monitor');
     }
 };
 
@@ -564,13 +604,23 @@ onUnmounted(() => {
                                     </span>
                                 </span>
                             </Button>
-                            <div
+                            <Button
                                 v-else
                                 class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg"
+                                @click.stop.prevent="unsubscribeFromMonitor(monitor.id)"
+                                :disabled="unsubscribingMonitors.has(monitor.id)"
+                                title="Unsubscribe from this monitor"
                             >
-                                <Icon name="check" size="14" />
-                                <span>Already Subscribed</span>
-                            </div>
+                                <span class="flex items-center gap-1">
+                                    <Minus class="h-3 w-3" />
+                                    <span v-if="unsubscribingMonitors.has(monitor.id)">
+                                        Unsubscribing...
+                                    </span>
+                                    <span v-else>
+                                        Unsubscribe
+                                    </span>
+                                </span>
+                            </Button>
                         </div>
 
                         <!-- Toggle Uptime Check Button - Bottom -->
