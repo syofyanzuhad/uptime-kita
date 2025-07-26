@@ -9,7 +9,7 @@ test('statistics endpoint includes disabled monitors count', function () {
 
     // Create a monitor and disable it for the user (user-specific disabled)
     $monitor = Monitor::factory()->create([
-        'uptime_check_enabled' => true, // Monitor is globally enabled
+        'uptime_check_enabled' => false, // Monitor is globally enabled
         'is_public' => false,
     ]);
     // Detach any auto-attached user_monitor row
@@ -21,8 +21,8 @@ test('statistics endpoint includes disabled monitors count', function () {
     $response->assertStatus(200);
 
     $data = $response->json();
-    $this->assertArrayHasKey('disabled_monitors', $data);
-    $this->assertEquals(1, $data['disabled_monitors']);
+    $this->assertArrayHasKey('globally_disabled_monitors', $data);
+    $this->assertEquals(1, $data['globally_disabled_monitors']);
 });
 
 test('private monitors endpoint supports user-specific disabled filter', function () {
@@ -86,6 +86,6 @@ test('disabled filter only shows for authenticated users', function () {
     $response->assertStatus(200);
 
     $data = $response->json();
-    $this->assertArrayHasKey('disabled_monitors', $data);
-    $this->assertEquals(0, $data['disabled_monitors']); // Should be 0 for guests
+    $this->assertArrayHasKey('globally_disabled_monitors', $data);
+    $this->assertEquals(0, $data['globally_disabled_monitors']); // Should be 0 for guests
 });
