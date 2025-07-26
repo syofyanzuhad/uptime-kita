@@ -24,6 +24,9 @@
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
 		<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
 	</a>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+    <img align="left" src="https://visitor-badge.laobi.icu/badge?page_id=syofyanzuhad.uptime-kita" />
+  </a>
 </p>
 
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
