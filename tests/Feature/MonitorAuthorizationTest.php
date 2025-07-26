@@ -7,9 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('only user with id 1 can update public monitors', function () {
+test('only user with is_admin true can update public monitors', function () {
     // Create users
-    $adminUser = User::factory()->create(['id' => 1]);
+    $adminUser = User::factory()->create(['id' => 1, 'is_admin' => 1]);
     $regularUser = User::factory()->create(['id' => 2]);
 
     // Create a public monitor without global scope to avoid automatic user attachment
@@ -21,7 +21,6 @@ test('only user with id 1 can update public monitors', function () {
     ]);
 
     // Attach users to monitor
-    $publicMonitor->users()->attach($adminUser->id, ['is_active' => true]);
     $publicMonitor->users()->attach($regularUser->id, ['is_active' => true]);
 
     $policy = new MonitorPolicy();
@@ -59,9 +58,9 @@ test('only owner can update private monitors', function () {
     expect($policy->update($nonOwner, $privateMonitor))->toBeFalse();
 });
 
-test('only user with id 1 can delete public monitors', function () {
+test('only user with is_admin true can delete public monitors', function () {
     // Create users
-    $adminUser = User::factory()->create(['id' => 1]);
+    $adminUser = User::factory()->create(['id' => 1, 'is_admin' => 1]);
     $regularUser = User::factory()->create(['id' => 2]);
 
     // Create a public monitor without global scope
@@ -73,7 +72,6 @@ test('only user with id 1 can delete public monitors', function () {
     ]);
 
     // Attach users to monitor
-    $publicMonitor->users()->attach($adminUser->id, ['is_active' => true]);
     $publicMonitor->users()->attach($regularUser->id, ['is_active' => true]);
 
     $policy = new MonitorPolicy();
