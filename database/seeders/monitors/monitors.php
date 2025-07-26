@@ -140,4 +140,5 @@ return [
     'https://ant.design',
     'https://element.eleme.io',
     'https://vuetifyjs.com',
+    'https://trendshift.io/',
 ];
