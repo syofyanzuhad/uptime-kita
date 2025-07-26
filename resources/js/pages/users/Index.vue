@@ -76,7 +76,7 @@ const confirmDeleteUser = () => {
           <!-- Pagination -->
           <div class="mt-4 flex justify-center">
             <nav v-if="props.users.links && props.users.links.length > 3" class="inline-flex -space-x-px">
-              <Link v-for="link in props.users.links" :key="link.label" :href="link.url || ''" v-html="link.label"
+              <Link v-for="link in props.users.links" :key="link.label" :href="link.url || ''"
                 :class="[
                   'px-3 py-2 border text-sm font-medium',
                   link.active ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300',
