@@ -242,3 +242,7 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date" />
  </picture>
 </a>
+
+---
+
+Uptime Kita is an open-sourced software licensed under the [Apache-2.0](https://github.com/syofyanzuhad/uptime-kita/LICENSE)
