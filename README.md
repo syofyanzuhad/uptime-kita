@@ -22,6 +22,9 @@
 		<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
 	</a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
+    <img src="https://github.com/syofyanzuhad/uptime-kita/actions/workflows/tests.yml/badge.svg" />
+  </a>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
 		<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
 	</a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
@@ -233,7 +236,10 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
 
-## Star History
+## 📊 Activity
+<a href="https://trendshift.io/repositories/634" target="_blank"><img src="https://trendshift.io/api/badge/repositories/634" alt="syofyanzuhad/uptime-kita | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+
+## ⭐️ Star History
 
 <a href="https://www.star-history.com/#syofyanzuhad/uptime-kita&Date">
  <picture>
