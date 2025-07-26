@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-const props = defineProps({
+defineProps({
   channel: { type: Object, required: true }
 });
-const emit = defineEmits(['edit', 'delete', 'toggle']);
+defineEmits(['edit', 'delete', 'toggle']);
 </script>
 
 <template>
