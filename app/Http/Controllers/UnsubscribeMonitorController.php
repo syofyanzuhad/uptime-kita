@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Monitor;
 
-class SubscribeMonitorController extends Controller
+class UnsubscribeMonitorController extends Controller
 {
     public function __invoke($monitorId)
     {
@@ -15,8 +15,8 @@ class SubscribeMonitorController extends Controller
 
             if (! $monitor->is_public) {
                 $errorMessage = 'Monitor tidak tersedia untuk berlangganan';
-            } elseif ($monitor->users()->where('user_id', auth()->id())->exists()) {
-                $errorMessage = 'Anda sudah berlangganan monitor ini';
+            } elseif (!$monitor->users()->where('user_id', auth()->id())->exists()) {
+                $errorMessage = 'Anda tidak berlangganan monitor ini';
             }
 
             if ($errorMessage) {
@@ -26,19 +26,19 @@ class SubscribeMonitorController extends Controller
                 ]);
             }
 
-            $monitor->users()->attach(auth()->id(), ['is_active' => true]);
+            $monitor->users()->detach(auth()->id());
 
             // clear monitor cache
             cache()->forget('public_monitors_authenticated_'.auth()->id());
 
             return redirect()->back()->with('flash', [
                 'type' => 'success',
-                'message' => 'Berhasil berlangganan monitor: '.$monitor?->url,
+                'message' => 'Berhasil berhenti berlangganan monitor: '.$monitor?->url,
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('flash', [
                 'type' => 'error',
-                'message' => 'Gagal berlangganan monitor: '.$e->getMessage(),
+                'message' => 'Gagal berhenti berlangganan monitor: '.$e->getMessage(),
             ]);
         }
     }

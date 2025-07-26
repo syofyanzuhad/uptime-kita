@@ -9,6 +9,7 @@ use App\Http\Controllers\PublicStatusPageController;
 use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\UnsubscribeMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
@@ -29,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('monitor', UptimeMonitorController::class);
     // Route untuk subscribe monitor
     Route::post('/monitor/{monitorId}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
+    // Route untuk unsubscribe monitor
+    Route::delete('/monitor/{monitorId}/unsubscribe', UnsubscribeMonitorController::class)->name('monitor.unsubscribe');
 
     // Route untuk toggle monitor active status
     Route::post('/monitor/{monitorId}/toggle-active', \App\Http\Controllers\ToggleMonitorActiveController::class)->name('monitor.toggle-active');
