@@ -49,9 +49,11 @@ class MonitorSeeder extends Seeder
         // upsert
         DB::table('monitors')->upsert(
             $allMonitors,
-            ['url'], // unique by url
             [
+                'url',
                 'uptime_check_enabled',
+            ], // unique by url
+            [
                 'certificate_check_enabled',
                 'is_public',
                 'uptime_check_interval_in_minutes',
