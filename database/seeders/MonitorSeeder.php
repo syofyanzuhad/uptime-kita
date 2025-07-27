@@ -51,7 +51,6 @@ class MonitorSeeder extends Seeder
             $allMonitors,
             [
                 'url',
-                'uptime_check_enabled',
             ], // unique by url
             [
                 'certificate_check_enabled',
