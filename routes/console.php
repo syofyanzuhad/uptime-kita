@@ -290,7 +290,7 @@ Schedule::command('horizon:snapshot')->everyFiveMinutes();
 Schedule::command('horizon:forget --all')->daily();
 
 // === LARAVEL TELOSCOPE ===
-Schedule::command('telescope:prune --hours=48')->everyFiveMinutes();
+Schedule::command('telescope:prune --hours=48')->everyOddHour();
 
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
