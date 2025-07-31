@@ -41,7 +41,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
         <script defer src="https://umami.syofyanzuhad.dev/script.js" data-website-id="803a4f91-04d8-43be-9302-82df6ff14481"></script>
-
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="27ccc29a-1870-4f9f-9d22-9fd9f91e9b12"></script>
         @routes
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead
