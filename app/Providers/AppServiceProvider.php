@@ -42,7 +42,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(UptimeCheckRecovered::class, SendCustomMonitorNotification::class);
 
         Health::checks([
-            UsedDiskSpaceCheck::new(),
+            UsedDiskSpaceCheck::new()
+                ->warnWhenUsedSpaceIsAbovePercentage(70)
+                ->failWhenUsedSpaceIsAbovePercentage(90),
             DatabaseCheck::new(),
         ]);
     }
