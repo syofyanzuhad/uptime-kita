@@ -282,7 +282,8 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $this->info("💡 Use 'php artisan telegram:rate-limit-status --user={$user->id}' to verify");
 })->purpose('Reset Telegram rate limit for a user (for testing)');
 
-Schedule::command(CheckUptime::class)->everyTwoMinutes();
+Schedule::command(CheckUptime::class)->everyTwoMinutes()
+    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
@@ -295,14 +296,11 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes();
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes()
+    ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
 
 Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute();
-
-Schedule::command('emails:send')
-    ->daily()
-    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
