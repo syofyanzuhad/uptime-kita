@@ -302,3 +302,7 @@ Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes();
 // Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
 
 Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute();
+
+Schedule::command('emails:send')
+    ->daily()
+    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
