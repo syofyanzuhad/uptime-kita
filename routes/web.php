@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Test route for flash messages
 Route::get('/test-flash', TestFlashController::class)->name('test.flash');
+Route::get('health', \Spatie\Health\Http\Controllers\SimpleHealthCheckController::class)->name('health');
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
