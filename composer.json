@@ -24,6 +24,7 @@
         "predis/predis": "^3.0",
         "resend/resend-laravel": "^0.19.0",
         "sentry/sentry-laravel": "^4.15",
+        "spatie/laravel-health": "^1.34",
         "spatie/laravel-tags": "^4.10",
         "spatie/laravel-uptime-monitor": "^4.5",
         "tightenco/ziggy": "^2.4"
