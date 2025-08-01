@@ -58,7 +58,7 @@ return [
         'throttle_notifications_key' => 'health:latestNotificationSentAt:',
 
         'mail' => [
-            'to' => 'your@example.com',
+            'to' => 'mail@syofyanzuhad.dev',
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
@@ -86,7 +86,7 @@ return [
      * Oh Dear, you can also have access to more advanced notification options.
      */
     'oh_dear_endpoint' => [
-        'enabled' => false,
+        'enabled' => true,
 
         /*
          * When this option is enabled, the checks will run before sending a response.
@@ -129,7 +129,7 @@ return [
      * - light: light mode
      * - dark: dark mode
      */
-    'theme' => 'light',
+    'theme' => 'dark',
 
     /*
      * When enabled,  completed `HealthQueueJob`s will be displayed
