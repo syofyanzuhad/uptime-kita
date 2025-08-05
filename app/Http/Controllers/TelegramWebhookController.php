@@ -12,9 +12,9 @@ class TelegramWebhookController extends Controller
     {
         // Mengambil update dari request yang dikirim Telegram
         $updates = $request->all();
-        info($request->all());
+        info('request', $request->all());
         $message = $updates['message'];
-        info($message);
+        info('message', $message);
 
         // --- BAGIAN YANG DIPERBAIKI TOTAL ---
         // Periksa apakah update berisi 'message' dan di dalamnya ada 'text'
@@ -25,7 +25,7 @@ class TelegramWebhookController extends Controller
             $firstName = $message['from']['first_name'];
 
             // Periksa secara manual apakah teksnya adalah '/start'
-            if ($text === '/start') {
+            if ($message['text'] === '/start') {
                 $responseText = "Halo, {$firstName}!\n\n"
                               . "Terima kasih telah memulai bot. "
                               . "Gunakan Chat ID berikut untuk menerima notifikasi dari Uptime Monitor:\n\n`{$chatId}`";
