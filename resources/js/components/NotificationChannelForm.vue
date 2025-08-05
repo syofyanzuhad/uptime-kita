@@ -113,7 +113,7 @@ function handleSubmit() {
             <Input v-model="form.destination" type="text" class="w-full" placeholder="chat_id, email, webhook, etc." />
             <small class="text-gray-500 text-sm mt-1">
                 (Telegram: chat_id, Slack: webhook url, Email: email)
-                <span v-if="form.type === 'telegram'" class="text-red-500">
+                <span v-if="form.type === 'telegram'" class="text-gray-500">
                     <br>
                     <span class="text-sm">
                         Send a /start to the <a href="https://t.me/@uptime_kita_bot" target="_blank" class="text-blue-500">@uptime_kita_bot</a> to get your chat_id.
