@@ -111,7 +111,15 @@ function handleSubmit() {
         <div>
             <label class="block font-medium mb-1">Destination<span class="text-red-500">*</span></label>
             <Input v-model="form.destination" type="text" class="w-full" placeholder="chat_id, email, webhook, etc." />
-            <small class="text-gray-500 text-sm mt-1">(Telegram: chat_id, Slack: webhook url, Email: email)</small>
+            <small class="text-gray-500 text-sm mt-1">
+                (Telegram: chat_id, Slack: webhook url, Email: email)
+                <span v-if="form.type === 'telegram'" class="text-red-500">
+                    <br>
+                    <span class="text-sm">
+                        Send a /start to the <a href="https://t.me/@uptime_kita_bot" target="_blank" class="text-blue-500">@uptime_kita_bot</a> to get your chat_id.
+                    </span>
+                </span>
+            </small>
             <div v-if="form.errors.destination" class="text-red-500 text-sm mt-1">{{ form.errors.destination }}</div>
         </div>
         <div class="flex items-center space-x-2">
