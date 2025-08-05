@@ -79,6 +79,9 @@ import OfflineBanner from '@/components/OfflineBanner.vue'
     monitorsError.value = null
     try {
       const res = await fetch(`/status/${props.statusPage.path}/monitors`)
+      if (res.status === 404) {
+        throw new Error('Status page not found')
+      }
       if (!res.ok) throw new Error('Failed to load monitors')
       const data = await res.json()
       // If data is wrapped in {data: [...]}, unwrap
@@ -401,7 +404,19 @@ const { isDark, toggleTheme } = useTheme()
           <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
           </div>
-          <div v-if="monitorsError" class="p-6 text-center text-red-500">{{ monitorsError }}</div>
+          <div v-if="monitorsError" class="p-12 text-center">
+            <div class="flex flex-col items-center space-y-4">
+              <Icon name="alert-circle" class="w-16 h-16 text-red-500" />
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {{ monitorsError === 'Status page not found' ? '404 - Page Not Found' : 'Error' }}
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 max-w-md">
+                {{ monitorsError === 'Status page not found'
+                  ? 'The status page you are looking for does not exist or has been removed.'
+                  : monitorsError }}
+              </p>
+            </div>
+          </div>
           <div v-else class="divide-y divide-gray-200 dark:divide-gray-700 relative">
             <div v-if="monitorsLoading" class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 flex items-center justify-center z-10">
               <span class="text-gray-500 dark:text-gray-400">Refreshing...</span>
