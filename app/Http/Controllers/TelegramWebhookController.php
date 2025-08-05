@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use NotificationChannels\Telegram\TelegramMessage;
 use NotificationChannels\Telegram\TelegramUpdates;
 
@@ -14,21 +13,31 @@ class TelegramWebhookController extends Controller
         // Mengambil update dari request yang dikirim Telegram
         $updates = TelegramUpdates::create($request->all());
 
-        // Periksa apakah ada pesan teks
-        if ($updates->isCommand() && $updates->getCommand() === 'start') {
-            $chatId = $updates->getChat()->getId();
-            $firstName = $updates->getFrom()->getFirstName();
+        // Ambil objek pesan dari update
+        $message = $updates->getMessage();
 
-            $responseText = "Halo, {$firstName}!\n\n"
-                          . "Terima kasih telah memulai bot. "
-                          . "Gunakan Chat ID berikut untuk menerima notifikasi dari Uptime Monitor:\n\n`{$chatId}`";
+        // --- BAGIAN YANG DIPERBAIKI ---
+        // Pastikan ada objek pesan dan pesan tersebut berisi teks
+        if ($message && $message->has('text')) {
 
-            // Mengirim balasan menggunakan TelegramMessage
-            TelegramMessage::create($responseText)
-                ->to($chatId)
-                ->options(['parse_mode' => 'Markdown'])
-                ->send();
+            $text = $message->getText();
+            $chatId = $message->getChat()->getId();
+            $firstName = $message->getFrom()->getFirstName();
+
+            // Periksa secara manual apakah teksnya adalah '/start'
+            if ($text === '/start') {
+                $responseText = "Halo, {$firstName}!\n\n"
+                              . "Terima kasih telah memulai bot. "
+                              . "Gunakan Chat ID berikut untuk menerima notifikasi dari Uptime Monitor:\n\n`{$chatId}`";
+
+                // Mengirim balasan menggunakan TelegramMessage
+                TelegramMessage::create($responseText)
+                    ->to($chatId)
+                    ->options(['parse_mode' => 'Markdown'])
+                    ->send();
+            }
         }
+        // --- AKHIR BAGIAN YANG DIPERBAIKI ---
 
         return response()->json(['status' => 'ok']);
     }
