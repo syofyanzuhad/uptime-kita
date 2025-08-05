@@ -11,8 +11,8 @@ class TelegramWebhookController extends Controller
     public function handle(Request $request)
     {
         // Mengambil update dari request yang dikirim Telegram
-        $updates = TelegramUpdates::create($request->all());
-        info($updates);
+        $updates = $request->all();
+        info($request->all());
 
         // --- BAGIAN YANG DIPERBAIKI TOTAL ---
         // Periksa apakah update berisi 'message' dan di dalamnya ada 'text'
