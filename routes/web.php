@@ -57,5 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/test-flash', TestFlashController::class)->name('test.flash');
 Route::get('health', \Spatie\Health\Http\Controllers\SimpleHealthCheckController::class)->name('health');
 
+Route::prefix('webhook')->as('webhook.')->group(function () {
+    Route::post('/telegram', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram');
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
