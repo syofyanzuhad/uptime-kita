@@ -41,9 +41,13 @@ class PublicStatusPageController extends Controller
                 ->get()
                 ->map(function ($statusPageMonitor) {
                     return $statusPageMonitor->monitor;
+                })
+                ->filter(function ($monitor) {
+                    // only return if monitor is not null
+                    return $monitor !== null;
                 });
         });
-        info($monitors);
+        // info($monitors);
         if ($monitors->isEmpty()) {
             return response()->json([
                 'message' => 'No monitors found',
