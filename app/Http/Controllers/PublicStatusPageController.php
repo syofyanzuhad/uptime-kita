@@ -43,6 +43,7 @@ class PublicStatusPageController extends Controller
                     return $statusPageMonitor->monitor;
                 });
         });
+        info($monitors);
         if ($monitors->isEmpty()) {
             return response()->json([
                 'message' => 'No monitors found',
