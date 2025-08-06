@@ -237,7 +237,7 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
 
 ## 📊 Activity
-<a href="https://trendshift.io/repositories/634" target="_blank"><img src="https://trendshift.io/api/badge/repositories/634" alt="syofyanzuhad/uptime-kita | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+![Alt](https://repobeats.axiom.co/api/embed/3eda9cccaaf42702c26eea2632ce37357c315dc7.svg "Repobeats analytics image")
 
 ## ⭐️ Star History
 
