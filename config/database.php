@@ -42,6 +42,26 @@ return [
             'synchronous' => null,
         ],
 
+        'sqlite_queue' => [
+            'driver' => 'sqlite',
+            'database' => database_path('queue.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 30000, // 30 seconds timeout for queue operations
+            'journal_mode' => 'WAL', // Write-Ahead Logging for better concurrency
+            'synchronous' => 'NORMAL', // Balance between safety and performance
+        ],
+
+        'sqlite_telescope' => [
+            'driver' => 'sqlite',
+            'database' => database_path('telescope.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 15000, // 15 seconds timeout for telescope operations
+            'journal_mode' => 'WAL', // Write-Ahead Logging for better concurrency
+            'synchronous' => 'NORMAL', // Balance between safety and performance
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

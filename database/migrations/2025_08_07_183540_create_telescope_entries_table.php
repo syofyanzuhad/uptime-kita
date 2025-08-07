@@ -40,7 +40,6 @@ return new class extends Migration
             });
         }
 
-
         if (! $schema->hasTable('telescope_entries_tags')) {
             $schema->create('telescope_entries_tags', function (Blueprint $table) {
                 $table->uuid('entry_uuid');
