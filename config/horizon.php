@@ -182,7 +182,7 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['default', 'uptime-calculations'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -195,7 +195,7 @@ return [
         ],
         'supervisor-2' => [
             'connection' => 'redis',
-            'queue' => ['uptime-calculations'],
+            'queue' => ['uptime-calculations', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -211,12 +211,12 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 5,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
             'supervisor-2' => [
-                'maxProcesses' => 5,
+                'maxProcesses' => 15,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
@@ -224,10 +224,10 @@ return [
 
         'local' => [
             'supervisor-1' => [
-                'maxProcesses' => 3,
+                'maxProcesses' => 2,
             ],
             'supervisor-2' => [
-                'maxProcesses' => 2,
+                'maxProcesses' => 5,
             ],
         ],
     ],
