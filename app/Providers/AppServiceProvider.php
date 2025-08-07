@@ -54,26 +54,27 @@ class AppServiceProvider extends ServiceProvider
         Health::checks([
             CacheCheck::new(),
             OptimizedAppCheck::new(),
+            DatabaseCheck::new(),
             UsedDiskSpaceCheck::new()
                 ->warnWhenUsedSpaceIsAbovePercentage(70)
                 ->failWhenUsedSpaceIsAbovePercentage(90),
-            DatabaseCheck::new(),
+            RedisCheck::new(),
+            RedisMemoryUsageCheck::new()
+                ->warnWhenAboveMb(900)
+                ->failWhenAboveMb(1000),
+            CpuLoadCheck::new()
+                ->failWhenLoadIsHigherInTheLast5Minutes(5.0)
+                ->failWhenLoadIsHigherInTheLast15Minutes(2.5),
+            ScheduleCheck::new()
+                ->heartbeatMaxAgeInMinutes(2),
+            QueueCheck::new(),
+            // HorizonCheck::new(),
             // DatabaseSizeCheck::new()
             //     ->failWhenSizeAboveGb(errorThresholdGb: 5.0),
             // DatabaseTableSizeCheck::new()
             //     ->table('monitor_histories', maxSizeInMb: 1_000)
             //     ->table('monitor_uptime_dailies', maxSizeInMb: 5_00)
             //     ->table('health_check_result_history_items', maxSizeInMb: 5_00),
-            RedisCheck::new(),
-            RedisMemoryUsageCheck::new()
-                ->warnWhenAboveMb(900)
-                ->failWhenAboveMb(1000),
-            ScheduleCheck::new(),
-            CpuLoadCheck::new()
-                ->failWhenLoadIsHigherInTheLast5Minutes(5.0)
-                ->failWhenLoadIsHigherInTheLast15Minutes(2.5),
-            QueueCheck::new(),
-            // HorizonCheck::new(),
         ]);
     }
 }
