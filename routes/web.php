@@ -56,8 +56,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Test route for flash messages
 Route::get('/test-flash', TestFlashController::class)->name('test.flash');
 // route group for health check
+Route::get('/health', \Spatie\Health\Http\Controllers\SimpleHealthCheckController::class)->name('health.index');
 Route::middleware('auth')->prefix('health')->as('health.')->group(function () {
-    Route::get('/', \Spatie\Health\Http\Controllers\SimpleHealthCheckController::class)->name('index');
     Route::get('/json', \Spatie\Health\Http\Controllers\HealthCheckJsonResultsController::class)->name('json');
     Route::get('/results', \Spatie\Health\Http\Controllers\HealthCheckResultsController::class)->name('results');
 });
