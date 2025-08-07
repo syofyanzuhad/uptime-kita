@@ -8,7 +8,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
 class CalculateMonitorUptimeDailyJob implements ShouldQueue
@@ -55,24 +54,21 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             foreach ($monitorChunks as $index => $monitorChunk) {
                 $chunkNumber = $index + 1;
 
-                // Create jobs for current chunk
-                $jobs = collect($monitorChunk)->map(function ($monitorId) {
-                    return new \App\Jobs\CalculateSingleMonitorUptimeJob($monitorId);
-                })->toArray();
+                Log::info("Processing chunk {$chunkNumber}/{$totalChunks}", [
+                    'chunk_size' => count($monitorChunk),
+                    'monitors_in_chunk' => $monitorChunk
+                ]);
 
-                // Dispatch chunk as a batch
-                $batch = Bus::batch($jobs)
-                    ->name("Calculate Monitor Uptime Daily - Chunk {$chunkNumber}/{$totalChunks}")
-                    ->allowFailures()
-                    ->onQueue('uptime-calculations')
-                    ->dispatch();
-
-                $totalJobs += count($jobs);
+                // Dispatch jobs individually instead of using batches
+                foreach ($monitorChunk as $monitorId) {
+                    $job = new \App\Jobs\CalculateSingleMonitorUptimeJob($monitorId);
+                    dispatch($job);
+                    $totalJobs++;
+                }
 
                 Log::info("Chunk {$chunkNumber}/{$totalChunks} dispatched successfully", [
-                    'batch_id' => $batch->id,
-                    'chunk_size' => count($jobs),
-                    'monitors_in_chunk' => $monitorChunk
+                    'chunk_size' => count($monitorChunk),
+                    'total_jobs_dispatched' => $totalJobs
                 ]);
 
                 // Small delay between chunks to reduce database contention

@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Bus\Batchable;
 use Illuminate\Support\Carbon;
 use App\Models\MonitorUptimeDaily;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +16,7 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 
 class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $monitorId;
     public string $date;
