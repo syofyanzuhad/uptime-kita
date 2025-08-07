@@ -44,7 +44,7 @@ return [
 
         'sqlite_queue' => [
             'driver' => 'sqlite',
-            'database' => database_path('queue.sqlite'),
+            'database' => env('DB_DATABASE_QUEUE', database_path('queue.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => true,
             'busy_timeout' => 30000, // 30 seconds timeout for queue operations
@@ -54,7 +54,7 @@ return [
 
         'sqlite_telescope' => [
             'driver' => 'sqlite',
-            'database' => database_path('telescope.sqlite'),
+            'database' => env('DB_DATABASE_TELESCOPE', database_path('telescope.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => true,
             'busy_timeout' => 15000, // 15 seconds timeout for telescope operations
