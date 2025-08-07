@@ -304,4 +304,6 @@ Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes()
 // Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
 
 Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute();
+Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)->everyMinute();
+Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
