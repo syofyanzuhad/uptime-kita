@@ -8,11 +8,21 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
+use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Checks\Checks\QueueCheck;
+use Spatie\Health\Checks\Checks\RedisCheck;
+use Spatie\Health\Checks\Checks\HorizonCheck;
 use Spatie\Health\Checks\Checks\DatabaseCheck;
+use Spatie\Health\Checks\Checks\ScheduleCheck;
 use App\Listeners\SendCustomMonitorNotification;
+use Spatie\Health\Checks\Checks\DatabaseSizeCheck;
+use Spatie\Health\Checks\Checks\OptimizedAppCheck;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
+use Spatie\Health\Checks\Checks\RedisMemoryUsageCheck;
+use Spatie\Health\Checks\Checks\DatabaseTableSizeCheck;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,10 +52,28 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(UptimeCheckRecovered::class, SendCustomMonitorNotification::class);
 
         Health::checks([
+            CacheCheck::new(),
+            OptimizedAppCheck::new(),
             UsedDiskSpaceCheck::new()
                 ->warnWhenUsedSpaceIsAbovePercentage(70)
                 ->failWhenUsedSpaceIsAbovePercentage(90),
             DatabaseCheck::new(),
+            // DatabaseSizeCheck::new()
+            //     ->failWhenSizeAboveGb(errorThresholdGb: 5.0),
+            // DatabaseTableSizeCheck::new()
+            //     ->table('monitor_histories', maxSizeInMb: 1_000)
+            //     ->table('monitor_uptime_dailies', maxSizeInMb: 5_00)
+            //     ->table('health_check_result_history_items', maxSizeInMb: 5_00),
+            RedisCheck::new(),
+            RedisMemoryUsageCheck::new()
+                ->warnWhenAboveMb(900)
+                ->failWhenAboveMb(1000),
+            ScheduleCheck::new(),
+            CpuLoadCheck::new()
+                ->failWhenLoadIsHigherInTheLast5Minutes(5.0)
+                ->failWhenLoadIsHigherInTheLast15Minutes(2.5),
+            QueueCheck::new(),
+            // HorizonCheck::new(),
         ]);
     }
 }
