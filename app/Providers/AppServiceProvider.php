@@ -2,27 +2,16 @@
 
 namespace App\Providers;
 
-use Spatie\Health\Facades\Health;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\ServiceProvider;
-use Opcodes\LogViewer\Facades\LogViewer;
-use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
-use Spatie\Health\Checks\Checks\CacheCheck;
-use Spatie\Health\Checks\Checks\QueueCheck;
-use Spatie\Health\Checks\Checks\RedisCheck;
-use Spatie\Health\Checks\Checks\HorizonCheck;
-use Spatie\Health\Checks\Checks\DatabaseCheck;
-use Spatie\Health\Checks\Checks\ScheduleCheck;
 use App\Listeners\SendCustomMonitorNotification;
-use Spatie\Health\Checks\Checks\DatabaseSizeCheck;
-use Spatie\Health\Checks\Checks\OptimizedAppCheck;
-use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
-use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
-use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
-use Spatie\Health\Checks\Checks\RedisMemoryUsageCheck;
-use Spatie\Health\Checks\Checks\DatabaseTableSizeCheck;
+use Illuminate\Database\Eloquent\Model;
+use Opcodes\LogViewer\Facades\LogViewer;
+use Illuminate\Support\Facades\{Event, URL};
+use Illuminate\Support\ServiceProvider;
+use Spatie\Health\Facades\Health;
+use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
+use Spatie\Health\Checks\Checks\{CacheCheck, DatabaseCheck, OptimizedAppCheck, QueueCheck, RedisCheck, RedisMemoryUsageCheck, ScheduleCheck, UsedDiskSpaceCheck};
+use Spatie\UptimeMonitor\Events\{UptimeCheckFailed, UptimeCheckRecovered};
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -63,8 +52,9 @@ class AppServiceProvider extends ServiceProvider
                 ->warnWhenAboveMb(900)
                 ->failWhenAboveMb(1000),
             CpuLoadCheck::new()
+                ->warnWhenLoadIsHigherInTheLast5Minutes(2.0)
                 ->failWhenLoadIsHigherInTheLast5Minutes(5.0)
-                ->failWhenLoadIsHigherInTheLast15Minutes(2.5),
+                ->failWhenLoadIsHigherInTheLast15Minutes(3.0),
             ScheduleCheck::new()
                 ->heartbeatMaxAgeInMinutes(2),
             QueueCheck::new(),
