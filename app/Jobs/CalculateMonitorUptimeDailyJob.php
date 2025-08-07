@@ -41,7 +41,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             ]);
 
             // Chunk monitors into smaller batches for better memory management
-            $chunkSize = 25; // Process 25 monitors per batch
+            $chunkSize = 10; // Process 10 monitors per batch to reduce database contention
             $monitorChunks = array_chunk($monitorIds, $chunkSize);
             $totalChunks = count($monitorChunks);
             $totalJobs = 0;
@@ -74,6 +74,11 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
                     'chunk_size' => count($jobs),
                     'monitors_in_chunk' => $monitorChunk
                 ]);
+
+                // Small delay between chunks to reduce database contention
+                if ($chunkNumber < $totalChunks) {
+                    usleep(500000); // 0.5 second delay
+                }
             }
 
             Log::info('All chunks dispatched successfully', [

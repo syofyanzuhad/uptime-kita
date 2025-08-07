@@ -2,8 +2,14 @@
 
 namespace App\Jobs;
 
+<<<<<<< HEAD
+use App\Models\Monitor;
+=======
 use Exception;
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 use Illuminate\Bus\Queueable;
+<<<<<<< HEAD
+=======
 use Illuminate\Bus\Batchable;
 use Illuminate\Support\Carbon;
 use App\Models\MonitorUptimeDaily;
@@ -11,14 +17,28 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+<<<<<<< HEAD
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
+=======
 use Illuminate\Contracts\Queue\ShouldBeUnique;
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
+<<<<<<< HEAD
+class CalculateMonitorUptimeDailyJob implements ShouldQueue
+=======
 class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
 
+<<<<<<< HEAD
+=======
     public int $monitorId;
     public string $date;
 
@@ -28,6 +48,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
     public $backoff = [30, 60, 120]; // Exponential backoff in seconds
     public $uniqueFor = 3600; // 1 hour uniqueness
 
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
     /**
      * Get the unique ID for the job.
      */
@@ -39,6 +60,9 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
     /**
      * Create a new job instance.
      */
+<<<<<<< HEAD
+    public function __construct() {}
+=======
     public function __construct(int $monitorId, ?string $date = null)
     {
         $this->monitorId = $monitorId;
@@ -47,18 +71,28 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
         // Set the queue for this job
         $this->onQueue('uptime-calculations');
     }
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
     /**
      * Execute the job.
      */
     public function handle(): void
     {
+<<<<<<< HEAD
+        Log::info('Starting daily uptime calculation batch job');
+=======
         Log::info('Starting uptime calculation', [
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
             'attempt' => $this->attempts()
         ]);
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
+<<<<<<< HEAD
+        try {
+            // Get all monitor IDs
+            $monitorIds = Monitor::pluck('id')->toArray();
+=======
         try {
             // Validate monitor exists first
             if (!$this->monitorExists()) {
@@ -67,7 +101,14 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 ]);
                 return;
             }
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
+<<<<<<< HEAD
+            if (empty($monitorIds)) {
+                Log::info('No monitors found for uptime calculation');
+                return;
+            }
+=======
             // Validate date format
             if (!$this->isValidDate()) {
                 throw new Exception("Invalid date format: {$this->date}");
@@ -93,7 +134,13 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
             throw $e;
         }
     }
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
+<<<<<<< HEAD
+            Log::info('Creating batch jobs for monitors', [
+                'total_monitors' => count($monitorIds)
+            ]);
+=======
     /**
      * Check if monitor exists
      */
@@ -103,7 +150,20 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
             ->where('id', $this->monitorId)
             ->exists();
     }
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 
+<<<<<<< HEAD
+            // Chunk monitors into smaller batches for better memory management
+            $chunkSize = 10; // Process 10 monitors per batch to reduce database contention
+            $monitorChunks = array_chunk($monitorIds, $chunkSize);
+            $totalChunks = count($monitorChunks);
+            $totalJobs = 0;
+
+            Log::info('Processing monitors in chunks', [
+                'total_monitors' => count($monitorIds),
+                'chunk_size' => $chunkSize,
+                'total_chunks' => $totalChunks
+=======
     /**
      * Validate date format
      */
@@ -152,7 +212,52 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 'total_checks' => $result->total_checks,
                 'up_checks' => $result->up_checks,
                 'uptime_percentage' => $uptimePercentage
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
             ]);
+<<<<<<< HEAD
+
+            foreach ($monitorChunks as $index => $monitorChunk) {
+                $chunkNumber = $index + 1;
+
+                // Create jobs for current chunk
+                $jobs = collect($monitorChunk)->map(function ($monitorId) {
+                    return new \App\Jobs\CalculateSingleMonitorUptimeJob($monitorId);
+                })->toArray();
+
+                // Dispatch chunk as a batch
+                $batch = Bus::batch($jobs)
+                    ->name("Calculate Monitor Uptime Daily - Chunk {$chunkNumber}/{$totalChunks}")
+                    ->allowFailures()
+                    ->onQueue('uptime-calculations')
+                    ->dispatch();
+
+                $totalJobs += count($jobs);
+
+                Log::info("Chunk {$chunkNumber}/{$totalChunks} dispatched successfully", [
+                    'batch_id' => $batch->id,
+                    'chunk_size' => count($jobs),
+                    'monitors_in_chunk' => $monitorChunk
+                ]);
+
+                // Small delay between chunks to reduce database contention
+                if ($chunkNumber < $totalChunks) {
+                    usleep(500000); // 0.5 second delay
+                }
+            }
+
+            Log::info('All chunks dispatched successfully', [
+                'total_chunks' => $totalChunks,
+                'total_jobs' => $totalJobs
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to dispatch batch job', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            throw $e;
+=======
 
             $this->updateUptimeRecord($uptimePercentage);
         });
@@ -254,8 +359,11 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 'error' => $e->getMessage()
             ]);
             throw $e;
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
         }
     }
+<<<<<<< HEAD
+=======
 
     /**
      * Handle job retry logic
@@ -281,4 +389,5 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
         // Optional: Send notification to administrators
         // event(new UptimeCalculationFailed($this->monitorId, $this->date, $exception));
     }
+>>>>>>> 6c6e784644940435633883e83a6640a8cd242568
 }
