@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
                 ->warnWhenAboveMb(900)
                 ->failWhenAboveMb(1000),
             CpuLoadCheck::new()
-                ->warnWhenLoadIsHigherInTheLast5Minutes(2.0)
+                ->failWhenLoadIsHigherInTheLast5Minutes(2.0)
                 ->failWhenLoadIsHigherInTheLast5Minutes(5.0)
                 ->failWhenLoadIsHigherInTheLast15Minutes(3.0),
             ScheduleCheck::new()
