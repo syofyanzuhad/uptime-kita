@@ -140,6 +140,10 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
             ->setBindings(['up'])
             ->first();
 
+        Log::info('Monitor history result', [
+            'result' => $result
+        ]);
+
         // Handle case where no checks found
         if (!$result || $result->total_checks === 0) {
             Log::info('No monitor history found for date', [
