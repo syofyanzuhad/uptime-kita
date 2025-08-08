@@ -131,17 +131,18 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
     {
         // Use a single database query to get both total and up counts
         $result = DB::table('monitor_histories')
-            ->selectRaw('
-                COUNT(*) as total_checks,
-                SUM(CASE WHEN uptime_status = ? THEN 1 ELSE 0 END) as up_checks
-            ')
-            ->where('monitor_id', $this->monitorId)
-            ->whereDate('created_at', $this->date)
-            ->setBindings(['up'])
-            ->first();
+        ->selectRaw('
+            COUNT(*) as total_checks,
+            SUM(CASE WHEN uptime_status = "up" THEN 1 ELSE 0 END) as up_checks
+        ')
+        ->where('monitor_id', $this->monitorId)
+        ->whereDate('created_at', $this->date)
+        ->first();
 
         Log::info('Monitor history result', [
-            'result' => $result
+            'result' => $result,
+            'monitor_id' => $this->monitorId,
+            'date' => $this->date,
         ]);
 
         // Handle case where no checks found
@@ -184,7 +185,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 // Use upsert approach with retry mechanism for SQLite concurrency
                 $result = DB::table('monitor_uptime_dailies')
                     ->where('monitor_id', $this->monitorId)
-                    ->where('date', $dateOnly)
+                    ->whereDate('created_at', $dateOnly)
                     ->lockForUpdate()
                     ->first();
 
@@ -192,7 +193,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                     // Record exists, update it
                     $updated = DB::table('monitor_uptime_dailies')
                         ->where('monitor_id', $this->monitorId)
-                        ->where('date', $dateOnly)
+                        ->whereDate('created_at', $dateOnly)
                         ->update([
                             'uptime_percentage' => $roundedPercentage,
                             'updated_at' => now()
@@ -211,7 +212,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                     // Record doesn't exist, create it
                     DB::table('monitor_uptime_dailies')->insert([
                         'monitor_id' => $this->monitorId,
-                        'date' => $dateOnly,
+                        'created_at' => $dateOnly,
                         'uptime_percentage' => $roundedPercentage,
                         'created_at' => now(),
                         'updated_at' => now()
