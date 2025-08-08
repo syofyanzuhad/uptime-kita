@@ -179,14 +179,8 @@ class Monitor extends SpatieMonitor
         });
 
         static::created(function ($monitor) {
-            // check if the monitor is public or private
-            if ($monitor->is_public) {
-                // attach the current user as the owner of the public monitor
-                $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
-            } else {
-                // attach the current user as the owner of the private monitor
-                $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
-            }
+            // attach the current user as the owner of the private monitor
+            $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
 
             // remove cache
             cache()->forget("private_monitors_page_" . auth()->id() . '_1');
