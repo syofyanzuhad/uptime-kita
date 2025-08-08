@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schedule;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
 use Spatie\UptimeMonitor\Commands\CheckUptime;
 
+/*
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
@@ -376,6 +377,7 @@ Artisan::command('uptime:calculate-daily {date?} {--monitor-id=} {--force}', fun
         return 1;
     }
 })->purpose('Calculate daily uptime for all monitors or a specific monitor for a given date');
+*/
 
 Schedule::command(CheckUptime::class)->everyMinute()
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
