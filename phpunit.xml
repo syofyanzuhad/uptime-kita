@@ -24,10 +24,16 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_DATABASE_QUEUE" value=":memory:"/>
+        <env name="DB_DATABASE_TELESCOPE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="LOG_CHANNEL" value="null"/>
+        <env name="BROADCAST_DRIVER" value="log"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="FILESYSTEM_DISK" value="local"/>
     </php>
 </phpunit>
