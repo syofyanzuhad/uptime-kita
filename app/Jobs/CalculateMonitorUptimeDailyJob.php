@@ -36,7 +36,8 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             }
 
             Log::info('Creating batch jobs for monitors', [
-                'total_monitors' => count($monitorIds)
+                'total_monitors' => count($monitorIds),
+                'monitorIds' => $monitorIds,
             ]);
 
             // Chunk monitors into smaller batches for better memory management
