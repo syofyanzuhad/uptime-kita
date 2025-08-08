@@ -125,6 +125,13 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
             // others code
         }
     ```
+- Create databases:
+    ```bash
+    touch database/database.sqlite
+    touch database/queue.sqlite
+    touch database/telescope.sqlite
+    ```
+
 - Run migration and seeder (this will prompt to create database.sqlite file if it doesn't exists)
     ```bash
     php artisan migrate --seed --force
