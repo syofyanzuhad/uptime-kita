@@ -282,6 +282,101 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $this->info("💡 Use 'php artisan telegram:rate-limit-status --user={$user->id}' to verify");
 })->purpose('Reset Telegram rate limit for a user (for testing)');
 
+Artisan::command('uptime:calculate-daily {date?} {--monitor-id=} {--force}', function () {
+    $date = $this->argument('date') ?? \Carbon\Carbon::today()->toDateString();
+    $monitorId = $this->option('monitor-id');
+    $force = $this->option('force');
+
+    // Validate date format
+    try {
+        \Carbon\Carbon::createFromFormat('Y-m-d', $date);
+    } catch (\Exception $e) {
+        $this->error("Invalid date format: {$date}. Please use Y-m-d format (e.g., 2024-01-15)");
+        return 1;
+    }
+
+    $this->info("Starting daily uptime calculation for date: {$date}");
+
+    try {
+        if ($monitorId) {
+            // Calculate for specific monitor
+            $monitor = \App\Models\Monitor::find($monitorId);
+            if (!$monitor) {
+                $this->error("Monitor with ID {$monitorId} not found");
+                return 1;
+            }
+
+            $this->info("Calculating uptime for monitor: {$monitor->url} (ID: {$monitorId})");
+
+            // Check if calculation already exists (unless force is used)
+            if (!$force && \DB::table('monitor_uptime_dailies')
+                ->where('monitor_id', $monitorId)
+                ->where('date', $date)
+                ->exists()) {
+                $this->warn("Uptime calculation for monitor {$monitorId} on {$date} already exists. Use --force to recalculate.");
+                return 0;
+            }
+
+            // Dispatch single monitor calculation job
+            $job = new \App\Jobs\CalculateSingleMonitorUptimeJob((int) $monitorId, $date);
+            dispatch($job);
+
+            $this->info("Job dispatched for monitor {$monitorId} for date {$date}");
+        } else {
+            // Calculate for all monitors
+            $this->info("Calculating uptime for all monitors for date: {$date}");
+
+            $monitorIds = \App\Models\Monitor::pluck('id')->toArray();
+
+            if (empty($monitorIds)) {
+                $this->warn('No monitors found for uptime calculation');
+                return 0;
+            }
+
+            $this->info("Found " . count($monitorIds) . " monitors to process");
+
+            // If force is used, we'll process all monitors
+            // Otherwise, we'll skip monitors that already have calculations
+            $monitorsToProcess = $force ? $monitorIds : array_diff(
+                $monitorIds,
+                \DB::table('monitor_uptime_dailies')
+                    ->whereIn('monitor_id', $monitorIds)
+                    ->where('date', $date)
+                    ->pluck('monitor_id')
+                    ->toArray()
+            );
+
+            if (empty($monitorsToProcess)) {
+                $this->info('All monitors already have uptime calculations for this date. Use --force to recalculate.');
+                return 0;
+            }
+
+            $this->info("Processing " . count($monitorsToProcess) . " monitors");
+
+            // Dispatch jobs for each monitor
+            foreach ($monitorsToProcess as $monitorId) {
+                $job = new \App\Jobs\CalculateSingleMonitorUptimeJob($monitorId, $date);
+                dispatch($job);
+            }
+
+            $this->info("Dispatched " . count($monitorsToProcess) . " calculation jobs");
+        }
+
+        $this->info('Daily uptime calculation job dispatched successfully!');
+        return 0;
+
+    } catch (\Exception $e) {
+        $this->error("Failed to dispatch uptime calculation job: {$e->getMessage()}");
+        \Illuminate\Support\Facades\Log::error('CalculateDailyUptimeCommand failed', [
+            'date' => $date,
+            'monitor_id' => $monitorId,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return 1;
+    }
+})->purpose('Calculate daily uptime for all monitors or a specific monitor for a given date');
+
 Schedule::command(CheckUptime::class)->everyMinute()
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
 Schedule::command(CheckCertificates::class)->daily();
