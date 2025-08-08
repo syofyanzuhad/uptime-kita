@@ -282,7 +282,7 @@ Artisan::command('telegram:reset-rate-limit {--user=}', function () {
     $this->info("💡 Use 'php artisan telegram:rate-limit-status --user={$user->id}' to verify");
 })->purpose('Reset Telegram rate limit for a user (for testing)');
 
-Schedule::command(CheckUptime::class)->everyTwoMinutes()
+Schedule::command(CheckUptime::class)->everyMinute()
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
 Schedule::command(CheckCertificates::class)->daily();
 
