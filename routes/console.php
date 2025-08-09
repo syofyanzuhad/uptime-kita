@@ -29,6 +29,7 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
+Schedule::command('model:prune', ['--model' => [\Spatie\Health\Models\HealthCheckResultHistoryItem::class]])->daily();
 
 Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFifteenMinutes()
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
