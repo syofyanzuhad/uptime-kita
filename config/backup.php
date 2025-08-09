@@ -151,7 +151,7 @@ return [
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                config('filesystems.default')
+                env('FILESYSTEMS_DISK', 'local'),
             ],
         ],
 
