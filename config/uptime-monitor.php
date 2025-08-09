@@ -99,7 +99,7 @@ return [
             'connect_timeout' => 5,
             'http_errors' => false,
             'allow_redirects' => [
-                'max' => 2,
+                'max' => 5,
                 'strict' => false,
                 'referer' => false,
                 'protocols' => ['http', 'https'],
