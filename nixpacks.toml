@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["...", "python311Packages.supervisor"]
+nixPkgs = ["...", "python311Packages.supervisor", "sqlite"]
 
 [phases.build]
 cmds = [
