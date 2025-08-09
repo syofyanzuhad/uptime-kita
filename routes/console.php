@@ -42,6 +42,16 @@ Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)-
 Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
+// === BACKUP DB ===
+// Schedule::command('backup:clean')->daily()->at('01:00');
+// Schedule::command('backup:run')->daily()->at('01:30')
+//     ->onFailure(function () {
+//         info('BACKUP-DB: SUCCESS');
+//     })
+//     ->onSuccess(function () {
+//         info('BACKUP-DB: FAILED');
+//     });
+
 /*
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
