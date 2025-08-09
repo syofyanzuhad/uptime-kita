@@ -75,28 +75,28 @@ return [
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.
          */
-        'concurrent_checks' => 150,
+        'concurrent_checks' => 300,
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => 8,
+        'timeout_per_site' => 10,
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
          * to connect to a server in one uptime check. You can specify the time in
          * milliseconds between each attempt.
          */
-        'retry_connection_after_milliseconds' => 50,
+        'retry_connection_after_milliseconds' => 100,
 
         /*
          * If you want to change the default Guzzle client behaviour, you can do so by
          * passing custom options that will be used when making requests.
          */
         'guzzle_options' => [
-            'timeout' => 8,
-            'connect_timeout' => 3,
+            'timeout' => 10,
+            'connect_timeout' => 5,
             'http_errors' => false,
             'allow_redirects' => [
                 'max' => 2,
@@ -115,7 +115,7 @@ return [
          * Fire `Spatie\UptimeMonitor\Events\MonitorFailed` event only after
          * the given number of uptime checks have consecutively failed for a monitor.
          */
-        'fire_monitor_failed_event_after_consecutive_failures' => 2,
+        'fire_monitor_failed_event_after_consecutive_failures' => 3,
 
         /*
          * When reaching out to sites this user agent will be used.
