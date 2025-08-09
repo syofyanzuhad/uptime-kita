@@ -11,10 +11,10 @@ use Spatie\UptimeMonitor\Commands\CheckUptime;
 
 Schedule::command(CheckUptime::class)->everyMinute()
     ->onSuccess(function () {
-        $this->info('Uptime check succeeded');
+        info('UPTIME-CHECK: SUCCESS');
     })
     ->onFailure(function () {
-        $this->error('Uptime check failed');
+        info('UPTIME-CHECK: FAILED');
     })
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
 Schedule::command(CheckCertificates::class)->daily();
