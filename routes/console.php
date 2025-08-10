@@ -16,7 +16,9 @@ Schedule::command(CheckUptime::class)->everyMinute()
     ->onFailure(function () {
         info('UPTIME-CHECK: FAILED');
     })
-    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b')
+    ->withoutOverlapping()
+    ->runInBackground();
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
@@ -38,7 +40,9 @@ Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFifteenMinutes()
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
 
-Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute();
+Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground();
 Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)->everyMinute();
 Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
