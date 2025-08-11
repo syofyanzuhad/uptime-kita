@@ -2,11 +2,10 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Switch } from '@/components/ui/switch';
 import type { Monitor } from '@/types/monitor';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
+import MonitorGrid from './MonitorGrid.vue';
 
 interface Props {
     searchQuery?: string;
@@ -360,177 +359,20 @@ onUnmounted(() => {
                     <p class="text-sm">Try different keywords</p>
                 </div>
             </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div
-                    v-for="monitor in sortedMonitors"
-                    :key="monitor.id"
-                    class="relative group border rounded-lg hover:shadow-md transition-shadow cursor-pointer p-0"
-                >
-                    <Link
-                        :href="route('monitor.show', monitor.id)"
-                        class="block p-4 w-full h-full focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg"
-                        style="text-decoration: none; color: inherit;"
-                        tabindex="0"
-                    >
-                    <button
-                        @click="togglePin(monitor.id)"
-                        :class="{
-                            'text-yellow-500': isPinned(monitor.id),
-                            'text-gray-400 hover:text-gray-600': !isPinned(monitor.id)
-                        }"
-                        class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        :title="isPinned(monitor.id) ? 'Unpin this monitor' : 'Pin this monitor'"
-                    >
-                        <Icon
-                            name="bookmark"
-                            :class="isPinned(monitor.id) ? 'fill-current' : ''"
-                            size="16"
-                        />
-                    </button>
-
-                    <div class="flex items-start justify-between mb-2">
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-medium text-sm truncate flex items-center gap-2">
-                                <img
-                                    v-if="monitor.favicon"
-                                    :src="monitor.favicon"
-                                    alt="Favicon"
-                                    class="w-4 h-4 rounded-full"
-                                    @click.stop.prevent="openMonitorUrl(monitor.url)"
-                                    @keydown.stop
-                                />
-                                {{ getDomainFromUrl(monitor.url) }}
-                            </h3>
-                            <span
-                                class="text-xs text-blue-500 hover:underline truncate block"
-                                @click.stop
-                                @keydown.stop
-                            >
-                                {{ monitor.url }}
-                            </span>
-                        </div>
-                        <div class="flex items-center ml-2">
-                            <span
-                                :class="{
-                                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': monitor.uptime_status === 'up',
-                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': monitor.uptime_status === 'down',
-                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': monitor.uptime_status !== 'up' && monitor.uptime_status !== 'down'
-                                }"
-                                class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                            >
-                                <Icon
-                                    :name="getStatusIcon(monitor.uptime_status)"
-                                    size="12"
-                                />
-                                {{ getStatusText(monitor.uptime_status) }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Today's Uptime Percentage -->
-                    <div v-if="monitor.today_uptime_percentage !== undefined" class="mb-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Today's Uptime:</span>
-                            <span
-                                :class="getUptimePercentageColor(monitor.today_uptime_percentage)"
-                                class="text-xs font-medium"
-                            >
-                                {{ formatUptimePercentage(monitor.today_uptime_percentage) }}%
-                            </span>
-                        </div>
-                        <!-- Progress bar -->
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
-                            <div
-                                :class="{
-                                    'bg-green-500': monitor.today_uptime_percentage >= 99.5,
-                                    'bg-yellow-500': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
-                                    'bg-red-500': monitor.today_uptime_percentage < 95
-                                }"
-                                class="h-1.5 rounded-full transition-all duration-300"
-                                :style="{ width: `${monitor.today_uptime_percentage}%` }"
-                            ></div>
-                        </div>
-                    </div>
-
-                    <div class="text-xs text-gray-500 space-y-1">
-                        <div v-if="monitor.certificate_check_enabled" class="flex items-center gap-1">
-                            <TooltipProvider :delay-duration="0">
-                                <Tooltip>
-                                    <TooltipTrigger as-child>
-                                        <p
-                                            :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': monitor.certificate_status === 'valid',
-                                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': monitor.certificate_status === 'invalid',
-                                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': monitor.certificate_status === 'not applicable'
-                                            }"
-                                            class="inline-flex uppercase items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                                        >
-                                            <span
-                                                v-if="monitor.certificate_status !== undefined"
-                                                :class="[
-                                                    'py-0.5 rounded-full text-xs font-semibold uppercase flex items-center mr-1',
-                                                    monitor.certificate_status === 'valid' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                                    monitor.certificate_status === 'invalid' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                                                ]"
-                                            >
-                                                <Icon :name="
-                                                    monitor.certificate_status === 'valid' ? 'lock' :
-                                                    monitor.certificate_status === 'invalid' ? 'lockOpen' :
-                                                    'alertTriangle'
-                                                " class="w-4 h-4" />
-                                            </span>
-                                            SSL
-                                            {{ monitor.certificate_status }}
-                                        </p>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p class="text-sm">
-                                            {{ monitor.certificate_status === 'valid' ? 'Certificate is valid' :
-                                                monitor.certificate_status === 'invalid' ? 'Certificate is invalid' :
-                                                'Certificate check not applicable' }}
-                                        </p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                        <div v-if="monitor.last_check_date_human" :title="`Last checked: ${monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : ''}`">
-                            Last checked: {{ monitor.last_check_date_human }}
-                        </div>
-                        <div v-if="monitor.down_for_events_count > 0" class="flex items-center gap-2">
-                            <span class="text-gray-500">Down events:</span>
-                            <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
-                                {{ monitor.down_for_events_count }} times
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Toggle Active Button - Bottom -->
-                    <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-600 dark:text-gray-400">Uptime Check:</span>
-                            <TooltipProvider :delay-duration="0">
-                                <Tooltip>
-                                    <TooltipTrigger as-child>
-                                        <Switch
-                                            :model-value="monitor.uptime_check_enabled"
-                                            :disabled="togglingMonitors.has(monitor.id)"
-                                            @update:model-value="toggleActive(monitor.id)"
-                                            @click.stop.prevent
-                                            />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p class="text-sm">
-                                            {{ monitor.uptime_check_enabled ? 'Deactivate monitor' : 'Activate monitor' }}
-                                        </p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                    </div>
-                    </Link>
-                </div>
-            </div>
+            <MonitorGrid
+                :monitors="sortedMonitors"
+                type="private"
+                :pinned-monitors="pinnedMonitors"
+                :on-toggle-pin="togglePin"
+                :on-toggle-active="toggleActive"
+                :toggling-monitors="togglingMonitors"
+                :show-subscribe-button="false"
+                :show-toggle-button="true"
+                :show-pin-button="true"
+                :show-uptime-percentage="true"
+                :show-certificate-status="true"
+                :show-last-checked="true"
+            />
 
             <!-- Load More Button -->
             <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 text-center">
