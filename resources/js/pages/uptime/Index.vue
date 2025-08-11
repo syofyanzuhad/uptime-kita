@@ -15,7 +15,6 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Icon from '@/components/Icon.vue';
-import FlashMessage from '@/components/FlashMessage.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{

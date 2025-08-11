@@ -104,10 +104,6 @@ const togglePin = (monitorId: number) => {
     }
 };
 
-const isPinned = (monitorId: number) => {
-    return pinnedMonitors.value.has(monitorId);
-};
-
 const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
     try {
         if (isInitialLoad) {
@@ -182,28 +178,6 @@ const loadMore = async () => {
     }
 };
 
-const getStatusIcon = (status: string) => {
-    switch (status) {
-        case 'up':
-            return 'checkCircle';
-        case 'down':
-            return 'xCircle';
-        default:
-            return 'clock';
-    }
-};
-
-const getStatusText = (status: string) => {
-    switch (status) {
-        case 'up':
-            return 'Online';
-        case 'down':
-            return 'Offline';
-        default:
-            return 'Checking...';
-    }
-};
-
 const getDomainFromUrl = (url: string) => {
     try {
         const domain = new URL(url).hostname;
@@ -211,20 +185,6 @@ const getDomainFromUrl = (url: string) => {
     } catch {
         return url;
     }
-};
-
-const formatUptimePercentage = (percentage: number) => {
-    return percentage.toFixed(1);
-};
-
-const getUptimePercentageColor = (percentage: number) => {
-    if (percentage >= 99.5) return 'text-green-600 dark:text-green-400';
-    if (percentage >= 95) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-};
-
-const openMonitorUrl = (url: string) => {
-    window.open(url, '_blank');
 };
 
 const toggleActive = async (monitorId: number) => {
