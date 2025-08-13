@@ -62,6 +62,24 @@ return [
             'synchronous' => 'NORMAL', // Balance between safety and performance
         ],
 
+        'sqlite_health' => [
+            'driver' => 'sqlite',
+            'database' => env('DB_DATABASE_HEALTH', database_path('health.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 15000, // 15 seconds timeout for health operations
+        ],
+
+        'sqlite_monitor_history' => [
+            'driver' => 'sqlite',
+            'database' => null, // Will be set dynamically
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 10000, // 10 seconds timeout for monitor history operations
+            'journal_mode' => 'WAL', // Write-Ahead Logging for better concurrency
+            'synchronous' => 'NORMAL', // Balance between safety and performance
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

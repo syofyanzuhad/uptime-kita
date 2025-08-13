@@ -47,6 +47,9 @@ Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)-
 Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
+// === MONITOR HISTORY DATABASE CLEANUP ===
+Schedule::command('monitor:cleanup-history --days=30')->daily()->at('02:00');
+
 // === BACKUP DB ===
 // Schedule::command('backup:clean')->daily()->at('01:00');
 // Schedule::command('backup:run')->daily()->at('01:30')

@@ -40,6 +40,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
     Route::get('/monitor/{monitor}/uptimes-daily', \App\Http\Controllers\UptimesDailyController::class)->name('monitor.uptimes-daily');
 
+    // Monitor history API routes (using dynamic SQLite databases)
+    Route::prefix('api/monitor/{monitorId}/history')->name('monitor.history.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MonitorHistoryController::class, 'index'])->name('index');
+        Route::get('/latest', [\App\Http\Controllers\MonitorHistoryController::class, 'latest'])->name('latest');
+        Route::get('/statistics', [\App\Http\Controllers\MonitorHistoryController::class, 'statistics'])->name('statistics');
+        Route::post('/cleanup', [\App\Http\Controllers\MonitorHistoryController::class, 'cleanup'])->name('cleanup');
+    });
+
     // Status page management routes
     Route::resource('status-pages', StatusPageController::class);
 

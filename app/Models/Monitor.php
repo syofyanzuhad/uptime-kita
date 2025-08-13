@@ -182,6 +182,9 @@ class Monitor extends SpatieMonitor
             // attach the current user as the owner of the private monitor
             $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
 
+            // Create SQLite database for this monitor's history
+            \App\Models\MonitorHistoryRecord::ensureMonitorDatabase($monitor->id);
+
             // remove cache
             cache()->forget("private_monitors_page_" . auth()->id() . '_1');
             cache()->forget("public_monitors_authenticated_" . auth()->id() . '_1');
@@ -190,15 +193,22 @@ class Monitor extends SpatieMonitor
         static::updating(function ($monitor) {
             // history log
             if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
-                $monitor->histories()->create([
+                // Create history record in the monitor's dedicated SQLite database
+                \App\Models\MonitorHistoryRecord::createForMonitor($monitor->id, [
                     'uptime_status' => $monitor->uptime_status,
                     'message' => $monitor->uptime_check_failure_reason,
+                    'certificate_status' => $monitor->certificate_status,
+                    'certificate_expiration_date' => $monitor->certificate_expiration_date,
                 ]);
             }
         });
 
         static::deleting(function ($monitor) {
             $monitor->users()->detach();
+
+            // Delete the monitor's SQLite database
+            $service = new \App\Services\MonitorHistoryDatabaseService();
+            $service->deleteMonitorDatabase($monitor->id);
         });
     }
 }
