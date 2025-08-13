@@ -33,7 +33,7 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [\Spatie\Health\Models\HealthCheckResultHistoryItem::class]])->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFifteenMinutes()
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFiveMinutes()
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
