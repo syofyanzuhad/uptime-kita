@@ -75,14 +75,168 @@ class Monitor extends SpatieMonitor
         return $this->belongsToMany(StatusPage::class, 'status_page_monitor');
     }
 
-    public function histories()
+    /**
+     * Get all history records for this monitor from the dynamic SQLite database
+     */
+    public function histories(int $limit = 100, int $offset = 0): array
     {
-        return $this->hasMany(MonitorHistory::class);
+        if (!$this->id) {
+            return [];
+        }
+        return MonitorHistory::getForMonitor($this->id, $limit, $offset);
     }
 
-    public function latestHistory()
+    /**
+     * Get the latest history record for this monitor from the dynamic SQLite database
+     */
+    public function latestHistory(): ?MonitorHistory
     {
-        return $this->hasOne(MonitorHistory::class)->latest();
+        if (!$this->id) {
+            return null;
+        }
+        return MonitorHistory::scopeLatestByMonitorId(null, $this->id);
+    }
+
+    /**
+     * Get history records with pagination
+     */
+    public function getHistoryPaginated(int $page = 1, int $perPage = 100): array
+    {
+        if (!$this->id) {
+            return [];
+        }
+        $offset = ($page - 1) * $perPage;
+        return MonitorHistory::getForMonitor($this->id, $perPage, $offset);
+    }
+
+    /**
+     * Get history statistics for this monitor
+     */
+    public function getHistoryStatistics(): array
+    {
+        if (!$this->id) {
+            return [
+                'total_records' => 0,
+                'status_counts' => [
+                    'up' => 0,
+                    'down' => 0,
+                    'not yet checked' => 0,
+                ],
+                'uptime_percentage' => 0,
+                'average_response_time' => 0,
+                'last_check' => null,
+            ];
+        }
+        $records = MonitorHistory::getForMonitor($this->id, 10000, 0);
+
+        $totalRecords = count($records);
+        $statusCounts = [
+            'up' => 0,
+            'down' => 0,
+            'not yet checked' => 0,
+        ];
+
+        $responseTimes = [];
+        $lastCheck = null;
+
+        foreach ($records as $record) {
+            $status = $record['uptime_status'];
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            }
+
+            if (isset($record['response_time_ms']) && $record['response_time_ms']) {
+                $responseTimes[] = $record['response_time_ms'];
+            }
+
+            if (!$lastCheck || $record['created_at'] > $lastCheck) {
+                $lastCheck = $record['created_at'];
+            }
+        }
+
+        // Calculate uptime percentage
+        $uptimePercentage = $totalRecords > 0
+            ? round(($statusCounts['up'] / $totalRecords) * 100, 2)
+            : 0;
+
+        // Calculate average response time
+        $averageResponseTime = count($responseTimes) > 0
+            ? round(array_sum($responseTimes) / count($responseTimes), 2)
+            : 0;
+
+        return [
+            'total_records' => $totalRecords,
+            'status_counts' => $statusCounts,
+            'uptime_percentage' => $uptimePercentage,
+            'average_response_time' => $averageResponseTime,
+            'last_check' => $lastCheck,
+        ];
+    }
+
+    /**
+     * Check if this monitor has a history database
+     */
+    public function hasHistoryDatabase(): bool
+    {
+        if (!$this->id) {
+            return false;
+        }
+        return MonitorHistory::monitorHasDatabase($this->id);
+    }
+
+    /**
+     * Ensure history database exists for this monitor
+     */
+    public function ensureHistoryDatabase(): bool
+    {
+        if (!$this->id) {
+            return false;
+        }
+        return MonitorHistory::ensureMonitorDatabase($this->id);
+    }
+
+    /**
+     * Clean up old history records for this monitor
+     */
+    public function cleanupHistory(int $daysToKeep = 30): int
+    {
+        if (!$this->id) {
+            return 0;
+        }
+        return MonitorHistory::cleanupForMonitor($this->id, $daysToKeep);
+    }
+
+        /**
+     * Create a history record for this monitor
+     */
+    public function createHistoryRecord(array $data = []): bool
+    {
+        if (!$this->id) {
+            return false;
+        }
+
+        $defaultData = [
+            'uptime_status' => $this->uptime_status,
+            'message' => $this->uptime_check_failure_reason,
+            'certificate_status' => $this->certificate_status,
+            'certificate_expiration_date' => $this->certificate_expiration_date,
+        ];
+
+        $historyData = array_merge($defaultData, $data);
+
+        return MonitorHistory::createForMonitor($this->id, $historyData);
+    }
+
+    /**
+     * Get the total number of history records for this monitor
+     */
+    public function getHistoryCount(): int
+    {
+        if (!$this->id) {
+            return 0;
+        }
+        $records = MonitorHistory::getForMonitor($this->id, 1, 0);
+        return count($records);
     }
 
     public function uptimes()
@@ -183,7 +337,7 @@ class Monitor extends SpatieMonitor
             $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
 
             // Create SQLite database for this monitor's history
-            \App\Models\MonitorHistoryRecord::ensureMonitorDatabase($monitor->id);
+            \App\Models\MonitorHistory::ensureMonitorDatabase($monitor->id);
 
             // remove cache
             cache()->forget("private_monitors_page_" . auth()->id() . '_1');
@@ -194,12 +348,7 @@ class Monitor extends SpatieMonitor
             // history log
             if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
                 // Create history record in the monitor's dedicated SQLite database
-                \App\Models\MonitorHistoryRecord::createForMonitor($monitor->id, [
-                    'uptime_status' => $monitor->uptime_status,
-                    'message' => $monitor->uptime_check_failure_reason,
-                    'certificate_status' => $monitor->certificate_status,
-                    'certificate_expiration_date' => $monitor->certificate_expiration_date,
-                ]);
+                $monitor->createHistoryRecord();
             }
         });
 

@@ -69,9 +69,34 @@ class UptimeMonitorController extends Controller
     {
         // implements cache for monitor data with histories included
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
-            return new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
-                $query->latest()->take(100);
-            }]));
+            // Load uptimeDaily relationship
+            $monitor->load(['uptimeDaily']);
+
+            // Get histories from dynamic SQLite database
+            $histories = $monitor->histories(100, 0);
+            $latestHistory = $monitor->latestHistory();
+
+            // Create a resource with the monitor data and histories
+            $resource = new MonitorResource($monitor);
+
+            // Convert histories to MonitorHistory models
+            $historyModels = collect($histories)->map(function ($record) use ($monitor) {
+                $model = new \App\Models\MonitorHistory();
+                $record['monitor_id'] = $monitor->id;
+                $model->fill($record);
+                $model->exists = true;
+                return $model;
+            });
+
+            // Set histories and latest history manually
+            $resourceData = $resource->toArray(request());
+            $resourceData['histories'] = MonitorHistoryResource::collection($historyModels)->toArray(request());
+            $resourceData['latest_history'] = $latestHistory ? (new MonitorHistoryResource($latestHistory))->toArray(request()) : null;
+
+            // Calculate down events count from histories
+            $resourceData['down_for_events_count'] = collect($histories)->where('uptime_status', 'down')->count();
+
+            return $resourceData;
         });
 
         return Inertia::render('uptime/Show', [
@@ -82,7 +107,20 @@ class UptimeMonitorController extends Controller
     public function getHistory(Monitor $monitor)
     {
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            return MonitorHistoryResource::collection($monitor->histories()->latest()->take(100)->get());
+            // Get history records from the dynamic SQLite database
+            $historyRecords = $monitor->histories(100, 0);
+
+            // Convert array records to MonitorHistory models for the resource
+            $historyModels = collect($historyRecords)->map(function ($record) use ($monitor) {
+                $model = new \App\Models\MonitorHistory();
+                // Add monitor_id to the record data
+                $record['monitor_id'] = $monitor->id;
+                $model->fill($record);
+                $model->exists = true;
+                return $model;
+            });
+
+            return MonitorHistoryResource::collection($historyModels);
         });
 
         return response()->json([

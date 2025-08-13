@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Monitor;
+use App\Models\MonitorHistory;
 use App\Services\MonitorHistoryDatabaseService;
 
 class ManageMonitorHistoryDatabases extends Command
@@ -72,7 +73,7 @@ class ManageMonitorHistoryDatabases extends Command
         $failed = 0;
 
         foreach ($monitors as $monitor) {
-            if ($service->createMonitorDatabase($monitor->id)) {
+            if (MonitorHistory::ensureMonitorDatabase($monitor->id)) {
                 $created++;
             } else {
                 $failed++;
@@ -100,8 +101,8 @@ class ManageMonitorHistoryDatabases extends Command
         $processed = 0;
 
         foreach ($monitors as $monitor) {
-            if ($service->monitorDatabaseExists($monitor->id)) {
-                $deleted = $service->cleanupOldHistory($monitor->id, $days);
+            if (MonitorHistory::monitorHasDatabase($monitor->id)) {
+                $deleted = MonitorHistory::cleanupForMonitor($monitor->id, $days);
                 $totalDeleted += $deleted;
             }
             $processed++;
@@ -163,10 +164,10 @@ class ManageMonitorHistoryDatabases extends Command
         $rows = [];
 
         foreach ($monitors as $monitor) {
-            $exists = $service->monitorDatabaseExists($monitor->id);
+            $exists = MonitorHistory::monitorHasDatabase($monitor->id);
             if ($exists) {
                 $databasesExist++;
-                $records = count($service->getHistory($monitor->id, 1000, 0));
+                $records = count(MonitorHistory::getForMonitor($monitor->id, 1000, 0));
                 $totalRecords += $records;
             } else {
                 $records = 0;

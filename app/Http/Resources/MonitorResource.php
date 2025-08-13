@@ -35,10 +35,8 @@ class MonitorResource extends JsonResource
             'uptime_check_failure_reason' => $this->uptime_check_failure_reason,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
-            'latest_history' => $this->whenLoaded('latestHistory', function () {
-                return $this->latestHistory ? new MonitorHistoryResource($this->latestHistory) : null;
-            }),
+            'histories' => null, // Will be set manually if needed
+            'latest_history' => null, // Will be set manually if needed
             'uptimes_daily' => $this->whenLoaded('uptimesDaily', function () {
                 return $this->uptimesDaily->map(function ($uptime) {
                     return [
@@ -55,12 +53,7 @@ class MonitorResource extends JsonResource
      */
     protected function getDownEventsCount(): int
     {
-        // If histories are loaded, count from the collection
-        if ($this->relationLoaded('histories')) {
-            return $this->histories->where('uptime_status', 'down')->count();
-        }
-
-        // Otherwise, don't return anything
+        // This will be calculated manually when histories are available
         return 0;
     }
 

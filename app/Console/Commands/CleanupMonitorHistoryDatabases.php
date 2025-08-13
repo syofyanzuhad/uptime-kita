@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Monitor;
+use App\Models\MonitorHistory;
 use App\Services\MonitorHistoryDatabaseService;
 
 class CleanupMonitorHistoryDatabases extends Command
@@ -89,8 +90,8 @@ class CleanupMonitorHistoryDatabases extends Command
 
         foreach ($monitors as $monitor) {
             try {
-                if ($service->monitorDatabaseExists($monitor->id)) {
-                    $deleted = $service->cleanupOldHistory($monitor->id, $days);
+                if (MonitorHistory::monitorHasDatabase($monitor->id)) {
+                    $deleted = MonitorHistory::cleanupForMonitor($monitor->id, $days);
                     $totalDeleted += $deleted;
                 }
                 $processed++;

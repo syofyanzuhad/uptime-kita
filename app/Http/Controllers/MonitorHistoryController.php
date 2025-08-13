@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Monitor;
-use App\Models\MonitorHistoryRecord;
+use App\Models\MonitorHistory;
 use App\Services\MonitorHistoryDatabaseService;
 
 class MonitorHistoryController extends Controller
@@ -39,7 +39,7 @@ class MonitorHistoryController extends Controller
         $service = new MonitorHistoryDatabaseService();
 
         // Ensure database exists
-        if (!$service->monitorDatabaseExists($monitorId)) {
+        if (!MonitorHistory::monitorHasDatabase($monitorId)) {
             return response()->json([
                 'data' => [],
                 'meta' => [
@@ -51,7 +51,7 @@ class MonitorHistoryController extends Controller
         }
 
         // Get history records
-        $records = $service->getHistory($monitorId, $limit, $offset);
+        $records = MonitorHistory::getForMonitor($monitorId, $limit, $offset);
 
         // Apply filters if provided
         if ($status) {
@@ -112,7 +112,7 @@ class MonitorHistoryController extends Controller
         $service = new MonitorHistoryDatabaseService();
 
         // Ensure database exists
-        if (!$service->monitorDatabaseExists($monitorId)) {
+        if (!MonitorHistory::monitorHasDatabase($monitorId)) {
             return response()->json([
                 'data' => null,
                 'meta' => [
@@ -122,7 +122,7 @@ class MonitorHistoryController extends Controller
             ]);
         }
 
-        $latestRecord = $service->getLatestHistory($monitorId);
+        $latestRecord = MonitorHistory::scopeLatestByMonitorId(null, $monitorId);
 
         return response()->json([
             'data' => $latestRecord,
@@ -156,7 +156,7 @@ class MonitorHistoryController extends Controller
         $service = new MonitorHistoryDatabaseService();
 
         // Ensure database exists
-        if (!$service->monitorDatabaseExists($monitorId)) {
+        if (!MonitorHistory::monitorHasDatabase($monitorId)) {
             return response()->json([
                 'data' => [
                     'total_records' => 0,
@@ -177,7 +177,7 @@ class MonitorHistoryController extends Controller
         }
 
         // Get all history records for statistics
-        $records = $service->getHistory($monitorId, 10000, 0); // Get up to 10k records for stats
+        $records = MonitorHistory::getForMonitor($monitorId, 10000, 0); // Get up to 10k records for stats
 
         $totalRecords = count($records);
         $statusCounts = [
@@ -252,14 +252,14 @@ class MonitorHistoryController extends Controller
 
         $service = new MonitorHistoryDatabaseService();
 
-        if (!$service->monitorDatabaseExists($monitorId)) {
+        if (!MonitorHistory::monitorHasDatabase($monitorId)) {
             return response()->json([
                 'message' => 'No database found for this monitor',
                 'deleted_count' => 0
             ]);
         }
 
-        $deletedCount = $service->cleanupOldHistory($monitorId, $daysToKeep);
+        $deletedCount = MonitorHistory::cleanupForMonitor($monitorId, $daysToKeep);
 
         return response()->json([
             'message' => "Cleaned up {$deletedCount} old records",

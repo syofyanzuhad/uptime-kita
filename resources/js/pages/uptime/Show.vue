@@ -13,10 +13,10 @@ import Icon from '@/components/Icon.vue';
 import axios from 'axios';
 
 const props = defineProps<{
-  monitor: { data: Monitor };
+  monitor: Monitor;
 }>();
 
-const monitorData = computed(() => props.monitor.data);
+const monitorData = computed(() => props.monitor);
 
 const breadcrumbs = [
   { title: 'Uptime Monitor', href: '/monitor' },
@@ -93,7 +93,7 @@ async function updateHistoryData() {
     const response = await axios.get(route('monitor.history', { monitor: monitorData.value.id }));
     if (response.data.histories) {
       historyMinuteMap.value = Object.fromEntries(
-        response.data.histories.map((h: MonitorHistory) => [h.created_at.slice(0, 16), h])
+        response.data.histories.map((h: any) => [h.created_at.slice(0, 16), h])
       );
     }
   } catch (error) {
