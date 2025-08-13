@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Carbon;
 use App\Models\MonitorUptimeDaily;
+use App\Services\MonitorHistoryDatabaseService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
@@ -125,21 +126,33 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
     }
 
     /**
-     * Calculate and store uptime data
+     * Calculate and store uptime data using the monitor's individual SQLite database
      */
     private function calculateAndStoreUptime(): void
     {
-        // Use a single database query to get both total and up counts
-        $result = DB::table('monitor_histories')
+        $service = new MonitorHistoryDatabaseService();
+
+        // Check if monitor has a database
+        if (!$service->monitorDatabaseExists($this->monitorId)) {
+            Log::info('Monitor history database does not exist, creating it', [
+                'monitor_id' => $this->monitorId
+            ]);
+            $service->createMonitorDatabase($this->monitorId);
+        }
+
+        // Get the monitor's database connection
+        $connection = $service->getMonitorConnection($this->monitorId);
+
+        // Query the monitor's individual database for history records
+        $result = $connection->table('monitor_histories')
             ->selectRaw('
                 COUNT(*) as total_checks,
                 SUM(CASE WHEN uptime_status = "up" THEN 1 ELSE 0 END) as up_checks
             ')
-            ->where('monitor_id', $this->monitorId)
             ->whereDate('created_at', $this->date)
             ->first();
 
-        Log::info('Monitor history result', [
+        Log::info('Monitor history result from individual database', [
             'result' => $result,
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
@@ -147,7 +160,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
 
         // Handle case where no checks found
         if (!$result || $result->total_checks === 0) {
-            Log::info('No monitor history found for date', [
+            Log::info('No monitor history found for date in individual database', [
                 'monitor_id' => $this->monitorId,
                 'date' => $this->date
             ]);
@@ -157,7 +170,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
 
         $uptimePercentage = ($result->up_checks / $result->total_checks) * 100;
 
-        Log::debug('Uptime calculation details', [
+        Log::debug('Uptime calculation details from individual database', [
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
             'total_checks' => $result->total_checks,
