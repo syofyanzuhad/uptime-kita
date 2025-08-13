@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Spatie\Url\Url;
 use Spatie\Tags\HasTags;
+use Illuminate\Support\Carbon;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 
 class Monitor extends SpatieMonitor
