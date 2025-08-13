@@ -65,6 +65,17 @@ class Monitor extends SpatieMonitor
         // });
     }
 
+    // Getter for uptime_last_check_date to return 00 seconds in carbon object
+    public function getUptimeLastCheckDateAttribute()
+    {
+        if (!$this->attributes['uptime_last_check_date']) {
+            return null;
+        }
+
+        $date = Carbon::parse($this->attributes['uptime_last_check_date']);
+        return $date->setSeconds(0);
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
