@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Spatie\Url\Url;
 use Spatie\Tags\HasTags;
+use Illuminate\Support\Carbon;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 
 class Monitor extends SpatieMonitor
@@ -65,6 +66,17 @@ class Monitor extends SpatieMonitor
         // });
     }
 
+    // create getter for uptime_last_check_date to return 00 seconds in carbon object
+    public function getUptimeLastCheckDateAttribute()
+    {
+        if (!$this->attributes['uptime_last_check_date']) {
+            return null;
+        }
+
+        $date = Carbon::parse($this->attributes['uptime_last_check_date']);
+        return $date->setSeconds(0);
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
@@ -80,9 +92,10 @@ class Monitor extends SpatieMonitor
      */
     public function histories(int $limit = 100, int $offset = 0): array
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return [];
         }
+
         return MonitorHistory::getForMonitor($this->id, $limit, $offset);
     }
 
@@ -91,9 +104,10 @@ class Monitor extends SpatieMonitor
      */
     public function latestHistory(): ?MonitorHistory
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return null;
         }
+
         return MonitorHistory::scopeLatestByMonitorId(null, $this->id);
     }
 
@@ -102,10 +116,11 @@ class Monitor extends SpatieMonitor
      */
     public function getHistoryPaginated(int $page = 1, int $perPage = 100): array
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return [];
         }
         $offset = ($page - 1) * $perPage;
+
         return MonitorHistory::getForMonitor($this->id, $perPage, $offset);
     }
 
@@ -114,7 +129,7 @@ class Monitor extends SpatieMonitor
      */
     public function getHistoryStatistics(): array
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return [
                 'total_records' => 0,
                 'status_counts' => [
@@ -149,7 +164,7 @@ class Monitor extends SpatieMonitor
                 $responseTimes[] = $record['response_time_ms'];
             }
 
-            if (!$lastCheck || $record['created_at'] > $lastCheck) {
+            if (! $lastCheck || $record['created_at'] > $lastCheck) {
                 $lastCheck = $record['created_at'];
             }
         }
@@ -178,9 +193,10 @@ class Monitor extends SpatieMonitor
      */
     public function hasHistoryDatabase(): bool
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return false;
         }
+
         return MonitorHistory::monitorHasDatabase($this->id);
     }
 
@@ -189,9 +205,10 @@ class Monitor extends SpatieMonitor
      */
     public function ensureHistoryDatabase(): bool
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return false;
         }
+
         return MonitorHistory::ensureMonitorDatabase($this->id);
     }
 
@@ -200,18 +217,19 @@ class Monitor extends SpatieMonitor
      */
     public function cleanupHistory(int $daysToKeep = 30): int
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return 0;
         }
+
         return MonitorHistory::cleanupForMonitor($this->id, $daysToKeep);
     }
 
-        /**
+    /**
      * Create a history record for this monitor
      */
     public function createHistoryRecord(array $data = []): bool
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return false;
         }
 
@@ -232,10 +250,11 @@ class Monitor extends SpatieMonitor
      */
     public function getHistoryCount(): int
     {
-        if (!$this->id) {
+        if (! $this->id) {
             return 0;
         }
         $records = MonitorHistory::getForMonitor($this->id, 1, 0);
+
         return count($records);
     }
 
@@ -312,6 +331,7 @@ class Monitor extends SpatieMonitor
     public function isOwnedBy(User $user): bool
     {
         $owner = $this->owner;
+
         return $owner && $owner->id === $user->id;
     }
 
@@ -340,23 +360,20 @@ class Monitor extends SpatieMonitor
             \App\Models\MonitorHistory::ensureMonitorDatabase($monitor->id);
 
             // remove cache
-            cache()->forget("private_monitors_page_" . auth()->id() . '_1');
-            cache()->forget("public_monitors_authenticated_" . auth()->id() . '_1');
+            cache()->forget('private_monitors_page_'.auth()->id().'_1');
+            cache()->forget('public_monitors_authenticated_'.auth()->id().'_1');
         });
 
         static::updating(function ($monitor) {
-            // history log
-            if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
-                // Create history record in the monitor's dedicated SQLite database
-                $monitor->createHistoryRecord();
-            }
+            // History logging is now handled by event listeners for better timing accuracy
+            // The event listeners fire immediately when uptime checks happen
         });
 
         static::deleting(function ($monitor) {
             $monitor->users()->detach();
 
             // Delete the monitor's SQLite database
-            $service = new \App\Services\MonitorHistoryDatabaseService();
+            $service = new \App\Services\MonitorHistoryDatabaseService;
             $service->deleteMonitorDatabase($monitor->id);
         });
     }
