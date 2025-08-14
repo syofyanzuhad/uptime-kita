@@ -57,6 +57,8 @@ const confirmDeleteUser = () => {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monitors</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status Pages</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -65,6 +67,8 @@ const confirmDeleteUser = () => {
                 <td class="px-6 py-4 whitespace-nowrap">{{ user.id }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user.monitors_count }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user.status_pages_count }}</td>
                 <td class="px-6 py-4 whitespace-nowrap flex gap-2">
                   <Link :href="route('users.show', user.id)" class="text-blue-600 hover:underline">View</Link>
                   <Link :href="route('users.edit', user.id)" class="text-yellow-600 hover:underline">Edit</Link>

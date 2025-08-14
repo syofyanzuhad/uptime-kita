@@ -13,7 +13,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::whereNot('id', 1)->paginate(10);
+        $users = User::whereNot('id', 1)
+            ->withCount('monitors')
+            ->withCount('statusPages')
+            ->paginate(10);
 
         return Inertia::render('users/Index', [
             'users' => $users,
