@@ -229,20 +229,27 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 ## 📸 Screenshots
 
 ### Private monitors
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_dashboard (1)" src="https://github.com/user-attachments/assets/812d9b8a-869d-4f7d-9e54-828c1e41a27c" />
+<img width="2880" height="2168" alt="uptime syofyanzuhad private_monitor_1" src="https://github.com/user-attachments/assets/57db5086-351d-43a5-aba4-47ede7b33eda" />
+
+<img width="2048" height="1844" alt="uptime syofyanzuhad private_dashboard" src="https://github.com/user-attachments/assets/812d9b8a-869d-4f7d-9e54-828c1e41a27c" />
 
 ### Public monitors
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_dashboard (2)" src="https://github.com/user-attachments/assets/f591c415-01d0-430d-b0b6-6d11fb57c027" />
+<img width="2880" height="2168" alt="uptime syofyanzuhad public_monitor_1" src="https://github.com/user-attachments/assets/316f10f1-945d-45f1-94d3-ae100321da68" />
 
-### Notification
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_status-pages_1 (1)" src="https://github.com/user-attachments/assets/f1ebd743-3003-46e0-aba2-5bb6713084cf" />
+<img width="2048" height="1844" alt="uptime syofyanzuhad public_dashboard" src="https://github.com/user-attachments/assets/f591c415-01d0-430d-b0b6-6d11fb57c027" />
 
-<img width="583" height="893" alt="Screenshot 2025-07-22 at 09 18 08" src="https://github.com/user-attachments/assets/ddfb62da-bacb-4a5e-ba8f-c0005114bd08" />
+### Detail Monitor
+<img width="2880" height="2168" alt="uptime syofyanzuhad detail_monitor" src="https://github.com/user-attachments/assets/54fec7e1-e152-46c9-8058-b67a887500dd" />
 
 ### Status Page
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_status-pages_1" src="https://github.com/user-attachments/assets/8102d0bc-978f-4888-8503-d8e6a2923130" />
+<img width="2880" height="2168" alt="uptime syofyanzuhad detail_status_monitor" src="https://github.com/user-attachments/assets/83f154d2-4bda-4c6e-b143-cc1ce1bb8231" />
 
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
+<img width="2048" height="1844" alt="uptime syofyanzuhad public_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
+
+### Notification
+<img width="2048" height="1844" alt="uptime syofyanzuhad dev_status-pages_1" src="https://github.com/user-attachments/assets/f1ebd743-3003-46e0-aba2-5bb6713084cf" />
+
+<img width="583" height="893" alt="Screenshot 2025-07-22 at 09 18 08" src="https://github.com/user-attachments/assets/ddfb62da-bacb-4a5e-ba8f-c0005114bd08" />
 
 ## 📊 Activity
 ![Alt](https://repobeats.axiom.co/api/embed/3eda9cccaaf42702c26eea2632ce37357c315dc7.svg "Repobeats analytics image")
