@@ -39,6 +39,7 @@ Kita is the Indonesian word that means "Us"; this means that the uptime can be u
 ## 🥔 Live Demo
 
 U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server located on Germany)
+- Status Page Demo: [Syofyan Zuhad](https://uptime.syofyanzuhad.dev/status/syofyan-zuhad)
 
 ## ⭐ Features
 

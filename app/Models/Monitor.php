@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Spatie\Url\Url;
 use Spatie\Tags\HasTags;
+use Illuminate\Support\Carbon;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
 
 class Monitor extends SpatieMonitor
@@ -63,6 +64,17 @@ class Monitor extends SpatieMonitor
         // Fallback query jika relasi belum dimuat
         return $this->users()->where('user_id', auth()->id())->exists();
         // });
+    }
+
+    // Getter for uptime_last_check_date to return 00 seconds in carbon object
+    public function getUptimeLastCheckDateAttribute()
+    {
+        if (!$this->attributes['uptime_last_check_date']) {
+            return null;
+        }
+
+        $date = Carbon::parse($this->attributes['uptime_last_check_date']);
+        return $date->setSeconds(0);
     }
 
     public function users()
