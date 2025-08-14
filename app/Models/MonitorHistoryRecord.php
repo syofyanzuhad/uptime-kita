@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Services\MonitorHistoryDatabaseService;
+use Illuminate\Database\Eloquent\Model;
 
 class MonitorHistoryRecord extends Model
 {
@@ -46,7 +46,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function createForMonitor(int $monitorId, array $data): bool
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->insertHistory($monitorId, $data);
     }
 
@@ -55,7 +56,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function getForMonitor(int $monitorId, int $limit = 100, int $offset = 0): array
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->getHistory($monitorId, $limit, $offset);
     }
 
@@ -64,7 +66,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function getLatestForMonitor(int $monitorId): ?array
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->getLatestHistory($monitorId);
     }
 
@@ -73,7 +76,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function cleanupForMonitor(int $monitorId, int $daysToKeep = 30): int
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->cleanupOldHistory($monitorId, $daysToKeep);
     }
 
@@ -82,7 +86,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function monitorHasDatabase(int $monitorId): bool
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->monitorDatabaseExists($monitorId);
     }
 
@@ -91,7 +96,8 @@ class MonitorHistoryRecord extends Model
      */
     public static function ensureMonitorDatabase(int $monitorId): bool
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->createMonitorDatabase($monitorId);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Services\MonitorHistoryDatabaseService;
+use Illuminate\Console\Command;
 
 class ManageMonitorHistoryDatabases extends Command
 {
@@ -35,7 +35,7 @@ class ManageMonitorHistoryDatabases extends Command
         $monitorId = $this->option('monitor-id');
         $days = (int) $this->option('days');
 
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         switch ($action) {
             case 'create-all':
@@ -52,6 +52,7 @@ class ManageMonitorHistoryDatabases extends Command
                 break;
             default:
                 $this->error("Unknown action: {$action}");
+
                 return 1;
         }
 
@@ -119,8 +120,9 @@ class ManageMonitorHistoryDatabases extends Command
      */
     private function deleteAllDatabases(MonitorHistoryDatabaseService $service): void
     {
-        if (!$this->confirm('Are you sure you want to delete ALL monitor history databases? This action cannot be undone.')) {
+        if (! $this->confirm('Are you sure you want to delete ALL monitor history databases? This action cannot be undone.')) {
             $this->info('Operation cancelled.');
+
             return;
         }
 
@@ -184,7 +186,7 @@ class ManageMonitorHistoryDatabases extends Command
         $this->table($headers, $rows);
 
         $this->newLine();
-        $this->info("Summary:");
+        $this->info('Summary:');
         $this->line("Total Monitors: {$totalMonitors}");
         $this->line("Databases Created: {$databasesExist}");
         $this->line("Total History Records: {$totalRecords}");

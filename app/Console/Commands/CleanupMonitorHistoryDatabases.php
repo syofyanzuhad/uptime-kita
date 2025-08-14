@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Services\MonitorHistoryDatabaseService;
+use Illuminate\Console\Command;
 
 class CleanupMonitorHistoryDatabases extends Command
 {
@@ -35,16 +35,18 @@ class CleanupMonitorHistoryDatabases extends Command
 
         if ($days < 1 || $days > 365) {
             $this->error('Days must be between 1 and 365');
+
             return 1;
         }
 
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         if ($monitorId) {
             // Cleanup specific monitor
             $monitor = Monitor::find($monitorId);
-            if (!$monitor) {
+            if (! $monitor) {
                 $this->error("Monitor with ID {$monitorId} not found");
+
                 return 1;
             }
 
@@ -64,8 +66,9 @@ class CleanupMonitorHistoryDatabases extends Command
     {
         $this->info("Cleaning up history for monitor {$monitor->id} ({$monitor->url})...");
 
-        if (!$service->monitorDatabaseExists($monitor->id)) {
+        if (! $service->monitorDatabaseExists($monitor->id)) {
             $this->warn("No database found for monitor {$monitor->id}");
+
             return;
         }
 
@@ -97,14 +100,14 @@ class CleanupMonitorHistoryDatabases extends Command
                 $processed++;
             } catch (\Exception $e) {
                 $failed++;
-                $this->error("Failed to cleanup monitor {$monitor->id}: " . $e->getMessage());
+                $this->error("Failed to cleanup monitor {$monitor->id}: ".$e->getMessage());
             }
             $bar->advance();
         }
 
         $bar->finish();
         $this->newLine();
-        $this->info("Summary:");
+        $this->info('Summary:');
         $this->line("Processed: {$processed} monitors");
         $this->line("Failed: {$failed} monitors");
         $this->line("Total records deleted: {$totalDeleted}");

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\MonitorHistoryDatabaseService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
-use App\Services\MonitorHistoryDatabaseService;
 
 class MonitorHistory extends Model
 {
@@ -41,22 +41,23 @@ class MonitorHistory extends Model
         return $this->belongsTo(Monitor::class);
     }
 
-        /**
+    /**
      * Get the latest history record for a specific monitor
      * Now uses the dynamic SQLite database system
      */
-        public static function scopeLatestByMonitorId($query, $monitorId)
+    public static function scopeLatestByMonitorId($query, $monitorId)
     {
         // Use the new dynamic database system
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
         $latestRecord = $service->getLatestHistory($monitorId);
 
         if ($latestRecord) {
             // Create a model instance from the array data
-            $model = new static();
+            $model = new static;
             $latestRecord['monitor_id'] = $monitorId; // Add monitor_id
             $model->fill($latestRecord);
             $model->exists = true;
+
             return $model;
         }
 
@@ -69,13 +70,13 @@ class MonitorHistory extends Model
      */
     public static function scopeLatestByMonitorIds($query, $monitorIds)
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
         $results = collect();
 
         foreach ($monitorIds as $monitorId) {
             $latestRecord = $service->getLatestHistory($monitorId);
             if ($latestRecord) {
-                $model = new static();
+                $model = new static;
                 $model->fill($latestRecord);
                 $model->exists = true;
                 $results->push($model);
@@ -91,10 +92,11 @@ class MonitorHistory extends Model
      */
     public static function getForMonitor(int $monitorId, int $limit = 100, int $offset = 0): array
     {
-        if (!$monitorId) {
+        if (! $monitorId) {
             return [];
         }
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->getHistory($monitorId, $limit, $offset);
     }
 
@@ -104,10 +106,11 @@ class MonitorHistory extends Model
      */
     public static function createForMonitor(int $monitorId, array $data): bool
     {
-        if (!$monitorId) {
+        if (! $monitorId) {
             return false;
         }
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->insertHistory($monitorId, $data);
     }
 
@@ -117,10 +120,11 @@ class MonitorHistory extends Model
      */
     public static function cleanupForMonitor(int $monitorId, int $daysToKeep = 30): int
     {
-        if (!$monitorId) {
+        if (! $monitorId) {
             return 0;
         }
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->cleanupOldHistory($monitorId, $daysToKeep);
     }
 
@@ -129,10 +133,11 @@ class MonitorHistory extends Model
      */
     public static function monitorHasDatabase(int $monitorId): bool
     {
-        if (!$monitorId) {
+        if (! $monitorId) {
             return false;
         }
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->monitorDatabaseExists($monitorId);
     }
 
@@ -141,10 +146,11 @@ class MonitorHistory extends Model
      */
     public static function ensureMonitorDatabase(int $monitorId): bool
     {
-        if (!$monitorId) {
+        if (! $monitorId) {
             return false;
         }
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
+
         return $service->createMonitorDatabase($monitorId);
     }
 
@@ -177,8 +183,9 @@ class MonitorHistory extends Model
     public function getConnectionName()
     {
         if ($this->monitor_id) {
-            $service = new MonitorHistoryDatabaseService();
+            $service = new MonitorHistoryDatabaseService;
             $service->setMonitorDatabaseConnection($this->monitor_id);
+
             return 'sqlite_monitor_history';
         }
 

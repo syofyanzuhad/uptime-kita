@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Monitor;
 use App\Models\User;
 use App\Services\MonitorHistoryDatabaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Tests\TestCase;
 
 class MonitorHistoryDatabaseTest extends TestCase
 {
@@ -25,7 +25,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     protected function tearDown(): void
     {
         // Clean up any test databases
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
         $monitors = Monitor::all();
 
         foreach ($monitors as $monitor) {
@@ -38,7 +38,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_creates_sqlite_database_when_monitor_is_created()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Create a monitor
         $monitor = Monitor::factory()->create([
@@ -56,7 +56,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_can_insert_and_retrieve_history_records()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Create a monitor
         $monitor = Monitor::factory()->create([
@@ -89,7 +89,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_can_get_latest_history_record()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Create a monitor
         $monitor = Monitor::factory()->create([
@@ -121,7 +121,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_can_cleanup_old_history_records()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Create a monitor
         $monitor = Monitor::factory()->create([
@@ -151,7 +151,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_deletes_database_when_monitor_is_deleted()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Create a monitor
         $monitor = Monitor::factory()->create([
@@ -172,7 +172,7 @@ class MonitorHistoryDatabaseTest extends TestCase
     /** @test */
     public function it_creates_database_directory_if_not_exists()
     {
-        $service = new MonitorHistoryDatabaseService();
+        $service = new MonitorHistoryDatabaseService;
 
         // Remove the directory if it exists
         $directory = database_path('monitor-histories');

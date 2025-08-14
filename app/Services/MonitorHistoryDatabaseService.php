@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class MonitorHistoryDatabaseService
 {
@@ -18,12 +18,12 @@ class MonitorHistoryDatabaseService
         $databaseDir = dirname($databasePath);
 
         // Create directory if it doesn't exist
-        if (!File::exists($databaseDir)) {
+        if (! File::exists($databaseDir)) {
             File::makeDirectory($databaseDir, 0755, true);
         }
 
         // Create the SQLite database file
-        if (!File::exists($databasePath)) {
+        if (! File::exists($databasePath)) {
             File::put($databasePath, '');
         }
 
@@ -42,13 +42,13 @@ class MonitorHistoryDatabaseService
         return database_path("monitor-histories/{$monitorId}.sqlite");
     }
 
-        /**
+    /**
      * Set up the database connection for a specific monitor
      */
     public function setMonitorDatabaseConnection(int $monitorId): void
     {
         $databasePath = $this->getMonitorDatabasePath($monitorId);
-        
+
         // Set the complete configuration for the connection
         config([
             'database.connections.sqlite_monitor_history' => [
@@ -59,7 +59,7 @@ class MonitorHistoryDatabaseService
                 'busy_timeout' => 10000,
                 'journal_mode' => 'WAL',
                 'synchronous' => 'NORMAL',
-            ]
+            ],
         ]);
 
         // Purge the connection to ensure it uses the new configuration
@@ -96,7 +96,8 @@ class MonitorHistoryDatabaseService
 
             return true;
         } catch (\Exception $e) {
-            \Log::error("Failed to create monitor histories table for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to create monitor histories table for monitor {$monitorId}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -107,6 +108,7 @@ class MonitorHistoryDatabaseService
     public function monitorDatabaseExists(int $monitorId): bool
     {
         $databasePath = $this->getMonitorDatabasePath($monitorId);
+
         return File::exists($databasePath);
     }
 
@@ -124,7 +126,8 @@ class MonitorHistoryDatabaseService
 
             return true;
         } catch (\Exception $e) {
-            \Log::error("Failed to delete monitor database for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to delete monitor database for monitor {$monitorId}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -134,7 +137,7 @@ class MonitorHistoryDatabaseService
      */
     public function getMonitorConnection(int $monitorId)
     {
-        if (!$this->monitorDatabaseExists($monitorId)) {
+        if (! $this->monitorDatabaseExists($monitorId)) {
             $this->createMonitorDatabase($monitorId);
         }
 
@@ -142,6 +145,7 @@ class MonitorHistoryDatabaseService
 
         // Purge and reconnect to ensure fresh connection
         DB::purge('sqlite_monitor_history');
+
         return DB::connection('sqlite_monitor_history');
     }
 
@@ -166,31 +170,33 @@ class MonitorHistoryDatabaseService
 
             return $result === true || $result === 1;
         } catch (\Exception $e) {
-            \Log::error("Failed to insert history for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to insert history for monitor {$monitorId}: ".$e->getMessage());
+
             return false;
         }
     }
 
-        /**
+    /**
      * Get history records from the monitor's database
      */
     public function getHistory(int $monitorId, int $limit = 100, int $offset = 0): array
     {
         try {
             $connection = $this->getMonitorConnection($monitorId);
-            
+
             $records = $connection->table('monitor_histories')
                 ->orderBy('created_at', 'desc')
                 ->limit($limit)
                 ->offset($offset)
                 ->get();
-            
+
             // Convert to array and ensure all records are arrays
             return $records->map(function ($record) {
                 return (array) $record;
             })->toArray();
         } catch (\Exception $e) {
-            \Log::error("Failed to get history for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to get history for monitor {$monitorId}: ".$e->getMessage());
+
             return [];
         }
     }
@@ -209,7 +215,8 @@ class MonitorHistoryDatabaseService
 
             return $result ? (array) $result : null;
         } catch (\Exception $e) {
-            \Log::error("Failed to get latest history for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to get latest history for monitor {$monitorId}: ".$e->getMessage());
+
             return null;
         }
     }
@@ -228,7 +235,8 @@ class MonitorHistoryDatabaseService
                 ->where('created_at', '<', $cutoffDate)
                 ->delete();
         } catch (\Exception $e) {
-            \Log::error("Failed to cleanup old history for monitor {$monitorId}: " . $e->getMessage());
+            \Log::error("Failed to cleanup old history for monitor {$monitorId}: ".$e->getMessage());
+
             return 0;
         }
     }
