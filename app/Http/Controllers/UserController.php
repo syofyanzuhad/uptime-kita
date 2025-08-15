@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::whereNot('id', 1)
+        $users = User::query()
             ->withCount('monitors')
             ->withCount('statusPages')
             ->paginate(10);
