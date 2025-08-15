@@ -62,7 +62,7 @@ onMounted(() => {
   <Alert
     v-if="showFlash"
     :variant="flashType === 'error' ? 'destructive' : flashType"
-    class="mb-4 relative"
+    class="mb-1 relative"
   >
     <AlertTitle class="capitalize">
       {{ flashType === 'success' ? 'Success' :

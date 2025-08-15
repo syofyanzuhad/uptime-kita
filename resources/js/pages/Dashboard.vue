@@ -75,12 +75,12 @@
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <!-- Admin User Count Card -->
-            <div v-if="userId === 1 && userCount !== null" class="rounded-lg border bg-white dark:bg-gray-800 p-4 shadow flex flex-col items-center mb-2">
+            <div v-if="userId === 1 && userCount !== null" class="rounded-lg border bg-white dark:bg-gray-800 p-4 shadow flex flex-col items-center mb-1">
                 <div class="text-lg font-semibold mb-1">Total Users</div>
                 <div class="text-3xl font-bold">{{ userCount }}</div>
             </div>
             <!-- Status Filter Bar -->
-            <div class="flex gap-2 mb-2 max-w-vw overflow-auto py-3">
+            <div class="flex gap-2 max-w-vw overflow-auto my-2">
                 <Button
                     :variant="statusFilter === 'all' ? 'default' : 'outline'"
                     @click="statusFilter = 'all'"

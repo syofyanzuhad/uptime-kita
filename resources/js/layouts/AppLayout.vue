@@ -18,11 +18,13 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <!-- Flash Message -->
-        <FlashMessage />
-
-        <!-- Validation Alert -->
-        <ValidationAlert :errors="(page.props as any).errors" />
+        <div class="mx-4 my-1">
+            <!-- Flash Message -->
+            <FlashMessage />
+    
+            <!-- Validation Alert -->
+            <ValidationAlert :errors="(page.props as any).errors" />
+        </div>
 
         <!-- Main content -->
         <slot />
