@@ -1,10 +1,10 @@
 <?php
 
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\ProfileController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::redirect('settings', '/settings/profile');
 

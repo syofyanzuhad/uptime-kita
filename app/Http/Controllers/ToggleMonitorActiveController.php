@@ -19,7 +19,7 @@ class ToggleMonitorActiveController extends Controller
         try {
             $user = auth()->user();
 
-            if (!$user) {
+            if (! $user) {
                 return redirect()->back()
                     ->with('flash', ['message' => 'User not authenticated', 'type' => 'error']);
             }
@@ -29,7 +29,7 @@ class ToggleMonitorActiveController extends Controller
                 ->where('id', $monitorId)
                 ->first();
 
-            if (!$monitor) {
+            if (! $monitor) {
                 return redirect()->back()
                     ->with('flash', ['message' => 'Monitor not found', 'type' => 'error']);
             }
@@ -37,7 +37,7 @@ class ToggleMonitorActiveController extends Controller
             // Check if user is subscribed to this monitor
             $userMonitor = $monitor->users()->where('user_id', $user->id)->first();
 
-            if (!$userMonitor) {
+            if (! $userMonitor) {
                 return redirect()->back()
                     ->with('flash', ['message' => 'User is not subscribed to this monitor', 'type' => 'error']);
             }
@@ -46,12 +46,12 @@ class ToggleMonitorActiveController extends Controller
             $this->authorize('update', $monitor);
 
             // Toggle the active status
-            $newStatus = !$monitor->uptime_check_enabled;
+            $newStatus = ! $monitor->uptime_check_enabled;
             $monitor->update(['uptime_check_enabled' => $newStatus]);
 
             // Clear cache
-            cache()->forget('public_monitors_authenticated_' . $user->id);
-            cache()->forget('private_monitors_page_' . $user->id . '_1');
+            cache()->forget('public_monitors_authenticated_'.$user->id);
+            cache()->forget('private_monitors_page_'.$user->id.'_1');
 
             $message = $newStatus ? 'Monitor berhasil diaktifkan!' : 'Monitor berhasil dinonaktifkan!';
 
@@ -60,7 +60,7 @@ class ToggleMonitorActiveController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('flash', ['message' => 'Gagal mengubah status monitor: ' . $e->getMessage(), 'type' => 'error']);
+                ->with('flash', ['message' => 'Gagal mengubah status monitor: '.$e->getMessage(), 'type' => 'error']);
         }
     }
 }

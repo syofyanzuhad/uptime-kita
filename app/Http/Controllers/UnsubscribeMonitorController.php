@@ -15,7 +15,7 @@ class UnsubscribeMonitorController extends Controller
 
             if (! $monitor->is_public) {
                 $errorMessage = 'Monitor tidak tersedia untuk berlangganan';
-            } elseif (!$monitor->users()->where('user_id', auth()->id())->exists()) {
+            } elseif (! $monitor->users()->where('user_id', auth()->id())->exists()) {
                 $errorMessage = 'Anda tidak berlangganan monitor ini';
             }
 

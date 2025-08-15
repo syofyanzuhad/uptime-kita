@@ -25,15 +25,15 @@ class UptimeMonitorController extends Controller
         $statusFilter = $request->input('status_filter', 'all');
         $perPage = $request->input('per_page', '15');
         $visibilityFilter = $request->input('visibility_filter', 'all');
-        $cacheKey = 'monitors_list_page_' . $page . '_per_page_' . $perPage . '_user_' . auth()->id();
+        $cacheKey = 'monitors_list_page_'.$page.'_per_page_'.$perPage.'_user_'.auth()->id();
         if ($search) {
-            $cacheKey .= '_search_' . md5($search);
+            $cacheKey .= '_search_'.md5($search);
         }
         if ($statusFilter !== 'all') {
-            $cacheKey .= '_filter_' . $statusFilter;
+            $cacheKey .= '_filter_'.$statusFilter;
         }
         if ($visibilityFilter !== 'all') {
-            $cacheKey .= '_visibility_' . $visibilityFilter;
+            $cacheKey .= '_visibility_'.$visibilityFilter;
         }
         $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $visibilityFilter, $perPage) {
             $query = Monitor::with(['uptimeDaily'])->search($search);
@@ -45,6 +45,7 @@ class UptimeMonitorController extends Controller
             } elseif ($visibilityFilter === 'private') {
                 $query->private();
             }
+
             return new MonitorCollection(
                 $query->orderBy('created_at', 'desc')->paginate($perPage)
             );
@@ -139,7 +140,7 @@ class UptimeMonitorController extends Controller
             ]);
 
             // remove cache index
-            cache()->forget("monitor_list_page_1_per_page_15_user_" . auth()->id());
+            cache()->forget('monitor_list_page_1_per_page_15_user_'.auth()->id());
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
@@ -227,7 +228,7 @@ class UptimeMonitorController extends Controller
                 $monitor->delete();
             }
             // remove cache index
-            cache()->forget("monitor_list_page_1_per_page_15_user_" . auth()->id());
+            cache()->forget('monitor_list_page_1_per_page_15_user_'.auth()->id());
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);

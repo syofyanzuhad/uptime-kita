@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Str;
 
 class StatusPage extends Model
 {
@@ -42,7 +42,7 @@ class StatusPage extends Model
         $counter = 1;
 
         while (static::where('path', $path)->exists()) {
-            $path = $basePath . '-' . $counter;
+            $path = $basePath.'-'.$counter;
             $counter++;
         }
 

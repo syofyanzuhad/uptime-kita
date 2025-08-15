@@ -20,7 +20,7 @@ class UptimesDailyController extends Controller
                     'uptimes_daily' => [[
                         'date' => $uptime->date->toDateString(),
                         'uptime_percentage' => $uptime->uptime_percentage,
-                    ]]
+                    ]],
                 ]);
             } else {
                 return response()->json(['uptimes_daily' => []]);
@@ -35,6 +35,7 @@ class UptimesDailyController extends Controller
                 ];
             });
         });
+
         return response()->json(['uptimes_daily' => $uptimes]);
     }
 }

@@ -32,6 +32,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
             if (empty($monitorIds)) {
                 Log::info('No monitors found for uptime calculation');
+
                 return;
             }
 
@@ -49,7 +50,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             Log::info('Processing monitors in chunks', [
                 'total_monitors' => count($monitorIds),
                 'chunk_size' => $chunkSize,
-                'total_chunks' => $totalChunks
+                'total_chunks' => $totalChunks,
             ]);
 
             foreach ($monitorChunks as $index => $monitorChunk) {
@@ -57,7 +58,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
                 Log::info("Processing chunk {$chunkNumber}/{$totalChunks}", [
                     'chunk_size' => count($monitorChunk),
-                    'monitors_in_chunk' => $monitorChunk
+                    'monitors_in_chunk' => $monitorChunk,
                 ]);
 
                 // Dispatch jobs individually instead of using batches
@@ -69,7 +70,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
                 Log::info("Chunk {$chunkNumber}/{$totalChunks} dispatched successfully", [
                     'chunk_size' => count($monitorChunk),
-                    'total_jobs_dispatched' => $totalJobs
+                    'total_jobs_dispatched' => $totalJobs,
                 ]);
 
                 // Small delay between chunks to reduce database contention
@@ -80,13 +81,13 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
             Log::info('All chunks dispatched successfully', [
                 'total_chunks' => $totalChunks,
-                'total_jobs' => $totalJobs
+                'total_jobs' => $totalJobs,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Failed to dispatch batch job', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;

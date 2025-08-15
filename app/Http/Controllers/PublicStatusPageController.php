@@ -15,9 +15,10 @@ class PublicStatusPageController extends Controller
      */
     public function show(string $path): Response
     {
-        $cacheKey = 'public_status_page_' . $path;
+        $cacheKey = 'public_status_page_'.$path;
         $statusPageResource = cache()->remember($cacheKey, 60, function () use ($path) {
             $statusPage = StatusPage::where('path', $path)->firstOrFail();
+
             return new StatusPageResource($statusPage);
         });
 
@@ -32,7 +33,7 @@ class PublicStatusPageController extends Controller
      */
     public function monitors(string $path)
     {
-        $monitors = cache()->remember('public_status_page_monitors_' . $path, 60, function () {
+        $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () {
             return StatusPageMonitor::with(['monitor'])
                 ->whereHas('statusPage', function ($query) {
                     $query->where('path', request()->route('path'));
@@ -53,6 +54,7 @@ class PublicStatusPageController extends Controller
                 'message' => 'No monitors found',
             ], 404);
         }
+
         return response()->json(
             \App\Http\Resources\MonitorResource::collection($monitors)
         );

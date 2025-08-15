@@ -17,8 +17,8 @@ Schedule::command(CheckUptime::class)->everyMinute()
         info('UPTIME-CHECK: FAILED');
     })
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
-    // ->withoutOverlapping()
-    // ->runInBackground();
+// ->withoutOverlapping()
+// ->runInBackground();
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===

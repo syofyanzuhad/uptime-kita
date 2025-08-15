@@ -26,7 +26,7 @@ class UnsubscribeMonitorTest extends TestCase
 
         $this->actingAs($user);
 
-        $controller = new UnsubscribeMonitorController();
+        $controller = new UnsubscribeMonitorController;
         $response = $controller->__invoke($monitor->id);
 
         $this->assertEquals(302, $response->getStatusCode());
@@ -66,13 +66,13 @@ class UnsubscribeMonitorTest extends TestCase
 
         $this->actingAs($user);
 
-        $controller = new UnsubscribeMonitorController();
+        $controller = new UnsubscribeMonitorController;
         $response = $controller->__invoke($monitor->id);
 
         // assert redirect (not JSON response)
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertStringContainsString(
-            'Berhasil berhenti berlangganan monitor: '. $monitor->url,
+            'Berhasil berhenti berlangganan monitor: '.$monitor->url,
             session('flash.message')
         );
         $this->assertDatabaseMissing('user_monitor', [
@@ -112,7 +112,7 @@ class UnsubscribeMonitorTest extends TestCase
 
         $this->actingAs($user);
 
-        $controller = new UnsubscribeMonitorController();
+        $controller = new UnsubscribeMonitorController;
         $response = $controller->__invoke($monitor->id);
 
         $this->assertDatabaseMissing('user_monitor', [

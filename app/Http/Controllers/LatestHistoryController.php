@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MonitorHistoryResource;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
-use App\Http\Resources\MonitorHistoryResource;
 
 class LatestHistoryController extends Controller
 {
@@ -16,6 +16,7 @@ class LatestHistoryController extends Controller
         $latestHistory = cache()->remember("monitor_{$monitor->id}_latest_history", 60, function () use ($monitor) {
             return $monitor->latestHistory()->first();
         });
+
         return response()->json([
             'latest_history' => $latestHistory ? new MonitorHistoryResource($latestHistory) : null,
         ]);

@@ -1,16 +1,16 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TestFlashController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PrivateMonitorController;
 use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicStatusPageController;
 use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\TestFlashController;
 use App\Http\Controllers\UnsubscribeMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 
@@ -35,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Route untuk toggle monitor active status
     Route::post('/monitor/{monitorId}/toggle-active', \App\Http\Controllers\ToggleMonitorActiveController::class)->name('monitor.toggle-active');
+
+    // Route untuk toggle monitor pin status
+    Route::post('/monitor/{monitorId}/toggle-pin', \App\Http\Controllers\ToggleMonitorPinController::class)->name('monitor.toggle-pin');
 
     // Get monitor history
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
@@ -66,5 +69,5 @@ Route::prefix('webhook')->as('webhook.')->group(function () {
     Route::post('/telegram', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

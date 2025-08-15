@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Models\Monitor;
+use App\Models\User;
 
 test('statistics endpoint includes disabled monitors count', function () {
     $user = User::factory()->create();

@@ -10,9 +10,19 @@ return new class extends Migration
 {
     public function up()
     {
+        // Skip this migration during testing
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $connection = (new HealthCheckResultHistoryItem)->getConnectionName();
         $tableName = EloquentHealthResultStore::getHistoryItemInstance()->getTable();
-    
+
+        // Check if table already exists
+        if (Schema::connection($connection)->hasTable($tableName)) {
+            return;
+        }
+
         Schema::connection($connection)->create($tableName, function (Blueprint $table) {
             $table->id();
 
@@ -27,7 +37,7 @@ return new class extends Migration
 
             $table->timestamps();
         });
-        
+
         Schema::connection($connection)->table($tableName, function (Blueprint $table) {
             $table->index('created_at');
             $table->index('batch');

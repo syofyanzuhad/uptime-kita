@@ -3,8 +3,8 @@
 use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Services\TelegramRateLimitService;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 beforeEach(function () {
     // Clear any existing cache

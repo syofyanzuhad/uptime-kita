@@ -4,27 +4,30 @@ namespace App\Jobs;
 
 use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Carbon;
-use App\Models\MonitorUptimeDaily;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
+class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $monitorId;
+
     public string $date;
 
     // Job configuration
     public $tries = 3;
+
     public $timeout = 300; // 5 minutes
+
     public $backoff = [30, 60, 120]; // Exponential backoff in seconds
+
     public $uniqueFor = 3600; // 1 hour uniqueness
 
     /**
@@ -63,20 +66,21 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
         Log::info('Starting uptime calculation', [
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
-            'attempt' => $this->attempts()
+            'attempt' => $this->attempts(),
         ]);
 
         try {
             // Validate monitor exists first
-            if (!$this->monitorExists()) {
+            if (! $this->monitorExists()) {
                 Log::warning('Monitor not found, skipping calculation', [
-                    'monitor_id' => $this->monitorId
+                    'monitor_id' => $this->monitorId,
                 ]);
+
                 return;
             }
 
             // Validate date format
-            if (!$this->isValidDate()) {
+            if (! $this->isValidDate()) {
                 throw new Exception("Invalid date format: {$this->date}");
             }
 
@@ -84,7 +88,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
 
             Log::info('Uptime calculation completed successfully', [
                 'monitor_id' => $this->monitorId,
-                'date' => $this->date
+                'date' => $this->date,
             ]);
 
         } catch (Exception $e) {
@@ -93,7 +97,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 'date' => $this->date,
                 'attempt' => $this->attempts(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // Re-throw to trigger retry mechanism
@@ -118,6 +122,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
     {
         try {
             Carbon::createFromFormat('Y-m-d', $this->date);
+
             return true;
         } catch (Exception $e) {
             return false;
@@ -146,12 +151,13 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
         ]);
 
         // Handle case where no checks found
-        if (!$result || $result->total_checks === 0) {
+        if (! $result || $result->total_checks === 0) {
             Log::info('No monitor history found for date', [
                 'monitor_id' => $this->monitorId,
-                'date' => $this->date
+                'date' => $this->date,
             ]);
             $this->updateUptimeRecord(0);
+
             return;
         }
 
@@ -162,7 +168,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
             'date' => $this->date,
             'total_checks' => $result->total_checks,
             'up_checks' => $result->up_checks,
-            'uptime_percentage' => $uptimePercentage
+            'uptime_percentage' => $uptimePercentage,
         ]);
 
         $this->updateUptimeRecord($uptimePercentage);
@@ -202,7 +208,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                         ->where('date', $dateOnly)
                         ->update([
                             'uptime_percentage' => $roundedPercentage,
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ]);
 
                     if ($updated) {
@@ -210,8 +216,9 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                             'monitor_id' => $this->monitorId,
                             'date' => $dateOnly,
                             'uptime_percentage' => $roundedPercentage,
-                            'attempt' => $attempt
+                            'attempt' => $attempt,
                         ]);
+
                         return;
                     }
                 } else {
@@ -221,15 +228,16 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                         'date' => $dateOnly,
                         'uptime_percentage' => $roundedPercentage,
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
 
                     Log::debug('Uptime record created (new)', [
                         'monitor_id' => $this->monitorId,
                         'date' => $dateOnly,
                         'uptime_percentage' => $roundedPercentage,
-                        'attempt' => $attempt
+                        'attempt' => $attempt,
                     ]);
+
                     return;
                 }
 
@@ -244,16 +252,18 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                         'date' => $dateOnly,
                         'attempt' => $attempt,
                         'max_retries' => $maxRetries,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
 
                     if ($attempt < $maxRetries) {
                         // Wait before retry with exponential backoff
                         usleep($retryDelay * $attempt * 1000); // Convert to microseconds
+
                         continue;
                     } else {
                         // Final attempt failed, try one more time with simple upsert
                         $this->fallbackUpsert($dateOnly, $roundedPercentage);
+
                         return;
                     }
                 }
@@ -263,16 +273,15 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                     'monitor_id' => $this->monitorId,
                     'date' => $dateOnly,
                     'error' => $e->getMessage(),
-                    'attempt' => $attempt
+                    'attempt' => $attempt,
                 ]);
                 throw $e;
-
             } catch (Exception $e) {
                 Log::error('Unexpected error in uptime record operation', [
                     'monitor_id' => $this->monitorId,
                     'date' => $dateOnly,
                     'error' => $e->getMessage(),
-                    'attempt' => $attempt
+                    'attempt' => $attempt,
                 ]);
                 throw $e;
             }
@@ -298,20 +307,20 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
                 $dateOnly,
                 $roundedPercentage,
                 now(),
-                now()
+                now(),
             ]);
 
             Log::info('Uptime record updated via fallback upsert', [
                 'monitor_id' => $this->monitorId,
                 'date' => $dateOnly,
-                'uptime_percentage' => $roundedPercentage
+                'uptime_percentage' => $roundedPercentage,
             ]);
 
         } catch (Exception $e) {
             Log::error('Fallback upsert also failed', [
                 'monitor_id' => $this->monitorId,
                 'date' => $dateOnly,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             // Don't throw here, just log the failure
         }
@@ -335,7 +344,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldQueue, ShouldBeUnique
             'date' => $this->date,
             'attempts' => $this->attempts(),
             'error' => $exception->getMessage(),
-            'trace' => $exception->getTraceAsString()
+            'trace' => $exception->getTraceAsString(),
         ]);
 
         // Optional: Send notification to administrators

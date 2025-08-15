@@ -1,9 +1,9 @@
 <?php
 
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -26,7 +26,6 @@ return new class extends Migration
                             ->having(DB::raw('COUNT(*)'), '>', 1);
                     });
             })->delete();
-
 
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
             // 2. Hapus index lama jika ada (opsional, tergantung struktur Anda)

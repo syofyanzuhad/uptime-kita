@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use Illuminate\Http\Request;
 use App\Models\NotificationChannel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
     public function index()
     {
         $channels = Auth::user()->notificationChannels()->latest()->get();
+
         return Inertia::render('settings/Notifications', [
             'channels' => $channels,
         ]);
@@ -47,6 +47,7 @@ class NotificationController extends Controller
     public function show($id)
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
+
         return Inertia::render('settings/Notifications', [
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
             'editingChannel' => $channel,
@@ -58,6 +59,7 @@ class NotificationController extends Controller
     public function edit($id)
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
+
         return Inertia::render('settings/Notifications', [
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
             'editingChannel' => $channel,
@@ -94,9 +96,9 @@ class NotificationController extends Controller
     public function toggle($id)
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
-        $channel->update(['is_enabled' => !$channel->is_enabled]);
+        $channel->update(['is_enabled' => ! $channel->is_enabled]);
 
         return Redirect::route('notifications.index')
-            ->with('success', 'Notification channel ' . ($channel->is_enabled ? 'enabled' : 'disabled') . ' successfully.');
+            ->with('success', 'Notification channel '.($channel->is_enabled ? 'enabled' : 'disabled').' successfully.');
     }
 }

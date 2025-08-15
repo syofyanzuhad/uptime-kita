@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
+use Illuminate\Http\Request;
 
 class StatusPageOrderController extends Controller
 {
@@ -17,7 +17,7 @@ class StatusPageOrderController extends Controller
         ]);
 
         // Ensure the status page exists
-        if (!$statusPage) {
+        if (! $statusPage) {
             return response()->json(['error' => 'Status page not found.'], 404);
         }
 
@@ -28,7 +28,7 @@ class StatusPageOrderController extends Controller
                 ->where('monitor_id', $monitorId)
                 ->first();
 
-            if (!$statusPageMonitor || $statusPageMonitor->order === $order) {
+            if (! $statusPageMonitor || $statusPageMonitor->order === $order) {
                 continue;
             }
 

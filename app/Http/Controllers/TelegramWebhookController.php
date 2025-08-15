@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use NotificationChannels\Telegram\TelegramMessage;
-use NotificationChannels\Telegram\TelegramUpdates;
 
 class TelegramWebhookController extends Controller
 {
@@ -27,8 +26,8 @@ class TelegramWebhookController extends Controller
             // Periksa secara manual apakah teksnya adalah '/start'
             if ($message['text'] === '/start') {
                 $responseText = "Halo, {$firstName}!\n\n"
-                              . "Terima kasih telah memulai bot. "
-                              . "Gunakan Chat ID berikut untuk menerima notifikasi dari Uptime Monitor:\n\n`{$chatId}`";
+                              .'Terima kasih telah memulai bot. '
+                              ."Gunakan Chat ID berikut untuk menerima notifikasi dari Uptime Monitor:\n\n`{$chatId}`";
 
                 // Mengirim balasan menggunakan TelegramMessage
                 TelegramMessage::create($responseText)

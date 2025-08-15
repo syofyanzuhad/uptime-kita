@@ -4,14 +4,22 @@ namespace App\Providers;
 
 use App\Listeners\SendCustomMonitorNotification;
 use Illuminate\Database\Eloquent\Model;
-use Opcodes\LogViewer\Facades\LogViewer;
-use Illuminate\Support\Facades\{Event, URL};
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Spatie\Health\Facades\Health;
+use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
-use Spatie\Health\Checks\Checks\{CacheCheck, DatabaseCheck, OptimizedAppCheck, QueueCheck, RedisCheck, RedisMemoryUsageCheck, ScheduleCheck, UsedDiskSpaceCheck};
-use Spatie\UptimeMonitor\Events\{UptimeCheckFailed, UptimeCheckRecovered};
-
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Checks\Checks\DatabaseCheck;
+use Spatie\Health\Checks\Checks\OptimizedAppCheck;
+use Spatie\Health\Checks\Checks\QueueCheck;
+use Spatie\Health\Checks\Checks\RedisCheck;
+use Spatie\Health\Checks\Checks\RedisMemoryUsageCheck;
+use Spatie\Health\Checks\Checks\ScheduleCheck;
+use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
+use Spatie\Health\Facades\Health;
+use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
+use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 
 class AppServiceProvider extends ServiceProvider
 {

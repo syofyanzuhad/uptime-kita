@@ -25,7 +25,7 @@ test('only user with is_admin true can update public monitors', function () {
         // Manually attach users to monitor
         $publicMonitor->users()->attach($regularUser->id, ['is_active' => true]);
 
-        $policy = new MonitorPolicy();
+        $policy = new MonitorPolicy;
 
         // Admin user should be able to update public monitor
         expect($policy->update($adminUser, $publicMonitor))->toBeTrue();
@@ -54,7 +54,7 @@ test('only owner can update private monitors', function () {
         $privateMonitor->users()->attach($owner->id, ['is_active' => true]);
         $privateMonitor->users()->attach($nonOwner->id, ['is_active' => true]);
 
-        $policy = new MonitorPolicy();
+        $policy = new MonitorPolicy;
 
         // Owner should be able to update private monitor
         expect($policy->update($owner, $privateMonitor))->toBeTrue();
@@ -82,7 +82,7 @@ test('only user with is_admin true can delete public monitors', function () {
         // Manually attach users to monitor
         $publicMonitor->users()->attach($regularUser->id, ['is_active' => true]);
 
-        $policy = new MonitorPolicy();
+        $policy = new MonitorPolicy;
 
         // Admin user should be able to delete public monitor
         expect($policy->delete($adminUser, $publicMonitor))->toBeTrue();
@@ -111,7 +111,7 @@ test('only owner can delete private monitors', function () {
         $privateMonitor->users()->attach($owner->id, ['is_active' => true]);
         $privateMonitor->users()->attach($nonOwner->id, ['is_active' => true]);
 
-        $policy = new MonitorPolicy();
+        $policy = new MonitorPolicy;
 
         // Owner should be able to delete private monitor
         expect($policy->delete($owner, $privateMonitor))->toBeTrue();

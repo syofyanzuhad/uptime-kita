@@ -70,6 +70,7 @@ class UserController extends Controller
         if ($user->id === 1) {
             return redirect()->route('users.index')->with('error', 'Cannot edit the default admin user.');
         }
+
         return Inertia::render('users/Edit', [
             'user' => $user,
         ]);
@@ -86,13 +87,13 @@ class UserController extends Controller
         }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $user->password = bcrypt($validated['password']);
         }
         $user->save();
@@ -120,6 +121,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }
