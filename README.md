@@ -41,14 +41,14 @@ Kita is the Indonesian word that means "Us"; this means that the uptime can be u
 U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server located on Germany)
 - Status Page Demo: [Syofyan Zuhad](https://uptime.syofyanzuhad.dev/status/syofyan-zuhad)
 
-## ⭐ Features
+## ⭐ Key Features
 
-- Google Oauth authentication
-- Monitoring uptime for HTTP(s)
-- Certificate check
-- Fancy, Reactive, Fast UI/UX
-- Notifications via Telegram, Slack, Email (SMTP), and the others are still in progress
-- Multiple status pages
+- 🔐 Google Oauth authentication
+- ✅ Monitoring uptime for HTTP(s)
+- 🔒 Certificate check
+- ✨ Fancy, Reactive, Fast UI/UX
+- 📳 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
+- 📊 Multiple status pages
 
 ## 🔧 How to Install
 
