@@ -104,7 +104,8 @@ class UptimeMonitorController extends Controller
     public function store(Request $request)
     {
         // sanitize url
-        $url = filter_var($request->url, FILTER_VALIDATE_URL);
+        $url = rtrim(filter_var($request->url, FILTER_VALIDATE_URL), '/');
+        $request->merge(['url' => $url]);
         $monitor = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
             ->first();
@@ -117,7 +118,7 @@ class UptimeMonitorController extends Controller
         }
 
         $request->validate([
-            'url' => ['required', 'url'],
+            'url' => ['required', 'url', 'unique:monitors,url'],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
@@ -167,7 +168,7 @@ class UptimeMonitorController extends Controller
     {
         $this->authorize('update', $monitor);
 
-        $url = filter_var($request->url, FILTER_VALIDATE_URL);
+        $url = rtrim(filter_var($request->url, FILTER_VALIDATE_URL), '/');
         $monitorExists = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
             ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
