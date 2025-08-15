@@ -6,6 +6,7 @@ import type { Monitor } from '@/types/monitor';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import MonitorGrid from './MonitorGrid.vue';
+import { useBookmarks } from '@/composables/useBookmarks';
 
 interface Props {
     searchQuery?: string;
@@ -46,7 +47,7 @@ const totalMonitors = ref(0);
 const showingFrom = ref(0);
 const showingTo = ref(0);
 
-const pinnedMonitors = ref<Set<number>>(new Set());
+const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize } = useBookmarks();
 
 const page = usePage<SharedData>();
 
@@ -88,19 +89,19 @@ const filteredMonitors = computed(() => {
 
 const sortedMonitors = computed(() => {
     return [...filteredMonitors.value].sort((a, b) => {
-        const aPinned = pinnedMonitors.value.has(a.id);
-        const bPinned = pinnedMonitors.value.has(b.id);
+        const aPinned = isPinned(a.id);
+        const bPinned = isPinned(b.id);
         if (aPinned && !bPinned) return -1;
         if (!aPinned && bPinned) return 1;
         return 0;
     });
 });
 
-const togglePin = (monitorId: number) => {
-    if (pinnedMonitors.value.has(monitorId)) {
-        pinnedMonitors.value.delete(monitorId);
-    } else {
-        pinnedMonitors.value.add(monitorId);
+const handleTogglePin = async (monitorId: number) => {
+    try {
+        await togglePin(monitorId);
+    } catch (error) {
+        console.error('Failed to toggle pin:', error);
     }
 };
 
@@ -226,6 +227,7 @@ const toggleActive = async (monitorId: number) => {
 };
 
 onMounted(() => {
+    initialize();
     fetchPrivateMonitors(true);
     // pollingInterval.value = setInterval(() => {
     //     fetchPrivateMonitors(false, 1); // Polling update - always fetch first page
@@ -323,9 +325,10 @@ onUnmounted(() => {
                 :monitors="sortedMonitors"
                 type="private"
                 :pinned-monitors="pinnedMonitors"
-                :on-toggle-pin="togglePin"
+                :on-toggle-pin="handleTogglePin"
                 :on-toggle-active="toggleActive"
                 :toggling-monitors="togglingMonitors"
+                :loading-monitors="loadingMonitors"
                 :show-subscribe-button="false"
                 :show-toggle-button="true"
                 :show-pin-button="true"

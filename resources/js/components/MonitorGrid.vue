@@ -14,6 +14,7 @@ interface Props {
     togglingMonitors?: Set<number>;
     subscribingMonitors?: Set<number>;
     unsubscribingMonitors?: Set<number>;
+    loadingMonitors?: Set<number>;
     showSubscribeButton?: boolean;
     showToggleButton?: boolean;
     showPinButton?: boolean;
@@ -28,6 +29,7 @@ const props = withDefaults(defineProps<Props>(), {
     togglingMonitors: () => new Set(),
     subscribingMonitors: () => new Set(),
     unsubscribingMonitors: () => new Set(),
+    loadingMonitors: () => new Set(),
     showSubscribeButton: true,
     showToggleButton: true,
     showPinButton: true,
@@ -63,6 +65,7 @@ const sortedMonitors = computed(() => {
             :toggling-monitors="togglingMonitors"
             :subscribing-monitors="subscribingMonitors"
             :unsubscribing-monitors="unsubscribingMonitors"
+            :loading-monitors="loadingMonitors"
             :show-subscribe-button="showSubscribeButton"
             :show-toggle-button="showToggleButton"
             :show-pin-button="showPinButton"

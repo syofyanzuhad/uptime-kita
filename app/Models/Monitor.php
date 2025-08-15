@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Spatie\Url\Url;
-use Spatie\Tags\HasTags;
 use Illuminate\Support\Carbon;
+use Spatie\Tags\HasTags;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
+use Spatie\Url\Url;
 
 class Monitor extends SpatieMonitor
 {
@@ -66,20 +66,43 @@ class Monitor extends SpatieMonitor
         // });
     }
 
+    public function getIsPinnedAttribute(): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        // Use cache for pinned status
+        return cache()->remember("is_pinned_{$this->id}_".auth()->id(), 300, function () {
+            // Use collection if relation is already loaded (eager loaded)
+            if ($this->relationLoaded('users')) {
+                $userPivot = $this->users->firstWhere('id', auth()->id())?->pivot;
+
+                return $userPivot ? (bool) $userPivot->is_pinned : false;
+            }
+
+            // Fallback query if relation is not loaded
+            $pivot = $this->users()->where('user_id', auth()->id())->first()?->pivot;
+
+            return $pivot ? (bool) $pivot->is_pinned : false;
+        });
+    }
+
     // Getter for uptime_last_check_date to return 00 seconds in carbon object
     public function getUptimeLastCheckDateAttribute()
     {
-        if (!$this->attributes['uptime_last_check_date']) {
+        if (! $this->attributes['uptime_last_check_date']) {
             return null;
         }
 
         $date = Carbon::parse($this->attributes['uptime_last_check_date']);
+
         return $date->setSeconds(0);
     }
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active');
+        return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active', 'is_pinned');
     }
 
     public function statusPages()
@@ -170,6 +193,7 @@ class Monitor extends SpatieMonitor
     public function isOwnedBy(User $user): bool
     {
         $owner = $this->owner;
+
         return $owner && $owner->id === $user->id;
     }
 
@@ -195,8 +219,8 @@ class Monitor extends SpatieMonitor
             $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
 
             // remove cache
-            cache()->forget("private_monitors_page_" . auth()->id() . '_1');
-            cache()->forget("public_monitors_authenticated_" . auth()->id() . '_1');
+            cache()->forget('private_monitors_page_'.auth()->id().'_1');
+            cache()->forget('public_monitors_authenticated_'.auth()->id().'_1');
         });
 
         static::updating(function ($monitor) {

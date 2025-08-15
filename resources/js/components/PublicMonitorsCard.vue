@@ -6,6 +6,7 @@ import type { Monitor } from '@/types/monitor';
 import { usePage, router } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import MonitorGrid from './MonitorGrid.vue';
+import { useBookmarks } from '@/composables/useBookmarks';
 
 interface Props {
     searchQuery?: string;
@@ -48,8 +49,7 @@ const totalMonitors = ref(0);
 const showingFrom = ref(0);
 const showingTo = ref(0);
 
-// Hardcoded pinned monitors - you can modify these IDs as needed
-const pinnedMonitors = ref<Set<number>>(new Set([1, 3, 5])); // Example: pin monitors with IDs 1, 3, and 5
+const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize } = useBookmarks();
 
 const page = usePage<SharedData>();
 
@@ -84,8 +84,8 @@ const filteredMonitors = computed(() => {
 // Sort monitors to show pinned ones first
 const sortedMonitors = computed(() => {
     return [...filteredMonitors.value].sort((a, b) => {
-        const aPinned = pinnedMonitors.value.has(a.id);
-        const bPinned = pinnedMonitors.value.has(b.id);
+        const aPinned = isPinned(a.id);
+        const bPinned = isPinned(b.id);
 
         if (aPinned && !bPinned) return -1;
         if (!aPinned && bPinned) return 1;
@@ -93,11 +93,11 @@ const sortedMonitors = computed(() => {
     });
 });
 
-const togglePin = (monitorId: number) => {
-    if (pinnedMonitors.value.has(monitorId)) {
-        pinnedMonitors.value.delete(monitorId);
-    } else {
-        pinnedMonitors.value.add(monitorId);
+const handleTogglePin = async (monitorId: number) => {
+    try {
+        await togglePin(monitorId);
+    } catch (error) {
+        console.error('Failed to toggle pin:', error);
     }
 };
 
@@ -294,6 +294,7 @@ const toggleActive = async (monitorId: number) => {
 
 
 onMounted(() => {
+    initialize();
     fetchPublicMonitors(true); // Initial load
     // pollingInterval.value = setInterval(() => {
     //     fetchPublicMonitors(false, 1); // Polling update - always fetch first page
@@ -401,13 +402,14 @@ onUnmounted(() => {
                 :monitors="sortedMonitors"
                 type="public"
                 :pinned-monitors="pinnedMonitors"
-                :on-toggle-pin="togglePin"
+                :on-toggle-pin="handleTogglePin"
                 :on-toggle-active="toggleActive"
                 :on-subscribe="subscribeToMonitor"
                 :on-unsubscribe="unsubscribeFromMonitor"
                 :toggling-monitors="togglingMonitors"
                 :subscribing-monitors="subscribingMonitors"
                 :unsubscribing-monitors="unsubscribingMonitors"
+                :loading-monitors="loadingMonitors"
                 :show-subscribe-button="true"
                 :show-toggle-button="true"
                 :show-pin-button="true"

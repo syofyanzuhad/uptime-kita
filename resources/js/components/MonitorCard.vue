@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import Icon from '@/components/Icon.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
@@ -8,6 +8,7 @@ import { Plus, Minus } from 'lucide-vue-next';
 import type { Monitor } from '@/types/monitor';
 import { Link, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
+import { useBookmarks } from '@/composables/useBookmarks';
 
 interface Props {
     monitor: Monitor;
@@ -20,6 +21,7 @@ interface Props {
     togglingMonitors?: Set<number>;
     subscribingMonitors?: Set<number>;
     unsubscribingMonitors?: Set<number>;
+    loadingMonitors?: Set<number>;
     showSubscribeButton?: boolean;
     showToggleButton?: boolean;
     showPinButton?: boolean;
@@ -34,6 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
     togglingMonitors: () => new Set(),
     subscribingMonitors: () => new Set(),
     unsubscribingMonitors: () => new Set(),
+    loadingMonitors: () => new Set(),
     showSubscribeButton: true,
     showToggleButton: true,
     showPinButton: true,
@@ -44,6 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const page = usePage<SharedData>();
+const { isPinned: isMonitorPinned, togglePin } = useBookmarks();
 
 // Check if user is authenticated using Inertia's auth props
 const isAuthenticated = computed(() => {
@@ -53,6 +57,15 @@ const isAuthenticated = computed(() => {
 // Check if user is admin
 const isAdmin = computed(() => {
     return page.props.auth.user?.is_admin || false;
+});
+
+// Initialize bookmarks on component mount
+onMounted(() => {
+    // Initialize bookmarks if not already done
+    if (typeof window !== 'undefined') {
+        const { initialize } = useBookmarks();
+        initialize();
+    }
 });
 
 const getStatusIcon = (status: string) => {
@@ -100,9 +113,18 @@ const openMonitorUrl = (url: string) => {
     window.open(url, '_blank');
 };
 
-const handleTogglePin = () => {
-    if (props.onTogglePin) {
-        props.onTogglePin(props.monitor.id);
+const handleTogglePin = async () => {
+    if (!isAuthenticated.value) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        await togglePin(props.monitor.id);
+    } catch (error) {
+        console.error('Failed to toggle pin:', error);
+        // You could show a toast notification here
     }
 };
 
@@ -134,18 +156,20 @@ const handleUnsubscribe = () => {
         >
             <!-- Pin Button - Top Right -->
             <button
-                v-if="showPinButton"
+                v-if="showPinButton && isAuthenticated"
                 @click.stop.prevent="handleTogglePin"
+                :disabled="props.loadingMonitors.has(monitor.id)"
                 :class="{
-                    'text-yellow-500': isPinned,
-                    'text-gray-400 hover:text-gray-600': !isPinned
+                    'text-yellow-500': isMonitorPinned(monitor.id),
+                    'text-gray-400 hover:text-gray-600': !isMonitorPinned(monitor.id),
+                    'opacity-50 cursor-not-allowed': props.loadingMonitors.has(monitor.id)
                 }"
-                class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                :title="isPinned ? 'Unpin this monitor' : 'Pin this monitor'"
+                class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                :title="isMonitorPinned(monitor.id) ? 'Unpin this monitor' : 'Pin this monitor'"
             >
                 <Icon
                     name="bookmark"
-                    :class="isPinned ? 'fill-current' : ''"
+                    :class="isMonitorPinned(monitor.id) ? 'fill-current' : ''"
                     size="16"
                 />
             </button>
