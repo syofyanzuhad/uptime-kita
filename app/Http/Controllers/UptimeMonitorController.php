@@ -25,7 +25,7 @@ class UptimeMonitorController extends Controller
         $statusFilter = $request->input('status_filter', 'all');
         $perPage = $request->input('per_page', '15');
         $visibilityFilter = $request->input('visibility_filter', 'all');
-        $cacheKey = 'monitors_list_page_' . $page . '_per_page_' . $perPage;
+        $cacheKey = 'monitors_list_page_' . $page . '_per_page_' . $perPage . '_user_' . auth()->id();
         if ($search) {
             $cacheKey .= '_search_' . md5($search);
         }
@@ -137,6 +137,9 @@ class UptimeMonitorController extends Controller
                 '--url' => $monitor->url,
             ]);
 
+            // remove cache index
+            cache()->forget("monitor_list_page_1_per_page_15_user_" . auth()->id());
+
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
 
@@ -212,10 +215,16 @@ class UptimeMonitorController extends Controller
      */
     public function destroy(Monitor $monitor)
     {
-        $this->authorize('delete', $monitor);
-
         try {
-            $monitor->delete();
+            // if monitor is not owned by the logged in user, detach from user
+            if (! $monitor->isOwnedBy(auth()->user())) {
+                $monitor->users()->detach(auth()->id());
+            } else {
+                $this->authorize('delete', $monitor);
+                $monitor->delete();
+            }
+            // remove cache index
+            cache()->forget("monitor_list_page_1_per_page_15_user_" . auth()->id());
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);
