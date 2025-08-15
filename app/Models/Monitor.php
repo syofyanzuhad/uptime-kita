@@ -180,7 +180,7 @@ class Monitor extends SpatieMonitor
 
         // global scope based on logged in user
         static::addGlobalScope('user', function ($query) {
-            if (auth()->check()) {
+            if (! auth()->user()?->is_admin) {
                 $query->whereHas('users', function ($query) {
                     $query->where('user_monitor.user_id', auth()->id());
                 });
