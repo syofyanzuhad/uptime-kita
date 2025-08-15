@@ -47,7 +47,7 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 - ✅ Monitoring uptime for HTTP(s)
 - 🔒 Certificate check
 - ✨ Fancy, Reactive, Fast UI/UX
-- 📳 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
+- 📩 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
 - 📊 Multiple status pages
 
 ## 🔧 How to Install
