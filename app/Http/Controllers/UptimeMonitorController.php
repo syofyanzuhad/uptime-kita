@@ -218,10 +218,12 @@ class UptimeMonitorController extends Controller
     {
         try {
             // if monitor is not owned by the logged in user, detach from user
-            if (! $monitor->isOwnedBy(auth()->user())) {
+            if (! $monitor->isOwnedBy(auth()->user()) && ! auth()->user()?->is_admin) {
                 $monitor->users()->detach(auth()->id());
             } else {
-                $this->authorize('delete', $monitor);
+                if (! auth()->user()?->is_admin) {
+                    $this->authorize('delete', $monitor);
+                }
                 $monitor->delete();
             }
             // remove cache index
