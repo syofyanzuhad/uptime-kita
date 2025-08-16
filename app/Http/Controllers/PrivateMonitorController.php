@@ -40,7 +40,7 @@ class PrivateMonitorController extends Controller
                     $query->where('user_id', auth()->id());
                     $query->where('user_monitor.is_active', false);
                 })
-                ->orderBy('created_at', 'desc');
+                    ->orderBy('created_at', 'desc');
             } elseif ($statusFilter === 'globally_enabled') {
                 $query = $baseQuery->withoutGlobalScope('enabled')
                     ->where('uptime_check_enabled', true)

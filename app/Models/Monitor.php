@@ -170,7 +170,7 @@ class Monitor extends SpatieMonitor
     {
         return $query->whereHas('users', function ($query) {
             $query->where('user_monitor.user_id', auth()->id())
-                  ->where('user_monitor.is_pinned', true);
+                ->where('user_monitor.is_pinned', true);
         });
     }
 
@@ -178,7 +178,7 @@ class Monitor extends SpatieMonitor
     {
         return $query->whereHas('users', function ($query) {
             $query->where('user_monitor.user_id', auth()->id())
-                  ->where('user_monitor.is_pinned', false);
+                ->where('user_monitor.is_pinned', false);
         });
     }
 
@@ -234,7 +234,7 @@ class Monitor extends SpatieMonitor
             // attach the current user as the owner of the private monitor
             $monitor->users()->attach(auth()->id() ?? 1, [
                 'is_active' => true,
-                'is_pinned' => false
+                'is_pinned' => false,
             ]);
 
             // remove cache
