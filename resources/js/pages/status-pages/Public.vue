@@ -152,13 +152,15 @@ import OfflineBanner from '@/components/OfflineBanner.vue'
     })
   })
 
-  // Remove uptimesDaily fetch from watchers to avoid double-fetching
+  // Remove uptimesDaily fetch from watchers to avoid double-fetching (only if authenticated)
   watch(monitors, (newMonitors) => {
-    newMonitors.forEach(monitor => {
-      if (uptimesDaily.value[monitor.id] === undefined) {
-        fetchUptimesDaily(monitor.id)
-      }
-    })
+    if (props.isAuthenticated) {
+        newMonitors.forEach(monitor => {
+            if (uptimesDaily.value[monitor.id] === undefined) {
+                fetchUptimesDaily(monitor.id)
+            }
+        })
+    }
   })
 
   // --- HELPER FUNCTIONS (Fungsi Bantuan) ---
@@ -235,8 +237,8 @@ import OfflineBanner from '@/components/OfflineBanner.vue'
     if (!monitors.value || monitors.value.length === 0) {
       return { color: 'bg-green-500', text: 'All Systems Operational' };
     }
-    const hasDown = monitors.value.some(m => latestHistory.value[m.id]?.uptime_status?.toLowerCase() === 'down');
-    const hasWarning = monitors.value.some(m => latestHistory.value[m.id]?.uptime_status?.toLowerCase() === 'warning');
+    const hasDown = monitors.value.some(m => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'down');
+    const hasWarning = monitors.value.some(m => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'warning');
     if (hasDown) {
       return { color: 'bg-red-500', text: 'Some Systems Are Down' };
     }
@@ -271,10 +273,10 @@ function startCountdown() {
 function refetchStatusPage() {
   if (!isOnline.value) return
   fetchMonitors()
-  monitors.value.forEach(monitor => {
-    fetchLatestHistory(monitor.id)
-  })
   if (props.isAuthenticated) {
+    monitors.value.forEach(monitor => {
+      fetchLatestHistory(monitor.id)
+    })
     const today = new Date().toISOString().slice(0, 10)
     monitors.value.forEach(monitor => {
       fetchUptimesDaily(monitor.id, today)
@@ -429,10 +431,10 @@ const { isDark, toggleTheme } = useTheme()
 
                   <div class="w-3 h-3 rounded-full flex-shrink-0 animate-pulse"
                     :class="[
-                      getStatusColor(latestHistory[monitor.id]?.uptime_status),
-                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'up' ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]' :
-                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'down' ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]' :
-                      latestHistory[monitor.id]?.uptime_status?.toLowerCase() === 'warning' ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]' :
+                      getStatusColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status),
+                      (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'up' ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]' :
+                      (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'down' ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]' :
+                      (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'warning' ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]' :
                       'shadow-[0_0_8px_2px_rgba(156,163,175,0.5)]'
                     ]"
                   ></div>
@@ -474,13 +476,13 @@ const { isDark, toggleTheme } = useTheme()
                 </div>
 
                 <div class="text-right flex-shrink-0 ml-0 sm:ml-4 w-full sm:w-auto">
-                  <div class="text-sm font-medium" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status) + ' dark:text-inherit'">
-                    <template v-if="latestHistoryLoading[monitor.id]">Loading...</template>
-                    <template v-else-if="latestHistoryError[monitor.id]">Error</template>
-                    <template v-else>{{ getStatusText(latestHistory[monitor.id]?.uptime_status) }}</template>
+                  <div class="text-sm font-medium" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) + ' dark:text-inherit'">
+                    <template v-if="props.isAuthenticated && latestHistoryLoading[monitor.id]">Loading...</template>
+                    <template v-else-if="props.isAuthenticated && latestHistoryError[monitor.id]">Error</template>
+                    <template v-else>{{ getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) }}</template>
                   </div>
-                  <div v-if="latestHistory[monitor.id]?.created_at" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at)">
-                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at) }}
+                  <div v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date)">
+                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date) }}
                   </div>
                 </div>
               </div>
