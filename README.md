@@ -1,6 +1,6 @@
 # Simple Uptime Monitoring
 
-## 🟩 Uptime Kita
+## ✅ Uptime Kita
 
 <p align='center'>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
@@ -32,9 +32,9 @@
   </a>
 </p>
 
-<img width="2048" height="1844" alt="uptime syofyanzuhad dev_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
+<img width="2880" height="2168" alt="uptime-syofyanzuhad-dev" src="https://github.com/user-attachments/assets/d1daa7b9-2e58-42e1-af6e-4f7b2da510ab" />
 
-Kita is the Indonesian word that means "Us"; this means that the uptime can be used for all of us
+"Kita" is the Indonesian word that means "Us"; this means that the uptime can be used for all of us
 
 ## 🥔 Live Demo
 
