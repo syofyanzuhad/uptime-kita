@@ -15,6 +15,7 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Icon from '@/components/Icon.vue';
+import Pagination from '@/components/Pagination.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
@@ -277,25 +278,8 @@ function onPaginationLinkClick(link: PaginatorLink) {
                 </div>
 
                 <!-- Pagination Links -->
-                <div v-if="props.monitors.meta.links.length > 3" class="mt-6">
-                    <div class="flex flex-wrap -mb-1">
-                    <template v-for="(link, key) in props.monitors.meta.links">
-                        <div
-                            v-if="link.url === null"
-                            :key="key"
-                            class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border border-black dark:border-white rounded"
-                            v-html="link.label"
-                        />
-                        <button
-                            v-else
-                            :key="`link-${key}`"
-                            class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border border-black dark:border-white rounded focus:border-indigo-500 focus:text-indigo-500"
-                            :class="{ 'bg-blue-700 dark:bg-blue-600 text-white dark:text-white': link.active, 'hover:bg-gray-200 dark:hover:bg-gray-700': !link.active }"
-                            @click="onPaginationLinkClick(link)"
-                            v-html="link.label"
-                        />
-                    </template>
-                    </div>
+                <div class="mt-6">
+                    <Pagination :data="props.monitors" :on-link-click="onPaginationLinkClick" />
                 </div>
                 </div>
             </div>

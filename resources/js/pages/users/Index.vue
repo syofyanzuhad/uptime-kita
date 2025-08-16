@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { BreadcrumbItem, User, SharedData } from '@/types';
 import { ref } from 'vue';
+import Pagination from '@/components/Pagination.vue';
 
 const props = defineProps<{ users: any }>(); // users is a paginator
 const page = usePage<SharedData>();
@@ -78,16 +79,8 @@ const confirmDeleteUser = () => {
             </tbody>
           </table>
           <!-- Pagination -->
-          <div class="mt-4 flex justify-center">
-            <nav v-if="props.users.links && props.users.links.length > 3" class="inline-flex -space-x-px">
-              <Link v-for="link in props.users.links" :key="link.label" :href="link.url || ''"
-                :class="[
-                  'px-3 py-2 border text-sm font-medium',
-                  link.active ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300',
-                  !link.url ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700',
-                  'border-gray-300 dark:border-gray-600'
-                ]" />
-            </nav>
+          <div class="mt-6">
+            <Pagination :data="props.users" />
           </div>
         </div>
       </div>
