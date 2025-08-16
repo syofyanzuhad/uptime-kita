@@ -7,8 +7,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div class="flex sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div class="flex items-center space-x-3 sm:space-x-4">
-            <div class="w-6 h-6 sm:w-8 sm:h-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Icon name="globe" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div class="w-6 h-6 sm:w-10 sm:h-10 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Link href="/">
+                <img src="/images/uptime-kita.png" alt="Uptime Kita" class="w-6 h-6 sm:w-10 sm:h-10 rounded" />
+              </Link>
             </div>
             <div class="min-w-0 flex-1">
               <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
@@ -24,7 +26,7 @@
           <div class="flex items-center justify-center sm:justify-end space-x-2">
             <button
               @click="toggleTheme"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+              class="p-2 rounded-full cursor-pointer bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
               :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
             >
               <Icon
@@ -32,6 +34,10 @@
                 class="w-4 h-4 text-gray-600 dark:text-gray-300"
               />
             </button>
+            <!-- dashboard button -->
+            <Link href="/dashboard" class="p-2 rounded-full cursor-pointer bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+              <Icon name="home" class="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            </Link>
           </div>
         </div>
       </div>
@@ -40,7 +46,7 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 mt-24">
       <!-- Stats Overview -->
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent class="p-4">
             <div class="text-center">
@@ -229,7 +235,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'

@@ -13,7 +13,7 @@ use App\Http\Controllers\UnsubscribeMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::get('/', [PublicMonitorController::class, 'index'])->name('home');
 
 Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
