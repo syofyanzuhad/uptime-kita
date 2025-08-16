@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\MonitorPerformanceService;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -156,12 +157,16 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
                 'monitor_id' => $this->monitorId,
                 'date' => $this->date,
             ]);
-            $this->updateUptimeRecord(0);
+            $this->updateUptimeRecord(0, []);
 
             return;
         }
 
         $uptimePercentage = ($result->up_checks / $result->total_checks) * 100;
+
+        // Calculate response time metrics
+        $performanceService = app(MonitorPerformanceService::class);
+        $responseMetrics = $performanceService->aggregateDailyMetrics($this->monitorId, $this->date);
 
         Log::debug('Uptime calculation details', [
             'monitor_id' => $this->monitorId,
@@ -169,15 +174,16 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
             'total_checks' => $result->total_checks,
             'up_checks' => $result->up_checks,
             'uptime_percentage' => $uptimePercentage,
+            'response_metrics' => $responseMetrics,
         ]);
 
-        $this->updateUptimeRecord($uptimePercentage);
+        $this->updateUptimeRecord($uptimePercentage, $responseMetrics);
     }
 
     /**
      * Update or create the uptime record with proper SQLite concurrency handling
      */
-    private function updateUptimeRecord(float $uptimePercentage): void
+    private function updateUptimeRecord(float $uptimePercentage, array $responseMetrics = []): void
     {
         // Ensure date is in correct format (Y-m-d, not datetime)
         $dateOnly = Carbon::parse($this->date)->toDateString();
@@ -203,13 +209,24 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
 
                 if ($result) {
                     // Record exists, update it
+                    $updateData = [
+                        'uptime_percentage' => $roundedPercentage,
+                        'updated_at' => now(),
+                    ];
+
+                    // Add response metrics if available
+                    if (! empty($responseMetrics)) {
+                        $updateData['avg_response_time'] = $responseMetrics['avg_response_time'];
+                        $updateData['min_response_time'] = $responseMetrics['min_response_time'];
+                        $updateData['max_response_time'] = $responseMetrics['max_response_time'];
+                        $updateData['total_checks'] = $responseMetrics['total_checks'];
+                        $updateData['failed_checks'] = $responseMetrics['failed_checks'];
+                    }
+
                     $updated = DB::table('monitor_uptime_dailies')
                         ->where('monitor_id', $this->monitorId)
                         ->where('date', $dateOnly)
-                        ->update([
-                            'uptime_percentage' => $roundedPercentage,
-                            'updated_at' => now(),
-                        ]);
+                        ->update($updateData);
 
                     if ($updated) {
                         Log::debug('Uptime record updated (existing)', [
@@ -223,13 +240,24 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
                     }
                 } else {
                     // Record doesn't exist, create it
-                    DB::table('monitor_uptime_dailies')->insert([
+                    $insertData = [
                         'monitor_id' => $this->monitorId,
                         'date' => $dateOnly,
                         'uptime_percentage' => $roundedPercentage,
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ]);
+                    ];
+
+                    // Add response metrics if available
+                    if (! empty($responseMetrics)) {
+                        $insertData['avg_response_time'] = $responseMetrics['avg_response_time'];
+                        $insertData['min_response_time'] = $responseMetrics['min_response_time'];
+                        $insertData['max_response_time'] = $responseMetrics['max_response_time'];
+                        $insertData['total_checks'] = $responseMetrics['total_checks'];
+                        $insertData['failed_checks'] = $responseMetrics['failed_checks'];
+                    }
+
+                    DB::table('monitor_uptime_dailies')->insert($insertData);
 
                     Log::debug('Uptime record created (new)', [
                         'monitor_id' => $this->monitorId,

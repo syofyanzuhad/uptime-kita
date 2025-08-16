@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\SendCustomMonitorNotification;
+use App\Listeners\StoreMonitorCheckData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -20,6 +21,7 @@ use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
 use Spatie\Health\Facades\Health;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
+use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,6 +49,11 @@ class AppServiceProvider extends ServiceProvider
         // Register uptime monitor event listeners
         Event::listen(UptimeCheckFailed::class, SendCustomMonitorNotification::class);
         Event::listen(UptimeCheckRecovered::class, SendCustomMonitorNotification::class);
+
+        // Register monitor data storage listeners
+        Event::listen(UptimeCheckSucceeded::class, StoreMonitorCheckData::class);
+        Event::listen(UptimeCheckFailed::class, StoreMonitorCheckData::class);
+        Event::listen(UptimeCheckRecovered::class, StoreMonitorCheckData::class);
 
         Health::checks([
             CacheCheck::new(),
