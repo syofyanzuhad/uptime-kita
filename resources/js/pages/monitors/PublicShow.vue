@@ -15,7 +15,7 @@
             >
               <Icon
                 name="arrowLeft"
-                class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
+                class="w-4 h-4 cursor-pointer sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
               />
             </button>
             
@@ -391,25 +391,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="bg-white bottom-0 w-full dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Powered by
-            <a
-              href="/"
-              target="_blank"
-              class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-            >
-              Uptime Kita
-            </a>
-          </div>
-          <div class="text-xs text-gray-400 dark:text-gray-500">
-            Real-time uptime monitoring
-          </div>
-        </div>
-      </div>
-    </div>
+    <PublicFooter />
   </div>
 </template>
 
@@ -418,6 +400,7 @@ import { Head, router } from '@inertiajs/vue3'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
+import PublicFooter from '@/components/PublicFooter.vue'
 import type { Monitor, MonitorHistory } from '@/types/monitor'
 
 interface Props {
