@@ -27,11 +27,10 @@ class PrivateMonitorController extends Controller
         }
 
         $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter) {
-            $baseQuery = Monitor::withoutGlobalScope('user')
+            $baseQuery = Monitor::query()
                 ->where('is_public', false)
                 ->whereHas('users', function ($query) {
-                    $query->where('user_monitor.user_id', auth()->id())
-                          ->where('user_monitor.is_pinned', false);
+                    $query->where('user_monitor.is_pinned', false);
                 })
                 ->with(['users:id', 'uptimeDaily']);
 
