@@ -121,7 +121,7 @@
               class="flex-shrink-0 relative group"
             >
               <div
-                class="w-1.5 h-8 rounded-sm transition-all cursor-pointer"
+                class="w-1.5 sm:w-2 h-8 rounded-sm transition-all cursor-pointer"
                 :class="[
                   history.uptime_status === 'up'
                     ? 'bg-green-500 hover:bg-green-600'
