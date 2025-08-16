@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 
 // Hapus impor komponen yang tidak ada
 // import TextInput from '@/Components/TextInput.vue';
@@ -10,11 +11,15 @@ import { Head, useForm } from '@inertiajs/vue3';
 // import InputError from '@/Components/InputError.vue';
 // import Checkbox from '@/Components/Checkbox.vue';
 
+const page = usePage<SharedData>();
+const userId = page.props.auth?.user?.id;
+
 const form = useForm({
   url: '',
   uptime_check_enabled: true,
   certificate_check_enabled: true,
   uptime_check_interval: 5,
+  is_public: false,
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -120,6 +125,21 @@ const submit = () => {
                 <input type="checkbox" name="certificate_check_enabled" v-model="form.certificate_check_enabled" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm focus:ring-indigo-500">
                 <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Sertifikat SSL</span>
               </label>
+            </div>
+
+            <div v-if="userId === 1" class="mb-4">
+              <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Visibilitas Monitor</label>
+              <div class="flex gap-4">
+                <label class="inline-flex items-center">
+                  <input type="radio" name="is_public" :value="1" v-model="form.is_public" class="form-radio text-indigo-600 dark:text-indigo-400">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Publik</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input type="radio" name="is_public" :value="0" v-model="form.is_public" class="form-radio text-indigo-600 dark:text-indigo-400">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Privat</span>
+                </label>
+              </div>
+              <div v-if="form.errors.is_public" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.is_public }}</div>
             </div>
 
             <div class="flex items-center justify-end mt-4">
