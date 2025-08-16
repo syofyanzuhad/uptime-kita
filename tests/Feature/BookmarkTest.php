@@ -33,6 +33,9 @@ it('can pin a monitor', function () {
 });
 
 it('can unpin a monitor', function () {
+    // Clear any cached data from previous tests
+    cache()->flush();
+    
     $user = User::factory()->create();
     $monitor = Monitor::factory()->create([
         'is_public' => false,
