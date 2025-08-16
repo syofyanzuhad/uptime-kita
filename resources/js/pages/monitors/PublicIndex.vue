@@ -144,7 +144,7 @@
                 v-if="monitor.favicon"
                 :src="monitor.favicon"
                 :alt="`${monitor.name} favicon`"
-                class="w-8 h-8 rounded flex-shrink-0 shadow-md dark:shadow-white/30"
+                class="w-8 h-8 rounded flex-shrink-0 drop-shadow-md dark:drop-shadow-white/30"
                 @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
               />
               <div v-else class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
