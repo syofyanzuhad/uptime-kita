@@ -4,24 +4,24 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
     <div class="bg-white dark:bg-gray-800 shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div class="flex sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+          <div class="flex items-center space-x-3 sm:space-x-4">
             <img
               v-if="monitor.favicon"
               :src="monitor.favicon"
               :alt="`${monitor.name} favicon`"
-              class="w-8 h-8 rounded"
+              class="w-6 h-6 sm:w-8 sm:h-8 rounded flex-shrink-0"
               @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
             >
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <div class="min-w-0 flex-1">
+              <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-none">
                 {{ monitor.name }}
               </h1>
               <a
                 :href="monitor.url"
                 target="_blank"
-                class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                class="text-xs sm:text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 truncate block max-w-[200px] sm:max-w-none"
               >
                 {{ monitor.url }}
               </a>
@@ -29,10 +29,11 @@
           </div>
 
           <!-- Current Status Badge -->
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center justify-center sm:justify-end">
+            <!-- Mobile: Icon only -->
             <span
               :class="[
-                'px-3 py-1 rounded-full text-sm font-medium',
+                'sm:hidden p-2 rounded-full',
                 monitor.uptime_status === 'up'
                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                   : monitor.uptime_status === 'down'
@@ -44,7 +45,26 @@
             >
               <Icon
                 :name="getStatusIcon(monitor.uptime_status)"
-                class="w-4 h-4 inline mr-1"
+                class="w-5 h-5"
+              />
+            </span>
+
+            <!-- Desktop: Icon with text -->
+            <span
+              :class="[
+                'hidden sm:inline-flex px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap items-center',
+                monitor.uptime_status === 'up'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                  : monitor.uptime_status === 'down'
+                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                  : monitor.uptime_status === 'not yet checked'
+                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+              ]"
+            >
+              <Icon
+                :name="getStatusIcon(monitor.uptime_status)"
+                class="w-4 h-4 mr-1"
               />
               {{ getStatusText(monitor.uptime_status) }}
             </span>
@@ -54,27 +74,27 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Left Column - Stats -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-4 sm:space-y-6">
           <!-- Uptime Statistics -->
           <Card>
             <CardHeader>
               <CardTitle>Uptime Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-8">
-                <Icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p class="text-gray-500 dark:text-gray-400">No uptime data available yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
+              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-6 sm:py-8">
+                <Icon name="clock" class="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">No uptime data available yet</p>
+                <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
               </div>
-              <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div v-for="(value, period) in uptimeStats" :key="period" class="text-center">
-                  <div class="text-2xl font-bold" :class="getUptimeColor(value)">
+                  <div class="text-xl sm:text-2xl font-bold" :class="getUptimeColor(value)">
                     {{ value }}%
                   </div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     {{ getPeriodLabel(period) }}
                   </div>
                 </div>
@@ -88,30 +108,30 @@
               <CardTitle>Response Time (Last 24 Hours)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-8">
-                <Icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p class="text-gray-500 dark:text-gray-400">No response time data available yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
+              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-6 sm:py-8">
+                <Icon name="clock" class="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">No response time data available yet</p>
+                <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
               </div>
               <div v-else class="space-y-4">
-                <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                   <div>
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                       {{ avgResponseTime }}ms
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Average</div>
+                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Average</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                       {{ minResponseTime }}ms
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Min</div>
+                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Min</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
                       {{ maxResponseTime }}ms
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Max</div>
+                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max</div>
                   </div>
                 </div>
               </div>
@@ -124,17 +144,17 @@
               <CardTitle>Uptime History (Last 90 Days)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-8">
-                <Icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p class="text-gray-500 dark:text-gray-400">No uptime history available yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
+              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-6 sm:py-8">
+                <Icon name="clock" class="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">No uptime history available yet</p>
+                <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
               </div>
               <div v-else class="space-y-2">
-                <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <span>{{ getDateRange() }}</span>
                   <span>Today</span>
                 </div>
-                <div class="grid grid-cols-90 gap-0.5 h-20">
+                <div class="grid grid-cols-90 gap-0.5 h-16 sm:h-20 overflow-x-auto">
                   <div
                     v-for="day in getUptimeDays()"
                     :key="day.date"
@@ -142,13 +162,18 @@
                     class="relative group"
                   >
                     <div
+                      v-if="day.uptime"
                       :class="[
                         'h-full rounded-sm transition-all',
-                        day.uptime >= 99.5 ? 'bg-green-500' :
-                        day.uptime >= 95 ? 'bg-yellow-500' :
-                        day.uptime > 0 ? 'bg-red-500' :
-                        'bg-gray-300 dark:bg-gray-700'
+                        day.uptime === 100 ? 'bg-green-500' :
+                        day.uptime >= 99.5 ? 'bg-green-300' :
+                        day.uptime >= 95 ? 'bg-yellow-400' :
+                        'bg-red-500'
                       ]"
+                    />
+                    <div
+                      v-else
+                      class="h-full rounded-sm bg-gray-300 dark:bg-gray-700"
                     />
                     <!-- Tooltip -->
                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
@@ -158,18 +183,18 @@
                     </div>
                   </div>
                 </div>
-                <div class="flex items-center justify-center space-x-4 text-xs text-gray-600 dark:text-gray-400">
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-600 dark:text-gray-400">
                   <div class="flex items-center space-x-1">
-                    <div class="w-3 h-3 bg-green-500 rounded-sm"></div>
-                    <span>100% Uptime</span>
+                    <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-sm"></div>
+                    <span class="text-xs">100% Uptime</span>
                   </div>
                   <div class="flex items-center space-x-1">
-                    <div class="w-3 h-3 bg-yellow-500 rounded-sm"></div>
-                    <span>Partial Outage</span>
+                    <div class="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded-sm"></div>
+                    <span class="text-xs">Partial Outage</span>
                   </div>
                   <div class="flex items-center space-x-1">
-                    <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
-                    <span>Major Outage</span>
+                    <div class="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-sm"></div>
+                    <span class="text-xs">Major Outage</span>
                   </div>
                 </div>
               </div>
@@ -178,7 +203,7 @@
         </div>
 
         <!-- Right Column - Info -->
-        <div class="space-y-6">
+        <div class="space-y-4 sm:space-y-6">
           <!-- Monitor Details -->
           <Card>
             <CardHeader>
@@ -186,28 +211,28 @@
             </CardHeader>
             <CardContent class="space-y-3">
               <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Check Interval</div>
-                <div class="font-medium">Every {{ monitor.uptime_check_interval }} minutes</div>
+                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Check Interval</div>
+                <div class="text-sm sm:text-base font-medium">Every {{ monitor.uptime_check_interval }} minutes</div>
               </div>
 
               <div v-if="monitor.last_check_date">
-                <div class="text-sm text-gray-500 dark:text-gray-400">Last Checked</div>
-                <div class="font-medium">{{ formatDate(monitor.last_check_date) }}</div>
+                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Last Checked</div>
+                <div class="text-sm sm:text-base font-medium">{{ formatDate(monitor.last_check_date) }}</div>
               </div>
 
               <div v-if="monitor.uptime_status_last_change_date">
-                <div class="text-sm text-gray-500 dark:text-gray-400">Status Since</div>
-                <div class="font-medium">{{ formatDate(monitor.uptime_status_last_change_date) }}</div>
+                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Status Since</div>
+                <div class="text-sm sm:text-base font-medium">{{ formatDate(monitor.uptime_status_last_change_date) }}</div>
               </div>
 
               <div v-if="monitor.certificate_check_enabled">
-                <div class="text-sm text-gray-500 dark:text-gray-400">SSL Certificate</div>
+                <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">SSL Certificate</div>
                 <div v-if="monitor.certificate_status === 'not yet checked'" class="flex items-center space-x-2">
                   <Icon
                     name="clock"
                     class="w-4 h-4 text-gray-400"
                   />
-                  <span class="font-medium text-gray-500">
+                  <span class="text-sm sm:text-base font-medium text-gray-500">
                     Not Yet Checked
                   </span>
                 </div>
@@ -217,7 +242,7 @@
                     class="w-4 h-4"
                     :class="getCertificateColor(monitor.certificate_status)"
                   />
-                  <span class="font-medium">
+                  <span class="text-sm sm:text-base font-medium">
                     {{ getCertificateText(monitor.certificate_status) }}
                   </span>
                 </div>
@@ -234,10 +259,10 @@
               <CardTitle>Recent Incidents</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-8">
-                <Icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p class="text-gray-500 dark:text-gray-400">No incidents data available yet</p>
-                <p class="text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
+              <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-6 sm:py-8">
+                <Icon name="clock" class="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">No incidents data available yet</p>
+                <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
               </div>
               <div v-else-if="recentIncidents.length > 0" class="space-y-3">
                 <div
@@ -250,7 +275,7 @@
                       : 'border-yellow-500'
                   ]"
                 >
-                  <div class="text-sm font-medium">
+                  <div class="text-xs sm:text-sm font-medium">
                     {{ incident.uptime_status === 'down' ? 'Downtime' : 'Degraded' }}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -370,13 +395,13 @@ const maxResponseTime = computed(() => {
 const getStatusIcon = (status: string): string => {
   switch (status) {
     case 'up':
-      return 'check-circle'
+      return 'checkCircle'
     case 'down':
-      return 'x-circle'
+      return 'xCircle'
     case 'not yet checked':
       return 'clock'
     default:
-      return 'alert-circle'
+      return 'alertCircle'
   }
 }
 
