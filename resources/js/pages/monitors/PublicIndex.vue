@@ -9,7 +9,7 @@
           <div class="flex items-center space-x-3 sm:space-x-4">
             <div class="w-6 h-6 sm:w-10 sm:h-10 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Link href="/">
-                <img src="/images/uptime-kita.jpg" alt="Uptime Kita" class="w-6 h-6 sm:w-10 sm:h-10 rounded" />
+                <img src="/images/uptime-kita.jpg" alt="Uptime Kita" class="w-6 h-6 sm:w-10 sm:h-10 rounded object-cover" />
               </Link>
             </div>
             <div class="min-w-0 flex-1">
