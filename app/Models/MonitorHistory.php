@@ -13,6 +13,15 @@ class MonitorHistory extends Model
         'monitor_id',
         'uptime_status',
         'message',
+        'response_time',
+        'status_code',
+        'checked_at',
+    ];
+
+    protected $casts = [
+        'response_time' => 'integer',
+        'status_code' => 'integer',
+        'checked_at' => 'datetime',
     ];
 
     public function monitor()

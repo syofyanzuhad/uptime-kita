@@ -18,6 +18,10 @@ class Monitor extends SpatieMonitor
         'uptime_status_last_change_date' => 'datetime',
         'uptime_check_failed_event_fired_on_date' => 'datetime',
         'certificate_expiration_date' => 'datetime',
+        'expected_status_code' => 'integer',
+        'max_response_time' => 'integer',
+        'check_locations' => 'array',
+        'notification_settings' => 'array',
     ];
 
     protected $guarded = [];
@@ -135,6 +139,32 @@ class Monitor extends SpatieMonitor
     public function uptimeDaily()
     {
         return $this->hasOne(MonitorUptimeDaily::class)->whereDate('date', now()->toDateString());
+    }
+
+    /**
+     * Get the incidents for the monitor.
+     */
+    public function incidents()
+    {
+        return $this->hasMany(MonitorIncident::class);
+    }
+
+    /**
+     * Get recent incidents for the monitor.
+     */
+    public function recentIncidents()
+    {
+        return $this->hasMany(MonitorIncident::class)
+            ->recent(30)
+            ->limit(10);
+    }
+
+    /**
+     * Get the performance records for the monitor.
+     */
+    public function performanceHourly()
+    {
+        return $this->hasMany(MonitorPerformanceHourly::class);
     }
 
     public function getTodayUptimePercentageAttribute()
