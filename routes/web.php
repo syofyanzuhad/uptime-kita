@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 
-Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.public');
+Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

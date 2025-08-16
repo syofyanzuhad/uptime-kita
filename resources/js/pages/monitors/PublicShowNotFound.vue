@@ -1,5 +1,5 @@
 <template>
-  <Head :title="`${domain} - Monitor Not Found`" />
+  <Head :title="`${props.domain} - Monitor Not Found`" />
 
   <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
@@ -12,10 +12,10 @@
             </div>
             <div class="min-w-0 flex-1">
               <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-none">
-                {{ domain }}
+                {{ props.domain }}
               </h1>
               <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px] sm:max-w-none">
-                {{ suggestedUrl }}
+                {{ props.suggestedUrl }}
               </p>
             </div>
           </div>
@@ -52,7 +52,7 @@
 
         <!-- Description -->
         <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-          We couldn't find a public monitor for <span class="font-semibold text-gray-900 dark:text-white">{{ domain }}</span>.
+          We couldn't find a public monitor for <span class="font-semibold text-gray-900 dark:text-white">{{ props.domain }}</span>.
           This monitor might be private or doesn't exist yet.
         </p>
 
@@ -100,7 +100,7 @@
                     Explore other public monitors to see what's being tracked and get inspired.
                   </p>
                   <a
-                    href="https://uptime.syofyanzuhad.dev/public-monitors"
+                    href="/public-monitors"
                     target="_blank"
                     class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                   >
@@ -161,7 +161,7 @@
 
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 
