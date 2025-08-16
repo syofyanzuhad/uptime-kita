@@ -279,7 +279,7 @@
                     {{ incident.uptime_status === 'down' ? 'Downtime' : 'Degraded' }}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ incident.checked_at ? formatDate(incident.checked_at) : '' }}
+                    {{ incident.created_at ? formatDate(incident.created_at) : '' }}
                   </div>
                   <div v-if="incident.reason" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     {{ incident.reason }}
