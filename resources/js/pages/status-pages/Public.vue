@@ -5,6 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import { useTheme } from '@/composables/useTheme'
 import DailyUptimeChart from '@/components/DailyUptimeChart.vue'
 import OfflineBanner from '@/components/OfflineBanner.vue'
+import PublicFooter from '@/components/PublicFooter.vue'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -499,9 +500,9 @@ const { isDark, toggleTheme } = useTheme()
           </div>
         </div>
 
-        <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>Powered by <a href="https://uptime.syofyanzuhad.dev" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">Uptime Kita</a></p>
-        </div>
+        <PublicFooter 
+          powered-by-url="https://uptime.syofyanzuhad.dev"
+        />
       </main>
     </div>
 </template>
