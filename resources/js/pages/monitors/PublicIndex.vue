@@ -137,17 +137,17 @@
           class="hover:shadow-lg transition-shadow cursor-pointer p-0"
           @click="viewMonitor(monitor)"
         >
-          <CardContent class="p-6">
+          <CardContent class="p-4">
             <div class="flex items-start space-x-4">
               <!-- Favicon -->
               <img
                 v-if="monitor.favicon"
                 :src="monitor.favicon"
                 :alt="`${monitor.name} favicon`"
-                class="w-8 h-8 rounded flex-shrink-0 drop-shadow-md dark:drop-shadow-white/30"
+                class="w-6 h-6 rounded flex-shrink-0 drop-shadow-md dark:drop-shadow-white/30"
                 @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
               />
-              <div v-else class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+              <div v-else class="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
                 <Icon name="globe" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
 
