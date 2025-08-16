@@ -7,6 +7,18 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div class="flex sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div class="flex items-center space-x-3 sm:space-x-4">
+            <!-- Back Button -->
+            <button
+              @click="goBack"
+              class="p-1.5 sm:p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
+              title="Go back"
+            >
+              <Icon
+                name="arrowLeft"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
+              />
+            </button>
+            
             <img
               v-if="monitor.favicon"
               :src="monitor.favicon"
@@ -444,6 +456,15 @@ const toggleTheme = () => {
   } else {
     document.documentElement.classList.remove('dark')
     localStorage.setItem('theme', 'light')
+  }
+}
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    window.history.back()
+  } else {
+    // Fallback to home page if no history
+    router.visit('/')
   }
 }
 
