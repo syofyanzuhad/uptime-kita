@@ -1,9 +1,9 @@
 <template>
   <Head :title="`${monitor.name} - Monitor Status`" />
 
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 shadow">
+    <div class="bg-white fixed top-0 w-full dark:bg-gray-800 shadow">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div class="flex sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div class="flex items-center space-x-3 sm:space-x-4">
@@ -28,7 +28,7 @@
             </div>
           </div>
 
-                    <!-- Current Status Badge and Theme Toggle -->
+            <!-- Current Status Badge and Theme Toggle -->
           <div class="flex items-center justify-center sm:justify-end space-x-2">
             <!-- Mobile: Icon only -->
             <span
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 mt-24">
       <!-- Latest 100 Minutes History Bar -->
       <div class="mb-6">
         <div class="flex items-center justify-between mb-3">
@@ -379,13 +379,13 @@
     </div>
 
     <!-- Footer -->
-    <div class="bg-white fixed bottom-0 w-full dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8">
+    <div class="bg-white bottom-0 w-full dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
           <div class="text-sm text-gray-500 dark:text-gray-400">
             Powered by
             <a
-              href="https://uptime-kita.com"
+              href="https://uptime.syofyanzuhad.dev"
               target="_blank"
               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
