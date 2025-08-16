@@ -71,8 +71,8 @@ class UnsubscribeMonitorTest extends TestCase
 
         // assert redirect (not JSON response)
         $this->assertEquals(302, $response->getStatusCode());
-        $this->assertStringContainsString(
-            'Berhasil berhenti berlangganan monitor: '.$monitor->url,
+        $this->assertEquals(
+            'Anda tidak berlangganan monitor ini',
             session('flash.message')
         );
         $this->assertDatabaseMissing('user_monitor', [
