@@ -28,8 +28,8 @@
             </div>
           </div>
 
-          <!-- Current Status Badge -->
-          <div class="flex items-center justify-center sm:justify-end">
+                    <!-- Current Status Badge and Theme Toggle -->
+          <div class="flex items-center justify-center sm:justify-end space-x-2">
             <!-- Mobile: Icon only -->
             <span
               :class="[
@@ -68,6 +68,18 @@
               />
               {{ getStatusText(monitor.uptime_status) }}
             </span>
+
+            <!-- Theme Toggle -->
+            <button
+              @click="toggleTheme"
+              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+              :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            >
+              <Icon
+                :name="isDark ? 'sun' : 'moon'"
+                class="w-4 h-4 text-gray-600 dark:text-gray-300"
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -294,12 +306,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <div class="bg-white fixed bottom-0 w-full dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Powered by
+            <a
+              href="https://uptime-kita.com"
+              target="_blank"
+              class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >
+              Uptime Kita
+            </a>
+          </div>
+          <div class="text-xs text-gray-400 dark:text-gray-500">
+            Real-time uptime monitoring
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import type { Monitor, MonitorHistory } from '@/types/monitor'
@@ -324,7 +357,32 @@ interface Props {
 const props = defineProps<Props>()
 const monitor = computed(() => props.monitor.data)
 
-console.log('%cresources/js/pages/monitors/PublicShow.vue:291 monitor', 'color: #007acc;', monitor.value);
+// Theme toggle functionality
+const isDark = ref(false)
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  if (isDark.value) {
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  }
+}
+
+onMounted(() => {
+  // Check for saved theme preference or default to light mode
+  const savedTheme = localStorage.getItem('theme')
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  }
+})
+
+// console.log('%cresources/js/pages/monitors/PublicShow.vue:291 monitor', 'color: #007acc;', monitor.value);
 
 const recentIncidents = computed(() => {
   // If monitor hasn't been checked yet, return empty array
