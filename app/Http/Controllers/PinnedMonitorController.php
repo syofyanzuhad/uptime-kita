@@ -73,8 +73,26 @@ class PinnedMonitorController extends Controller
     /**
      * Toggle pin status for a monitor.
      */
-    public function toggle(Request $request, Monitor $monitor)
+    public function toggle(Request $request, $monitorId)
     {
+        // Validate the request
+        $request->validate([
+            'is_pinned' => 'required|boolean',
+        ]);
+
+        // Find the monitor without the user scope
+        $monitor = Monitor::withoutGlobalScope('user')->find($monitorId);
+        
+        if (!$monitor) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Monitor not found.',
+                ], 404);
+            }
+            abort(404);
+        }
+        
         $user = auth()->user();
 
         // Get the pivot record directly from the database
@@ -83,28 +101,31 @@ class PinnedMonitorController extends Controller
             ->withPivot('is_pinned', 'is_active')
             ->first();
 
+        $isPinned = $request->input('is_pinned');
+
         if (! $pivotRecord) {
-            // Check if the monitor exists and is accessible
-            if (! $monitor->is_public) {
+            // User is not subscribed to this monitor
+            if ($isPinned) {
+                // If trying to pin any monitor they're not subscribed to
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You must be subscribed to this monitor to pin it.',
+                    ], 403);
+                }
                 return back()->with('flash', [
                     'type' => 'error',
-                    'message' => 'You don\'t have access to this monitor',
+                    'message' => 'You must be subscribed to this monitor to pin it.',
                 ]);
             }
-
-            // Auto-subscribe the user to the monitor when they try to pin it
-            $user->monitors()->attach($monitor->id, [
-                'is_active' => true,
-                'is_pinned' => true,
-            ]);
-            $newPinnedStatus = true;
+            // If unpinning a monitor they're not subscribed to, just return success
+            $newPinnedStatus = false;
         } else {
-            $currentPinnedStatus = $pivotRecord->pivot->is_pinned ?? false;
-            $newPinnedStatus = ! $currentPinnedStatus;
-
+            // Update the pinned status
             $user->monitors()->updateExistingPivot($monitor->id, [
-                'is_pinned' => $newPinnedStatus,
+                'is_pinned' => $isPinned,
             ]);
+            $newPinnedStatus = $isPinned;
         }
 
         // Clear related caches
@@ -121,6 +142,15 @@ class PinnedMonitorController extends Controller
 
         foreach ($cacheKeys as $key) {
             cache()->forget($key);
+        }
+
+        // Return appropriate response
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'is_pinned' => $newPinnedStatus,
+                'message' => $newPinnedStatus ? 'Monitor pinned successfully' : 'Monitor unpinned successfully',
+            ]);
         }
 
         return back()->with('flash', [
