@@ -28,7 +28,12 @@ class PublicMonitorShowController extends Controller
         $monitor = Monitor::where('url', $url)
             ->where('is_public', true)
             ->where('uptime_check_enabled', true)
-            ->firstOrFail();
+            ->first();
+
+        // If monitor not found, show the not found page
+        if (! $monitor) {
+            return $this->showNotFound($domain);
+        }
 
         // Load recent history (last 30 days) - using created_at
         $histories = MonitorHistory::where('monitor_id', $monitor->id)
@@ -99,5 +104,16 @@ class PublicMonitorShowController extends Controller
         $totalCount = $histories->count();
 
         return round(($upCount / $totalCount) * 100, 2);
+    }
+
+    /**
+     * Display the not found page for monitors.
+     */
+    private function showNotFound(string $domain): Response
+    {
+        return Inertia::render('monitors/PublicShowNotFound', [
+            'domain' => $domain,
+            'suggestedUrl' => 'https://'.$domain,
+        ]);
     }
 }
