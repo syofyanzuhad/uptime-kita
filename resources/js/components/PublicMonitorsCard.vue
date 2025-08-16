@@ -49,7 +49,7 @@ const totalMonitors = ref(0);
 const showingFrom = ref(0);
 const showingTo = ref(0);
 
-const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize } = useBookmarks();
+const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize, onPinChanged } = useBookmarks();
 
 const page = usePage<SharedData>();
 
@@ -293,15 +293,27 @@ const toggleActive = async (monitorId: number) => {
 
 
 
+// Cleanup function for pin change callback
+let cleanupPinCallback: (() => void) | null = null;
+
 onMounted(() => {
     initialize();
     fetchPublicMonitors(true); // Initial load
+    
+    // Register refresh callback for when pins change
+    cleanupPinCallback = onPinChanged(() => {
+        fetchPublicMonitors(false, 1);
+    });
+    
     // pollingInterval.value = setInterval(() => {
     //     fetchPublicMonitors(false, 1); // Polling update - always fetch first page
     // }, 60000);
 });
 
 onUnmounted(() => {
+    if (cleanupPinCallback) {
+        cleanupPinCallback();
+    }
     // if (pollingInterval.value) {
     //     clearInterval(pollingInterval.value);
     // }

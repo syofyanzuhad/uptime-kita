@@ -4,6 +4,7 @@
     import { Head, usePage } from '@inertiajs/vue3';
     import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
     import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
+    import PinnedMonitorsCard from '../components/PinnedMonitorsCard.vue';
     import { ref, onMounted, computed } from 'vue';
     import Icon from '@/components/Icon.vue';
     import { Button } from '@/components/ui/button';
@@ -145,6 +146,7 @@
                 </div>
             </div>
 
+            <PinnedMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" :disabled-count="disabledCount" :enabled-count="enabledCount" />
             <PrivateMonitorsCard v-if="isAuthenticated" :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" :disabled-count="disabledCount" :enabled-count="enabledCount" />
             <PublicMonitorsCard :search-query="searchQuery" :status-filter="statusFilter" :all-count="allCount" :online-count="onlineCount" :offline-count="offlineCount" :unsubscribed-count="unsubscribedCount" :disabled-count="disabledCount" :enabled-count="enabledCount" />
         </div>

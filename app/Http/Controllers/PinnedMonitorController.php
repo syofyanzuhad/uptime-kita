@@ -6,19 +6,19 @@ use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 
-class PrivateMonitorController extends Controller
+class PinnedMonitorController extends Controller
 {
     /**
-     * Handle the incoming request.
+     * Get all pinned monitors for the authenticated user.
      */
-    public function __invoke(Request $request)
+    public function index(Request $request)
     {
         $page = $request->input('page', 1);
         $search = $request->input('search');
         $statusFilter = $request->input('status_filter', 'all');
 
         // Build cache key based on search query and status filter
-        $cacheKey = 'private_monitors_page_'.auth()->id().'_'.$page;
+        $cacheKey = 'pinned_monitors_page_'.auth()->id().'_'.$page;
         if ($search) {
             $cacheKey .= '_search_'.md5($search);
         }
@@ -28,10 +28,9 @@ class PrivateMonitorController extends Controller
 
         $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter) {
             $baseQuery = Monitor::withoutGlobalScope('user')
-                ->where('is_public', false)
                 ->whereHas('users', function ($query) {
                     $query->where('user_monitor.user_id', auth()->id())
-                          ->where('user_monitor.is_pinned', false);
+                          ->where('user_monitor.is_pinned', true);
                 })
                 ->with(['users:id', 'uptimeDaily']);
 
@@ -69,5 +68,64 @@ class PrivateMonitorController extends Controller
         });
 
         return response()->json($monitors);
+    }
+
+    /**
+     * Toggle pin status for a monitor.
+     */
+    public function toggle(Request $request, Monitor $monitor)
+    {
+        $user = auth()->user();
+        
+        // Get the pivot record directly from the database
+        $pivotRecord = $user->monitors()
+            ->wherePivot('monitor_id', $monitor->id)
+            ->withPivot('is_pinned', 'is_active')
+            ->first();
+        
+        if (!$pivotRecord) {
+            // Check if the monitor exists and is accessible
+            if (!$monitor->is_public) {
+                return back()->with('flash', [
+                    'type' => 'error',
+                    'message' => 'You don\'t have access to this monitor'
+                ]);
+            }
+            
+            // Auto-subscribe the user to the monitor when they try to pin it
+            $user->monitors()->attach($monitor->id, [
+                'is_active' => true,
+                'is_pinned' => true
+            ]);
+            $newPinnedStatus = true;
+        } else {
+            $currentPinnedStatus = $pivotRecord->pivot->is_pinned ?? false;
+            $newPinnedStatus = !$currentPinnedStatus;
+            
+            $user->monitors()->updateExistingPivot($monitor->id, [
+                'is_pinned' => $newPinnedStatus
+            ]);
+        }
+
+        // Clear related caches
+        $userId = auth()->id();
+        cache()->forget("is_pinned_{$monitor->id}_{$userId}");
+        
+        // Clear monitor listing caches
+        $cacheKeys = [
+            "pinned_monitors_page_{$userId}_1",
+            "private_monitors_page_{$userId}_1", 
+            "public_monitors_authenticated_{$userId}_1",
+            "public_monitors_authenticated_{$userId}" // Also clear this cache variant
+        ];
+        
+        foreach ($cacheKeys as $key) {
+            cache()->forget($key);
+        }
+
+        return back()->with('flash', [
+            'type' => 'success',
+            'message' => $newPinnedStatus ? 'Monitor pinned successfully' : 'Monitor unpinned successfully'
+        ]);
     }
 }

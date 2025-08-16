@@ -7,13 +7,18 @@ interface BookmarkState {
     lastSync: number | null;
 }
 
+// Global state - shared across all component instances
+const pinnedMonitors = ref<Set<number>>(new Set());
+const loadingMonitors = ref<Set<number>>(new Set());
+const lastSync = ref<number | null>(null);
+
+// Global event bus for refresh notifications
+const refreshCallbacks = new Set<() => void>();
+
 const STORAGE_KEY = 'uptime_kita_bookmarks';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 export function useBookmarks() {
-    const pinnedMonitors = ref<Set<number>>(new Set());
-    const loadingMonitors = ref<Set<number>>(new Set());
-    const lastSync = ref<number | null>(null);
 
     // Load bookmarks from localStorage on initialization
     const loadFromStorage = () => {
@@ -105,6 +110,18 @@ export function useBookmarks() {
             lastSync.value = Date.now();
             saveToStorage();
 
+            // Notify all components to refresh their monitor lists
+            // Add a small delay to ensure Inertia response is fully processed
+            setTimeout(() => {
+                refreshCallbacks.forEach(callback => {
+                    try {
+                        callback();
+                    } catch (err) {
+                        console.warn('Error in refresh callback:', err);
+                    }
+                });
+            }, 100);
+
         } catch (error) {
             console.error('Error toggling pin:', error);
             // Revert optimistic update on error - restore to original state
@@ -139,6 +156,16 @@ export function useBookmarks() {
         localStorage.removeItem(STORAGE_KEY);
     };
 
+    // Register a callback to be called when pins change
+    const onPinChanged = (callback: () => void) => {
+        refreshCallbacks.add(callback);
+        
+        // Return a cleanup function
+        return () => {
+            refreshCallbacks.delete(callback);
+        };
+    };
+
     // Initialize the composable
     const initialize = () => {
         loadFromStorage();
@@ -155,5 +182,6 @@ export function useBookmarks() {
         initialize,
         needsSync,
         syncWithServer,
+        onPinChanged,
     };
 }

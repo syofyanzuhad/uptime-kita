@@ -37,6 +37,14 @@ class PublicMonitorController extends Controller
             $query = Monitor::withoutGlobalScope('user')
                 ->with(['users:id', 'uptimeDaily'])
                 ->public();
+            
+            // Exclude pinned monitors for authenticated users
+            if (auth()->check()) {
+                $query->whereDoesntHave('users', function ($subQuery) {
+                    $subQuery->where('user_id', auth()->id())
+                             ->where('user_monitor.is_pinned', true);
+                });
+            }
 
             // Apply status filter
             if ($statusFilter === 'up' || $statusFilter === 'down') {

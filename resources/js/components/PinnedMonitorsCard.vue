@@ -3,9 +3,9 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
 import type { Monitor } from '@/types/monitor';
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
-import MonitorGrid from './MonitorGrid.vue';
+import MonitorCard from './MonitorCard.vue';
 import { useBookmarks } from '@/composables/useBookmarks';
 
 interface Props {
@@ -30,14 +30,14 @@ const props = withDefaults(defineProps<Props>(), {
     enabledCount: 0,
 });
 
-const privateMonitors = ref<Monitor[]>([]);
+const pinnedMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
-// const pollingInterval = ref<number | null>(null);
 
 // Toggle active state
 const togglingMonitors = ref<Set<number>>(new Set());
+const loadingMonitors = ref<Set<number>>(new Set());
 
 // Pagination state
 const currentPage = ref(1);
@@ -47,24 +47,18 @@ const totalMonitors = ref(0);
 const showingFrom = ref(0);
 const showingTo = ref(0);
 
-const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize, onPinChanged } = useBookmarks();
-
 const page = usePage<SharedData>();
-
-// Check if user is authenticated using Inertia's auth props
-const isAuthenticated = computed(() => {
-    return !!page.props.auth.user;
-});
+const { togglePin, onPinChanged } = useBookmarks();
 
 const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
 });
 
 const filteredMonitors = computed(() => {
-    if (!privateMonitors.value || privateMonitors.value.length === 0) {
+    if (!pinnedMonitors.value || pinnedMonitors.value.length === 0) {
         return [];
     }
-    let monitors = privateMonitors.value;
+    let monitors = pinnedMonitors.value;
     // Filter by status
     if (props.statusFilter === 'up' || props.statusFilter === 'down') {
         monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
@@ -87,30 +81,21 @@ const filteredMonitors = computed(() => {
     return monitors;
 });
 
-const sortedMonitors = computed(() => {
-    return [...filteredMonitors.value].sort((a, b) => {
-        const aPinned = isPinned(a.id);
-        const bPinned = isPinned(b.id);
-        if (aPinned && !bPinned) return -1;
-        if (!aPinned && bPinned) return 1;
-        return 0;
-    });
-});
-
-const handleTogglePin = async (monitorId: number) => {
+const getDomainFromUrl = (url: string) => {
     try {
-        await togglePin(monitorId);
-    } catch (error) {
-        console.error('Failed to toggle pin:', error);
+        const domain = new URL(url).hostname;
+        return domain.replace('www.', '');
+    } catch {
+        return url;
     }
 };
 
-const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
+async function fetchPinnedMonitors(isInitialLoad = false, pageNum = 1) {
     try {
         if (isInitialLoad) {
             loading.value = true;
             currentPage.value = 1;
-        } else if (page > 1) {
+        } else if (pageNum > 1) {
             loadingMore.value = true;
         } else {
             isPolling.value = true;
@@ -118,33 +103,34 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
 
         // Add search query and status filter to request if present
         const params = new URLSearchParams();
-        params.append('page', String(page));
+        params.append('page', String(pageNum));
         if (props.searchQuery && props.searchQuery.trim().length >= 3) {
             params.append('search', props.searchQuery.trim());
         }
         if (props.statusFilter !== 'all') {
             params.append('status_filter', props.statusFilter);
         }
-        const response = await fetch(`/private-monitors?${params.toString()}`);
+        
+        const response = await fetch(`/pinned-monitors?${params.toString()}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch private monitors');
+            throw new Error('Failed to fetch pinned monitors');
         }
 
         const result = await response.json();
 
-        if (isInitialLoad || page === 1) {
-            privateMonitors.value = result.data;
+        if (isInitialLoad || pageNum === 1) {
+            pinnedMonitors.value = result.data || [];
         } else {
             // Append new monitors to existing ones
-            privateMonitors.value = [...privateMonitors.value, ...result.data];
+            pinnedMonitors.value = [...pinnedMonitors.value, ...(result.data || [])];
         }
 
         // Update pagination state using meta from MonitorResource
-        hasMorePages.value = result.meta.current_page < result.meta.last_page;
-        totalMonitors.value = result.meta.total;
-        showingFrom.value = result.meta.from || 0;
-        showingTo.value = result.meta.to || 0;
-        currentPage.value = result.meta.current_page;
+        hasMorePages.value = result.meta?.current_page < result.meta?.last_page;
+        totalMonitors.value = result.meta?.total || 0;
+        showingFrom.value = result.meta?.from || 0;
+        showingTo.value = result.meta?.to || 0;
+        currentPage.value = result.meta?.current_page || 1;
 
         error.value = null;
     } catch (err) {
@@ -154,9 +140,62 @@ const fetchPrivateMonitors = async (isInitialLoad = false, page = 1) => {
         isPolling.value = false;
         loadingMore.value = false;
     }
-};
+}
 
-// Watch for searchQuery and statusFilter changes and refetch
+async function loadMore() {
+    if (hasMorePages.value && !loadingMore.value) {
+        await fetchPinnedMonitors(false, currentPage.value + 1);
+    }
+}
+
+async function toggleMonitorActive(monitorId: number) {
+    if (togglingMonitors.value.has(monitorId)) return;
+    
+    togglingMonitors.value.add(monitorId);
+    
+    try {
+        const response = await fetch(`/monitor/${monitorId}/toggle-active`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': (page.props as any).csrf_token,
+            },
+        });
+        
+        if (!response.ok) throw new Error('Failed to toggle monitor status');
+        
+        const result = await response.json();
+        
+        // Update the monitor in the list
+        const monitor = pinnedMonitors.value.find(m => m.id === monitorId);
+        if (monitor) {
+            monitor.is_subscribed = result.is_active;
+        }
+        
+    } catch (err) {
+        console.error('Error toggling monitor active:', err);
+    } finally {
+        togglingMonitors.value.delete(monitorId);
+    }
+}
+
+async function handleTogglePin(monitorId: number) {
+    if (loadingMonitors.value.has(monitorId)) return;
+    
+    loadingMonitors.value.add(monitorId);
+    
+    try {
+        await togglePin(monitorId);
+        // The refresh will happen automatically via the onPinChanged callback
+        
+    } catch (err) {
+        console.error('Error toggling pin:', err);
+    } finally {
+        loadingMonitors.value.delete(monitorId);
+    }
+}
+
+// Watch for prop changes
 watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter], [oldQuery, oldFilter]) => {
     // Reset pagination state when search or filter changes
     if (newQuery !== oldQuery || newFilter !== oldFilter) {
@@ -169,87 +208,45 @@ watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter
 
     // Only search if 3+ chars or empty (reset)
     if (newQuery.trim().length === 0 || newQuery.trim().length >= 3) {
-        fetchPrivateMonitors(true, 1);
+        fetchPinnedMonitors(true, 1);
     }
-});
+}, { deep: true });
 
-const loadMore = async () => {
-    if (hasMorePages.value && !loadingMore.value) {
-        await fetchPrivateMonitors(false, currentPage.value + 1);
-    }
-};
-
-const getDomainFromUrl = (url: string) => {
-    try {
-        const domain = new URL(url).hostname;
-        return domain.replace('www.', '');
-    } catch {
-        return url;
-    }
-};
-
-const toggleActive = async (monitorId: number) => {
-    if (!isAuthenticated.value) {
-        // Redirect to login if not authenticated
-        window.location.href = '/login';
-        return;
-    }
-
-    try {
-        togglingMonitors.value.add(monitorId);
-
-        router.post(
-            route('monitor.toggle-active', monitorId),
-            {
-                _token: page.props.csrf_token as string,
-            },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    // Update the monitor's uptime_check_enabled status
-                    const monitor = privateMonitors.value.find(m => m.id === monitorId);
-                    if (monitor) {
-                        monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
-                    }
-                },
-                onError: () => {
-                    alert('Terjadi kesalahan saat mengubah status monitor');
-                },
-                onFinish: () => {
-                    togglingMonitors.value.delete(monitorId);
-                }
-            }
-        );
-    } catch {
-        alert('Terjadi kesalahan saat mengubah status monitor');
-        togglingMonitors.value.delete(monitorId);
-    }
-};
-
-// Cleanup function for pin change callback
+// Polling for updates and cleanup functions
+let pollingInterval: number | null = null;
 let cleanupPinCallback: (() => void) | null = null;
 
+function startPolling() {
+    if (pollingInterval) return;
+    pollingInterval = window.setInterval(() => {
+        if (!loading.value && !loadingMore.value) {
+            fetchPinnedMonitors(false, 1); // Polling update - always fetch first page
+        }
+    }, 60000); // Poll every 60 seconds
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
 onMounted(() => {
-    initialize();
-    fetchPrivateMonitors(true);
+    fetchPinnedMonitors(true);
+    startPolling();
     
     // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
-        fetchPrivateMonitors(false, 1);
+        fetchPinnedMonitors(false, 1);
     });
-    
-    // pollingInterval.value = setInterval(() => {
-    //     fetchPrivateMonitors(false, 1); // Polling update - always fetch first page
-    // }, 60000);
 });
 
 onUnmounted(() => {
+    stopPolling();
     if (cleanupPinCallback) {
         cleanupPinCallback();
     }
-    // if (pollingInterval.value) {
-    //     clearInterval(pollingInterval.value);
-    // }
 });
 </script>
 
@@ -258,25 +255,17 @@ onUnmounted(() => {
         <CardHeader>
             <CardTitle class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <Icon name="lock" class="text-yellow-500" />
-                    Private Monitors
+                    <Icon name="bookmark" class="text-amber-500" />
+                    Pinned Monitors
                     <div v-if="isPolling" class="flex items-center gap-1 ml-2">
-                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-500"></div>
+                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-amber-500"></div>
                         <span class="text-xs text-gray-500">Updating...</span>
                     </div>
-                    <Link
-                        :href="route('monitor.create')"
-                        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ml-2"
-                        title="Add Monitor"
-                    >
-                        <Icon name="plus" size="16" />
-                        Add Monitor
-                    </Link>
                 </div>
                 <button
-                    @click="fetchPrivateMonitors(false)"
+                    @click="fetchPinnedMonitors(false)"
                     :disabled="loading || isPolling"
-                    class="flex items-center gap-2 px-3 py-1.5 text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex items-center gap-2 px-3 py-1.5 text-sm bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Refresh monitors"
                 >
                     <Icon
@@ -294,67 +283,86 @@ onUnmounted(() => {
                     <template v-if="props.searchQuery && props.searchQuery.trim().length >= 3">
                         <!-- Search results info -->
                         <span v-if="filteredMonitors.length === 1">
-                            Found 1 monitor
+                            Found 1 pinned monitor
                         </span>
                         <span v-else>
-                            Found {{ filteredMonitors.length }} monitors
+                            Found {{ filteredMonitors.length }} pinned monitors
                         </span>
                         <span v-if="totalMonitors !== filteredMonitors.length">
-                            from {{ totalMonitors }} total monitors
+                            from {{ totalMonitors }} total pinned monitors
                         </span>
                     </template>
                     <template v-else>
                         <!-- Regular pagination info -->
                         <template v-if="totalMonitors > 0">
                             Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }}
-                            monitor<span v-if="totalMonitors !== 1">s</span>
-                            <span v-if="hasMorePages"> ({{ privateMonitors.length }} loaded)</span>
+                            pinned monitor<span v-if="totalMonitors !== 1">s</span>
+                            <span v-if="hasMorePages"> ({{ pinnedMonitors.length }} loaded)</span>
                         </template>
                         <template v-else>
-                            No monitors found
+                            No pinned monitors found
                         </template>
                     </template>
                 </template>
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
             </div>
             <div v-else-if="error" class="text-center py-8 text-red-500">
                 {{ error }}
             </div>
-            <div v-else-if="privateMonitors.length === 0" class="text-center py-8 text-gray-500">
-                No private monitors available
+            <div v-else-if="pinnedMonitors.length === 0" class="text-center py-8 text-gray-500">
+                <div class="flex flex-col items-center gap-4">
+                    <Icon name="bookmark" class="h-12 w-12 text-gray-400" />
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Pinned Monitors</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                            Pin important monitors to keep them at the top of your dashboard.
+                        </p>
+                        <Link
+                            :href="route('monitor.create')"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <Icon name="plus" class="h-4 w-4" />
+                            Create Your First Monitor
+                        </Link>
+                    </div>
+                </div>
             </div>
             <div v-else-if="props.searchQuery && props.searchQuery.trim().length >= 3 && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
                 <div class="flex flex-col items-center gap-2">
                     <Icon name="search" class="h-8 w-8 text-gray-400" />
-                    <p>No monitors found for "{{ props.searchQuery }}"</p>
+                    <p>No pinned monitors found for "{{ props.searchQuery }}"</p>
                     <p class="text-sm">Try different keywords</p>
                 </div>
             </div>
-            <MonitorGrid
-                :monitors="sortedMonitors"
-                type="private"
-                :pinned-monitors="pinnedMonitors"
-                :on-toggle-pin="handleTogglePin"
-                :on-toggle-active="toggleActive"
-                :toggling-monitors="togglingMonitors"
-                :loading-monitors="loadingMonitors"
-                :show-subscribe-button="false"
-                :show-toggle-button="true"
-                :show-pin-button="true"
-                :show-uptime-percentage="true"
-                :show-certificate-status="true"
-                :show-last-checked="true"
-            />
+            <div v-else :class="`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`">
+                <MonitorCard
+                    v-for="monitor in filteredMonitors"
+                    :key="monitor.id"
+                    :monitor="monitor"
+                    type="private"
+                    :is-pinned="true"
+                    :on-toggle-pin="handleTogglePin"
+                    :on-toggle-active="toggleMonitorActive"
+                    :toggling-monitors="togglingMonitors"
+                    :loading-monitors="loadingMonitors"
+                    :show-subscribe-button="false"
+                    :show-toggle-button="true"
+                    :show-pin-button="true"
+                    :show-uptime-percentage="true"
+                    :show-certificate-status="true"
+                    :show-last-checked="true"
+                />
+            </div>
 
             <!-- Load More Button -->
             <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 text-center">
                 <button
                     @click="loadMore"
                     :disabled="loadingMore"
-                    class="flex items-center gap-2 px-6 py-3 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    class="flex items-center gap-2 px-6 py-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                     <Icon
                         name="arrow-down"
@@ -369,8 +377,8 @@ onUnmounted(() => {
             <!-- Loading More Indicator -->
             <div v-if="loadingMore" class="mt-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-500"></div>
-                    Loading more monitors...
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-500"></div>
+                    Loading more pinned monitors...
                 </div>
             </div>
         </CardContent>

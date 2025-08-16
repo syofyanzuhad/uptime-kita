@@ -59,14 +59,7 @@ const isAdmin = computed(() => {
     return page.props.auth.user?.is_admin || false;
 });
 
-// Initialize bookmarks on component mount
-onMounted(() => {
-    // Initialize bookmarks if not already done
-    if (typeof window !== 'undefined') {
-        const { initialize } = useBookmarks();
-        initialize();
-    }
-});
+// Bookmarks are initialized by parent components (PrivateMonitorsCard, PublicMonitorsCard, etc.)
 
 const getStatusIcon = (status: string) => {
     switch (status) {
@@ -165,11 +158,11 @@ const handleUnsubscribe = () => {
                     'opacity-50 cursor-not-allowed': props.loadingMonitors.has(monitor.id)
                 }"
                 class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                :title="isMonitorPinned(monitor.id) ? 'Unpin this monitor' : 'Pin this monitor'"
+                :title="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'Unpin this monitor' : 'Pin this monitor'"
             >
                 <Icon
                     name="bookmark"
-                    :class="isMonitorPinned(monitor.id) ? 'fill-current' : ''"
+                    :class="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'fill-current text-amber-500' : 'text-gray-400'"
                     size="16"
                 />
             </button>

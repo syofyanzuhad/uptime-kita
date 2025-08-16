@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PinnedMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
 use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicStatusPageController;
@@ -23,9 +24,17 @@ Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name(
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
 Route::get('/monitor/{monitor}/latest-history', \App\Http\Controllers\LatestHistoryController::class)->name('monitor.latest-history');
 
+// AJAX route for pinned monitors data (returns JSON)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pinned-monitors', [PinnedMonitorController::class, 'index'])->name('monitor.pinned');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Inertia route for toggle pin action
+    Route::post('/monitor/{monitor}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
+    
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
     // Route untuk subscribe monitor
@@ -35,9 +44,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Route untuk toggle monitor active status
     Route::post('/monitor/{monitorId}/toggle-active', \App\Http\Controllers\ToggleMonitorActiveController::class)->name('monitor.toggle-active');
-
-    // Route untuk toggle monitor pin status
-    Route::post('/monitor/{monitorId}/toggle-pin', \App\Http\Controllers\ToggleMonitorPinController::class)->name('monitor.toggle-pin');
 
     // Get monitor history
     Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
