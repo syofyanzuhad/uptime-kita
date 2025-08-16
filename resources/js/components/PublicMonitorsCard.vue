@@ -101,8 +101,6 @@ const handleTogglePin = async (monitorId: number) => {
     }
 };
 
-
-
 const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
     try {
         if (isInitialLoad) {
@@ -122,7 +120,12 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         if (props.statusFilter !== 'all') {
             params.append('status_filter', props.statusFilter);
         }
-        const response = await fetch(`/public-monitors?${params.toString()}`);
+        const response = await fetch(`/public-monitors?${params.toString()}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch public monitors');
         }
@@ -299,12 +302,12 @@ let cleanupPinCallback: (() => void) | null = null;
 onMounted(() => {
     initialize();
     fetchPublicMonitors(true); // Initial load
-    
+
     // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
         fetchPublicMonitors(false, 1);
     });
-    
+
     // pollingInterval.value = setInterval(() => {
     //     fetchPublicMonitors(false, 1); // Polling update - always fetch first page
     // }, 60000);
