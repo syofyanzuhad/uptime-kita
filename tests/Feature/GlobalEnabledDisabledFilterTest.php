@@ -104,7 +104,7 @@ test('public monitors endpoint supports globally enabled filter', function () {
     ]);
 
     // Test globally enabled filter
-    $response = $this->get('/public-monitors?status_filter=globally_enabled');
+    $response = $this->getJson('/public-monitors?status_filter=globally_enabled');
     $response->assertStatus(200);
 
     $data = $response->json();
@@ -128,7 +128,7 @@ test('public monitors endpoint supports globally disabled filter', function () {
     ]);
 
     // Test globally disabled filter
-    $response = $this->get('/public-monitors?status_filter=globally_disabled');
+    $response = $this->getJson('/public-monitors?status_filter=globally_disabled');
     $response->assertStatus(200);
 
     $data = $response->json();
