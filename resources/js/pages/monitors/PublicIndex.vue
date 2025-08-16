@@ -102,6 +102,17 @@
                 <option value="down">Down</option>
               </select>
             </div>
+
+            <!-- Create Button -->
+            <div class="sm:w-auto">
+              <button
+                @click="createMonitor"
+                class="w-full sm:w-auto cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
+              >
+                <Icon name="plus" class="w-4 h-4" />
+                <span>Create Monitor</span>
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -405,6 +416,10 @@ const loadMore = async () => {
 const viewMonitor = (monitor: Monitor) => {
   const domain = monitor.url.replace('https://', '').replace('http://', '')
   router.visit(`/m/${domain}`)
+}
+
+const createMonitor = () => {
+  router.visit('/monitor/create')
 }
 
 const getStatusIcon = (status: string): string => {
