@@ -226,7 +226,7 @@
 
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
@@ -435,6 +435,30 @@ const getStatusText = (status: string): string => {
       return 'Degraded'
   }
 }
+
+// Watch for changes in props and update reactive data
+watch(() => props.monitors, (newMonitors) => {
+  monitorsData.value = newMonitors.data || []
+  
+  // Clean the meta data (handle arrays)
+  const cleanMeta = {
+    current_page: Array.isArray(newMonitors.meta.current_page) ? newMonitors.meta.current_page[0] : newMonitors.meta.current_page,
+    last_page: Array.isArray(newMonitors.meta.last_page) ? newMonitors.meta.last_page[0] : newMonitors.meta.last_page,
+    per_page: Array.isArray(newMonitors.meta.per_page) ? newMonitors.meta.per_page[0] : newMonitors.meta.per_page,
+    total: Array.isArray(newMonitors.meta.total) ? newMonitors.meta.total[0] : newMonitors.meta.total,
+    from: Array.isArray(newMonitors.meta.from) ? newMonitors.meta.from[0] : newMonitors.meta.from,
+    to: Array.isArray(newMonitors.meta.to) ? newMonitors.meta.to[0] : newMonitors.meta.to,
+  }
+  
+  monitorsMeta.value = cleanMeta
+  monitorsLinks.value = newMonitors.links || []
+}, { deep: true })
+
+// Watch for changes in filters and update local state
+watch(() => props.filters, (newFilters) => {
+  searchQuery.value = newFilters.search || ''
+  statusFilter.value = newFilters.status_filter
+}, { deep: true })
 
 onMounted(() => {
   // Check for saved theme preference or default to light mode
