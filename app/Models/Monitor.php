@@ -267,10 +267,13 @@ class Monitor extends SpatieMonitor
 
         static::created(function ($monitor) {
             // attach the current user as the owner of the private monitor
-            $monitor->users()->attach(auth()->id() ?? 1, [
-                'is_active' => true,
-                'is_pinned' => false,
-            ]);
+            // Only attach if there's an authenticated user
+            if (auth()->id()) {
+                $monitor->users()->attach(auth()->id(), [
+                    'is_active' => true,
+                    'is_pinned' => false,
+                ]);
+            }
 
             // remove cache
             cache()->forget('private_monitors_page_'.auth()->id().'_1');
