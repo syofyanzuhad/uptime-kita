@@ -166,6 +166,22 @@ class Monitor extends SpatieMonitor
         return $query->where('is_public', false);
     }
 
+    public function scopePinned($query)
+    {
+        return $query->whereHas('users', function ($query) {
+            $query->where('user_monitor.user_id', auth()->id())
+                  ->where('user_monitor.is_pinned', true);
+        });
+    }
+
+    public function scopeNotPinned($query)
+    {
+        return $query->whereHas('users', function ($query) {
+            $query->where('user_monitor.user_id', auth()->id())
+                  ->where('user_monitor.is_pinned', false);
+        });
+    }
+
     public function scopeSearch($query, $search)
     {
         if (! $search || mb_strlen($search) < 3) {
@@ -216,7 +232,10 @@ class Monitor extends SpatieMonitor
 
         static::created(function ($monitor) {
             // attach the current user as the owner of the private monitor
-            $monitor->users()->attach(auth()->id() ?? 1, ['is_active' => true]);
+            $monitor->users()->attach(auth()->id() ?? 1, [
+                'is_active' => true,
+                'is_pinned' => false
+            ]);
 
             // remove cache
             cache()->forget('private_monitors_page_'.auth()->id().'_1');

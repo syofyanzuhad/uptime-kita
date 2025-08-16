@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public function monitors(): BelongsToMany
     {
-        return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active');
+        return $this->belongsToMany(Monitor::class, 'user_monitor')->withPivot('is_active', 'is_pinned');
     }
 
     public function statusPages(): HasMany
