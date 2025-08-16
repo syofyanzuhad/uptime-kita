@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
+use App\Services\MonitorPerformanceService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,7 +16,7 @@ class PublicMonitorShowController extends Controller
     /**
      * Display the public monitor page.
      */
-    public function show(Request $request): Response
+    public function show(Request $request, MonitorPerformanceService $performanceService): Response
     {
         // Get the domain from the request
         $domain = urldecode($request->route('domain'));
@@ -28,25 +30,40 @@ class PublicMonitorShowController extends Controller
             ->where('uptime_check_enabled', true)
             ->firstOrFail();
 
-        // Load recent history (last 30 days)
+        // Load recent history (last 30 days) - using created_at
         $histories = MonitorHistory::where('monitor_id', $monitor->id)
-            ->where('checked_at', '>=', now()->subDays(30))
-            ->orderBy('checked_at', 'desc')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->orderBy('created_at', 'desc')
             ->limit(1000)
             ->get();
 
-        // Load uptime daily data
-        $monitor->load(['uptimeDaily' => function ($query) {
+        // Load uptime daily data with response time metrics
+        $monitor->load(['uptimesDaily' => function ($query) {
             $query->orderBy('date', 'desc')->limit(90);
+        }, 'recentIncidents' => function ($query) {
+            $query->orderBy('created_at', 'desc')->limit(1000);
         }]);
 
         // Calculate uptime percentages
         $uptimeStats = $this->calculateUptimeStats($monitor);
 
+        // Get response time statistics for last 24 hours
+        $responseTimeStats = $performanceService->getResponseTimeStats(
+            $monitor->id,
+            Carbon::now()->subDay(),
+            Carbon::now()
+        );
+
         return Inertia::render('monitors/PublicShow', [
             'monitor' => new MonitorResource($monitor),
             'histories' => $histories,
             'uptimeStats' => $uptimeStats,
+            'responseTimeStats' => [
+                'average' => $responseTimeStats['avg'],
+                'min' => $responseTimeStats['min'],
+                'max' => $responseTimeStats['max'],
+            ],
+            'recentIncidents' => $monitor->recentIncidents,
         ]);
     }
 
@@ -71,14 +88,14 @@ class PublicMonitorShowController extends Controller
     private function calculateUptimePercentage($monitor, $startDate): float
     {
         $histories = MonitorHistory::where('monitor_id', $monitor->id)
-            ->where('checked_at', '>=', $startDate)
+            ->where('created_at', '>=', $startDate)
             ->get();
 
         if ($histories->isEmpty()) {
             return 100.0;
         }
 
-        $upCount = $histories->where('status', 'up')->count();
+        $upCount = $histories->where('uptime_status', 'up')->count();
         $totalCount = $histories->count();
 
         return round(($upCount / $totalCount) * 100, 2);

@@ -2,13 +2,14 @@
 
 export interface Monitor {
     id: number;
-    url: string;
+    name: string; // This comes from raw_url in MonitorResource
+    url: string; // This also comes from raw_url in MonitorResource
     uptime_status: 'up' | 'down' | 'not yet checked';
     uptime_check_enabled: boolean;
     last_check_date: string | null;
     last_check_date_human: string | null;
     certificate_check_enabled: boolean;
-    certificate_status: 'valid' | 'invalid' | 'not applicable' | null;
+    certificate_status: 'valid' | 'invalid' | 'not applicable' | 'not yet checked' | null;
     certificate_expiration_date: string | null;
     down_for_events_count: number;
     uptime_check_interval: number;
@@ -21,6 +22,11 @@ export interface Monitor {
     created_at: string;
     updated_at: string;
     histories?: MonitorHistory[];
+    latest_history?: MonitorHistory | null;
+    uptimes_daily?: Array<{
+        date: string;
+        uptime_percentage: number;
+    }>;
 }
 
 export interface FlashMessage {
@@ -33,6 +39,9 @@ export interface MonitorHistory {
     monitor_id: number;
     uptime_status: 'up' | 'down' | 'not yet checked';
     message?: string;
+    response_time?: number;
+    checked_at?: string;
+    reason?: string;
     created_at: string;
     updated_at: string;
 }
