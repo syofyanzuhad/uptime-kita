@@ -1,5 +1,5 @@
 <template>
-  <Head :title="`${monitor.name} - Monitor Status`" />
+  <Head :title="`${monitor.host} - Monitor Status`" />
 
   <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
@@ -28,7 +28,7 @@
             >
             <div class="min-w-0 flex-1">
               <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-none">
-                {{ monitor.name }}
+                {{ monitor.host }}
               </h1>
               <a
                 :href="monitor.url"
