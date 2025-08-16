@@ -154,7 +154,7 @@
               <!-- Monitor Info -->
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {{ monitor.name }}
+                  {{ monitor.host }}
                 </h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
                   {{ monitor.url }}
@@ -239,16 +239,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
-
-interface Monitor {
-  id: number
-  name: string
-  url: string
-  uptime_status: string
-  favicon?: string
-  last_check_date_human?: string
-  today_uptime_percentage?: number
-}
+import { Monitor } from '@/types/monitor'
 
 interface PaginatorLink {
   url: string | null

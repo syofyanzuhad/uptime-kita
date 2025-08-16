@@ -27,6 +27,7 @@ export interface Monitor {
         date: string;
         uptime_percentage: number;
     }>;
+    host?: string;
 }
 
 export interface FlashMessage {

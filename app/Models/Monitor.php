@@ -104,6 +104,11 @@ class Monitor extends SpatieMonitor
         return $date->setSeconds(0);
     }
 
+    public function getHostAttribute()
+    {
+        return $this->url->getHost();
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_monitor')->withPivot('is_active', 'is_pinned');
