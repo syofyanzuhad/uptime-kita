@@ -147,25 +147,39 @@ const handleUnsubscribe = () => {
             class="block p-4 w-full h-full focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg"
             style="text-decoration: none; color: inherit;"
         >
-            <!-- Pin Button - Top Right -->
-            <button
-                v-if="showPinButton && isAuthenticated"
-                @click.stop.prevent="handleTogglePin"
-                :disabled="props.loadingMonitors.has(monitor.id)"
-                :class="{
-                    'text-yellow-500': isMonitorPinned(monitor.id),
-                    'text-gray-400 hover:text-gray-600': !isMonitorPinned(monitor.id),
-                    'opacity-50 cursor-not-allowed': props.loadingMonitors.has(monitor.id)
-                }"
-                class="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                :title="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'Unpin this monitor' : 'Pin this monitor'"
-            >
-                <Icon
-                    name="bookmark"
-                    :class="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'fill-current text-amber-500' : 'text-gray-400'"
-                    size="16"
-                />
-            </button>
+            <!-- Action Buttons - Top Right -->
+            <div class="absolute top-2 right-2 flex items-center gap-1">
+                <!-- Public View Button -->
+                <Link
+                    v-if="monitor.is_public && monitor.uptime_check_enabled"
+                    :href="route('monitor.public.show', { domain: getDomainFromUrl(monitor.url) })"
+                    @click.stop
+                    class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    title="View public status page"
+                >
+                    <Icon name="external-link" size="16" />
+                </Link>
+                
+                <!-- Pin Button -->
+                <button
+                    v-if="showPinButton && isAuthenticated"
+                    @click.stop.prevent="handleTogglePin"
+                    :disabled="props.loadingMonitors.has(monitor.id)"
+                    :class="{
+                        'text-yellow-500': isMonitorPinned(monitor.id),
+                        'text-gray-400 hover:text-gray-600': !isMonitorPinned(monitor.id),
+                        'opacity-50 cursor-not-allowed': props.loadingMonitors.has(monitor.id)
+                    }"
+                    class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    :title="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'Unpin this monitor' : 'Pin this monitor'"
+                >
+                    <Icon
+                        name="bookmark"
+                        :class="(props.isPinned ?? isMonitorPinned(monitor.id)) ? 'fill-current text-amber-500' : 'text-gray-400'"
+                        size="16"
+                    />
+                </button>
+            </div>
 
             <div class="flex items-start justify-between mb-2">
                 <div class="flex-1 min-w-0">
@@ -179,7 +193,17 @@ const handleUnsubscribe = () => {
                             @click.stop.prevent="openMonitorUrl(monitor.url)"
                             @keydown.stop
                         />
-                        {{ getDomainFromUrl(monitor.url) }}
+                        <Link 
+                            v-if="monitor.is_public && monitor.uptime_check_enabled"
+                            :href="route('monitor.public.show', { domain: getDomainFromUrl(monitor.url) })"
+                            class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            @click.stop
+                        >
+                            {{ getDomainFromUrl(monitor.url) }}
+                        </Link>
+                        <span v-else>
+                            {{ getDomainFromUrl(monitor.url) }}
+                        </span>
                     </h3>
                     <span
                         class="text-xs text-blue-500 hover:underline truncate block"

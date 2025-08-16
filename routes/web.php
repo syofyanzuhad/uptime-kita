@@ -19,6 +19,11 @@ Route::get('/public-monitors', PublicMonitorController::class)->name('monitor.pu
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+// Public monitor show route (using clean domain as unique key)
+Route::get('/m/{domain}', [App\Http\Controllers\PublicMonitorShowController::class, 'show'])
+    ->where('domain', '[a-zA-Z0-9.-]+')
+    ->name('monitor.public.show');
+
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
