@@ -46,7 +46,7 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 mt-24">
       <!-- Stats Overview -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent class="p-4">
             <div class="text-center">
@@ -218,7 +218,7 @@
           <div class="text-sm text-gray-500 dark:text-gray-400">
             Powered by
             <a
-              href="/public-monitors"
+              href="/"
               target="_blank"
               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >

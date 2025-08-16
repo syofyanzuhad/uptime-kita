@@ -385,7 +385,7 @@
           <div class="text-sm text-gray-500 dark:text-gray-400">
             Powered by
             <a
-              href="/public-monitors"
+              href="/"
               target="_blank"
               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
