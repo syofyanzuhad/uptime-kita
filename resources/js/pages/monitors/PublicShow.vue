@@ -87,6 +87,77 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <!-- Latest 100 Minutes History Bar -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Latest 100 Minutes</h3>
+            <div class="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+              <Icon
+                :name="isRefreshing ? 'loader' : 'refreshCw'"
+                class="w-3 h-3"
+                :class="isRefreshing ? 'animate-spin' : ''"
+              />
+              <span>{{ isRefreshing ? 'Refreshing...' : 'Auto-refresh every minute' }}</span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            {{ latestHistory.length }} checks
+          </div>
+        </div>
+        <div v-if="monitor.uptime_status === 'not yet checked'" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <Icon name="clock" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p class="text-sm text-gray-500 dark:text-gray-400">No history data available yet</p>
+        </div>
+        <div v-else-if="latestHistory.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <Icon name="info" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p class="text-sm text-gray-500 dark:text-gray-400">No recent history available</p>
+        </div>
+        <div v-else class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div class="flex items-center space-x-1 overflow-x-auto">
+            <div
+              v-for="history in latestHistory"
+              :key="history.id"
+              class="flex-shrink-0 relative group"
+            >
+              <div
+                class="w-1.5 h-8 rounded-sm transition-all cursor-pointer"
+                :class="[
+                  history.uptime_status === 'up'
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : history.uptime_status === 'down'
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-gray-400 hover:bg-gray-500'
+                ]"
+                :title="`${formatDate(history.created_at)} - ${getStatusText(history.uptime_status)}${history.response_time ? ` (${history.response_time}ms)` : ''}`"
+              />
+              <!-- Tooltip -->
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                <div class="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                  <div>{{ formatDate(history.created_at) }}</div>
+                  <div>{{ getStatusText(history.uptime_status) }}</div>
+                  <div v-if="history.response_time">{{ history.response_time }}ms</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-4 mt-3 text-xs text-gray-600 dark:text-gray-400">
+            <div class="flex items-center space-x-1">
+              <div class="w-3 h-3 bg-green-500 rounded-sm"></div>
+              <span>Up</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <div class="w-3 h-3 bg-red-500 rounded-sm"></div>
+              <span>Down</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <div class="w-3 h-3 bg-gray-400 rounded-sm"></div>
+              <span>Unknown</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Left Column - Stats -->
         <div class="lg:col-span-2 space-y-4 sm:space-y-6">
@@ -331,8 +402,8 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3'
-import { computed, ref, onMounted } from 'vue'
+import { Head, router } from '@inertiajs/vue3'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import type { Monitor, MonitorHistory } from '@/types/monitor'
@@ -357,6 +428,11 @@ interface Props {
 const props = defineProps<Props>()
 const monitor = computed(() => props.monitor.data)
 
+// Auto-refetch functionality
+const refreshInterval = ref<number | null>(null)
+const lastRefreshTime = ref<Date>(new Date())
+const isRefreshing = ref(false)
+
 // Theme toggle functionality
 const isDark = ref(false)
 
@@ -371,6 +447,23 @@ const toggleTheme = () => {
   }
 }
 
+// Refetch function
+const refetchHistory = () => {
+  lastRefreshTime.value = new Date()
+  isRefreshing.value = true
+
+  // Only fetch history data without full page refresh
+  router.visit(window.location.pathname, {
+    only: ['histories'],
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+    onFinish: () => {
+      isRefreshing.value = false
+    }
+  })
+}
+
 onMounted(() => {
   // Check for saved theme preference or default to light mode
   const savedTheme = localStorage.getItem('theme')
@@ -380,9 +473,33 @@ onMounted(() => {
     isDark.value = true
     document.documentElement.classList.add('dark')
   }
+
+  // Start auto-refresh timer (every 60 seconds)
+  refreshInterval.value = window.setInterval(refetchHistory, 60000)
+})
+
+onUnmounted(() => {
+  // Clean up timer when component is destroyed
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value)
+  }
 })
 
 // console.log('%cresources/js/pages/monitors/PublicShow.vue:291 monitor', 'color: #007acc;', monitor.value);
+
+const latestHistory = computed(() => {
+  // If monitor hasn't been checked yet, return empty array
+  if (monitor.value.uptime_status === 'not yet checked') {
+    return []
+  }
+
+  // Get the last 100 minutes of history
+  const oneHundredMinutesAgo = new Date(Date.now() - 100 * 60 * 1000)
+  return props.histories
+    .filter(h => new Date(h.created_at) > oneHundredMinutesAgo)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 100) // Limit to 100 entries
+})
 
 const recentIncidents = computed(() => {
   // If monitor hasn't been checked yet, return empty array
