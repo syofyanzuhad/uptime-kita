@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/monitor/{monitor}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
-    
+
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
     // Route untuk subscribe monitor
@@ -57,6 +57,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/status-pages/{statusPage}/monitors/{monitor}', \App\Http\Controllers\StatusPageDisassociateMonitorController::class)->name('status-pages.monitors.disassociate');
     Route::get('/status-pages/{statusPage}/available-monitors', \App\Http\Controllers\StatusPageAvailableMonitorsController::class)->name('status-pages.monitors.available');
     Route::post('/status-page-monitor/reorder/{statusPage}', \App\Http\Controllers\StatusPageOrderController::class)->name('status-page-monitor.reorder');
+
+    // Custom domain routes
+    Route::post('/status-pages/{statusPage}/custom-domain', [\App\Http\Controllers\CustomDomainController::class, 'update'])->name('status-pages.custom-domain.update');
+    Route::post('/status-pages/{statusPage}/verify-domain', [\App\Http\Controllers\CustomDomainController::class, 'verify'])->name('status-pages.custom-domain.verify');
+    Route::get('/status-pages/{statusPage}/dns-instructions', [\App\Http\Controllers\CustomDomainController::class, 'dnsInstructions'])->name('status-pages.custom-domain.dns');
 
     // User management routes
     Route::resource('users', \App\Http\Controllers\UserController::class);

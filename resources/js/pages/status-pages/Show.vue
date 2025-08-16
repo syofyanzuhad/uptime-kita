@@ -43,6 +43,9 @@ interface StatusPage {
   path: string
   created_at: string
   updated_at: string
+  custom_domain?: string
+  custom_domain_verified?: boolean
+  force_https?: boolean
   monitors?: {
     data: Monitor[]
   }
@@ -307,7 +310,17 @@ const updateMonitorOrder = async () => {
     <div class="space-y-6 p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Status Page Information</CardTitle>
+          <div class="flex items-center justify-between">
+            <CardTitle>Status Page Information</CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              @click="router.visit(route('status-pages.edit', statusPage.id))"
+              title="Edit Status Page"
+            >
+              <Icon name="pencil" class="w-4 h-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -318,6 +331,22 @@ const updateMonitorOrder = async () => {
                   {{ baseUrl }}/status/{{ statusPage.path }}
                 </a>
               </p>
+              <div v-if="statusPage.custom_domain" class="mt-2">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Custom Domain:</p>
+                <div class="flex items-center gap-2">
+                  <a :href="`https://${statusPage.custom_domain}`" target="_blank" class="text-blue-600 hover:underline text-sm">
+                    {{ statusPage.custom_domain }}
+                  </a>
+                  <span v-if="statusPage.custom_domain_verified" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
+                    <Icon name="check-circle" class="w-3 h-3 mr-1" />
+                    Verified
+                  </span>
+                  <span v-else class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                    <Icon name="alert-circle" class="w-3 h-3 mr-1" />
+                    Pending
+                  </span>
+                </div>
+              </div>
             </div>
             <div>
               <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Created</Label>

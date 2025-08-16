@@ -83,12 +83,118 @@
           </form>
         </CardContent>
       </Card>
+
+      <!-- Custom Domain Section -->
+      <Card class="mt-6">
+        <CardHeader>
+          <CardTitle>Custom Domain</CardTitle>
+          <CardDescription>
+            Use your own domain for this status page
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form @submit.prevent="submitDomain" class="space-y-6">
+            <div class="space-y-2">
+              <Label for="custom_domain">Custom Domain</Label>
+              <Input
+                id="custom_domain"
+                v-model="domainForm.custom_domain"
+                type="text"
+                placeholder="status.example.com"
+              />
+              <p class="text-sm text-gray-500">
+                Enter your custom domain without http:// or https://
+              </p>
+              <InputError :message="domainForm.errors.custom_domain" />
+            </div>
+
+            <div v-if="statusPage.custom_domain" class="space-y-4">
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium">Current Domain</span>
+                  <span v-if="statusPage.custom_domain_verified" class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
+                    <Icon name="check-circle" class="w-3 h-3 mr-1" />
+                    Verified
+                  </span>
+                  <span v-else class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                    <Icon name="alert-circle" class="w-3 h-3 mr-1" />
+                    Pending Verification
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ statusPage.custom_domain }}</p>
+              </div>
+
+              <div v-if="!statusPage.custom_domain_verified && dnsInstructions" class="space-y-4">
+                <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h4 class="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">DNS Configuration Required</h4>
+                  <p class="text-sm text-blue-700 dark:text-blue-400 mb-3">Add these DNS records to verify and connect your domain:</p>
+                  
+                  <div class="space-y-3">
+                    <div v-for="(record, index) in dnsInstructions.dns_records" :key="index" class="p-3 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-800">
+                      <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span class="text-gray-500 dark:text-gray-400">Type:</span>
+                          <span class="ml-2 font-mono font-medium">{{ record.type }}</span>
+                        </div>
+                        <div>
+                          <span class="text-gray-500 dark:text-gray-400">TTL:</span>
+                          <span class="ml-2 font-mono">{{ record.ttl }}</span>
+                        </div>
+                        <div class="col-span-2">
+                          <span class="text-gray-500 dark:text-gray-400">Name:</span>
+                          <span class="ml-2 font-mono text-xs break-all">{{ record.name }}</span>
+                        </div>
+                        <div class="col-span-2">
+                          <span class="text-gray-500 dark:text-gray-400">Value:</span>
+                          <span class="ml-2 font-mono text-xs break-all">{{ record.value }}</span>
+                        </div>
+                        <div v-if="record.note" class="col-span-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {{ record.note }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <Button type="button" @click="verifyDomain" :disabled="verifying">
+                    <Icon v-if="verifying" name="loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                    <Icon v-else name="shield-check" class="w-4 h-4 mr-2" />
+                    Verify Domain
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <input
+                id="force_https"
+                v-model="domainForm.force_https"
+                type="checkbox"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <Label for="force_https">Force HTTPS</Label>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+              <Button v-if="statusPage.custom_domain" type="button" variant="destructive" @click="removeDomain">
+                Remove Domain
+              </Button>
+              <Button type="submit" :disabled="domainForm.processing">
+                <Icon v-if="domainForm.processing" name="loader-2" class="w-4 h-4 mr-2 animate-spin" />
+                {{ statusPage.custom_domain ? 'Update Domain' : 'Add Domain' }}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
 import { useForm, router, Head } from '@inertiajs/vue3'
+import { ref, onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Heading from '@/components/Heading.vue'
 import Button from '@/components/ui/button/Button.vue'
@@ -98,12 +204,29 @@ import { Label } from '@/components/ui/label'
 import InputError from '@/components/InputError.vue'
 import Icon from '@/components/Icon.vue'
 
+interface DnsRecord {
+  type: string
+  name: string
+  value: string
+  ttl: number
+  note?: string
+}
+
+interface DnsInstructions {
+  domain: string
+  verification_token: string
+  dns_records: DnsRecord[]
+}
+
 interface StatusPage {
   id: number
   title: string
   description: string
   icon: string
   path: string
+  custom_domain?: string
+  custom_domain_verified?: boolean
+  force_https?: boolean
 }
 
 interface Props {
@@ -119,7 +242,66 @@ const form = useForm({
   path: props.statusPage.path,
 })
 
+const domainForm = useForm({
+  custom_domain: props.statusPage.custom_domain || '',
+  force_https: props.statusPage.force_https ?? true,
+})
+
+const dnsInstructions = ref<DnsInstructions | null>(null)
+const verifying = ref(false)
+
 const submit = () => {
   form.put(route('status-pages.update', props.statusPage.id))
 }
+
+const submitDomain = () => {
+  domainForm.post(route('status-pages.custom-domain.update', props.statusPage.id), {
+    onSuccess: () => {
+      if (domainForm.custom_domain) {
+        fetchDnsInstructions()
+      } else {
+        dnsInstructions.value = null
+      }
+    }
+  })
+}
+
+const removeDomain = () => {
+  if (confirm('Are you sure you want to remove the custom domain?')) {
+    domainForm.custom_domain = ''
+    domainForm.post(route('status-pages.custom-domain.update', props.statusPage.id), {
+      onSuccess: () => {
+        dnsInstructions.value = null
+      }
+    })
+  }
+}
+
+const verifyDomain = async () => {
+  verifying.value = true
+  router.post(route('status-pages.custom-domain.verify', props.statusPage.id), {}, {
+    onFinish: () => {
+      verifying.value = false
+    }
+  })
+}
+
+const fetchDnsInstructions = async () => {
+  if (!props.statusPage.custom_domain) return
+  
+  try {
+    const response = await fetch(route('status-pages.custom-domain.dns', props.statusPage.id))
+    if (response.ok) {
+      dnsInstructions.value = await response.json()
+    }
+  } catch (error) {
+    console.error('Failed to fetch DNS instructions:', error)
+  }
+}
+
+onMounted(() => {
+  if (props.statusPage.custom_domain && !props.statusPage.custom_domain_verified) {
+    fetchDnsInstructions()
+  }
+})
 </script>

@@ -74,6 +74,35 @@
               <InputError :message="form.errors.path" />
             </div>
 
+            <!-- Custom Domain Section -->
+            <div class="border-t pt-6">
+              <h3 class="text-lg font-medium mb-4">Custom Domain (Optional)</h3>
+              
+              <div class="space-y-2">
+                <Label for="custom_domain">Custom Domain</Label>
+                <Input
+                  id="custom_domain"
+                  v-model="form.custom_domain"
+                  type="text"
+                  placeholder="status.example.com"
+                />
+                <p class="text-sm text-gray-500">
+                  You can add a custom domain for your status page. DNS verification will be required after creation.
+                </p>
+                <InputError :message="form.errors.custom_domain" />
+              </div>
+
+              <div class="flex items-center space-x-2 mt-4">
+                <input
+                  id="force_https"
+                  v-model="form.force_https"
+                  type="checkbox"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <Label for="force_https">Force HTTPS for custom domain</Label>
+              </div>
+            </div>
+
             <div class="flex justify-end space-x-3">
               <Button type="button" variant="outline" @click="router.visit(route('status-pages.index'))">
                 Cancel
@@ -108,6 +137,8 @@ const form = useForm({
   description: '',
   icon: '',
   path: '',
+  custom_domain: '',
+  force_https: true,
 })
 
 let pathManuallyEdited = false

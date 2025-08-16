@@ -51,6 +51,14 @@ class StatusPageController extends Controller
                 'unique:status_pages,path',
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             ],
+            'custom_domain' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i',
+                'unique:status_pages,custom_domain',
+            ],
+            'force_https' => 'boolean',
         ]);
 
         $statusPage = auth()->user()->statusPages()->create([
@@ -58,7 +66,14 @@ class StatusPageController extends Controller
             'description' => $validated['description'],
             'icon' => $validated['icon'],
             'path' => $validated['path'] ?? StatusPage::generateUniquePath($validated['title']),
+            'custom_domain' => $validated['custom_domain'] ?? null,
+            'force_https' => $validated['force_https'] ?? true,
         ]);
+
+        // Generate verification token if custom domain is provided
+        if ($statusPage->custom_domain) {
+            $statusPage->generateVerificationToken();
+        }
 
         return redirect()->route('status-pages.show', $statusPage)
             ->with('success', 'Status page created successfully.');
@@ -89,7 +104,16 @@ class StatusPageController extends Controller
         $this->authorize('update', $statusPage);
 
         return Inertia::render('status-pages/Edit', [
-            'statusPage' => $statusPage,
+            'statusPage' => $statusPage->only([
+                'id',
+                'title',
+                'description',
+                'icon',
+                'path',
+                'custom_domain',
+                'custom_domain_verified',
+                'force_https',
+            ]),
         ]);
     }
 

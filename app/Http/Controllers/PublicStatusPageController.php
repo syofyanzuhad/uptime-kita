@@ -15,16 +15,24 @@ class PublicStatusPageController extends Controller
      */
     public function show(string $path): Response
     {
-        $cacheKey = 'public_status_page_'.$path;
-        $statusPageResource = cache()->remember($cacheKey, 60, function () use ($path) {
-            $statusPage = StatusPage::where('path', $path)->firstOrFail();
+        // Check if this request is from a custom domain
+        $customDomainStatusPage = request()->attributes->get('custom_domain_status_page');
 
-            return new StatusPageResource($statusPage);
-        });
+        if ($customDomainStatusPage) {
+            $statusPage = $customDomainStatusPage;
+        } else {
+            $cacheKey = 'public_status_page_'.$path;
+            $statusPage = cache()->remember($cacheKey, 60, function () use ($path) {
+                return StatusPage::where('path', $path)->firstOrFail();
+            });
+        }
+
+        $statusPageResource = new StatusPageResource($statusPage);
 
         return Inertia::render('status-pages/Public', [
             'statusPage' => $statusPageResource,
             'isAuthenticated' => auth()->check(),
+            'isCustomDomain' => $customDomainStatusPage !== null,
         ]);
     }
 
