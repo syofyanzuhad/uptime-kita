@@ -22,7 +22,7 @@
             <img
               v-if="monitor.favicon"
               :src="monitor.favicon"
-              :alt="`${monitor.name} favicon`"
+              :alt="`${monitor.host} favicon`"
               class="w-6 h-6 sm:w-8 sm:h-8 rounded flex-shrink-0"
               @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
             >
