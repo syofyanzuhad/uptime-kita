@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
-import { isExternalUrl, getExternalLinkAttributes } from '@/lib/link-utils'
+import { isExternalUrl, getExternalLinkAttributes, getCurrentPageReferrerParam, generateReferrerParam } from '@/lib/link-utils'
 
 interface Props {
   href: string
@@ -12,6 +12,10 @@ interface Props {
   iconClassName?: string
   ariaLabel?: string
   forceExternal?: boolean
+  referrerParam?: string
+  referrerSource?: string
+  referrerCampaign?: string
+  autoReferrer?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -20,15 +24,36 @@ const props = withDefaults(defineProps<Props>(), {
   className: 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-blue-300 dark:decoration-blue-600 underline-offset-2 transition-colors duration-200',
   iconClassName: 'text-gray-400 dark:text-gray-500',
   ariaLabel: undefined,
-  forceExternal: false
+  forceExternal: false,
+  referrerParam: undefined,
+  referrerSource: undefined,
+  referrerCampaign: undefined,
+  autoReferrer: true
 })
 
 // Check if link is external
 const isExternal = computed(() => props.forceExternal || isExternalUrl(props.href))
 
+// Generate referrer parameter
+const referrerParam = computed(() => {
+  if (props.referrerParam) {
+    return props.referrerParam
+  }
+  
+  if (props.referrerSource || props.referrerCampaign) {
+    return generateReferrerParam(props.referrerSource, props.referrerCampaign)
+  }
+  
+  if (props.autoReferrer) {
+    return getCurrentPageReferrerParam()
+  }
+  
+  return undefined
+})
+
 // Generate link attributes
 const linkAttributes = computed(() => {
-  return getExternalLinkAttributes(props.href, props.ariaLabel || props.label)
+  return getExternalLinkAttributes(props.href, props.ariaLabel || props.label, referrerParam.value)
 })
 
 // Get icon size classes
@@ -56,11 +81,11 @@ const iconSizeClasses = computed(() => {
       <span v-if="label">{{ label }}</span>
       <span v-else>{{ href }}</span>
     </slot>
-    
+
     <Icon
       v-if="showIcon && isExternal"
       name="externalLink"
-      :class="[iconSizeClasses, iconClassName]"
+      :class="`${iconSizeClasses} ${iconClassName}`"
       aria-hidden="true"
     />
   </a>

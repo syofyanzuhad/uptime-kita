@@ -9,13 +9,21 @@ interface Props {
   showStatus?: boolean
   className?: string
   linkClassName?: string
+  referrerParam?: string
+  referrerSource?: string
+  referrerCampaign?: string
+  autoReferrer?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showFavicon: true,
   showStatus: false,
   className: '',
-  linkClassName: 'text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
+  linkClassName: 'text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400',
+  referrerParam: undefined,
+  referrerSource: undefined,
+  referrerCampaign: undefined,
+  autoReferrer: true
 })
 
 // Generate display text
@@ -48,6 +56,10 @@ const ariaLabel = computed(() => {
       :label="displayText"
       :aria-label="ariaLabel"
       :class-name="linkClassName"
+      :referrer-param="referrerParam"
+      :referrer-source="referrerSource"
+      :referrer-campaign="referrerCampaign"
+      :auto-referrer="autoReferrer"
       show-icon
       icon-size="sm"
     />

@@ -36,12 +36,20 @@ export function getDomainFromUrl(url: string): string {
 /**
  * Generate SEO-friendly attributes for external links
  */
-export function getExternalLinkAttributes(url: string, customAriaLabel?: string) {
+export function getExternalLinkAttributes(url: string, customAriaLabel?: string, referrerParam?: string) {
   const isExternal = isExternalUrl(url)
   const domain = getDomainFromUrl(url)
   
+  // Add referrer parameter to external URLs
+  let finalUrl = url
+  if (isExternal && referrerParam) {
+    const urlObj = new URL(url, window.location.origin)
+    urlObj.searchParams.set('ref', referrerParam)
+    finalUrl = urlObj.toString()
+  }
+  
   const attributes: Record<string, string> = {
-    href: url,
+    href: finalUrl,
   }
   
   if (isExternal) {
@@ -72,4 +80,31 @@ export function generateLinkMetaDescription(url: string, title?: string): string
     return `Visit ${domain} - External link`
   }
   return 'External link'
+}
+
+/**
+ * Generate referrer parameter for external links
+ */
+export function generateReferrerParam(source?: string, campaign?: string): string {
+  const base = 'uptimekita'
+  const parts = [base]
+  
+  if (source) {
+    parts.push(source)
+  }
+  
+  if (campaign) {
+    parts.push(campaign)
+  }
+  
+  return parts.join('_')
+}
+
+/**
+ * Get current page referrer parameter
+ */
+export function getCurrentPageReferrerParam(): string {
+  const path = window.location.pathname
+  const page = path.split('/').filter(Boolean).pop() || 'home'
+  return generateReferrerParam(page)
 }

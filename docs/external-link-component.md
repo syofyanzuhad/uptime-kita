@@ -61,6 +61,10 @@ import ExternalLink from '@/components/ExternalLink.vue'
 | `iconClassName` | `string` | `'text-gray-400 dark:text-gray-500'` | CSS classes for the icon |
 | `ariaLabel` | `string` | `undefined` | Custom aria-label (auto-generated if not provided) |
 | `forceExternal` | `boolean` | `false` | Force external link behavior even for same-domain URLs |
+| `referrerParam` | `string` | `undefined` | Custom referrer parameter (e.g., "uptimekita_docs") |
+| `referrerSource` | `string` | `undefined` | Source for referrer parameter (e.g., "public_monitors") |
+| `referrerCampaign` | `string` | `undefined` | Campaign for referrer parameter (e.g., "github_links") |
+| `autoReferrer` | `boolean` | `true` | Automatically generate referrer parameter from current page |
 
 ## Default Styles
 
@@ -122,6 +126,23 @@ text-gray-400 dark:text-gray-500
   :force-external="true"
   class-name="text-purple-600 hover:text-purple-800"
 />
+
+<!-- With referrer tracking -->
+<ExternalLink
+  href="https://github.com"
+  label="GitHub"
+  referrer-source="docs"
+  referrer-campaign="github_links"
+  class-name="text-gray-800 hover:text-gray-900"
+/>
+
+<!-- Custom referrer parameter -->
+<ExternalLink
+  href="https://laravel.com"
+  label="Laravel"
+  referrer-param="uptimekita_docs_laravel"
+  class-name="text-red-600 hover:text-red-800"
+/>
 ```
 
 ### MonitorLink Component
@@ -143,6 +164,31 @@ For monitor-specific links, use the `MonitorLink` component:
 import MonitorLink from '@/components/MonitorLink.vue'
 </script>
 ```
+
+## Referrer Tracking
+
+### Automatic Referrer Parameters
+
+The component automatically adds referrer parameters to external links for better analytics and SEO tracking:
+
+```javascript
+// Automatic referrer generation
+getCurrentPageReferrerParam() // "uptimekita_public_monitors"
+generateReferrerParam('docs', 'github') // "uptimekita_docs_github"
+```
+
+### Referrer Parameter Examples
+
+- **Automatic**: `https://example.com?ref=uptimekita_public_monitors`
+- **Custom**: `https://github.com?ref=uptimekita_docs_github`
+- **Source + Campaign**: `https://laravel.com?ref=uptimekita_docs_laravel`
+
+### Benefits
+
+- **Analytics**: Track which pages generate the most external link clicks
+- **SEO**: Help external sites understand traffic sources
+- **Marketing**: Measure campaign effectiveness
+- **User Journey**: Understand user navigation patterns
 
 ## SEO Benefits
 
@@ -188,6 +234,12 @@ Generates SEO-friendly attributes for external links.
 
 ### `generateLinkMetaDescription(url: string, title?: string): string`
 Generates meta descriptions for external links.
+
+### `generateReferrerParam(source?: string, campaign?: string): string`
+Generates referrer parameters for external links.
+
+### `getCurrentPageReferrerParam(): string`
+Gets the current page referrer parameter automatically.
 
 ## Best Practices
 

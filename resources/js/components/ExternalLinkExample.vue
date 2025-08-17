@@ -61,6 +61,40 @@
         class-name="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
       />
     </div>
+    
+    <!-- With custom referrer parameter -->
+    <div>
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Custom Referrer Parameter:</h3>
+      <ExternalLink
+        href="https://laravel.com"
+        label="Laravel"
+        referrer-param="uptimekita_docs_laravel"
+        class-name="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+      />
+    </div>
+    
+    <!-- With referrer source and campaign -->
+    <div>
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Referrer Source & Campaign:</h3>
+      <ExternalLink
+        href="https://github.com"
+        label="GitHub"
+        referrer-source="public_monitors"
+        referrer-campaign="github_links"
+        class-name="text-gray-800 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100"
+      />
+    </div>
+    
+    <!-- Without auto referrer -->
+    <div>
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Without Auto Referrer:</h3>
+      <ExternalLink
+        href="https://example.com"
+        label="Example (no referrer)"
+        :auto-referrer="false"
+        class-name="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+      />
+    </div>
   </div>
 </template>
 

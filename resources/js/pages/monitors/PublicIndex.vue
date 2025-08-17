@@ -35,8 +35,8 @@
               />
             </button>
             <!-- dashboard button -->
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               class="p-2 rounded-full cursor-pointer bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
               aria-label="Go to dashboard"
             >
@@ -443,7 +443,7 @@ const getStatusText = (status: string): string => {
 // Watch for changes in props and update reactive data
 watch(() => props.monitors, (newMonitors) => {
   monitorsData.value = newMonitors.data || []
-  
+
   // Clean the meta data (handle arrays)
   const cleanMeta = {
     current_page: Array.isArray(newMonitors.meta.current_page) ? newMonitors.meta.current_page[0] : newMonitors.meta.current_page,
@@ -453,7 +453,7 @@ watch(() => props.monitors, (newMonitors) => {
     from: Array.isArray(newMonitors.meta.from) ? newMonitors.meta.from[0] : newMonitors.meta.from,
     to: Array.isArray(newMonitors.meta.to) ? newMonitors.meta.to[0] : newMonitors.meta.to,
   }
-  
+
   monitorsMeta.value = cleanMeta
   monitorsLinks.value = newMonitors.links || []
 }, { deep: true })
