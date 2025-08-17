@@ -161,9 +161,12 @@
 
               <!-- Monitor Info -->
               <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {{ monitor.host }}
-                </h3>
+                <MonitorLink
+                  :monitor="monitor"
+                  :show-favicon="false"
+                  class-name="mb-1"
+                  link-class-name="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                />
                 <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
                   {{ monitor.url }}
                 </p>
@@ -230,6 +233,7 @@ import { ref, onMounted, watch } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
+import MonitorLink from '@/components/MonitorLink.vue'
 import { Monitor } from '@/types/monitor'
 
 interface PaginatorLink {

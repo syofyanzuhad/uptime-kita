@@ -82,8 +82,8 @@ class PinnedMonitorController extends Controller
 
         // Find the monitor without the user scope
         $monitor = Monitor::withoutGlobalScope('user')->find($monitorId);
-        
-        if (!$monitor) {
+
+        if (! $monitor) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -92,7 +92,7 @@ class PinnedMonitorController extends Controller
             }
             abort(404);
         }
-        
+
         $user = auth()->user();
 
         // Get the pivot record directly from the database
@@ -113,6 +113,7 @@ class PinnedMonitorController extends Controller
                         'message' => 'You must be subscribed to this monitor to pin it.',
                     ], 403);
                 }
+
                 return back()->with('flash', [
                     'type' => 'error',
                     'message' => 'You must be subscribed to this monitor to pin it.',
