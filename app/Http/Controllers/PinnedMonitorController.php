@@ -80,8 +80,8 @@ class PinnedMonitorController extends Controller
             'is_pinned' => 'required|boolean',
         ]);
 
-        // Find the monitor without the user scope
-        $monitor = Monitor::withoutGlobalScope('user')->find($monitorId);
+        // Find the monitor without global scopes
+        $monitor = Monitor::withoutGlobalScope('user')->withoutGlobalScope('enabled')->find($monitorId);
 
         if (! $monitor) {
             if ($request->wantsJson()) {
