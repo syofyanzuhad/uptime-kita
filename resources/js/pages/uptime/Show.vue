@@ -108,9 +108,6 @@ let intervalId: ReturnType<typeof setInterval> | null = null;
 const checkIntervalSeconds = computed(() => (monitorData.value.uptime_check_interval || 1) * 60);
 const countdown = ref(checkIntervalSeconds.value);
 
-// Add refresh countdown state
-const refreshCountdown = ref(60);
-
 // Utility for next check countdown
 function getSecondsUntilNextCheck(lastCheckDate: string | null, intervalSeconds: number) {
   if (!lastCheckDate) return intervalSeconds;
@@ -126,7 +123,6 @@ const nextCheckCountdown = ref(
   getSecondsUntilNextCheck(monitorData.value.last_check_date, checkIntervalSeconds.value)
 );
 
-let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
 let nextCheckIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // Utility functions
@@ -211,17 +207,6 @@ onMounted(() => {
     }, checkIntervalSeconds.value * 1000);
   });
 
-  // Refresh countdown (always 1 minute)
-  refreshIntervalId = setInterval(() => {
-    if (refreshCountdown.value > 0) {
-      refreshCountdown.value--;
-    }
-    if (refreshCountdown.value === 0) {
-      router.reload({ preserveUrl: true });
-      refreshCountdown.value = 60;
-    }
-  }, 1000);
-
   // Next check countdown (dynamic)
   nextCheckIntervalId = setInterval(() => {
     nextCheckCountdown.value = getSecondsUntilNextCheck(monitorData.value.last_check_date, checkIntervalSeconds.value);
@@ -231,7 +216,6 @@ onMounted(() => {
   onUnmounted(() => {
     if (intervalId) clearInterval(intervalId);
     clearInterval(countdownInterval);
-    if (refreshIntervalId) clearInterval(refreshIntervalId);
     if (nextCheckIntervalId) clearInterval(nextCheckIntervalId);
   });
 });
@@ -263,15 +247,6 @@ onMounted(() => {
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  @click="router.reload({ preserveUrl: true })"
-                  :disabled="countdown < checkIntervalSeconds"
-                >
-                  <Icon name="refresh-cw" class="w-4 h-4 mr-2" />
-                  Refresh
-                </Button>
                 <Link :href="route('monitor.edit', monitorData.id)">
                   <Button size="sm">
                     <Icon name="edit" class="w-4 h-4 mr-2" />
@@ -379,14 +354,9 @@ onMounted(() => {
         <!-- Timeline Card -->
         <Card>
           <CardHeader>
-            <CardTitle class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <Icon name="clock" class="w-5 h-5" />
-                Last 100 Minutes Timeline
-              </div>
-              <div class="flex flex-col items-end">
-                <span class="text-sm text-gray-500">Refresh in {{ refreshCountdown }} seconds</span>
-              </div>
+            <CardTitle class="flex items-center gap-2">
+              <Icon name="clock" class="w-5 h-5" />
+              Last 100 Minutes Timeline
             </CardTitle>
           </CardHeader>
           <CardContent>
