@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import Select from '@/components/ui/input/Select.vue';
 import { Button } from '@/components/ui/button';
+import ExternalLink from '@/components/ExternalLink.vue';
 
 const props = defineProps({
     channel: {
@@ -116,7 +117,7 @@ function handleSubmit() {
                 <span v-if="form.type === 'telegram'" class="text-gray-500">
                     <br>
                     <span class="text-sm">
-                        Send a /start to the <a href="https://t.me/@uptime_kita_bot" target="_blank" class="text-blue-500">@uptime_kita_bot</a> to get your chat_id.
+                        Send a /start to the <ExternalLink href="https://t.me/@uptime_kita_bot" label="@uptime_kita_bot" referrer-source="notifications" referrer-campaign="telegram_bot" class-name="text-blue-500" :show-icon="false" /> to get your chat_id.
                     </span>
                 </span>
             </small>

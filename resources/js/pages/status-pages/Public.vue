@@ -6,6 +6,7 @@ import { useTheme } from '@/composables/useTheme'
 import DailyUptimeChart from '@/components/DailyUptimeChart.vue'
 import OfflineBanner from '@/components/OfflineBanner.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
 
   // --- INTERFACES (Struktur Data Anda) ---
   interface MonitorHistory {
@@ -472,7 +473,14 @@ const { isDark, toggleTheme } = useTheme()
                         <span class="sr-only uppercase">SSL {{ monitor.certificate_status }}</span>
                       </span>
                     </h4>
-                    <a class="block break-all text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                    <ExternalLink
+                      :href="monitor.url"
+                      :label="monitor.url"
+                      referrer-source="status_page_public"
+                      referrer-campaign="monitor_links"
+                      class-name="block break-all text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
+                      :show-icon="false"
+                    />
                   </div>
                 </div>
 
@@ -500,7 +508,7 @@ const { isDark, toggleTheme } = useTheme()
           </div>
         </div>
 
-        <PublicFooter 
+        <PublicFooter
           powered-by-url="https://uptime.syofyanzuhad.dev"
         />
       </main>

@@ -39,15 +39,15 @@ const referrerParam = computed(() => {
   if (props.referrerParam) {
     return props.referrerParam
   }
-  
+
   if (props.referrerSource || props.referrerCampaign) {
     return generateReferrerParam(props.referrerSource, props.referrerCampaign)
   }
-  
+
   if (props.autoReferrer) {
     return getCurrentPageReferrerParam()
   }
-  
+
   return undefined
 })
 

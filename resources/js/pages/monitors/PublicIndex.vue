@@ -167,9 +167,15 @@
                   class-name="mb-1"
                   link-class-name="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
                 />
-                <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                  {{ monitor.url }}
-                </p>
+                <ExternalLink
+                  :href="monitor.url"
+                  :label="monitor.url"
+                  referrer-source="public_monitors"
+                  referrer-campaign="monitor_card"
+                  class-name="text-sm text-gray-500 dark:text-gray-400 truncate block"
+                  :show-icon="true"
+                  icon-size="sm"
+                />
 
                 <!-- Status Badge -->
                 <div class="flex items-center space-x-2 mt-3">
@@ -234,6 +240,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
 import MonitorLink from '@/components/MonitorLink.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
 import { Monitor } from '@/types/monitor'
 
 interface PaginatorLink {

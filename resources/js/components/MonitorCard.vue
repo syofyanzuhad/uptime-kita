@@ -9,6 +9,7 @@ import type { Monitor } from '@/types/monitor';
 import { Link, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import { useBookmarks } from '@/composables/useBookmarks';
+import ExternalLink from '@/components/ExternalLink.vue';
 
 interface Props {
     monitor: Monitor;
@@ -102,9 +103,6 @@ const getUptimePercentageColor = (percentage: number) => {
     return 'text-red-600 dark:text-red-400';
 };
 
-const openMonitorUrl = (url: string) => {
-    window.open(url, '_blank');
-};
 
 const handleTogglePin = async () => {
     if (!isAuthenticated.value) {
@@ -185,14 +183,22 @@ const handleUnsubscribe = () => {
                 <div class="flex-1 min-w-0">
                     <!-- favicon -->
                     <h3 class="font-medium text-sm truncate flex items-center gap-2">
-                        <img
+                        <ExternalLink
                             v-if="monitor.favicon"
-                            :src="monitor.favicon"
-                            alt="Favicon"
-                            class="w-4 h-4 rounded-full"
-                            @click.stop.prevent="openMonitorUrl(monitor.url)"
-                            @keydown.stop
-                        />
+                            :href="monitor.url"
+                            :aria-label="`Visit ${monitor.name || monitor.url}`"
+                            referrer-source="monitor_card"
+                            referrer-campaign="favicon_click"
+                            class-name="inline-block"
+                            :show-icon="false"
+                            @click.stop
+                        >
+                            <img
+                                :src="monitor.favicon"
+                                alt="Favicon"
+                                class="w-4 h-4 rounded-full cursor-pointer"
+                            />
+                        </ExternalLink>
                         <Link 
                             v-if="monitor.is_public && monitor.uptime_check_enabled"
                             :href="route('monitor.public.show', { domain: getDomainFromUrl(monitor.url) })"
@@ -205,13 +211,16 @@ const handleUnsubscribe = () => {
                             {{ getDomainFromUrl(monitor.url) }}
                         </span>
                     </h3>
-                    <span
-                        class="text-xs text-blue-500 hover:underline truncate block"
-                        @click.stop.prevent="openMonitorUrl(monitor.url)"
-                        @keydown.stop
-                    >
-                        {{ monitor.url }}
-                    </span>
+                    <ExternalLink
+                        :href="monitor.url"
+                        :label="monitor.url"
+                        referrer-source="monitor_card"
+                        referrer-campaign="monitor_url"
+                        class-name="text-xs text-blue-500 hover:underline truncate block"
+                        :show-icon="true"
+                        icon-size="sm"
+                        @click.stop
+                    />
                 </div>
                 <div class="flex items-center ml-2">
                     <span

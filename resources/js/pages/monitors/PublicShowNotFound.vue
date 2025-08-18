@@ -72,14 +72,17 @@
                   <p class="text-gray-600 dark:text-gray-300 mb-4">
                     Start monitoring your website's uptime and performance. Get instant alerts when your site goes down.
                   </p>
-                  <a
+                  <ExternalLink
                     href="https://uptime.syofyanzuhad.dev"
-                    target="_blank"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    label="Get Started"
+                    referrer-source="public_show_not_found"
+                    referrer-campaign="get_started"
+                    class-name="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    :show-icon="false"
                   >
                     <Icon name="externalLink" class="w-4 h-4 mr-2" />
                     Get Started
-                  </a>
+                  </ExternalLink>
                 </div>
               </div>
             </CardContent>
@@ -99,14 +102,13 @@
                   <p class="text-gray-600 dark:text-gray-300 mb-4">
                     Explore other public monitors to see what's being tracked and get inspired.
                   </p>
-                  <a
+                  <Link
                     href="/public-monitors"
-                    target="_blank"
                     class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                   >
-                    <Icon name="externalLink" class="w-4 h-4 mr-2" />
+                    <Icon name="globe" class="w-4 h-4 mr-2" />
                     View Public Monitors
-                  </a>
+                  </Link>
                 </div>
               </div>
             </CardContent>
@@ -142,11 +144,12 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
 
 interface Props {
   domain: string

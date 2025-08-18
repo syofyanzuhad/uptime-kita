@@ -16,6 +16,7 @@ import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Icon from '@/components/Icon.vue';
 import Pagination from '@/components/Pagination.vue';
+import ExternalLink from '@/components/ExternalLink.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
@@ -230,7 +231,14 @@ function onPaginationLinkClick(link: PaginatorLink) {
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="monitor in props.monitors.data" :key="monitor.id"> <td class="px-6 py-4 whitespace-nowrap">
-                            <a :href="monitor.url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ monitor.url }}</a>
+                            <ExternalLink
+                              :href="monitor.url"
+                              :label="monitor.url"
+                              referrer-source="uptime"
+                              referrer-campaign="monitor_links"
+                              class-name="text-blue-600 dark:text-blue-400 hover:underline"
+                              :show-icon="false"
+                            />
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span

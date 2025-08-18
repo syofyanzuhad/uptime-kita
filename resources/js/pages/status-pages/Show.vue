@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import Icon from '@/components/Icon.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
 
 // --- INTERFACES ---
 interface Monitor {
@@ -227,23 +228,23 @@ const handleDragLeave = () => {
 
 const handleDrop = (event: DragEvent, targetIndex: number) => {
   event.preventDefault()
-  
+
   if (!draggedItem.value) return
-  
+
   const draggedIndex = draggableMonitors.value.findIndex(m => m.id === draggedItem.value!.id)
-  
+
   if (draggedIndex !== -1 && draggedIndex !== targetIndex) {
     // Remove item from old position
     const [movedItem] = draggableMonitors.value.splice(draggedIndex, 1)
     // Insert at new position
     draggableMonitors.value.splice(targetIndex, 0, movedItem)
-    
+
     // Debounce the update call to prevent multiple rapid calls
     setTimeout(() => {
       updateMonitorOrder()
     }, 100)
   }
-  
+
   // Reset drag state
   draggedItem.value = null
   draggedOverIndex.value = -1
@@ -312,8 +313,8 @@ const updateMonitorOrder = async () => {
         <CardHeader>
           <div class="flex items-center justify-between">
             <CardTitle>Status Page Information</CardTitle>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               @click="router.visit(route('status-pages.edit', statusPage.id))"
               title="Edit Status Page"
@@ -327,16 +328,26 @@ const updateMonitorOrder = async () => {
             <div>
               <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Public URL</Label>
               <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">
-                <a :href="route('status-page.public', statusPage.path)" target="_blank" class="text-blue-600 hover:underline">
-                  {{ baseUrl }}/status/{{ statusPage.path }}
-                </a>
+                <ExternalLink
+                  :href="route('status-page.public', statusPage.path)"
+                  :label="`${baseUrl}/status/${statusPage.path}`"
+                  referrer-source="status_pages"
+                  referrer-campaign="public_view"
+                  class-name="text-blue-600 hover:underline"
+                  :show-icon="false"
+                />
               </p>
               <div v-if="statusPage.custom_domain" class="mt-2">
                 <p class="text-sm text-gray-600 dark:text-gray-400">Custom Domain:</p>
                 <div class="flex items-center gap-2">
-                  <a :href="`https://${statusPage.custom_domain}`" target="_blank" class="text-blue-600 hover:underline text-sm">
-                    {{ statusPage.custom_domain }}
-                  </a>
+                  <ExternalLink
+                    :href="`https://${statusPage.custom_domain}`"
+                    :label="statusPage.custom_domain"
+                    referrer-source="status_pages"
+                    referrer-campaign="custom_domain"
+                    class-name="text-blue-600 hover:underline text-sm"
+                    :show-icon="false"
+                  />
                   <span v-if="statusPage.custom_domain_verified" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
                     <Icon name="check-circle" class="w-3 h-3 mr-1" />
                     Verified
@@ -416,29 +427,37 @@ const updateMonitorOrder = async () => {
                   <Icon name="gripVertical" class="w-5 h-5" />
                 </div>
                 <div class="flex items-center space-x-2">
-                  <img 
-                    v-if="monitor.favicon" 
-                    :src="monitor.favicon" 
-                    alt="favicon" 
+                  <img
+                    v-if="monitor.favicon"
+                    :src="monitor.favicon"
+                    alt="favicon"
                     class="w-4 h-4 rounded"
                   />
-                  <span 
-                    :class="getStatusColor(monitor.uptime_status)" 
+                  <span
+                    :class="getStatusColor(monitor.uptime_status)"
                     class="w-3 h-3 rounded-full"
                   ></span>
                 </div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-gray-100">{{ monitor.name }}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ monitor.url }}</p>
+                  <ExternalLink
+                    :href="monitor.url"
+                    :label="monitor.url"
+                    referrer-source="status_page"
+                    referrer-campaign="monitor_list"
+                    class-name="text-sm text-gray-500 dark:text-gray-400"
+                    :show-icon="true"
+                    icon-size="sm"
+                  />
                 </div>
               </div>
               <div class="flex items-center space-x-2">
                 <span class="text-sm text-gray-500 dark:text-gray-400">
                   {{ monitor.today_uptime_percentage?.toFixed(1) }}%
                 </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   @click="openDisassociateModal(monitor.id)"
                   :disabled="!!draggedItem || isUpdatingOrder"
                 >
@@ -494,7 +513,15 @@ const updateMonitorOrder = async () => {
                   <Label :for="`monitor-${monitor.id}`" class="font-medium cursor-pointer">
                     {{ monitor.name }}
                   </Label>
-                  <p class="text-sm text-gray-500">{{ monitor.url }}</p>
+                  <ExternalLink
+                    :href="monitor.url"
+                    :label="monitor.url"
+                    referrer-source="status_page"
+                    referrer-campaign="associate_modal"
+                    class-name="text-sm text-gray-500"
+                    :show-icon="true"
+                    icon-size="sm"
+                  />
                   <div class="flex flex-wrap gap-2 mt-1 text-xs text-gray-500">
                     <span>Uptime: {{ monitor.today_uptime_percentage?.toFixed(2) }}%</span>
                     <span>Status: <span :class="getStatusColor(monitor.uptime_status)"></span> {{ monitor.uptime_status || 'Unknown' }}</span>

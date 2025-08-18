@@ -7,7 +7,7 @@
  */
 export function isExternalUrl(url: string): boolean {
   if (!url) return false
-  
+
   try {
     const urlObj = new URL(url, window.location.origin)
     return urlObj.hostname !== window.location.hostname
@@ -22,7 +22,7 @@ export function isExternalUrl(url: string): boolean {
  */
 export function getDomainFromUrl(url: string): string {
   if (!url) return ''
-  
+
   try {
     const urlObj = new URL(url, window.location.origin)
     return urlObj.hostname
@@ -39,7 +39,7 @@ export function getDomainFromUrl(url: string): string {
 export function getExternalLinkAttributes(url: string, customAriaLabel?: string, referrerParam?: string) {
   const isExternal = isExternalUrl(url)
   const domain = getDomainFromUrl(url)
-  
+
   // Add referrer parameter to external URLs
   let finalUrl = url
   if (isExternal && referrerParam) {
@@ -47,15 +47,15 @@ export function getExternalLinkAttributes(url: string, customAriaLabel?: string,
     urlObj.searchParams.set('ref', referrerParam)
     finalUrl = urlObj.toString()
   }
-  
+
   const attributes: Record<string, string> = {
     href: finalUrl,
   }
-  
+
   if (isExternal) {
     attributes.target = '_blank'
     attributes.rel = 'noopener noreferrer'
-    
+
     // Generate aria-label for accessibility
     if (customAriaLabel) {
       attributes['aria-label'] = `${customAriaLabel} (opens in new tab)`
@@ -65,7 +65,7 @@ export function getExternalLinkAttributes(url: string, customAriaLabel?: string,
       attributes['aria-label'] = 'External link (opens in new tab)'
     }
   }
-  
+
   return attributes
 }
 
@@ -88,15 +88,15 @@ export function generateLinkMetaDescription(url: string, title?: string): string
 export function generateReferrerParam(source?: string, campaign?: string): string {
   const base = 'uptimekita'
   const parts = [base]
-  
+
   if (source) {
     parts.push(source)
   }
-  
+
   if (campaign) {
     parts.push(campaign)
   }
-  
+
   return parts.join('_')
 }
 

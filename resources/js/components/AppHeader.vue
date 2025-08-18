@@ -21,6 +21,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Menu, Search, Sun, Moon } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useAppearance } from '@/composables/useAppearance';
+import ExternalLink from '@/components/ExternalLink.vue';
 
 interface Props {
     breadcrumbs?: BreadcrumbItem[];
@@ -98,17 +99,19 @@ function toggleDarkMode() {
                                     </Link>
                                 </nav>
                                 <div class="flex flex-col space-y-4">
-                                    <a
+                                    <ExternalLink
                                         v-for="item in rightNavItems"
                                         :key="item.title"
                                         :href="item.href"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="flex items-center space-x-2 text-sm font-medium"
+                                        :label="item.title"
+                                        referrer-source="header"
+                                        referrer-campaign="nav_links"
+                                        class-name="flex items-center space-x-2 text-sm font-medium"
+                                        :show-icon="false"
                                     >
                                         <component v-if="item.icon" :is="item.icon" class="h-5 w-5" />
                                         <span>{{ item.title }}</span>
-                                    </a>
+                                    </ExternalLink>
                                 </div>
                             </div>
                         </SheetContent>
@@ -168,10 +171,17 @@ function toggleDarkMode() {
                                     <Tooltip>
                                         <TooltipTrigger>
                                             <Button variant="ghost" size="icon" as-child class="group h-9 w-9 cursor-pointer">
-                                                <a :href="item.href" target="_blank" rel="noopener noreferrer">
+                                                <ExternalLink
+                                                    :href="item.href"
+                                                    :aria-label="item.title"
+                                                    referrer-source="header"
+                                                    referrer-campaign="nav_links"
+                                                    class-name="flex items-center justify-center"
+                                                    :show-icon="false"
+                                                >
                                                     <span class="sr-only">{{ item.title }}</span>
                                                     <component :is="item.icon" class="size-5 opacity-80 group-hover:opacity-100" />
-                                                </a>
+                                                </ExternalLink>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>

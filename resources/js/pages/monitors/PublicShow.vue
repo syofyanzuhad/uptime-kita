@@ -30,13 +30,15 @@
               <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-none">
                 {{ monitor.host }}
               </h1>
-              <a
+              <ExternalLink
                 :href="monitor.url"
-                target="_blank"
-                class="text-xs sm:text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 truncate block max-w-[200px] sm:max-w-none"
-              >
-                {{ monitor.url }}
-              </a>
+                :label="monitor.url"
+                referrer-source="public_monitor"
+                referrer-campaign="monitor_details"
+                class-name="text-xs sm:text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 truncate block max-w-[200px] sm:max-w-none"
+                :show-icon="true"
+                icon-size="sm"
+              />
             </div>
           </div>
 
@@ -401,6 +403,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
 import type { Monitor, MonitorHistory } from '@/types/monitor'
 
 interface Props {
