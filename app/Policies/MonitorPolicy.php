@@ -40,13 +40,11 @@ class MonitorPolicy
      */
     public function update(User $user, Monitor $monitor): bool
     {
-        if ($monitor->is_public) {
-            // Only user with ID 1 can update public monitors
-            return $user->id === 1;
-        } else {
-            // Only the owner can update private monitors
-            return $monitor->isOwnedBy($user);
+        if ($user->is_admin) {
+            return true;
         }
+
+        return $monitor->isOwnedBy($user);
     }
 
     /**
@@ -54,13 +52,11 @@ class MonitorPolicy
      */
     public function delete(User $user, Monitor $monitor): bool
     {
-        if ($monitor->is_public) {
-            // Only user with ID 1 can delete public monitors
-            return $user->id === 1;
-        } else {
-            // Only the owner can delete private monitors
-            return $monitor->isOwnedBy($user);
+        if ($user->is_admin) {
+            return true;
         }
+
+        return $monitor->isOwnedBy($user);
     }
 
     /**
@@ -68,13 +64,11 @@ class MonitorPolicy
      */
     public function restore(User $user, Monitor $monitor): bool
     {
-        if ($monitor->is_public) {
-            // Only user with ID 1 can restore public monitors
-            return $user->id === 1;
-        } else {
-            // Only the owner can restore private monitors
-            return $monitor->isOwnedBy($user);
+        if ($user->is_admin) {
+            return true;
         }
+
+        return $monitor->isOwnedBy($user);
     }
 
     /**
@@ -82,12 +76,10 @@ class MonitorPolicy
      */
     public function forceDelete(User $user, Monitor $monitor): bool
     {
-        if ($monitor->is_public) {
-            // Only user with ID 1 can permanently delete public monitors
-            return $user->id === 1;
-        } else {
-            // Only the owner can permanently delete private monitors
-            return $monitor->isOwnedBy($user);
+        if ($user->is_admin) {
+            return true;
         }
+
+        return $monitor->isOwnedBy($user);
     }
 }
