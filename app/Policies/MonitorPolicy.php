@@ -44,6 +44,12 @@ class MonitorPolicy
             return true;
         }
 
+        // For public monitors, only admins can update
+        if ($monitor->is_public) {
+            return false;
+        }
+
+        // For private monitors, only the owner can update
         return $monitor->isOwnedBy($user);
     }
 
@@ -56,6 +62,12 @@ class MonitorPolicy
             return true;
         }
 
+        // For public monitors, only admins can delete
+        if ($monitor->is_public) {
+            return false;
+        }
+
+        // For private monitors, only the owner can delete
         return $monitor->isOwnedBy($user);
     }
 
