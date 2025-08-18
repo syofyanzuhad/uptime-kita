@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Inertia route for toggle pin action
-    Route::post('/monitor/{monitor}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
+    Route::post('/monitor/{monitorId}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
 
