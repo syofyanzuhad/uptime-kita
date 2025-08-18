@@ -23,6 +23,6 @@ const props = withDefaults(defineProps<Props>(), {
     :class="'cursor-pointer ' + cn(buttonVariants({ variant, size }), props.class)"
   >
     <span v-if="$slots.icon" class="mr-2 flex items-center"> <slot name="icon" /> </span>
-    <span><slot /></span>
+    <span class="flex items-center"><slot /></span>
   </Primitive>
 </template>

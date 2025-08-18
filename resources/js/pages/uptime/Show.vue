@@ -240,51 +240,46 @@ onMounted(() => {
 <template>
   <AppLayout :breadcrumbs="breadcrumbs">
     <Head :title="`Monitor: ${domainName}`" />
-    <template #header>
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <img
-            v-if="monitorData.favicon"
-            :src="monitorData.favicon"
-            :alt="`${domainName} favicon`"
-            class="w-8 h-8 rounded"
-          />
-          <div>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-              {{ domainName }}
-            </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ monitorData.url }}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            @click="router.reload({ preserveUrl: true })"
-            :disabled="countdown < checkIntervalSeconds"
-          >
-            <Icon name="refresh-cw" class="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Link :href="route('monitor.edit', monitorData.id)">
-            <Button size="sm">
-              <Icon name="edit" class="w-4 h-4 mr-2" />
-              Edit Monitor
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </template>
+
 
     <div class="py-8">
       <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Monitor Overview Card -->
         <Card>
           <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Icon name="activity" class="w-5 h-5" />
-              Monitor Overview
-            </CardTitle>
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <img
+                  v-if="monitorData.favicon"
+                  :src="monitorData.favicon"
+                  :alt="`${domainName} favicon`"
+                  class="w-8 h-8 rounded"
+                />
+                <div>
+                  <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ domainName }}
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ monitorData.url }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  @click="router.reload({ preserveUrl: true })"
+                  :disabled="countdown < checkIntervalSeconds"
+                >
+                  <Icon name="refresh-cw" class="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+                <Link :href="route('monitor.edit', monitorData.id)">
+                  <Button size="sm">
+                    <Icon name="edit" class="w-4 h-4 mr-2" />
+                    Edit Monitor
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
