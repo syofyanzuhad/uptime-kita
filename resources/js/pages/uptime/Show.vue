@@ -439,7 +439,7 @@ onMounted(() => {
               <Icon name="inbox" class="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p>No history available yet.</p>
             </div>
-            <div v-else class="overflow-x-auto">
+            <div v-else class=" max-h-[50vh] overflow-auto">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
