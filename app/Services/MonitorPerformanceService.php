@@ -45,9 +45,9 @@ class MonitorPerformanceService
         $startHour = $performance->hour;
         $endHour = $performance->hour->copy()->addHour();
 
-        // Get all response times for this hour
+        // Get all response times for this hour using created_at for consistency
         $responseTimes = MonitorHistory::where('monitor_id', $performance->monitor_id)
-            ->whereBetween('checked_at', [$startHour, $endHour])
+            ->whereBetween('created_at', [$startHour, $endHour])
             ->whereNotNull('response_time')
             ->where('uptime_status', 'up')
             ->pluck('response_time')
@@ -97,9 +97,10 @@ class MonitorPerformanceService
         $startDate = Carbon::parse($date)->startOfDay();
         $endDate = $startDate->copy()->endOfDay();
 
-        // Use a single query to get all metrics at once for better performance
+        // Use created_at instead of checked_at for consistency with the main job
+        // and because some records have null checked_at values
         $result = MonitorHistory::where('monitor_id', $monitorId)
-            ->whereBetween('checked_at', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_checks,
                 SUM(CASE WHEN uptime_status = "down" THEN 1 ELSE 0 END) as failed_checks,
@@ -124,7 +125,7 @@ class MonitorPerformanceService
     public function getResponseTimeStats(int $monitorId, Carbon $startDate, Carbon $endDate): array
     {
         $histories = MonitorHistory::where('monitor_id', $monitorId)
-            ->whereBetween('checked_at', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->whereNotNull('response_time')
             ->where('uptime_status', 'up')
             ->pluck('response_time')

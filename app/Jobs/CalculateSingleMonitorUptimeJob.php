@@ -185,7 +185,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Update or create the uptime record with proper SQLite concurrency handling
+     * Update or create the uptime record using efficient updateOrInsert
      */
     private function updateUptimeRecord(float $uptimePercentage, array $responseMetrics = []): void
     {
@@ -193,168 +193,50 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
         $dateOnly = Carbon::parse($this->date)->toDateString();
         $roundedPercentage = round($uptimePercentage, 2);
 
-        $maxRetries = 5;
-        $retryDelay = 100; // milliseconds
+        // Prepare data for upsert
+        $data = [
+            'uptime_percentage' => $roundedPercentage,
+            'updated_at' => now(),
+        ];
 
-        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
-            try {
-                // Use upsert approach with retry mechanism for SQLite concurrency
-                $result = DB::table('monitor_uptime_dailies')
-                    ->where('monitor_id', $this->monitorId)
-                    ->where('date', $dateOnly)
-                    ->lockForUpdate()
-                    ->first();
-
-                Log::info('Monitor uptime record', [
-                    'result' => $result,
-                    'monitor_id' => $this->monitorId,
-                    'date' => $dateOnly,
-                ]);
-
-                if ($result) {
-                    // Record exists, update it
-                    $updateData = [
-                        'uptime_percentage' => $roundedPercentage,
-                        'updated_at' => now(),
-                    ];
-
-                    // Add response metrics if available
-                    if (! empty($responseMetrics)) {
-                        $updateData['avg_response_time'] = $responseMetrics['avg_response_time'];
-                        $updateData['min_response_time'] = $responseMetrics['min_response_time'];
-                        $updateData['max_response_time'] = $responseMetrics['max_response_time'];
-                        $updateData['total_checks'] = $responseMetrics['total_checks'];
-                        $updateData['failed_checks'] = $responseMetrics['failed_checks'];
-                    }
-
-                    $updated = DB::table('monitor_uptime_dailies')
-                        ->where('monitor_id', $this->monitorId)
-                        ->where('date', $dateOnly)
-                        ->update($updateData);
-
-                    if ($updated) {
-                        Log::debug('Uptime record updated (existing)', [
-                            'monitor_id' => $this->monitorId,
-                            'date' => $dateOnly,
-                            'uptime_percentage' => $roundedPercentage,
-                            'attempt' => $attempt,
-                        ]);
-
-                        return;
-                    }
-                } else {
-                    // Record doesn't exist, create it
-                    $insertData = [
-                        'monitor_id' => $this->monitorId,
-                        'date' => $dateOnly,
-                        'uptime_percentage' => $roundedPercentage,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-
-                    // Add response metrics if available
-                    if (! empty($responseMetrics)) {
-                        $insertData['avg_response_time'] = $responseMetrics['avg_response_time'];
-                        $insertData['min_response_time'] = $responseMetrics['min_response_time'];
-                        $insertData['max_response_time'] = $responseMetrics['max_response_time'];
-                        $insertData['total_checks'] = $responseMetrics['total_checks'];
-                        $insertData['failed_checks'] = $responseMetrics['failed_checks'];
-                    }
-
-                    DB::table('monitor_uptime_dailies')->insert($insertData);
-
-                    Log::debug('Uptime record created (new)', [
-                        'monitor_id' => $this->monitorId,
-                        'date' => $dateOnly,
-                        'uptime_percentage' => $roundedPercentage,
-                        'attempt' => $attempt,
-                    ]);
-
-                    return;
-                }
-
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Handle database locking and constraint violations
-                if (str_contains($e->getMessage(), 'database is locked') ||
-                    str_contains($e->getMessage(), 'UNIQUE constraint failed') ||
-                    str_contains($e->getMessage(), 'Duplicate entry')) {
-
-                    Log::warning('Database concurrency issue detected, retrying', [
-                        'monitor_id' => $this->monitorId,
-                        'date' => $dateOnly,
-                        'attempt' => $attempt,
-                        'max_retries' => $maxRetries,
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    if ($attempt < $maxRetries) {
-                        // Wait before retry with exponential backoff
-                        usleep($retryDelay * $attempt * 1000); // Convert to microseconds
-
-                        continue;
-                    } else {
-                        // Final attempt failed, try one more time with simple upsert
-                        $this->fallbackUpsert($dateOnly, $roundedPercentage);
-
-                        return;
-                    }
-                }
-
-                // For other database errors, log and re-throw
-                Log::error('Database error in uptime record operation', [
-                    'monitor_id' => $this->monitorId,
-                    'date' => $dateOnly,
-                    'error' => $e->getMessage(),
-                    'attempt' => $attempt,
-                ]);
-                throw $e;
-            } catch (Exception $e) {
-                Log::error('Unexpected error in uptime record operation', [
-                    'monitor_id' => $this->monitorId,
-                    'date' => $dateOnly,
-                    'error' => $e->getMessage(),
-                    'attempt' => $attempt,
-                ]);
-                throw $e;
-            }
+        // Add response metrics if available
+        if (! empty($responseMetrics)) {
+            $data['avg_response_time'] = $responseMetrics['avg_response_time'];
+            $data['min_response_time'] = $responseMetrics['min_response_time'];
+            $data['max_response_time'] = $responseMetrics['max_response_time'];
+            $data['total_checks'] = $responseMetrics['total_checks'];
+            $data['failed_checks'] = $responseMetrics['failed_checks'];
         }
-    }
 
-    /**
-     * Fallback upsert method using raw SQL for maximum compatibility
-     */
-    private function fallbackUpsert(string $dateOnly, float $roundedPercentage): void
-    {
+        // For new records, add created_at
+        $insertData = array_merge($data, [
+            'created_at' => now(),
+        ]);
+
         try {
-            // Use raw SQL for upsert operation
-            $sql = `INSERT INTO monitor_uptime_dailies (monitor_id, date, uptime_percentage, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?)
-                    ON CONFLICT(monitor_id, date)
-                    DO UPDATE SET
-                        uptime_percentage = excluded.uptime_percentage,
-                        updated_at = excluded.updated_at`;
+            // Use Laravel's efficient updateOrInsert method
+            DB::table('monitor_uptime_dailies')
+                ->updateOrInsert(
+                    [
+                        'monitor_id' => $this->monitorId,
+                        'date' => $dateOnly,
+                    ],
+                    $insertData
+                );
 
-            DB::statement($sql, [
-                $this->monitorId,
-                $dateOnly,
-                $roundedPercentage,
-                now(),
-                now(),
-            ]);
-
-            Log::info('Uptime record updated via fallback upsert', [
+            Log::debug('Uptime record updated/created successfully', [
                 'monitor_id' => $this->monitorId,
                 'date' => $dateOnly,
                 'uptime_percentage' => $roundedPercentage,
             ]);
 
-        } catch (Exception $e) {
-            Log::error('Fallback upsert also failed', [
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database error in uptime record operation', [
                 'monitor_id' => $this->monitorId,
                 'date' => $dateOnly,
                 'error' => $e->getMessage(),
             ]);
-            // Don't throw here, just log the failure
+            throw $e;
         }
     }
 
