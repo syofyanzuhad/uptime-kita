@@ -7,6 +7,7 @@ it('can pin a monitor', function () {
     $user = User::factory()->create();
     $monitor = Monitor::factory()->create([
         'is_public' => false,
+        'uptime_check_enabled' => true,
     ]);
 
     // Attach user to monitor
@@ -60,7 +61,7 @@ it('can unpin a monitor', function () {
     $this->assertDatabaseHas('user_monitor', [
         'user_id' => $user->id,
         'monitor_id' => $monitor->id,
-        'is_pinned' => false,
+        'is_pinned' => 0,
     ]);
 });
 
