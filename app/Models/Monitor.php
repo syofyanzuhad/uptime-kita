@@ -254,6 +254,33 @@ class Monitor extends SpatieMonitor
         return $owner && $owner->id === $user->id;
     }
 
+    /**
+     * Create or update history record for the current minute
+     * Ensures only one history record per monitor per minute
+     */
+    public function createOrUpdateHistory(array $data): MonitorHistory
+    {
+        $now = now();
+        $minuteStart = $now->copy()->setSeconds(0)->setMicroseconds(0);
+
+        // Use updateOrCreate to ensure only one record per minute
+        return $this->histories()->updateOrCreate(
+            [
+                'monitor_id' => $this->id,
+                // Use a minute-rounded timestamp for uniqueness
+                'created_at' => $minuteStart,
+            ],
+            [
+                'uptime_status' => $data['uptime_status'],
+                'message' => $data['message'] ?? $this->uptime_check_failure_reason,
+                'response_time' => $data['response_time'] ?? null,
+                'status_code' => $data['status_code'] ?? null,
+                'checked_at' => $data['checked_at'] ?? $now,
+                'updated_at' => $now,
+            ]
+        );
+    }
+
     // boot
     protected static function boot()
     {
@@ -289,9 +316,12 @@ class Monitor extends SpatieMonitor
         static::updating(function ($monitor) {
             // history log
             if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
-                $monitor->histories()->create([
+                $monitor->createOrUpdateHistory([
                     'uptime_status' => $monitor->uptime_status,
                     'message' => $monitor->uptime_check_failure_reason,
+                    'response_time' => $monitor->getAttribute('response_time'), // Include if available
+                    'status_code' => $monitor->getAttribute('status_code'), // Include if available
+                    'checked_at' => $monitor->uptime_last_check_date,
                 ]);
             }
         });

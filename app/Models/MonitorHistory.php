@@ -16,6 +16,8 @@ class MonitorHistory extends Model
         'response_time',
         'status_code',
         'checked_at',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
