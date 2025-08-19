@@ -1,23 +1,30 @@
 <template>
   <Head :title="`${monitor.host} - Monitor Status`" />
 
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900">
+  <TooltipProvider>
+    <div class="min-h-full bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
     <div class="bg-white fixed top-0 w-full dark:bg-gray-800 shadow">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div class="flex sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div class="flex items-center space-x-3 sm:space-x-4">
             <!-- Back Button -->
-            <button
-              @click="goBack"
-              class="p-1.5 sm:p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
-              title="Go back"
-            >
-              <Icon
-                name="arrowLeft"
-                class="w-4 h-4 cursor-pointer sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
-              />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  @click="goBack"
+                  class="p-1.5 sm:p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
+                >
+                  <Icon
+                    name="arrowLeft"
+                    class="w-4 h-4 cursor-pointer sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Go back
+              </TooltipContent>
+            </Tooltip>
             
             <img
               v-if="monitor.favicon"
@@ -82,16 +89,22 @@
             </span>
 
             <!-- Theme Toggle -->
-            <button
-              @click="toggleTheme"
-              class="p-2 rounded-full bg-gray-100 cursor-pointer hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-              :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-            >
-              <Icon
-                :name="isDark ? 'sun' : 'moon'"
-                class="w-4 h-4 text-gray-600 dark:text-gray-300"
-              />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  @click="toggleTheme"
+                  class="p-2 rounded-full bg-gray-100 cursor-pointer hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <Icon
+                    :name="isDark ? 'sun' : 'moon'"
+                    class="w-4 h-4 text-gray-600 dark:text-gray-300"
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {{ isDark ? 'Switch to light mode' : 'Switch to dark mode' }}
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -123,34 +136,33 @@
         </div>
         <div v-else class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div class="flex items-center space-x-1 overflow-x-auto">
-            <div
+            <Tooltip
               v-for="(date, i) in last100Minutes"
               :key="i"
-              class="flex-shrink-0 relative group"
             >
-              <div
-                class="w-1.5 sm:w-2 h-8 rounded-sm transition-all cursor-pointer"
-                :class="[
-                  getMinuteStatus(date)?.uptime_status === 'up'
-                    ? 'bg-green-500 hover:bg-green-600'
-                    : getMinuteStatus(date)?.uptime_status === 'down'
-                    ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-                ]"
-                :title="`${date.toLocaleString()} - ${getMinuteStatus(date) ? getStatusText(getMinuteStatus(date).uptime_status) : 'No data'}`"
-              />
-              <!-- Tooltip -->
-              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                <div class="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+              <TooltipTrigger asChild>
+                <div
+                  class="w-1.5 sm:w-2 h-8 rounded-sm transition-all cursor-pointer flex-shrink-0"
+                  :class="[
+                    getMinuteStatus(date)?.uptime_status === 'up'
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : getMinuteStatus(date)?.uptime_status === 'down'
+                      ? 'bg-red-500 hover:bg-red-600'
+                      : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                  ]"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div class="space-y-1">
                   <div>{{ date.toLocaleString() }}</div>
                   <div v-if="getMinuteStatus(date)">
-                    <div>{{ getStatusText(getMinuteStatus(date).uptime_status) }}</div>
-                    <div v-if="getMinuteStatus(date).response_time">{{ getMinuteStatus(date).response_time }}ms</div>
+                    <div>{{ getStatusText(getMinuteStatus(date)!.uptime_status) }}</div>
+                    <div v-if="getMinuteStatus(date)!.response_time">{{ getMinuteStatus(date)!.response_time }}ms</div>
                   </div>
                   <div v-else class="text-gray-400">No data</div>
                 </div>
-              </div>
-            </div>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div class="flex justify-between text-xs text-gray-400 mt-2">
             <span>{{ last100Minutes[0].toLocaleString() }}</span>
@@ -188,14 +200,27 @@
                 <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500">Monitor has not been checked yet</p>
               </div>
               <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                <div v-for="(value, period) in uptimeStats" :key="period" class="text-center">
-                  <div class="text-xl sm:text-2xl font-bold" :class="getUptimeColor(value)">
-                    {{ value }}%
-                  </div>
-                  <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                    {{ getPeriodLabel(period) }}
-                  </div>
-                </div>
+                <Tooltip v-for="(value, period) in uptimeStats" :key="period">
+                  <TooltipTrigger asChild>
+                    <div class="text-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div class="text-xl sm:text-2xl font-bold" :class="getUptimeColor(value)">
+                        {{ value }}%
+                      </div>
+                      <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        {{ getPeriodLabel(period) }}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div class="space-y-1">
+                      <div class="font-medium">{{ getPeriodLabel(period) }}</div>
+                      <div>{{ value }}% uptime over the {{ getPeriodLabel(period).toLowerCase() }}</div>
+                      <div class="text-xs text-gray-400">
+                        {{ value >= 99.5 ? 'Excellent' : value >= 95 ? 'Good' : 'Needs improvement' }}
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </CardContent>
           </Card>
@@ -213,24 +238,45 @@
               </div>
               <div v-else class="space-y-4">
                 <div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
-                  <div>
-                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                      {{ avgResponseTime }}ms
-                    </div>
-                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Average</div>
-                  </div>
-                  <div>
-                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                      {{ minResponseTime }}ms
-                    </div>
-                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Min</div>
-                  </div>
-                  <div>
-                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                      {{ maxResponseTime }}ms
-                    </div>
-                    <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max</div>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div class="cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                          {{ avgResponseTime }}ms
+                        </div>
+                        <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Average</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Average response time over the last 24 hours
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div class="cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                          {{ minResponseTime }}ms
+                        </div>
+                        <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Min</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Fastest response time in the last 24 hours
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div class="cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        <div class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                          {{ maxResponseTime }}ms
+                        </div>
+                        <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Slowest response time in the last 24 hours
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </CardContent>
@@ -253,33 +299,32 @@
                   <span>Today</span>
                 </div>
                 <div class="grid grid-cols-90 gap-0.5 h-16 sm:h-20 overflow-x-auto">
-                  <div
+                  <Tooltip
                     v-for="day in getUptimeDays()"
                     :key="day.date"
-                    :title="`${day.date}: ${day.uptime}% uptime`"
-                    class="relative group"
                   >
-                    <div
-                      v-if="day.uptime"
-                      :class="[
-                        'h-full rounded-sm transition-all',
-                        day.uptime === 100 ? 'bg-green-500' :
-                        day.uptime >= 99.5 ? 'bg-green-300' :
-                        day.uptime >= 95 ? 'bg-yellow-400' :
-                        'bg-red-500'
-                      ]"
-                    />
-                    <div
-                      v-else
-                      class="h-full rounded-sm bg-gray-300 dark:bg-gray-700"
-                    />
-                    <!-- Tooltip -->
-                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                      <div class="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                        {{ day.date }}: {{ day.uptime }}%
+                    <TooltipTrigger asChild>
+                      <div class="cursor-pointer">
+                        <div
+                          v-if="day.uptime"
+                          :class="[
+                            'h-full rounded-sm transition-all',
+                            day.uptime === 100 ? 'bg-green-500' :
+                            day.uptime >= 99.5 ? 'bg-green-300' :
+                            day.uptime >= 95 ? 'bg-yellow-400' :
+                            'bg-red-500'
+                          ]"
+                        />
+                        <div
+                          v-else
+                          class="h-full rounded-sm bg-gray-300 dark:bg-gray-700"
+                        />
                       </div>
-                    </div>
-                  </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {{ day.date }}: {{ day.uptime }}% uptime
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-600 dark:text-gray-400">
                   <div class="flex items-center space-x-1">
@@ -393,15 +438,17 @@
       </div>
     </div>
 
-    <!-- Footer -->
-    <PublicFooter />
-  </div>
+      <!-- Footer -->
+      <PublicFooter />
+    </div>
+  </TooltipProvider>
 </template>
 
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
 import type { Monitor, MonitorHistory } from '@/types/monitor'
