@@ -16,6 +16,7 @@ import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Icon from '@/components/Icon.vue';
 import Pagination from '@/components/Pagination.vue';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
@@ -205,76 +206,65 @@ function onPaginationLinkClick(link: PaginatorLink) {
                 </div>
 
                 <div v-else class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            URL
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Status Uptime
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Terakhir Dicek
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Today's Uptime
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Sertifikat
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr v-for="monitor in props.monitors.data" :key="monitor.id"> <td class="px-6 py-4 whitespace-nowrap">
-                            <a :href="monitor.url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ monitor.url }}</a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                            :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': monitor.uptime_status === 'up',
-                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': monitor.uptime_status === 'down',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': monitor.uptime_status === 'not yet checked',
-                            }"
-                            class="px-2.5 py-0.5 rounded-full text-sm font-medium"
-                            >
-                            {{ monitor.uptime_status }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {{ monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {{ monitor.today_uptime_percentage ? monitor.today_uptime_percentage + '%' : '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            <template v-if="monitor.certificate_check_enabled">
-                            <span
-                                :class="{
-                                'text-green-600 dark:text-green-400': monitor.certificate_status === 'valid',
-                                'text-red-600 dark:text-red-400': monitor.certificate_status === 'invalid',
-                                'text-gray-600 dark:text-gray-400': monitor.certificate_status === 'not applicable',
-                                }"
-                            >
-                                {{ monitor.certificate_status }}
-                            </span>
-                            <br>
-                            <span v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
-                                Expired: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
-                            </span>
-                            </template>
-                            <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link :href="route('monitor.edit', monitor.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
-                            <button @click="openDeleteModal(monitor)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 cursor-pointer">Hapus</button>
-                        </td>
-                        </tr>
-                    </tbody>
-                    </table>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>URL</TableHead>
+                                <TableHead>Status Uptime</TableHead>
+                                <TableHead>Terakhir Dicek</TableHead>
+                                <TableHead>Today's Uptime</TableHead>
+                                <TableHead>Sertifikat</TableHead>
+                                <TableHead>Aksi</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="monitor in props.monitors.data" :key="monitor.id">
+                                <TableCell>
+                                    <a :href="monitor.url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ monitor.url }}</a>
+                                </TableCell>
+                                <TableCell>
+                                    <span
+                                    :class="{
+                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': monitor.uptime_status === 'up',
+                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': monitor.uptime_status === 'down',
+                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': monitor.uptime_status === 'not yet checked',
+                                    }"
+                                    class="px-2.5 py-0.5 rounded-full text-sm font-medium"
+                                    >
+                                    {{ monitor.uptime_status }}
+                                    </span>
+                                </TableCell>
+                                <TableCell class="text-gray-500 dark:text-gray-400">
+                                    {{ monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : '-' }}
+                                </TableCell>
+                                <TableCell class="text-gray-500 dark:text-gray-400">
+                                    {{ monitor.today_uptime_percentage ? monitor.today_uptime_percentage + '%' : '-' }}
+                                </TableCell>
+                                <TableCell class="text-gray-500 dark:text-gray-400">
+                                    <template v-if="monitor.certificate_check_enabled">
+                                    <span
+                                        :class="{
+                                        'text-green-600 dark:text-green-400': monitor.certificate_status === 'valid',
+                                        'text-red-600 dark:text-red-400': monitor.certificate_status === 'invalid',
+                                        'text-gray-600 dark:text-gray-400': monitor.certificate_status === 'not applicable',
+                                        }"
+                                    >
+                                        {{ monitor.certificate_status }}
+                                    </span>
+                                    <br>
+                                    <span v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
+                                        Expired: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
+                                    </span>
+                                    </template>
+                                    <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span>
+                                </TableCell>
+                                <TableCell class="text-right">
+                                    <Link :href="route('monitor.edit', monitor.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
+                                    <button @click="openDeleteModal(monitor)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 cursor-pointer">Hapus</button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
 
                 <!-- Pagination Links -->

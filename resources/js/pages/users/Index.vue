@@ -4,6 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { BreadcrumbItem, User, SharedData } from '@/types';
 import { ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const props = defineProps<{ users: any }>(); // users is a paginator
 const page = usePage<SharedData>();
@@ -52,32 +53,32 @@ const confirmDeleteUser = () => {
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div v-if="flash" class="mb-4 p-4 bg-green-100 text-green-800 rounded">{{ flash }}</div>
         <div class="bg-white dark:bg-gray-800 overflow-auto shadow-sm sm:rounded-lg p-6">
-          <table class="overflow-auto min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monitors</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status Pages</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="user in props.users.data" :key="user.id">
-                <td class="px-6 py-4 whitespace-nowrap">{{ user.id }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ user.monitors_count }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ user.status_pages_count }}</td>
-                <td class="px-6 py-4 whitespace-nowrap flex gap-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Monitors</TableHead>
+                <TableHead>Status Pages</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="user in props.users.data" :key="user.id">
+                <TableCell>{{ user.id }}</TableCell>
+                <TableCell>{{ user.name }}</TableCell>
+                <TableCell>{{ user.email }}</TableCell>
+                <TableCell>{{ user.monitors_count }}</TableCell>
+                <TableCell>{{ user.status_pages_count }}</TableCell>
+                <TableCell class="flex gap-2">
                   <Link :href="route('users.show', user.id)" class="text-blue-600 hover:underline">View</Link>
                   <Link :href="route('users.edit', user.id)" class="text-yellow-600 hover:underline">Edit</Link>
                   <button @click="openDeleteModal(user)" class="text-red-600 hover:underline">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
           <!-- Pagination -->
           <div class="mt-6">
             <Pagination :data="props.users" />
