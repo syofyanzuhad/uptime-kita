@@ -45,6 +45,35 @@ class MonitorHistory extends Model
             ->get();
     }
 
+    /**
+     * Get unique history records per minute for a specific monitor
+     * Returns only one record per monitor per minute (the latest one)
+     */
+    public static function getUniquePerMinute($monitorId, $limit = null, $orderBy = 'created_at', $orderDirection = 'desc')
+    {
+        $sql = "
+            SELECT id FROM (
+                SELECT id, created_at, ROW_NUMBER() OVER (
+                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    ORDER BY created_at DESC, id DESC
+                ) as rn
+                FROM monitor_histories
+                WHERE monitor_id = ?
+            ) ranked
+            WHERE rn = 1
+            ORDER BY {$orderBy} {$orderDirection}
+        ";
+
+        if ($limit) {
+            $sql .= " LIMIT {$limit}";
+        }
+
+        $uniqueIds = \DB::select($sql, [$monitorId]);
+        $ids = array_column($uniqueIds, 'id');
+
+        return static::whereIn('id', $ids)->orderBy($orderBy, $orderDirection);
+    }
+
     public function prunable(): \Illuminate\Database\Eloquent\Builder
     {
         return static::where('created_at', '<', now()->subDays(30));

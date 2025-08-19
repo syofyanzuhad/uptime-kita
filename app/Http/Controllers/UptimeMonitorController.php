@@ -6,6 +6,7 @@ use App\Http\Resources\MonitorCollection;
 use App\Http\Resources\MonitorHistoryResource;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
+use App\Models\MonitorHistory;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -70,9 +71,32 @@ class UptimeMonitorController extends Controller
     {
         // implements cache for monitor data with histories included
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
-            return new MonitorResource($monitor->load(['uptimeDaily', 'histories' => function ($query) {
-                $query->latest()->take(100);
-            }]));
+            // Get unique history IDs using raw SQL to ensure only one record per minute
+            $sql = "
+                SELECT id FROM (
+                    SELECT id, created_at, ROW_NUMBER() OVER (
+                        PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                        ORDER BY created_at DESC, id DESC
+                    ) as rn
+                    FROM monitor_histories
+                    WHERE monitor_id = ?
+                ) ranked
+                WHERE rn = 1
+                ORDER BY created_at DESC
+                LIMIT 100
+            ";
+
+            $uniqueIds = \DB::select($sql, [$monitor->id]);
+            $ids = array_column($uniqueIds, 'id');
+
+            $uniqueHistories = MonitorHistory::whereIn('id', $ids)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $monitor->load(['uptimeDaily']);
+            $monitor->setRelation('histories', $uniqueHistories);
+
+            return new MonitorResource($monitor);
         });
 
         return Inertia::render('uptime/Show', [
@@ -83,7 +107,29 @@ class UptimeMonitorController extends Controller
     public function getHistory(Monitor $monitor)
     {
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            return MonitorHistoryResource::collection($monitor->histories()->latest()->take(100)->get());
+            // Get unique history IDs using raw SQL to ensure only one record per minute
+            $sql = "
+                SELECT id FROM (
+                    SELECT id, created_at, ROW_NUMBER() OVER (
+                        PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                        ORDER BY created_at DESC, id DESC
+                    ) as rn
+                    FROM monitor_histories
+                    WHERE monitor_id = ?
+                ) ranked
+                WHERE rn = 1
+                ORDER BY created_at DESC
+                LIMIT 100
+            ";
+
+            $uniqueIds = \DB::select($sql, [$monitor->id]);
+            $ids = array_column($uniqueIds, 'id');
+
+            $uniqueHistories = MonitorHistory::whereIn('id', $ids)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return MonitorHistoryResource::collection($uniqueHistories);
         });
 
         return response()->json([

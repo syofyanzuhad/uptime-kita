@@ -87,7 +87,24 @@ class PublicMonitorShowController extends Controller
      */
     private function calculateUptimePercentage($monitor, $startDate): float
     {
-        $histories = MonitorHistory::where('monitor_id', $monitor->id)
+        // Get unique history IDs using raw SQL to ensure only one record per minute
+        $sql = "
+            SELECT id FROM (
+                SELECT id, created_at, ROW_NUMBER() OVER (
+                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    ORDER BY created_at DESC, id DESC
+                ) as rn
+                FROM monitor_histories
+                WHERE monitor_id = ?
+            ) ranked
+            WHERE rn = 1
+        ";
+
+        $uniqueIds = \DB::select($sql, [$monitor->id]);
+        $ids = array_column($uniqueIds, 'id');
+
+        // Get unique histories and filter by date
+        $histories = MonitorHistory::whereIn('id', $ids)
             ->where('created_at', '>=', $startDate)
             ->get();
 
@@ -108,10 +125,28 @@ class PublicMonitorShowController extends Controller
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
 
-        $histories = MonitorHistory::where('monitor_id', $monitor->id)
+        // Get unique history IDs using raw SQL to ensure only one record per minute
+        $sql = "
+            SELECT id FROM (
+                SELECT id, created_at, ROW_NUMBER() OVER (
+                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    ORDER BY created_at DESC, id DESC
+                ) as rn
+                FROM monitor_histories
+                WHERE monitor_id = ?
+            ) ranked
+            WHERE rn = 1
+            ORDER BY created_at DESC
+            LIMIT 100
+        ";
+
+        $uniqueIds = \DB::select($sql, [$monitor->id]);
+        $ids = array_column($uniqueIds, 'id');
+
+        // Get unique histories and filter by time
+        $histories = MonitorHistory::whereIn('id', $ids)
             ->where('created_at', '>=', $oneHundredMinutesAgo)
             ->orderBy('created_at', 'desc')
-            ->limit(100)
             ->get();
 
         // Transform to match the cached format
