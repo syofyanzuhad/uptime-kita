@@ -147,6 +147,11 @@ class Monitor extends SpatieMonitor
         return $this->hasOne(MonitorUptimeDaily::class)->whereDate('date', now()->toDateString());
     }
 
+    public function statistics()
+    {
+        return $this->hasOne(MonitorStatistic::class);
+    }
+
     /**
      * Get the incidents for the monitor.
      */

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
+use App\Models\MonitorStatistic;
 use App\Services\MonitorPerformanceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,10 +25,11 @@ class PublicMonitorShowController extends Controller
         // Build the full HTTPS URL
         $url = 'https://'.$domain;
 
-        // Find the monitor by URL
+        // Find the monitor by URL with its statistics
         $monitor = Monitor::where('url', $url)
             ->where('is_public', true)
             ->where('uptime_check_enabled', true)
+            ->with('statistics')
             ->first();
 
         // If monitor not found, show the not found page
@@ -35,39 +37,33 @@ class PublicMonitorShowController extends Controller
             return $this->showNotFound($domain);
         }
 
-        // Load recent history (last 30 days) - using created_at
-        $histories = MonitorHistory::where('monitor_id', $monitor->id)
-            ->where('created_at', '>=', now()->subDays(30))
-            ->orderBy('created_at', 'desc')
-            ->limit(1000)
-            ->get();
+        // Try to use cached statistics first
+        $statistics = $monitor->statistics;
+        
+        if ($statistics && $statistics->isFresh()) {
+            // Use cached statistics
+            $histories = $statistics->recent_history_100m ?? [];
+            $uptimeStats = $statistics->uptime_stats;
+            $responseTimeStats = $statistics->response_time_stats;
+        } else {
+            // Fallback to live calculation if no cached stats or they're stale
+            $histories = $this->getLiveHistory($monitor);
+            $uptimeStats = $this->calculateUptimeStats($monitor);
+            $responseTimeStats = $this->getLiveResponseTimeStats($monitor, $performanceService);
+        }
 
-        // Load uptime daily data with response time metrics
+        // Load uptime daily data and recent incidents (these are still needed)
         $monitor->load(['uptimesDaily' => function ($query) {
             $query->orderBy('date', 'desc')->limit(90);
         }, 'recentIncidents' => function ($query) {
-            $query->orderBy('created_at', 'desc')->limit(1000);
+            $query->orderBy('created_at', 'desc')->limit(10);
         }]);
-
-        // Calculate uptime percentages
-        $uptimeStats = $this->calculateUptimeStats($monitor);
-
-        // Get response time statistics for last 24 hours
-        $responseTimeStats = $performanceService->getResponseTimeStats(
-            $monitor->id,
-            Carbon::now()->subDay(),
-            Carbon::now()
-        );
 
         return Inertia::render('monitors/PublicShow', [
             'monitor' => new MonitorResource($monitor),
             'histories' => $histories,
             'uptimeStats' => $uptimeStats,
-            'responseTimeStats' => [
-                'average' => $responseTimeStats['avg'],
-                'min' => $responseTimeStats['min'],
-                'max' => $responseTimeStats['max'],
-            ],
+            'responseTimeStats' => $responseTimeStats,
             'recentIncidents' => $monitor->recentIncidents,
         ]);
     }
@@ -104,6 +100,48 @@ class PublicMonitorShowController extends Controller
         $totalCount = $histories->count();
 
         return round(($upCount / $totalCount) * 100, 2);
+    }
+
+    /**
+     * Get live history data when cached version is not available
+     */
+    private function getLiveHistory($monitor): array
+    {
+        $oneHundredMinutesAgo = now()->subMinutes(100);
+        
+        $histories = MonitorHistory::where('monitor_id', $monitor->id)
+            ->where('created_at', '>=', $oneHundredMinutesAgo)
+            ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->get();
+
+        // Transform to match the cached format
+        return $histories->map(function ($history) {
+            return [
+                'created_at' => $history->created_at->toISOString(),
+                'uptime_status' => $history->uptime_status,
+                'response_time' => $history->response_time,
+                'message' => $history->message,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get live response time statistics when cached version is not available
+     */
+    private function getLiveResponseTimeStats($monitor, MonitorPerformanceService $performanceService): array
+    {
+        $responseTimeStats = $performanceService->getResponseTimeStats(
+            $monitor->id,
+            Carbon::now()->subDay(),
+            Carbon::now()
+        );
+
+        return [
+            'average' => $responseTimeStats['avg'],
+            'min' => $responseTimeStats['min'],
+            'max' => $responseTimeStats['max'],
+        ];
     }
 
     /**
