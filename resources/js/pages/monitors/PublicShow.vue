@@ -11,18 +11,18 @@
             <!-- Back Button -->
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  @click="goBack"
+                <Link
+                  href="/"
                   class="p-1.5 sm:p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
                 >
                   <Icon
                     name="arrowLeft"
                     class="w-4 h-4 cursor-pointer sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300"
                   />
-                </button>
+                </Link>
               </TooltipTrigger>
               <TooltipContent>
-                Go back
+                Go to home page
               </TooltipContent>
             </Tooltip>
             
@@ -445,7 +445,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, Link } from '@inertiajs/vue3'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -492,14 +492,7 @@ const toggleTheme = () => {
   }
 }
 
-const goBack = () => {
-  if (window.history.length > 1) {
-    window.history.back()
-  } else {
-    // Fallback to home page if no history
-    router.visit('/')
-  }
-}
+
 
 // Refetch function
 const refetchHistory = () => {
