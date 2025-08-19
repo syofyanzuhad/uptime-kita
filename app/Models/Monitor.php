@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Spatie\Tags\HasTags;
 use Spatie\UptimeMonitor\Models\Monitor as SpatieMonitor;
@@ -9,7 +10,7 @@ use Spatie\Url\Url;
 
 class Monitor extends SpatieMonitor
 {
-    use HasTags;
+    use HasFactory, HasTags;
 
     protected $casts = [
         'uptime_check_enabled' => 'boolean',
