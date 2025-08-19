@@ -9,6 +9,7 @@ import TooltipContent from '@/components/ui/tooltip/TooltipContent.vue';
 import TooltipProvider from '@/components/ui/tooltip/TooltipProvider.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Icon from '@/components/Icon.vue';
 import axios from 'axios';
 
@@ -250,7 +251,7 @@ onMounted(() => {
                 <Link :href="route('monitor.edit', monitorData.id)">
                   <Button size="sm">
                     <Icon name="edit" class="w-4 h-4 mr-2" />
-                    Edit Monitor
+                    <span class="hidden sm:block">Edit Monitor</span>
                   </Button>
                 </Link>
               </div>
@@ -409,34 +410,38 @@ onMounted(() => {
               <Icon name="inbox" class="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p>No history available yet.</p>
             </div>
-            <div v-else class=" max-h-[50vh] overflow-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date & Time</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Message</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr v-for="history in histories" :key="history.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+            <div v-else class="max-h-[50vh] overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead class="w-16">#</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Message</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="(history, index) in histories" :key="history.id">
+                    <TableCell class="font-medium text-gray-500 dark:text-gray-400">
+                      {{ index + 1 }}
+                    </TableCell>
+                    <TableCell class="text-gray-900 dark:text-gray-100">
                       {{ formatDate(history.created_at) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell>
                       <div class="flex items-center gap-2">
                         <Icon :name="getStatusIcon(history.uptime_status)" class="w-4 h-4" :class="getHistoryStatusColor(history.uptime_status)" />
                         <span :class="getHistoryStatusBgColor(history.uptime_status)" class="px-2.5 py-0.5 rounded-full text-sm font-medium">
                           {{ getStatusText(history.uptime_status) }}
                         </span>
                       </div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    </TableCell>
+                    <TableCell class="text-gray-500 dark:text-gray-400">
                       {{ history.message || '-' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
