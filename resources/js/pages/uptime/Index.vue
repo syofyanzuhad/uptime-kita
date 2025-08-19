@@ -147,13 +147,7 @@ function onPaginationLinkClick(link: PaginatorLink) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Uptime Monitor" />
 
-        <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Uptime Monitor</h2>
-            </div>
-        </template>
-
-        <div class="py-12">
+        <div class="py-10">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -210,9 +204,9 @@ function onPaginationLinkClick(link: PaginatorLink) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>URL</TableHead>
-                                <TableHead>Status Uptime</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead>Terakhir Dicek</TableHead>
-                                <TableHead>Today's Uptime</TableHead>
+                                <TableHead>Uptime Hari Ini</TableHead>
                                 <TableHead>Sertifikat</TableHead>
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
