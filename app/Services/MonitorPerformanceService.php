@@ -41,10 +41,13 @@ class MonitorPerformanceService
      */
     protected function updateResponseTimeMetrics(MonitorPerformanceHourly $performance, int $responseTime): void
     {
+        // Use efficient range query instead of individual comparisons
+        $startHour = $performance->hour;
+        $endHour = $performance->hour->copy()->addHour();
+
         // Get all response times for this hour
         $responseTimes = MonitorHistory::where('monitor_id', $performance->monitor_id)
-            ->where('checked_at', '>=', $performance->hour)
-            ->where('checked_at', '<', $performance->hour->copy()->addHour())
+            ->whereBetween('checked_at', [$startHour, $endHour])
             ->whereNotNull('response_time')
             ->where('uptime_status', 'up')
             ->pluck('response_time')
@@ -94,38 +97,24 @@ class MonitorPerformanceService
         $startDate = Carbon::parse($date)->startOfDay();
         $endDate = $startDate->copy()->endOfDay();
 
-        $histories = MonitorHistory::where('monitor_id', $monitorId)
+        // Use a single query to get all metrics at once for better performance
+        $result = MonitorHistory::where('monitor_id', $monitorId)
             ->whereBetween('checked_at', [$startDate, $endDate])
-            ->whereNotNull('response_time')
-            ->where('uptime_status', 'up')
-            ->get();
-
-        if ($histories->isEmpty()) {
-            return [
-                'avg_response_time' => null,
-                'min_response_time' => null,
-                'max_response_time' => null,
-                'total_checks' => 0,
-                'failed_checks' => 0,
-            ];
-        }
-
-        $responseTimes = $histories->pluck('response_time')->filter()->toArray();
-        $totalChecks = MonitorHistory::where('monitor_id', $monitorId)
-            ->whereBetween('checked_at', [$startDate, $endDate])
-            ->count();
-
-        $failedChecks = MonitorHistory::where('monitor_id', $monitorId)
-            ->whereBetween('checked_at', [$startDate, $endDate])
-            ->where('uptime_status', 'down')
-            ->count();
+            ->selectRaw('
+                COUNT(*) as total_checks,
+                SUM(CASE WHEN uptime_status = "down" THEN 1 ELSE 0 END) as failed_checks,
+                AVG(CASE WHEN uptime_status = "up" AND response_time IS NOT NULL THEN response_time ELSE NULL END) as avg_response_time,
+                MIN(CASE WHEN uptime_status = "up" AND response_time IS NOT NULL THEN response_time ELSE NULL END) as min_response_time,
+                MAX(CASE WHEN uptime_status = "up" AND response_time IS NOT NULL THEN response_time ELSE NULL END) as max_response_time
+            ')
+            ->first();
 
         return [
-            'avg_response_time' => ! empty($responseTimes) ? array_sum($responseTimes) / count($responseTimes) : null,
-            'min_response_time' => ! empty($responseTimes) ? min($responseTimes) : null,
-            'max_response_time' => ! empty($responseTimes) ? max($responseTimes) : null,
-            'total_checks' => $totalChecks,
-            'failed_checks' => $failedChecks,
+            'avg_response_time' => $result->avg_response_time ? round($result->avg_response_time) : null,
+            'min_response_time' => $result->min_response_time,
+            'max_response_time' => $result->max_response_time,
+            'total_checks' => $result->total_checks ?? 0,
+            'failed_checks' => $result->failed_checks ?? 0,
         ];
     }
 

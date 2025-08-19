@@ -7,7 +7,6 @@ use App\Models\MonitorHistory;
 use App\Models\MonitorStatistic;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CalculateMonitorStatistics extends Command
 {
@@ -31,7 +30,7 @@ class CalculateMonitorStatistics extends Command
     public function handle()
     {
         $monitorId = $this->argument('monitor');
-        
+
         if ($monitorId) {
             $monitors = Monitor::where('id', $monitorId)->where('is_public', true)->get();
         } else {
@@ -40,6 +39,7 @@ class CalculateMonitorStatistics extends Command
 
         if ($monitors->isEmpty()) {
             $this->warn('No public monitors found.');
+
             return;
         }
 
@@ -168,7 +168,7 @@ class CalculateMonitorStatistics extends Command
     private function getRecentHistory(Monitor $monitor): array
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
-        
+
         $histories = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $oneHundredMinutesAgo)
             ->orderBy('created_at', 'desc')

@@ -135,6 +135,10 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
      */
     private function calculateAndStoreUptime(): void
     {
+        // Use efficient date range queries instead of whereDate()
+        $startDate = Carbon::parse($this->date)->startOfDay();
+        $endDate = $startDate->copy()->endOfDay();
+
         // Use a single database query to get both total and up counts
         $result = DB::table('monitor_histories')
             ->selectRaw('
@@ -142,7 +146,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
                 SUM(CASE WHEN uptime_status = "up" THEN 1 ELSE 0 END) as up_checks
             ')
             ->where('monitor_id', $this->monitorId)
-            ->whereDate('created_at', $this->date)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->first();
 
         Log::info('Monitor history result', [

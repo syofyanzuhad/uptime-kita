@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
-use App\Models\MonitorStatistic;
 use App\Services\MonitorPerformanceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -39,7 +38,7 @@ class PublicMonitorShowController extends Controller
 
         // Try to use cached statistics first
         $statistics = $monitor->statistics;
-        
+
         if ($statistics && $statistics->isFresh()) {
             // Use cached statistics
             $histories = $statistics->recent_history_100m ?? [];
@@ -108,7 +107,7 @@ class PublicMonitorShowController extends Controller
     private function getLiveHistory($monitor): array
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
-        
+
         $histories = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $oneHundredMinutesAgo)
             ->orderBy('created_at', 'desc')
