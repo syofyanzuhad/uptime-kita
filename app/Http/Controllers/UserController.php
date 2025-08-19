@@ -117,7 +117,7 @@ class UserController extends Controller
         }
 
         if ($errorMessage) {
-            return redirect()->route('users.index')->with('error', $error);
+            return redirect()->route('users.index')->with('error', $errorMessage);
         }
 
         $user->delete();
