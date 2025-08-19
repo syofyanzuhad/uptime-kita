@@ -25,7 +25,7 @@
                 Go to home page
               </TooltipContent>
             </Tooltip>
-            
+
             <img
               v-if="monitor.favicon"
               :src="monitor.favicon"
@@ -498,7 +498,7 @@ const toggleTheme = () => {
 const refetchHistory = () => {
   lastRefreshTime.value = new Date()
   isRefreshing.value = true
-  
+
   // Update the 100-minute timeline
   last100Minutes.value = getLast100Minutes()
 
