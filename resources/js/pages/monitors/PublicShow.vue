@@ -121,37 +121,40 @@
           <Icon name="clock" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p class="text-sm text-gray-500 dark:text-gray-400">No history data available yet</p>
         </div>
-        <div v-else-if="latestHistory.length === 0" class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <Icon name="info" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p class="text-sm text-gray-500 dark:text-gray-400">No recent history available</p>
-        </div>
         <div v-else class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div class="flex items-center space-x-1 overflow-x-auto">
             <div
-              v-for="history in latestHistory"
-              :key="history.id"
+              v-for="(date, i) in last100Minutes"
+              :key="i"
               class="flex-shrink-0 relative group"
             >
               <div
                 class="w-1.5 sm:w-2 h-8 rounded-sm transition-all cursor-pointer"
                 :class="[
-                  history.uptime_status === 'up'
+                  getMinuteStatus(date)?.uptime_status === 'up'
                     ? 'bg-green-500 hover:bg-green-600'
-                    : history.uptime_status === 'down'
+                    : getMinuteStatus(date)?.uptime_status === 'down'
                     ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-gray-400 hover:bg-gray-500'
+                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
                 ]"
-                :title="`${formatDate(history.created_at)} - ${getStatusText(history.uptime_status)}${history.response_time ? ` (${history.response_time}ms)` : ''}`"
+                :title="`${date.toLocaleString()} - ${getMinuteStatus(date) ? getStatusText(getMinuteStatus(date).uptime_status) : 'No data'}`"
               />
               <!-- Tooltip -->
               <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                 <div class="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                  <div>{{ formatDate(history.created_at) }}</div>
-                  <div>{{ getStatusText(history.uptime_status) }}</div>
-                  <div v-if="history.response_time">{{ history.response_time }}ms</div>
+                  <div>{{ date.toLocaleString() }}</div>
+                  <div v-if="getMinuteStatus(date)">
+                    <div>{{ getStatusText(getMinuteStatus(date).uptime_status) }}</div>
+                    <div v-if="getMinuteStatus(date).response_time">{{ getMinuteStatus(date).response_time }}ms</div>
+                  </div>
+                  <div v-else class="text-gray-400">No data</div>
                 </div>
               </div>
             </div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-400 mt-2">
+            <span>{{ last100Minutes[0].toLocaleString() }}</span>
+            <span>{{ last100Minutes[last100Minutes.length - 1].toLocaleString() }}</span>
           </div>
           <div class="flex items-center justify-center space-x-4 mt-3 text-xs text-gray-600 dark:text-gray-400">
             <div class="flex items-center space-x-1">
@@ -163,8 +166,8 @@
               <span>Down</span>
             </div>
             <div class="flex items-center space-x-1">
-              <div class="w-3 h-3 bg-gray-400 rounded-sm"></div>
-              <span>Unknown</span>
+              <div class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-sm"></div>
+              <span>No data</span>
             </div>
           </div>
         </div>
@@ -455,6 +458,9 @@ const goBack = () => {
 const refetchHistory = () => {
   lastRefreshTime.value = new Date()
   isRefreshing.value = true
+  
+  // Update the 100-minute timeline
+  last100Minutes.value = getLast100Minutes()
 
   // Only fetch history data without full page refresh
   router.visit(window.location.pathname, {
@@ -490,6 +496,36 @@ onUnmounted(() => {
 })
 
 // console.log('%cresources/js/pages/monitors/PublicShow.vue:291 monitor', 'color: #007acc;', monitor.value);
+
+// Function to get last 100 minutes timeline
+function getLast100Minutes() {
+  const now = new Date()
+  return Array.from({ length: 100 }, (_, i) => {
+    const d = new Date(now)
+    d.setMinutes(now.getMinutes() - (99 - i))
+    d.setSeconds(0, 0)
+    return d
+  })
+}
+
+// Create the 100-minute timeline
+const last100Minutes = ref(getLast100Minutes())
+
+// Map history by minute for quick lookup
+const historyMinuteMap = computed(() => {
+  const map: Record<string, MonitorHistory> = {}
+  props.histories.forEach(h => {
+    const key = new Date(h.created_at).toISOString().slice(0, 16) // YYYY-MM-DDTHH:MM
+    map[key] = h
+  })
+  return map
+})
+
+// Get status for a specific minute
+function getMinuteStatus(date: Date): MonitorHistory | null {
+  const key = date.toISOString().slice(0, 16)
+  return historyMinuteMap.value[key] || null
+}
 
 const latestHistory = computed(() => {
   // If monitor hasn't been checked yet, return empty array
