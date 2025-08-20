@@ -87,6 +87,18 @@ class PublicMonitorController extends Controller
             return response()->json($publicMonitors);
         }
 
+        // Get all unique tags used in public monitors
+        $availableTags = \Spatie\Tags\Tag::whereIn('id', function ($query) {
+            $query->select('tag_id')
+                ->from('taggables')
+                ->where('taggable_type', 'App\Models\Monitor')
+                ->whereIn('taggable_id', function ($subQuery) {
+                    $subQuery->select('id')
+                        ->from('monitors')
+                        ->where('is_public', true);
+                });
+        })->orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
             'filters' => [
@@ -94,6 +106,7 @@ class PublicMonitorController extends Controller
                 'status_filter' => $statusFilter,
                 'tag_filter' => $tagFilter,
             ],
+            'availableTags' => $availableTags,
             'stats' => [
                 'total' => $publicMonitors->total(),
                 'up' => Monitor::public()->where('uptime_status', 'up')->count(),

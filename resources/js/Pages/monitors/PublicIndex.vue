@@ -120,14 +120,17 @@
             <!-- Tag Filter -->
             <div class="sm:w-48">
               <label for="tag-filter" class="sr-only">Filter by tag</label>
-              <input
+              <select
                 id="tag-filter"
                 v-model="tagFilter"
-                type="text"
-                placeholder="Filter by tag..."
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                @input="debounceSearch"
-              />
+                @change="applyFilters"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Tags</option>
+                <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name">
+                  {{ tag.name }}
+                </option>
+              </select>
             </div>
 
             <!-- Create Button -->
@@ -291,6 +294,7 @@ interface Props {
     down: number
     total_public: number
   }
+  availableTags?: Array<{ id: number; name: string }>
 }
 
 const props = defineProps<Props>()
@@ -493,6 +497,7 @@ watch(() => props.monitors, (newMonitors) => {
 watch(() => props.filters, (newFilters) => {
   searchQuery.value = newFilters.search || ''
   statusFilter.value = newFilters.status_filter
+  tagFilter.value = newFilters.tag_filter || ''
 }, { deep: true })
 
 onMounted(() => {
