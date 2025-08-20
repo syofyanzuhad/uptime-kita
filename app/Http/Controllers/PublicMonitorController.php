@@ -23,6 +23,7 @@ class PublicMonitorController extends Controller
         $perPage = 50; // Number of monitors per page
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
+        $tagFilter = $request->get('tag_filter');
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
@@ -36,11 +37,14 @@ class PublicMonitorController extends Controller
         if ($statusFilter !== 'all') {
             $cacheKey .= '_filter_'.$statusFilter;
         }
+        if ($tagFilter) {
+            $cacheKey .= '_tag_'.md5($tagFilter);
+        }
 
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter) {
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily'])
+                ->with(['users:id', 'uptimeDaily', 'tags'])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
@@ -68,6 +72,11 @@ class PublicMonitorController extends Controller
                 $query->search($search);
             }
 
+            // Apply tag filter
+            if ($tagFilter) {
+                $query->withAnyTags([$tagFilter]);
+            }
+
             return new MonitorCollection(
                 $query->paginate($perPage, ['*'], 'page', $page)
             );
@@ -83,6 +92,7 @@ class PublicMonitorController extends Controller
             'filters' => [
                 'search' => $search,
                 'status_filter' => $statusFilter,
+                'tag_filter' => $tagFilter,
             ],
             'stats' => [
                 'total' => $publicMonitors->total(),
@@ -107,6 +117,7 @@ class PublicMonitorController extends Controller
         $perPage = 50; // Number of monitors per page
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
+        $tagFilter = $request->get('tag_filter');
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
@@ -120,11 +131,14 @@ class PublicMonitorController extends Controller
         if ($statusFilter !== 'all') {
             $cacheKey .= '_filter_'.$statusFilter;
         }
+        if ($tagFilter) {
+            $cacheKey .= '_tag_'.md5($tagFilter);
+        }
 
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter) {
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily'])
+                ->with(['users:id', 'uptimeDaily', 'tags'])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
@@ -150,6 +164,11 @@ class PublicMonitorController extends Controller
 
             if ($search) {
                 $query->search($search);
+            }
+
+            // Apply tag filter
+            if ($tagFilter) {
+                $query->withAnyTags([$tagFilter]);
             }
 
             return new MonitorCollection(
