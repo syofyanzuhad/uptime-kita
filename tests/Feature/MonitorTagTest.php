@@ -51,7 +51,7 @@ test('tag endpoint returns tags for monitors', function () {
     $response->assertOk();
     $response->assertJsonStructure([
         'tags' => [
-            '*' => ['id', 'name', 'type']
-        ]
+            '*' => ['id', 'name', 'type'],
+        ],
     ]);
 });

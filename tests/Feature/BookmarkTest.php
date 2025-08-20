@@ -48,7 +48,7 @@ it('can unpin a monitor', function () {
         'is_pinned' => true,
     ]);
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->postJson("/monitor/{$monitor->id}/toggle-pin", [
             'is_pinned' => false,
         ])
@@ -58,11 +58,14 @@ it('can unpin a monitor', function () {
             'is_pinned' => false,
         ]);
 
-    $this->assertDatabaseHas('user_monitor', [
-        'user_id' => $user->id,
-        'monitor_id' => $monitor->id,
-        'is_pinned' => 0,
-    ]);
+    // Debug: Let's check what's actually in the database
+    $pivotRecord = \DB::table('user_monitor')
+        ->where('user_id', $user->id)
+        ->where('monitor_id', $monitor->id)
+        ->first();
+
+    // The is_pinned should be false (0 in database)
+    expect($pivotRecord->is_pinned)->toBe(0);
 });
 
 it('cannot pin a monitor if not subscribed', function () {
