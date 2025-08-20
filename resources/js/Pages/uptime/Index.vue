@@ -26,6 +26,7 @@ const props = defineProps<{
   visibilityFilter?: string;
   tagFilter?: string;
   perPage?: number;
+  availableTags?: Array<{ id: number; name: string }>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -186,13 +187,16 @@ function onPaginationLinkClick(link: PaginatorLink) {
                     <option value="public">Publik</option>
                     <option value="private">Privat</option>
                   </select>
-                  <input
+                  <select
                     v-model="tagFilter"
-                    @input="onTagFilterChange"
-                    type="text"
-                    placeholder="Filter by tag..."
-                    class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-32 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
-                  />
+                    @change="onTagFilterChange"
+                    class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Semua Tag</option>
+                    <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name">
+                      {{ tag.name }}
+                    </option>
+                  </select>
                     <select v-model.number="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
                         <option :value="5">5 / halaman</option>
                         <option :value="10">10 / halaman</option>
