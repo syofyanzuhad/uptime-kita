@@ -128,7 +128,7 @@
               >
                 <option value="">All Tags</option>
                 <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name">
-                  {{ tag.name }}
+                  {{ tag.name.en }}
                 </option>
               </select>
             </div>
@@ -294,7 +294,7 @@ interface Props {
     down: number
     total_public: number
   }
-  availableTags?: Array<{ id: number; name: string }>
+  availableTags?: Array<{ id: number; name: { en: string } }>
 }
 
 const props = defineProps<Props>()
