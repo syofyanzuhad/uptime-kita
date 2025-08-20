@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk unsubscribe monitor
     Route::delete('/monitor/{monitorId}/unsubscribe', UnsubscribeMonitorController::class)->name('monitor.unsubscribe');
 
+    // Tag routes
+    Route::get('/tags', [\App\Http\Controllers\TagController::class, 'index'])->name('tags.index');
+    Route::get('/tags/search', [\App\Http\Controllers\TagController::class, 'search'])->name('tags.search');
+
     // Route untuk toggle monitor active status
     Route::post('/monitor/{monitorId}/toggle-active', \App\Http\Controllers\ToggleMonitorActiveController::class)->name('monitor.toggle-active');
 
