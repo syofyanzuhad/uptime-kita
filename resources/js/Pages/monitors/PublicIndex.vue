@@ -154,14 +154,84 @@
         <p class="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-else class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
         <Card
           v-for="monitor in monitorsData"
           :key="monitor.id"
-          class="hover:shadow-lg transition-shadow cursor-pointer p-0"
+          class="hover:shadow-md md:hover:shadow-lg transition-shadow cursor-pointer p-0"
           @click="viewMonitor(monitor)"
         >
-          <CardContent class="p-4">
+          <!-- Mobile Compact View -->
+          <CardContent class="p-3 md:hidden">
+            <!-- Header with Favicon and Status -->
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-2">
+                <img
+                  v-if="monitor.favicon"
+                  :src="monitor.favicon"
+                  :alt="`${monitor.name} favicon`"
+                  class="w-4 h-4 rounded flex-shrink-0 drop-shadow-sm dark:drop-shadow-white/30"
+                  @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                />
+                <div v-else class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <Icon name="globe" class="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                </div>
+              </div>
+
+              <!-- Status Indicator -->
+              <span
+                :class="[
+                  'p-1 rounded-full inline-flex items-center justify-center',
+                  monitor.uptime_status === 'up'
+                    ? 'bg-green-500'
+                    : monitor.uptime_status === 'down'
+                    ? 'bg-red-500'
+                    : 'bg-gray-400'
+                ]"
+                :title="getStatusText(monitor.uptime_status)"
+              >
+                <Icon
+                  :name="getStatusIcon(monitor.uptime_status)"
+                  class="w-3 h-3"
+                />
+              </span>
+            </div>
+
+            <!-- Monitor Name -->
+            <MonitorLink
+              :monitor="monitor"
+              :show-favicon="false"
+              class-name="mb-1"
+              link-class-name="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 line-clamp-2"
+            />
+
+            <!-- URL -->
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate mb-2">
+              {{ monitor.url }}
+            </p>
+
+            <!-- Tags (Compact) -->
+            <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-1 mb-2">
+              <span
+                v-for="tag in monitor.tags.slice(0, 2)"
+                :key="tag.id || tag.name"
+                class="inline-flex items-center px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+              >
+                {{ getTagDisplayName(tag) }}
+              </span>
+              <span v-if="monitor.tags.length > 2" class="text-xs text-gray-500 dark:text-gray-400">
+                +{{ monitor.tags.length - 2 }}
+              </span>
+            </div>
+
+            <!-- Uptime Percentage -->
+            <div v-if="monitor.today_uptime_percentage" class="text-xs text-gray-600 dark:text-gray-300 font-medium">
+              {{ monitor.today_uptime_percentage }}% uptime
+            </div>
+          </CardContent>
+
+          <!-- Desktop Full View -->
+          <CardContent class="hidden md:block p-4">
             <div class="flex items-start space-x-4">
               <!-- Favicon -->
               <img
@@ -184,7 +254,7 @@
                     :key="tag.id || tag.name"
                     class="inline-flex items-center px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
                   >
-                    {{ tag.name || tag }}
+                    {{ getTagDisplayName(tag) }}
                   </span>
                 </div>
                 <MonitorLink
@@ -449,6 +519,8 @@ const createMonitor = () => {
   router.visit('/monitor/create')
 }
 
+
+
 const getStatusIcon = (status: string): string => {
   switch (status) {
     case 'up':
@@ -473,6 +545,11 @@ const getStatusText = (status: string): string => {
     default:
       return 'Degraded'
   }
+}
+
+const getTagDisplayName = (tag: any): string => {
+  const tagName = typeof tag.name === 'string' ? tag.name : tag.name?.en || tag.name || tag
+  return tagName.length > 8 ? tagName.substring(0, 8) + '...' : tagName
 }
 
 // Watch for changes in props and update reactive data
