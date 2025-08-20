@@ -26,6 +26,7 @@ class UptimeMonitorController extends Controller
         $statusFilter = $request->input('status_filter', 'all');
         $perPage = $request->input('per_page', '15');
         $visibilityFilter = $request->input('visibility_filter', 'all');
+        $tagFilter = $request->input('tag_filter');
         $cacheKey = 'monitors_list_page_'.$page.'_per_page_'.$perPage.'_user_'.auth()->id();
         if ($search) {
             $cacheKey .= '_search_'.md5($search);
@@ -36,8 +37,11 @@ class UptimeMonitorController extends Controller
         if ($visibilityFilter !== 'all') {
             $cacheKey .= '_visibility_'.$visibilityFilter;
         }
-        $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $visibilityFilter, $perPage) {
-            $query = Monitor::with(['uptimeDaily'])->search($search);
+        if ($tagFilter) {
+            $cacheKey .= '_tag_'.md5($tagFilter);
+        }
+        $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $visibilityFilter, $tagFilter, $perPage) {
+            $query = Monitor::with(['uptimeDaily', 'tags'])->search($search);
             if ($statusFilter === 'up' || $statusFilter === 'down') {
                 $query->where('uptime_status', $statusFilter);
             }
@@ -45,6 +49,9 @@ class UptimeMonitorController extends Controller
                 $query->public();
             } elseif ($visibilityFilter === 'private') {
                 $query->private();
+            }
+            if ($tagFilter) {
+                $query->withAnyTags([$tagFilter]);
             }
 
             return new MonitorCollection(
@@ -61,6 +68,7 @@ class UptimeMonitorController extends Controller
             'statusFilter' => $statusFilter,
             'perPage' => $perPage,
             'visibilityFilter' => $visibilityFilter,
+            'tagFilter' => $tagFilter,
         ]);
     }
 
@@ -93,7 +101,7 @@ class UptimeMonitorController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            $monitor->load(['uptimeDaily']);
+            $monitor->load(['uptimeDaily', 'tags']);
             $monitor->setRelation('histories', $uniqueHistories);
 
             return new MonitorResource($monitor);
@@ -175,6 +183,8 @@ class UptimeMonitorController extends Controller
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'max:255'],
         ]);
 
         try {
@@ -185,6 +195,11 @@ class UptimeMonitorController extends Controller
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
             ]);
+
+            // Attach tags if provided
+            if ($request->filled('tags')) {
+                $monitor->attachTags($request->tags);
+            }
 
             // check certificate using command
             Artisan::call('monitor:check-certificate', [
@@ -210,7 +225,7 @@ class UptimeMonitorController extends Controller
     public function edit(Monitor $monitor)
     {
         return Inertia::render('uptime/Edit', [
-            'monitor' => new MonitorResource($monitor->load(['uptimeDaily'])),
+            'monitor' => new MonitorResource($monitor->load(['uptimeDaily', 'tags'])),
         ]);
     }
 
@@ -248,6 +263,8 @@ class UptimeMonitorController extends Controller
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'max:255'],
         ]);
 
         try {
@@ -258,6 +275,11 @@ class UptimeMonitorController extends Controller
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
             ]);
+
+            // Sync tags
+            if ($request->has('tags')) {
+                $monitor->syncTags($request->tags ?? []);
+            }
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);

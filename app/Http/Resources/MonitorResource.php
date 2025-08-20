@@ -36,6 +36,16 @@ class MonitorResource extends JsonResource
             'uptime_check_failure_reason' => $this->uptime_check_failure_reason,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'tags' => $this->when($this->relationLoaded('tags'), function () {
+                return $this->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                        'type' => $tag->type,
+                        'color' => $tag->color ?? null,
+                    ];
+                });
+            }),
             'histories' => MonitorHistoryResource::collection($this->whenLoaded('histories')),
             'latest_history' => $this->whenLoaded('latestHistory', function () {
                 return $this->latestHistory ? new MonitorHistoryResource($this->latestHistory) : null;

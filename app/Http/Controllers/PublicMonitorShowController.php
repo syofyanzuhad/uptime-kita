@@ -28,7 +28,7 @@ class PublicMonitorShowController extends Controller
         $monitor = Monitor::where('url', $url)
             ->where('is_public', true)
             ->where('uptime_check_enabled', true)
-            ->with('statistics')
+            ->with(['statistics', 'tags'])
             ->first();
 
         // If monitor not found, show the not found page
