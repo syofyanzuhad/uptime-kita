@@ -36,20 +36,18 @@ class PublicMonitorShowController extends Controller
             return $this->showNotFound($domain);
         }
 
-        // Try to use cached statistics first
-        $statistics = $monitor->statistics;
+        // Use real-time data with short cache like private monitor show
+        $histories = cache()->remember("public_monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
+            return $this->getLiveHistory($monitor);
+        });
 
-        if ($statistics && $statistics->isFresh()) {
-            // Use cached statistics
-            $histories = $statistics->recent_history_100m ?? [];
-            $uptimeStats = $statistics->uptime_stats;
-            $responseTimeStats = $statistics->response_time_stats;
-        } else {
-            // Fallback to live calculation if no cached stats or they're stale
-            $histories = $this->getLiveHistory($monitor);
-            $uptimeStats = $this->calculateUptimeStats($monitor);
-            $responseTimeStats = $this->getLiveResponseTimeStats($monitor, $performanceService);
-        }
+        $uptimeStats = cache()->remember("public_monitor_{$monitor->id}_uptime_stats", 60, function () use ($monitor) {
+            return $this->calculateUptimeStats($monitor);
+        });
+
+        $responseTimeStats = cache()->remember("public_monitor_{$monitor->id}_response_stats", 60, function () use ($monitor, $performanceService) {
+            return $this->getLiveResponseTimeStats($monitor, $performanceService);
+        });
 
         // Load uptime daily data and recent incidents (these are still needed)
         $monitor->load(['uptimesDaily' => function ($query) {
@@ -96,21 +94,20 @@ class PublicMonitorShowController extends Controller
                 ) as rn
                 FROM monitor_histories
                 WHERE monitor_id = ?
+                AND created_at >= ?
             ) ranked
             WHERE rn = 1
         ";
 
-        $uniqueIds = \DB::select($sql, [$monitor->id]);
+        $uniqueIds = \DB::select($sql, [$monitor->id, $startDate]);
         $ids = array_column($uniqueIds, 'id');
 
-        // Get unique histories and filter by date
-        $histories = MonitorHistory::whereIn('id', $ids)
-            ->where('created_at', '>=', $startDate)
-            ->get();
-
-        if ($histories->isEmpty()) {
+        if (empty($ids)) {
             return 100.0;
         }
+
+        // Get unique histories
+        $histories = MonitorHistory::whereIn('id', $ids)->get();
 
         $upCount = $histories->where('uptime_status', 'up')->count();
         $totalCount = $histories->count();
