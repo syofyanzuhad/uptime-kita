@@ -1,5 +1,12 @@
 // resources/js/types/monitor.d.ts
 
+export interface Tag {
+    id?: number;
+    name: string;
+    type?: string;
+    color?: string;
+}
+
 export interface Monitor {
     id: number;
     name: string; // This comes from raw_url in MonitorResource
@@ -28,6 +35,7 @@ export interface Monitor {
         uptime_percentage: number;
     }>;
     host?: string;
+    tags?: Tag[];
 }
 
 export interface FlashMessage {

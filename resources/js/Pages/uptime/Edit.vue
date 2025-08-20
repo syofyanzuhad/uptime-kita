@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
+import TagInput from '@/components/TagInput.vue';
 
 // Hapus impor komponen yang tidak ada
 // import TextInput from '@/Components/TextInput.vue';
@@ -22,6 +23,12 @@ const props = defineProps<{
   }; // Menerima data monitor yang akan diedit
 }>();
 
+// Extract tag names from the monitor data
+const extractTagNames = (tags: any[]): string[] => {
+  if (!tags || !Array.isArray(tags)) return [];
+  return tags.map(tag => typeof tag === 'string' ? tag : tag.name);
+};
+
 // Store initial values for dirty checking
 const initialValues = {
   url: props.monitor.data.url,
@@ -29,6 +36,7 @@ const initialValues = {
   certificate_check_enabled: props.monitor.data.certificate_check_enabled,
   uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
   is_public: props.monitor.data.is_public ?? false,
+  tags: extractTagNames(props.monitor.data.tags),
 };
 
 // Inisialisasi form dengan data monitor yang ada
@@ -38,6 +46,7 @@ const form = useForm({
   certificate_check_enabled: props.monitor.data.certificate_check_enabled,
   uptime_check_interval: props.monitor.data.uptime_check_interval || 5, // Default to 5 minutes if not set
   is_public: props.monitor.data.is_public ?? false,
+  tags: extractTagNames(props.monitor.data.tags),
 });
 // console.log(form.url);
 
@@ -56,12 +65,15 @@ const decrementInterval = () => {
 
 // Function to check if form is dirty
 const isFormDirty = () => {
+  const tagsChanged = JSON.stringify(form.tags.sort()) !== JSON.stringify(initialValues.tags.sort());
+  
   return (
     form.url !== initialValues.url ||
     form.uptime_check_enabled !== initialValues.uptime_check_enabled ||
     form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
     form.uptime_check_interval !== initialValues.uptime_check_interval ||
-    form.is_public !== initialValues.is_public
+    form.is_public !== initialValues.is_public ||
+    tagsChanged
   );
 };
 
@@ -148,6 +160,12 @@ const submit = () => {
                 </button>
               </div>
               <div v-if="form.errors.uptime_check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.uptime_check_interval }}</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="tags" class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Tags</label>
+              <TagInput v-model="form.tags" placeholder="Add tags (e.g., production, api, critical)" />
+              <div v-if="form.errors.tags" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.tags }}</div>
             </div>
 
             <div class="mb-4">

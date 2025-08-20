@@ -24,6 +24,7 @@ const props = defineProps<{
   search?: string;
   statusFilter?: string;
   visibilityFilter?: string;
+  tagFilter?: string;
   perPage?: number;
 }>();
 
@@ -105,6 +106,7 @@ const confirmDeleteMonitor = () => {
 const search = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
 const visibilityFilter = ref(props.visibilityFilter || 'all');
+const tagFilter = ref(props.tagFilter || '');
 const perPage = ref((props.perPage as number) || 15);
 
 function submitSearch() {
@@ -112,8 +114,9 @@ function submitSearch() {
     search: search.value,
     status_filter: statusFilter.value,
     visibility_filter: visibilityFilter.value,
+    tag_filter: tagFilter.value,
     per_page: perPage.value,
-  }, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter'] });
+  }, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter'] });
 }
 
 function clearSearch() {
@@ -126,6 +129,10 @@ function onStatusFilterChange() {
 }
 
 function onVisibilityFilterChange() {
+  submitSearch();
+}
+
+function onTagFilterChange() {
   submitSearch();
 }
 
@@ -179,6 +186,13 @@ function onPaginationLinkClick(link: PaginatorLink) {
                     <option value="public">Publik</option>
                     <option value="private">Privat</option>
                   </select>
+                  <input
+                    v-model="tagFilter"
+                    @input="onTagFilterChange"
+                    type="text"
+                    placeholder="Filter by tag..."
+                    class="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-32 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
+                  />
                     <select v-model.number="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
                         <option :value="5">5 / halaman</option>
                         <option :value="10">10 / halaman</option>
@@ -204,6 +218,7 @@ function onPaginationLinkClick(link: PaginatorLink) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>URL</TableHead>
+                                <TableHead>Tags</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Terakhir Dicek</TableHead>
                                 <TableHead>Uptime Hari Ini</TableHead>
@@ -215,6 +230,17 @@ function onPaginationLinkClick(link: PaginatorLink) {
                             <TableRow v-for="monitor in props.monitors.data" :key="monitor.id">
                                 <TableCell>
                                     <a :href="monitor.url" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ monitor.url }}</a>
+                                </TableCell>
+                                <TableCell>
+                                    <div class="flex flex-wrap gap-1">
+                                        <span
+                                            v-for="tag in (monitor.tags || [])"
+                                            :key="tag.id || tag.name"
+                                            class="inline-flex items-center px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md"
+                                        >
+                                            {{ tag.name || tag }}
+                                        </span>
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <span

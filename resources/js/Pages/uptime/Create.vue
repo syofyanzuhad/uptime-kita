@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
+import TagInput from '@/components/TagInput.vue';
 
 // Hapus impor komponen yang tidak ada
 // import TextInput from '@/Components/TextInput.vue';
@@ -20,6 +21,7 @@ const form = useForm({
   certificate_check_enabled: true,
   uptime_check_interval: 5,
   is_public: false,
+  tags: [] as string[],
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -111,6 +113,12 @@ const submit = () => {
                 </button>
               </div>
               <div v-if="form.errors.uptime_check_interval" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.uptime_check_interval }}</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="tags" class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Tags</label>
+              <TagInput v-model="form.tags" placeholder="Add tags (e.g., production, api, critical)" />
+              <div v-if="form.errors.tags" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ form.errors.tags }}</div>
             </div>
 
             <div class="mb-4">
