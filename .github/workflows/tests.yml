@@ -52,7 +52,12 @@ jobs:
       - name: Tests
         run: ./vendor/bin/pest --coverage --coverage-xml storage/coverage/coverage.xml
 
-      - uses: codecov/codecov-action@v5
+      - name: Show Coverage
+        run: cat ./storage/coverage/coverage.xml
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./storage/coverage/coverage.xml
+          flags: php
