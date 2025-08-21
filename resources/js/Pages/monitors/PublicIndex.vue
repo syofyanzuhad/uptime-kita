@@ -325,7 +325,7 @@
 
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
@@ -438,6 +438,7 @@ const applyFilters = () => {
 
 // Track active request to prevent duplicates
 let activeLoadMoreRequest: AbortController | null = null
+let isLoadingMoreActive = false
 
 const loadMore = async () => {
   // Prevent multiple concurrent requests
@@ -448,10 +449,11 @@ const loadMore = async () => {
     activeLoadMoreRequest.abort()
   }
 
+  console.log('LOAD MORE: Starting with currentPage:', currentPage.value)
   isLoading.value = true
+  isLoadingMoreActive = true
   const nextPage = currentPage.value + 1
-  console.log('Current page:', currentPage.value)
-  console.log('Next page:', nextPage)
+  console.log('LOAD MORE: Requesting page:', nextPage)
 
   // Create new AbortController for this request
   activeLoadMoreRequest = new AbortController()
@@ -482,6 +484,8 @@ const loadMore = async () => {
     }
 
     const data = await response.json()
+    console.log('LOAD MORE: Response received for page:', data.meta.current_page)
+    console.log('LOAD MORE: Data count:', data.data.length)
 
     // Only update if we haven't been aborted
     if (!activeLoadMoreRequest.signal.aborted) {
@@ -495,19 +499,28 @@ const loadMore = async () => {
         to: Array.isArray(data.meta.to) ? data.meta.to[0] : data.meta.to,
       }
 
-      // Append new monitors to existing data
+      console.log('LOAD MORE: Before append - monitors count:', monitorsData.value.length)
+      
+      // Append new monitors to existing data - do this AFTER setting isLoadingMoreActive to false
+      // so the watcher won't interfere
       monitorsData.value.push(...data.data)
       monitorsMeta.value = cleanMeta
       monitorsLinks.value = data.links
       currentPage.value = nextPage
-
-      console.log('Updated current page to:', currentPage.value)
+      
+      console.log('LOAD MORE: After append - monitors count:', monitorsData.value.length)
+      console.log('LOAD MORE: Updated currentPage to:', currentPage.value)
+      
+      // Use nextTick to ensure the watcher doesn't interfere
+      await nextTick()
+      isLoadingMoreActive = false
     }
   } catch (error) {
     // Ignore abort errors
     if (error instanceof Error && error.name !== 'AbortError') {
       console.error('Error loading more monitors:', error)
     }
+    isLoadingMoreActive = false
   } finally {
     isLoading.value = false
     activeLoadMoreRequest = null
@@ -556,10 +569,16 @@ const getTagDisplayName = (tag: any): string => {
   return tagName.length > 8 ? tagName.substring(0, 8) + '...' : tagName
 }
 
-// Watch for changes in props and update reactive data
-watch(() => props.monitors, (newMonitors) => {
-  monitorsData.value = newMonitors.data || []
+// Track if this is the first time we're setting up data
+let isInitialSetup = true
 
+// Watch for changes in props and update reactive data
+watch(() => props.monitors, (newMonitors, oldMonitors) => {
+  console.log('WATCHER: Props changed!')
+  console.log('WATCHER: isInitialSetup:', isInitialSetup)
+  console.log('WATCHER: isLoadingMoreActive:', isLoadingMoreActive)
+  console.log('WATCHER: currentPage before:', currentPage.value)
+  
   // Clean the meta data (handle arrays)
   const cleanMeta = {
     current_page: Array.isArray(newMonitors.meta.current_page) ? newMonitors.meta.current_page[0] : newMonitors.meta.current_page,
@@ -569,9 +588,34 @@ watch(() => props.monitors, (newMonitors) => {
     from: Array.isArray(newMonitors.meta.from) ? newMonitors.meta.from[0] : newMonitors.meta.from,
     to: Array.isArray(newMonitors.meta.to) ? newMonitors.meta.to[0] : newMonitors.meta.to,
   }
+  
+  console.log('WATCHER: cleanMeta.current_page:', cleanMeta.current_page)
 
+  // Don't interfere with load more operations
+  if (isLoadingMoreActive) {
+    console.log('WATCHER: Load more is active, skipping data replacement')
+    // Always update meta and links from props
+    monitorsMeta.value = cleanMeta
+    monitorsLinks.value = newMonitors.links || []
+    return
+  }
+
+  // Only replace monitors data if this is the initial setup or if we got different data
+  // (which happens on filter/search changes, but NOT during load more operations)
+  if (isInitialSetup || !oldMonitors || cleanMeta.current_page === 1) {
+    console.log('WATCHER: Replacing data and resetting currentPage')
+    monitorsData.value = newMonitors.data || []
+    currentPage.value = cleanMeta.current_page
+    isInitialSetup = false
+  } else {
+    console.log('WATCHER: NOT replacing data, keeping currentPage')
+  }
+
+  // Always update meta and links from props
   monitorsMeta.value = cleanMeta
   monitorsLinks.value = newMonitors.links || []
+  
+  console.log('WATCHER: currentPage after:', currentPage.value)
 }, { deep: true })
 
 // Watch for changes in filters and update local state
@@ -579,6 +623,9 @@ watch(() => props.filters, (newFilters) => {
   searchQuery.value = newFilters.search || ''
   statusFilter.value = newFilters.status_filter
   tagFilter.value = newFilters.tag_filter || ''
+
+  // Reset the initial setup flag when filters change so monitors data gets replaced
+  isInitialSetup = true
 }, { deep: true })
 
 onMounted(() => {
