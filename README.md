@@ -3,9 +3,9 @@
 ## ✅ Uptime Kita
 
 <p align='center'>
-  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+  <!-- <a href='https://github.com/syofyanzuhad/uptime-kita'>
 	  <img src='https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2Fsyofyanzuhad%2Fuptime-kita.json%3Fcolor%3Dgreen'>
-	</a>
+	</a> -->
   <a target="_blank" href="https://github.com/syofyanzuhad/uptime-kita">
     <img src="https://img.shields.io/github/last-commit/syofyanzuhad/uptime-kita" />
   </a>
@@ -19,11 +19,14 @@
 		<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/syofyanzuhad/uptime-kita?color=2b9348">
 	</a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
-		<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
-	</a>
-  <a href='https://github.com/syofyanzuhad/uptime-kita'>
     <img src="https://github.com/syofyanzuhad/uptime-kita/actions/workflows/tests.yml/badge.svg" />
   </a>
+  <a href="https://codecov.io/github/syofyanzuhad/uptime-kita" > 
+ <img src="https://codecov.io/github/syofyanzuhad/uptime-kita/graph/badge.svg?token=K2BTV0DR25"/> 
+ </a>
+  <a href='https://github.com/syofyanzuhad/uptime-kita'>
+		<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
+	</a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
 		<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
 	</a>
