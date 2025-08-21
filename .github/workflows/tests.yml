@@ -50,4 +50,9 @@ jobs:
         run: npm run build
 
       - name: Tests
-        run: ./vendor/bin/pest
+        run: ./vendor/bin/pest --coverage --coverage-xml storage/coverage/coverage.xml
+
+      - uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./storage/coverage/coverage.xml
