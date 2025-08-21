@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import Icon from '@/components/Icon.vue';
 
 interface PaginationLink {
@@ -38,18 +38,40 @@ interface Props {
   showInfo?: boolean;
   className?: string;
   onLinkClick?: (link: PaginationLink) => void;
+  preserveParams?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showInfo: true,
   className: '',
+  preserveParams: () => ['per_page'],
 });
 
 const handleLinkClick = (link: PaginationLink, event: Event) => {
   if (props.onLinkClick) {
+    // If custom handler is provided, use it
     event.preventDefault();
     props.onLinkClick(link);
-  } else if (!link.url) {
+  } else if (link.url) {
+    // Default behavior: preserve specified parameters
+    event.preventDefault();
+    const url = new URL(link.url, window.location.origin);
+
+    // Preserve specified parameters from current URL
+    const currentUrl = new URL(window.location.href);
+    props.preserveParams.forEach(param => {
+      const value = currentUrl.searchParams.get(param);
+      if (value) {
+        url.searchParams.set(param, value);
+      }
+    });
+
+    router.visit(url.pathname + url.search, {
+      preserveState: true,
+      only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter']
+    });
+  } else {
+    // Disabled link
     event.preventDefault();
   }
 };
@@ -76,7 +98,7 @@ const isNext = (label: string): boolean => {
 // Helper to get pagination info from either structure
 const getPaginationInfo = () => {
   const rawData = 'meta' in props.data ? props.data.meta : props.data;
-  
+
   // Handle case where values might be arrays (duplicate values from backend)
   // Extract first value if it's an array
   const cleanData = {
@@ -88,26 +110,26 @@ const getPaginationInfo = () => {
     to: Array.isArray(rawData.to) ? rawData.to[0] : rawData.to,
     links: rawData.links,
   };
-  
+
   return cleanData;
 };
 
 // Get display text for pagination info
 const getInfoText = (): string => {
   const info = getPaginationInfo();
-  
+
   if (info.total === 0) {
     return 'No results found';
   }
-  
+
   if (info.total === 1) {
     return 'Showing 1 result';
   }
-  
+
   if (info.from === info.to) {
     return `Showing ${info.from} of ${info.total} results`;
   }
-  
+
   return `Showing ${info.from} to ${info.to} of ${info.total} results`;
 };
 </script>
@@ -131,15 +153,15 @@ const getInfoText = (): string => {
           'relative inline-flex items-center cursor-pointer px-3 py-2 text-sm font-medium transition-colors duration-200',
           // First link styling
           index === 0 ? 'rounded-l-md' : '',
-          // Last link styling  
+          // Last link styling
           index === getPaginationInfo().links.length - 1 ? 'rounded-r-md' : '',
           // Active state
-          link.active 
-            ? 'z-10 bg-blue-600 text-white border-blue-600' 
+          link.active
+            ? 'z-10 bg-blue-600 text-white border-blue-600'
             : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 border-gray-300 dark:border-gray-600',
           // Disabled state
-          !link.url 
-            ? 'pointer-events-none opacity-50 cursor-default' 
+          !link.url
+            ? 'pointer-events-none opacity-50 cursor-default'
             : 'hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200',
           // Border
           'border'
@@ -148,26 +170,26 @@ const getInfoText = (): string => {
         :aria-disabled="!link.url"
       >
         <!-- Previous arrow -->
-        <Icon 
-          v-if="isPrevious(link.label)" 
-          name="chevronLeft" 
+        <Icon
+          v-if="isPrevious(link.label)"
+          name="chevronLeft"
           class="h-4 w-4"
           aria-hidden="true"
         />
-        
+
         <!-- Page number or label -->
         <span v-if="!isPrevious(link.label) && !isNext(link.label)">
           {{ cleanLabel(link.label) }}
         </span>
-        
+
         <!-- Next arrow -->
-        <Icon 
-          v-if="isNext(link.label)" 
-          name="chevronRight" 
+        <Icon
+          v-if="isNext(link.label)"
+          name="chevronRight"
           class="h-4 w-4"
           aria-hidden="true"
         />
-        
+
         <!-- Screen reader text for prev/next -->
         <span v-if="isPrevious(link.label)" class="sr-only">Previous page</span>
         <span v-if="isNext(link.label)" class="sr-only">Next page</span>

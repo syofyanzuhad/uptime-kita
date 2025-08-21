@@ -4,7 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 // Impor Link dan usePage dari @inertiajs/vue3
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
 import { Head, Link, router } from '@inertiajs/vue3';
-import type { Monitor, Paginator, PaginatorLink } from '@/types/monitor';
+import type { Monitor, Paginator } from '@/types/monitor';
 import { ref, onMounted, onUnmounted } from 'vue';
 // Import Dialog and Button components for modal
 import Dialog from '@/components/ui/dialog/Dialog.vue';
@@ -141,14 +141,7 @@ function onPerPageChange() {
   submitSearch();
 }
 
-function onPaginationLinkClick(link: PaginatorLink) {
-  if (link.url) {
-    // Append per_page to pagination link
-    const url = new URL(link.url, window.location.origin);
-    url.searchParams.set('per_page', perPage.value.toString());
-    router.visit(url.pathname + url.search, { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage'] });
-  }
-}
+
 </script>
 
 <template>
@@ -293,7 +286,7 @@ function onPaginationLinkClick(link: PaginatorLink) {
 
                 <!-- Pagination Links -->
                 <div class="mt-6">
-                    <Pagination :data="props.monitors" :on-link-click="onPaginationLinkClick" />
+                    <Pagination :data="props.monitors" />
                 </div>
                 </div>
             </div>
