@@ -261,7 +261,7 @@
                   :monitor="monitor"
                   :show-favicon="false"
                   class-name="mb-1"
-                  link-class-name="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                  link-class-name="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate"
                 />
                 <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
                   {{ monitor.url }}
@@ -500,17 +500,17 @@ const loadMore = async () => {
       }
 
       console.log('LOAD MORE: Before append - monitors count:', monitorsData.value.length)
-      
+
       // Append new monitors to existing data - do this AFTER setting isLoadingMoreActive to false
       // so the watcher won't interfere
       monitorsData.value.push(...data.data)
       monitorsMeta.value = cleanMeta
       monitorsLinks.value = data.links
       currentPage.value = nextPage
-      
+
       console.log('LOAD MORE: After append - monitors count:', monitorsData.value.length)
       console.log('LOAD MORE: Updated currentPage to:', currentPage.value)
-      
+
       // Use nextTick to ensure the watcher doesn't interfere
       await nextTick()
       isLoadingMoreActive = false
@@ -578,7 +578,7 @@ watch(() => props.monitors, (newMonitors, oldMonitors) => {
   console.log('WATCHER: isInitialSetup:', isInitialSetup)
   console.log('WATCHER: isLoadingMoreActive:', isLoadingMoreActive)
   console.log('WATCHER: currentPage before:', currentPage.value)
-  
+
   // Clean the meta data (handle arrays)
   const cleanMeta = {
     current_page: Array.isArray(newMonitors.meta.current_page) ? newMonitors.meta.current_page[0] : newMonitors.meta.current_page,
@@ -588,7 +588,7 @@ watch(() => props.monitors, (newMonitors, oldMonitors) => {
     from: Array.isArray(newMonitors.meta.from) ? newMonitors.meta.from[0] : newMonitors.meta.from,
     to: Array.isArray(newMonitors.meta.to) ? newMonitors.meta.to[0] : newMonitors.meta.to,
   }
-  
+
   console.log('WATCHER: cleanMeta.current_page:', cleanMeta.current_page)
 
   // Don't interfere with load more operations
@@ -614,7 +614,7 @@ watch(() => props.monitors, (newMonitors, oldMonitors) => {
   // Always update meta and links from props
   monitorsMeta.value = cleanMeta
   monitorsLinks.value = newMonitors.links || []
-  
+
   console.log('WATCHER: currentPage after:', currentPage.value)
 }, { deep: true })
 
