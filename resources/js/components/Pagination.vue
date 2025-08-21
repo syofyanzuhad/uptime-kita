@@ -68,7 +68,7 @@ const handleLinkClick = (link: PaginationLink, event: Event) => {
 
     router.visit(url.pathname + url.search, {
       preserveState: true,
-      only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter']
+      only: ['monitors', 'users', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter']
     });
   } else {
     // Disabled link

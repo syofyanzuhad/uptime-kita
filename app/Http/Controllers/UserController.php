@@ -11,15 +11,32 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::query()
+        $query = User::query()
             ->withCount('monitors')
-            ->withCount('statusPages')
-            ->paginate(10);
+            ->withCount('statusPages');
+
+        // Search functionality
+        if ($request->filled('search') && strlen($request->search) >= 3) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
+            });
+        }
+
+        // Per page functionality
+        $perPage = $request->get('per_page', 15);
+        if (! in_array($perPage, [5, 10, 15, 20, 50, 100])) {
+            $perPage = 15;
+        }
+
+        $users = $query->paginate($perPage);
 
         return Inertia::render('users/Index', [
             'users' => $users,
+            'search' => $request->search,
+            'perPage' => (int) $perPage,
         ]);
     }
 

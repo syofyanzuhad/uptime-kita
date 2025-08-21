@@ -58,8 +58,49 @@ describe('User CRUD Operations', function () {
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
                 ->component('users/Index')
-                ->has('users.data', 10)
+                ->has('users.data', 15)
                 ->has('users.links')
+            );
+        });
+
+        it('can search users by name', function () {
+            User::factory()->create(['name' => 'John Doe']);
+            User::factory()->create(['name' => 'Jane Smith']);
+
+            $response = actingAs($this->user)->get('/users?search=john');
+
+            $response->assertSuccessful();
+            $response->assertInertia(fn ($page) => $page
+                ->component('users/Index')
+                ->where('search', 'john')
+                ->has('users.data', 1)
+            );
+        });
+
+        it('can search users by email', function () {
+            User::factory()->create(['email' => 'john@example.com']);
+            User::factory()->create(['email' => 'jane@example.com']);
+
+            $response = actingAs($this->user)->get('/users?search=john');
+
+            $response->assertSuccessful();
+            $response->assertInertia(fn ($page) => $page
+                ->component('users/Index')
+                ->where('search', 'john')
+                ->has('users.data', 1)
+            );
+        });
+
+        it('respects per_page parameter', function () {
+            User::factory()->count(20)->create();
+
+            $response = actingAs($this->user)->get('/users?per_page=10');
+
+            $response->assertSuccessful();
+            $response->assertInertia(fn ($page) => $page
+                ->component('users/Index')
+                ->where('perPage', 10)
+                ->has('users.data', 10)
             );
         });
 

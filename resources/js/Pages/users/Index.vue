@@ -6,13 +6,36 @@ import { ref } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-const props = defineProps<{ users: any }>(); // users is a paginator
+const props = defineProps<{ 
+  users: any; // users is a paginator
+  search?: string;
+  perPage?: number;
+}>();
 const page = usePage<SharedData>();
 const flash = page.props.flash?.success;
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Users', href: '/users' },
 ];
+
+const search = ref(props.search || '');
+const perPage = ref((props.perPage as number) || 15);
+
+function submitSearch() {
+  router.get(route('users.index'), {
+    search: search.value,
+    per_page: perPage.value,
+  }, { preserveState: true, only: ['users', 'search', 'perPage'] });
+}
+
+function clearSearch() {
+  search.value = '';
+  submitSearch();
+}
+
+function onPerPageChange() {
+  submitSearch();
+}
 
 const isDeleteModalOpen = ref(false);
 const userToDelete = ref<User | null>(null);
@@ -53,6 +76,30 @@ const confirmDeleteUser = () => {
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div v-if="flash" class="mb-4 p-4 bg-green-100 text-green-800 rounded">{{ flash }}</div>
         <div class="bg-white dark:bg-gray-800 overflow-auto shadow-sm sm:rounded-lg p-6">
+          <!-- Search Bar & Filter -->
+          <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2 overflow-auto">
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search users (min 3 characters)..."
+              class="border border-gray-300 dark:border-gray-700 min-w-52 rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100"
+            />
+            <select v-model.number="perPage" @change="onPerPageChange" class="border border-gray-300 dark:border-gray-700 rounded px-2 py-2 focus:outline-none focus:ring focus:border-blue-400 dark:bg-gray-900 dark:text-gray-100">
+              <option :value="5">5 / page</option>
+              <option :value="10">10 / page</option>
+              <option :value="15">15 / page</option>
+              <option :value="20">20 / page</option>
+              <option :value="50">50 / page</option>
+              <option :value="100">100 / page</option>
+            </select>
+            <button
+              v-if="search"
+              type="button"
+              @click="clearSearch"
+              class="ml-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+            >Clear</button>
+            <button type="submit" class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded">Search</button>
+          </form>
           <Table>
             <TableHeader>
               <TableRow>
