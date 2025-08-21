@@ -302,7 +302,7 @@
       </div>
 
       <!-- Load More Button -->
-      <div v-if="monitorsMeta.current_page < monitorsMeta.last_page" class="mt-8 text-center">
+      <div v-if="currentPage < monitorsMeta.last_page" class="mt-8 text-center">
         <button
           @click="loadMore"
           :disabled="isLoading"
@@ -384,6 +384,7 @@ const cleanInitialMeta = {
 }
 
 const monitorsMeta = ref(cleanInitialMeta)
+const currentPage = ref(monitorsMeta.value.current_page)
 const monitorsLinks = ref(props.monitors.links || [])
 
 // Theme toggle functionality
@@ -448,8 +449,8 @@ const loadMore = async () => {
   }
 
   isLoading.value = true
-  const nextPage = monitorsMeta.value.current_page + 1
-  console.log('Monitors meta:', monitorsMeta.value)
+  const nextPage = currentPage.value + 1
+  console.log('Current page:', currentPage.value)
   console.log('Next page:', nextPage)
 
   // Create new AbortController for this request
@@ -498,6 +499,9 @@ const loadMore = async () => {
       monitorsData.value.push(...data.data)
       monitorsMeta.value = cleanMeta
       monitorsLinks.value = data.links
+      currentPage.value = nextPage
+
+      console.log('Updated current page to:', currentPage.value)
     }
   } catch (error) {
     // Ignore abort errors
