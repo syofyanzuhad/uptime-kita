@@ -324,6 +324,17 @@
       </div>
     </div>
 
+    <!-- Back to Top Button -->
+    <button
+      v-show="showBackToTop"
+      @click="scrollToTop"
+      class="fixed bottom-6 right-6 z-50 p-3 cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+      aria-label="Back to top"
+      title="Back to top"
+    >
+      <Icon name="chevronUp" class="w-5 h-5" />
+    </button>
+
     <!-- Footer -->
     <PublicFooter />
   </div>
@@ -331,7 +342,7 @@
 
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3'
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import Icon from '@/components/Icon.vue'
 import PublicFooter from '@/components/PublicFooter.vue'
@@ -634,6 +645,20 @@ watch(() => props.filters, (newFilters) => {
   isInitialSetup = true
 }, { deep: true })
 
+// Back to top functionality
+const showBackToTop = ref(false)
+
+const handleScroll = () => {
+  showBackToTop.value = window.scrollY > 300
+}
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 onMounted(() => {
   // Check for saved theme preference or default to light mode
   const savedTheme = localStorage.getItem('theme')
@@ -643,5 +668,13 @@ onMounted(() => {
     isDark.value = true
     document.documentElement.classList.add('dark')
   }
+
+  // Add scroll event listener for back to top button
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  // Remove scroll event listener
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
