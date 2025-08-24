@@ -210,8 +210,18 @@
               {{ monitor.url }}
             </p>
 
+            <!-- Uptime Percentage -->
+            <div v-if="monitor.today_uptime_percentage" class="text-xs text-gray-600 dark:text-gray-300 font-medium">
+              {{ monitor.today_uptime_percentage }}% uptime
+            </div>
+
+            <!-- Last Check -->
+            <div v-if="monitor.last_check_date_human" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Last checked {{ monitor.last_check_date_human }}
+            </div>
+
             <!-- Tags (Compact) -->
-            <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-1 mb-2">
+            <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
               <span
                 v-for="tag in monitor.tags.slice(0, 2)"
                 :key="tag.id || tag.name"
@@ -222,11 +232,6 @@
               <span v-if="monitor.tags.length > 2" class="text-xs text-gray-500 dark:text-gray-400">
                 +{{ monitor.tags.length - 2 }}
               </span>
-            </div>
-
-            <!-- Uptime Percentage -->
-            <div v-if="monitor.today_uptime_percentage" class="text-xs text-gray-600 dark:text-gray-300 font-medium">
-              {{ monitor.today_uptime_percentage }}% uptime
             </div>
           </CardContent>
 
@@ -247,16 +252,6 @@
 
               <!-- Monitor Info -->
               <div class="flex-1 min-w-0">
-                <!-- Tags -->
-                <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-1 mb-2">
-                  <span
-                    v-for="tag in monitor.tags"
-                    :key="tag.id || tag.name"
-                    class="inline-flex items-center px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
-                  >
-                    {{ getTagDisplayName(tag) }}
-                  </span>
-                </div>
                 <MonitorLink
                   :monitor="monitor"
                   :show-favicon="false"
@@ -294,6 +289,17 @@
                 <!-- Last Check -->
                 <div v-if="monitor.last_check_date_human" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   Last checked {{ monitor.last_check_date_human }}
+                </div>
+
+                <!-- Tags -->
+                <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
+                  <span
+                    v-for="tag in monitor.tags"
+                    :key="tag.id || tag.name"
+                    class="inline-flex items-center px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+                  >
+                    {{ getTagDisplayName(tag) }}
+                  </span>
                 </div>
               </div>
             </div>
