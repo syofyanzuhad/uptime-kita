@@ -36,16 +36,16 @@ describe('MonitorStatusChanged', function () {
                 'type' => 'email',
                 'is_enabled' => true,
             ]);
-            
+
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'telegram',
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
-            
+
             $channels = $this->notification->via($this->user);
-            
+
             expect($channels)->toContain('mail');
             expect($channels)->toContain('telegram');
         });
@@ -56,23 +56,23 @@ describe('MonitorStatusChanged', function () {
                 'type' => 'email',
                 'is_enabled' => true,
             ]);
-            
+
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'telegram',
                 'is_enabled' => false,
                 'destination' => '123456789',
             ]);
-            
+
             $channels = $this->notification->via($this->user);
-            
+
             expect($channels)->toContain('mail');
             expect($channels)->not->toContain('telegram');
         });
 
         it('returns empty array when no channels enabled', function () {
             $channels = $this->notification->via($this->user);
-            
+
             expect($channels)->toBeEmpty();
         });
 
@@ -82,9 +82,9 @@ describe('MonitorStatusChanged', function () {
                 'type' => 'slack',
                 'is_enabled' => true,
             ]);
-            
+
             $channels = $this->notification->via($this->user);
-            
+
             expect($channels)->toContain('slack');
         });
     });
@@ -92,11 +92,11 @@ describe('MonitorStatusChanged', function () {
     describe('toMail', function () {
         it('creates mail message with correct content', function () {
             $mailMessage = $this->notification->toMail($this->user);
-            
+
             expect($mailMessage)->toBeInstanceOf(MailMessage::class);
             expect($mailMessage->subject)->toBe('Website Status: DOWN');
             expect($mailMessage->greeting)->toBe('Halo, John Doe');
-            
+
             // Check that the message contains expected content
             $mailData = $mailMessage->data();
             expect($mailData['introLines'])->toContain('Website berikut mengalami perubahan status:');
@@ -106,7 +106,7 @@ describe('MonitorStatusChanged', function () {
 
         it('includes action button with correct URL', function () {
             $mailMessage = $this->notification->toMail($this->user);
-            
+
             expect($mailMessage->actionText)->toBe('Lihat Detail');
             expect($mailMessage->actionUrl)->toBe(url('/monitors/1'));
         });
@@ -115,7 +115,7 @@ describe('MonitorStatusChanged', function () {
     describe('toTelegram', function () {
         it('returns null when no telegram channel exists', function () {
             $result = $this->notification->toTelegram($this->user);
-            
+
             expect($result)->toBeNull();
         });
 
@@ -126,9 +126,9 @@ describe('MonitorStatusChanged', function () {
                 'is_enabled' => false,
                 'destination' => '123456789',
             ]);
-            
+
             $result = $this->notification->toTelegram($this->user);
-            
+
             expect($result)->toBeNull();
         });
 
@@ -139,17 +139,17 @@ describe('MonitorStatusChanged', function () {
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
-            
+
             // Mock rate limit service to deny sending
             $rateLimitService = mock(TelegramRateLimitService::class);
             $rateLimitService->shouldReceive('shouldSendNotification')
                 ->with($this->user, $telegramChannel)
                 ->andReturn(false);
-            
+
             $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
-            
+
             $result = $this->notification->toTelegram($this->user);
-            
+
             expect($result)->toBeNull();
         });
 
@@ -160,7 +160,7 @@ describe('MonitorStatusChanged', function () {
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
-            
+
             // Mock rate limit service to allow sending
             $rateLimitService = mock(TelegramRateLimitService::class);
             $rateLimitService->shouldReceive('shouldSendNotification')
@@ -169,11 +169,11 @@ describe('MonitorStatusChanged', function () {
             $rateLimitService->shouldReceive('trackSuccessfulNotification')
                 ->with($this->user, $telegramChannel)
                 ->once();
-            
+
             $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
-            
+
             $result = $this->notification->toTelegram($this->user);
-            
+
             expect($result)->toBeInstanceOf(TelegramMessage::class);
         });
 
@@ -184,21 +184,21 @@ describe('MonitorStatusChanged', function () {
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
-            
+
             $rateLimitService = mock(TelegramRateLimitService::class);
             $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(true);
             $rateLimitService->shouldReceive('trackSuccessfulNotification');
-            
+
             $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
-            
+
             $result = $this->notification->toTelegram($this->user);
-            
+
             // Check that message contains DOWN indicators
             $reflection = new ReflectionClass($result);
             $contentProperty = $reflection->getProperty('content');
             $contentProperty->setAccessible(true);
             $content = $contentProperty->getValue($result);
-            
+
             expect($content)->toContain('🔴');
             expect($content)->toContain('Website DOWN');
             expect($content)->toContain('https://example.com');
@@ -208,27 +208,27 @@ describe('MonitorStatusChanged', function () {
         it('formats UP status message correctly', function () {
             $this->data['status'] = 'UP';
             $notification = new MonitorStatusChanged($this->data);
-            
+
             $telegramChannel = NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'telegram',
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
-            
+
             $rateLimitService = mock(TelegramRateLimitService::class);
             $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(true);
             $rateLimitService->shouldReceive('trackSuccessfulNotification');
-            
+
             $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
-            
+
             $result = $notification->toTelegram($this->user);
-            
+
             $reflection = new ReflectionClass($result);
             $contentProperty = $reflection->getProperty('content');
             $contentProperty->setAccessible(true);
             $content = $contentProperty->getValue($result);
-            
+
             expect($content)->toContain('🟢');
             expect($content)->toContain('Website UP');
             expect($content)->toContain('Status: *UP*');
@@ -237,13 +237,13 @@ describe('MonitorStatusChanged', function () {
 
     describe('toArray', function () {
         it('returns array representation', function () {
-         it('returns array representation', function () {
-             $result = $this->notification->toArray($this->user);
+            $result = $this->notification->toArray($this->user);
 
-             expect($result)->toBeArray();
-             expect($result)->toHaveKeys(['id', 'url', 'status', 'message']);
-             expect($result['id'])->toBe(1);
-             expect($result['url'])->toBe('https://example.com');
-             expect($result['status'])->toBe('DOWN');
-         });
+            expect($result)->toBeArray();
+            expect($result)->toHaveKeys(['id', 'url', 'status', 'message']);
+            expect($result['id'])->toBe(1);
+            expect($result['url'])->toBe('https://example.com');
+            expect($result['status'])->toBe('DOWN');
+        });
+    });
 });
