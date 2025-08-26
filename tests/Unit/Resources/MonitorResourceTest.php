@@ -28,7 +28,7 @@ describe('MonitorResource', function () {
         it('returns correct basic monitor data', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data['id'])->toBe($this->monitor->id);
             expect($data['url'])->toBe($this->monitor->raw_url);
             expect($data['uptime_status'])->toBe('up');
@@ -39,31 +39,31 @@ describe('MonitorResource', function () {
         it('includes certificate expiration date', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data['certificate_expiration_date'])->toBe($this->monitor->certificate_expiration_date);
         });
 
         it('includes subscription status', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('is_subscribed');
             expect($data['is_subscribed'])->toBeFalse();
         });
 
         it('includes failure reason when present', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'Connection timeout']);
-            
+
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data['uptime_check_failure_reason'])->toBe('Connection timeout');
         });
 
         it('includes created and updated timestamps', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data['created_at'])->toBe($this->monitor->created_at);
             expect($data['updated_at'])->toBe($this->monitor->updated_at);
         });
@@ -72,14 +72,9 @@ describe('MonitorResource', function () {
     describe('getDownEventsCount', function () {
         it('returns 0 when no histories are loaded', function () {
             $resource = new MonitorResource($this->monitor);
-            
-            $reflection = new ReflectionClass($resource);
-            $method = $reflection->getMethod('getDownEventsCount');
-            $method->setAccessible(true);
-            
-            $count = $method->invoke($resource);
-            
-            expect($count)->toBe(0);
+            $data = $resource->toArray(request());
+
+            expect($data['down_for_events_count'])->toBe(0);
         });
 
         it('counts down events when histories are loaded', function () {
@@ -88,37 +83,32 @@ describe('MonitorResource', function () {
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
             ]);
-            
+
             MonitorHistory::factory()->count(2)->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
             ]);
-            
+
             // Load histories relationship
             $this->monitor->load('histories');
-            
+
             $resource = new MonitorResource($this->monitor);
-            
-            $reflection = new ReflectionClass($resource);
-            $method = $reflection->getMethod('getDownEventsCount');
-            $method->setAccessible(true);
-            
-            $count = $method->invoke($resource);
-            
-            expect($count)->toBe(2);
+            $data = $resource->toArray(request());
+
+            expect($data['down_for_events_count'])->toBe(2);
         });
     });
 
     describe('getTodayUptimePercentage', function () {
         it('returns 0 when uptime daily is not loaded', function () {
             $resource = new MonitorResource($this->monitor);
-            
+
             $reflection = new ReflectionClass($resource);
             $method = $reflection->getMethod('getTodayUptimePercentage');
             $method->setAccessible(true);
-            
+
             $percentage = $method->invoke($resource);
-            
+
             expect($percentage)->toBe(0);
         });
 
@@ -129,33 +119,33 @@ describe('MonitorResource', function () {
                 'date' => now()->toDateString(),
                 'uptime_percentage' => 95.5,
             ]);
-            
+
             // Load uptimeDaily relationship
             $this->monitor->load('uptimeDaily');
-            
+
             $resource = new MonitorResource($this->monitor);
-            
+
             $reflection = new ReflectionClass($resource);
             $method = $reflection->getMethod('getTodayUptimePercentage');
             $method->setAccessible(true);
-            
+
             $percentage = $method->invoke($resource);
-            
+
             expect($percentage)->toBe(95.5);
         });
 
         it('returns 0 when uptime daily is loaded but null', function () {
             // Don't create uptime daily record, but load the relationship
             $this->monitor->load('uptimeDaily');
-            
+
             $resource = new MonitorResource($this->monitor);
-            
+
             $reflection = new ReflectionClass($resource);
             $method = $reflection->getMethod('getTodayUptimePercentage');
             $method->setAccessible(true);
-            
+
             $percentage = $method->invoke($resource);
-            
+
             expect($percentage)->toBe(0);
         });
     });
@@ -166,12 +156,12 @@ describe('MonitorResource', function () {
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
             ]);
-            
+
             $this->monitor->load('histories');
-            
+
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('histories');
             expect($data['histories'])->toHaveCount(3);
         });
@@ -182,18 +172,18 @@ describe('MonitorResource', function () {
                 'uptime_status' => 'up',
                 'created_at' => now(),
             ]);
-            
+
             MonitorHistory::factory()->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
                 'created_at' => now()->subHour(),
             ]);
-            
+
             $this->monitor->load('latestHistory');
-            
+
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('latest_history');
             expect($data['latest_history']['uptime_status'])->toBe('up');
         });
@@ -202,15 +192,15 @@ describe('MonitorResource', function () {
             MonitorUptimeDaily::factory()->count(7)->create([
                 'monitor_id' => $this->monitor->id,
             ]);
-            
+
             $this->monitor->load('uptimesDaily');
-            
+
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('uptimes_daily');
             expect($data['uptimes_daily'])->toHaveCount(7);
-            
+
             // Check structure of uptime daily data
             $firstUptime = $data['uptimes_daily'][0];
             expect($firstUptime)->toHaveKey('date');
@@ -222,13 +212,13 @@ describe('MonitorResource', function () {
             $this->monitor->attachTag('production');
             $this->monitor->attachTag('critical');
             $this->monitor->load('tags');
-            
+
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('tags');
             expect($data['tags'])->toHaveCount(2);
-            
+
             $firstTag = $data['tags'][0];
             expect($firstTag)->toHaveKey('id');
             expect($firstTag)->toHaveKey('name');
@@ -240,7 +230,7 @@ describe('MonitorResource', function () {
         it('includes down events count', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('down_for_events_count');
             expect($data['down_for_events_count'])->toBe(0);
         });
@@ -248,7 +238,7 @@ describe('MonitorResource', function () {
         it('includes today uptime percentage', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
-            
+
             expect($data)->toHaveKey('today_uptime_percentage');
             expect($data['today_uptime_percentage'])->toBe(0);
         });
