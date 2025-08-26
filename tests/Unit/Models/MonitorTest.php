@@ -8,14 +8,22 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Url\Url;
 
+use Spatie\Url\Url;
+use Carbon\Carbon;
+
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2024-01-01 12:00:00'));
     $this->user = User::factory()->create();
     $this->monitor = Monitor::factory()->create([
         'url' => 'https://example.com',
         'uptime_check_enabled' => true,
     ]);
+});
+
+afterEach(function () {
+    Carbon::setTestNow(); // clear freeze
 });
 
 describe('Monitor Model', function () {
