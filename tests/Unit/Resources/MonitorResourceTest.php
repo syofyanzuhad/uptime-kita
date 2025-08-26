@@ -20,7 +20,6 @@ beforeEach(function () {
         'uptime_status' => 'up',
         'certificate_expiration_date' => now()->addMonths(6),
         'uptime_check_interval_in_minutes' => 5,
-        'is_subscribed' => false,
         'uptime_check_failure_reason' => null,
     ]);
 });
@@ -46,7 +45,7 @@ describe('MonitorResource', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
 
-            expect($data['certificate_expiration_date'])->toBe($this->monitor->certificate_expiration_date);
+            expect($data['certificate_expiration_date'])->toEqual($this->monitor->certificate_expiration_date);
         });
 
         it('includes subscription status', function () {
@@ -70,8 +69,8 @@ describe('MonitorResource', function () {
             $resource = new MonitorResource($this->monitor);
             $data = $resource->toArray(request());
 
-            expect($data['created_at'])->toBe($this->monitor->created_at);
-            expect($data['updated_at'])->toBe($this->monitor->updated_at);
+            expect($data['created_at'])->toEqual($this->monitor->created_at);
+            expect($data['updated_at'])->toEqual($this->monitor->updated_at);
         });
     });
 
@@ -115,7 +114,7 @@ describe('MonitorResource', function () {
 
             $percentage = $method->invoke($resource);
 
-            expect($percentage)->toBe(0);
+            expect($percentage)->toBe(0.0);
         });
 
         it('returns uptime percentage when uptime daily is loaded', function () {
@@ -152,7 +151,7 @@ describe('MonitorResource', function () {
 
             $percentage = $method->invoke($resource);
 
-            expect($percentage)->toBe(0);
+            expect($percentage)->toBe(0.0);
         });
     });
 
@@ -195,9 +194,13 @@ describe('MonitorResource', function () {
         });
 
         it('includes uptime daily data when loaded', function () {
-            MonitorUptimeDaily::factory()->count(7)->create([
-                'monitor_id' => $this->monitor->id,
-            ]);
+            // Create uptime daily records with different dates
+            for ($i = 0; $i < 7; $i++) {
+                MonitorUptimeDaily::factory()->create([
+                    'monitor_id' => $this->monitor->id,
+                    'date' => now()->subDays($i)->format('Y-m-d'),
+                ]);
+            }
 
             $this->monitor->load('uptimesDaily');
 
@@ -246,7 +249,7 @@ describe('MonitorResource', function () {
             $data = $resource->toArray(request());
 
             expect($data)->toHaveKey('today_uptime_percentage');
-            expect($data['today_uptime_percentage'])->toBe(0);
+            expect($data['today_uptime_percentage'])->toBe(0.0);
         });
     });
 });

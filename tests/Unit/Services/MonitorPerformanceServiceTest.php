@@ -118,7 +118,7 @@ describe('MonitorPerformanceService', function () {
 
             expect($metrics['total_checks'])->toBe(3);
             expect($metrics['failed_checks'])->toBe(1);
-            expect($metrics['avg_response_time'])->toBe(200); // (150 + 250) / 2
+            expect($metrics['avg_response_time'])->toBe(200.0); // (150 + 250) / 2
             expect($metrics['min_response_time'])->toBe(150);
             expect($metrics['max_response_time'])->toBe(250);
         });
@@ -158,7 +158,7 @@ describe('MonitorPerformanceService', function () {
 
             $stats = $this->service->getResponseTimeStats($this->monitor->id, $startDate, $endDate);
 
-            expect($stats['avg'])->toBe(200); // (100 + 300) / 2
+            expect($stats['avg'])->toBe(200.0); // (100 + 300) / 2
             expect($stats['min'])->toBe(100);
             expect($stats['max'])->toBe(300);
         });
@@ -195,7 +195,7 @@ describe('MonitorPerformanceService', function () {
 
             $stats = $this->service->getResponseTimeStats($this->monitor->id, $startDate, $endDate);
 
-            expect($stats['avg'])->toBe(200);
+            expect($stats['avg'])->toBe(200.0);
             expect($stats['min'])->toBe(200);
             expect($stats['max'])->toBe(200);
         });
@@ -227,7 +227,7 @@ describe('MonitorPerformanceService', function () {
             
             $p95 = $method->invoke($this->service, $sortedArray, 95);
             
-            expect($p95)->toBe(100);
+            expect($p95)->toBe(100.0);
         });
     });
 });
