@@ -237,9 +237,13 @@ describe('MonitorStatusChanged', function () {
 
     describe('toArray', function () {
         it('returns array representation', function () {
-            $result = $this->notification->toArray($this->user);
-            
-            expect($result)->toBeArray();
-        });
-    });
+         it('returns array representation', function () {
+             $result = $this->notification->toArray($this->user);
+
+             expect($result)->toBeArray();
+             expect($result)->toHaveKeys(['id', 'url', 'status', 'message']);
+             expect($result['id'])->toBe(1);
+             expect($result['url'])->toBe('https://example.com');
+             expect($result['status'])->toBe('DOWN');
+         });
 });
