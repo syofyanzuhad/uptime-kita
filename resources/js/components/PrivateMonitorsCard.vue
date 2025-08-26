@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
-import type { Monitor } from '@/types/monitor';
-import { Link, usePage, router } from '@inertiajs/vue3';
-import type { SharedData } from '@/types';
-import MonitorGrid from './MonitorGrid.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookmarks } from '@/composables/useBookmarks';
+import type { SharedData } from '@/types';
+import type { Monitor } from '@/types/monitor';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import MonitorGrid from './MonitorGrid.vue';
 
 interface Props {
     searchQuery?: string;
@@ -67,18 +67,18 @@ const filteredMonitors = computed(() => {
     let monitors = privateMonitors.value;
     // Filter by status
     if (props.statusFilter === 'up' || props.statusFilter === 'down') {
-        monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
+        monitors = monitors.filter((monitor) => monitor.uptime_status === props.statusFilter);
     } else if (props.statusFilter === 'globally_enabled') {
         // Filter for globally enabled monitors (uptime_check_enabled is true)
-        monitors = monitors.filter(monitor => monitor.uptime_check_enabled);
+        monitors = monitors.filter((monitor) => monitor.uptime_check_enabled);
     } else if (props.statusFilter === 'globally_disabled') {
         // Filter for globally disabled monitors (uptime_check_enabled is false)
-        monitors = monitors.filter(monitor => !monitor.uptime_check_enabled);
+        monitors = monitors.filter((monitor) => !monitor.uptime_check_enabled);
     }
     // Filter by search query
     if (props.searchQuery && props.searchQuery.trim().length >= 3) {
         const query = props.searchQuery.toLowerCase().trim();
-        monitors = monitors.filter(monitor => {
+        monitors = monitors.filter((monitor) => {
             const domain = getDomainFromUrl(monitor.url).toLowerCase();
             const url = monitor.url.toLowerCase();
             return domain.includes(query) || url.includes(query);
@@ -207,7 +207,7 @@ const toggleActive = async (monitorId: number) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     // Update the monitor's uptime_check_enabled status
-                    const monitor = privateMonitors.value.find(m => m.id === monitorId);
+                    const monitor = privateMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
                     }
@@ -217,8 +217,8 @@ const toggleActive = async (monitorId: number) => {
                 },
                 onFinish: () => {
                     togglingMonitors.value.delete(monitorId);
-                }
-            }
+                },
+            },
         );
     } catch {
         alert('Terjadi kesalahan saat mengubah status monitor');
@@ -232,12 +232,12 @@ let cleanupPinCallback: (() => void) | null = null;
 onMounted(() => {
     initialize();
     fetchPrivateMonitors(true);
-    
+
     // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
         fetchPrivateMonitors(false, 1);
     });
-    
+
     // pollingInterval.value = setInterval(() => {
     //     fetchPrivateMonitors(false, 1); // Polling update - always fetch first page
     // }, 60000);
@@ -260,13 +260,13 @@ onUnmounted(() => {
                 <div class="flex items-center gap-2">
                     <Icon name="lock" class="text-yellow-500" />
                     Private Monitors
-                    <div v-if="isPolling" class="flex items-center gap-1 ml-2">
-                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-500"></div>
+                    <div v-if="isPolling" class="ml-2 flex items-center gap-1">
+                        <div class="h-3 w-3 animate-spin rounded-full border-b-2 border-yellow-500"></div>
                         <span class="text-xs text-gray-500">Updating...</span>
                     </div>
                     <Link
                         :href="route('monitor.create')"
-                        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ml-2"
+                        class="ml-2 flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                         title="Add Monitor"
                     >
                         <Icon name="plus" size="16" />
@@ -276,14 +276,10 @@ onUnmounted(() => {
                 <button
                     @click="fetchPrivateMonitors(false)"
                     :disabled="loading || isPolling"
-                    class="flex items-center gap-2 px-3 py-1.5 text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex items-center gap-2 rounded-lg bg-yellow-50 px-3 py-1.5 text-sm text-yellow-600 transition-colors hover:bg-yellow-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50"
                     title="Refresh monitors"
                 >
-                    <Icon
-                        name="refresh-cw"
-                        :class="refreshIconClass"
-                        size="16"
-                    />
+                    <Icon name="refresh-cw" :class="refreshIconClass" size="16" />
                     Refresh
                 </button>
             </CardTitle>
@@ -293,40 +289,32 @@ onUnmounted(() => {
                 <template v-if="!loading && !error">
                     <template v-if="props.searchQuery && props.searchQuery.trim().length >= 3">
                         <!-- Search results info -->
-                        <span v-if="filteredMonitors.length === 1">
-                            Found 1 monitor
-                        </span>
-                        <span v-else>
-                            Found {{ filteredMonitors.length }} monitors
-                        </span>
-                        <span v-if="totalMonitors !== filteredMonitors.length">
-                            from {{ totalMonitors }} total monitors
-                        </span>
+                        <span v-if="filteredMonitors.length === 1"> Found 1 monitor </span>
+                        <span v-else> Found {{ filteredMonitors.length }} monitors </span>
+                        <span v-if="totalMonitors !== filteredMonitors.length"> from {{ totalMonitors }} total monitors </span>
                     </template>
                     <template v-else>
                         <!-- Regular pagination info -->
                         <template v-if="totalMonitors > 0">
-                            Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }}
-                            monitor<span v-if="totalMonitors !== 1">s</span>
+                            Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }} monitor<span v-if="totalMonitors !== 1">s</span>
                             <span v-if="hasMorePages"> ({{ privateMonitors.length }} loaded)</span>
                         </template>
-                        <template v-else>
-                            No monitors found
-                        </template>
+                        <template v-else> No monitors found </template>
                     </template>
                 </template>
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-yellow-500"></div>
             </div>
-            <div v-else-if="error" class="text-center py-8 text-red-500">
+            <div v-else-if="error" class="py-8 text-center text-red-500">
                 {{ error }}
             </div>
-            <div v-else-if="privateMonitors.length === 0" class="text-center py-8 text-gray-500">
-                No private monitors available
-            </div>
-            <div v-else-if="props.searchQuery && props.searchQuery.trim().length >= 3 && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
+            <div v-else-if="privateMonitors.length === 0" class="py-8 text-center text-gray-500">No private monitors available</div>
+            <div
+                v-else-if="props.searchQuery && props.searchQuery.trim().length >= 3 && filteredMonitors.length === 0"
+                class="py-8 text-center text-gray-500"
+            >
                 <div class="flex flex-col items-center gap-2">
                     <Icon name="search" class="h-8 w-8 text-gray-400" />
                     <p>No monitors found for "{{ props.searchQuery }}"</p>
@@ -354,13 +342,9 @@ onUnmounted(() => {
                 <button
                     @click="loadMore"
                     :disabled="loadingMore"
-                    class="flex items-center gap-2 px-6 py-3 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    class="flex items-center gap-2 rounded-lg bg-yellow-50 px-6 py-3 font-medium text-yellow-600 transition-colors hover:bg-yellow-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50"
                 >
-                    <Icon
-                        name="arrow-down"
-                        :class="loadingMore ? 'animate-spin' : ''"
-                        size="16"
-                    />
+                    <Icon name="arrow-down" :class="loadingMore ? 'animate-spin' : ''" size="16" />
                     <span v-if="loadingMore">Loading...</span>
                     <span v-else>Load More Monitors</span>
                 </button>
@@ -369,7 +353,7 @@ onUnmounted(() => {
             <!-- Loading More Indicator -->
             <div v-if="loadingMore" class="mt-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-500"></div>
+                    <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-yellow-500"></div>
                     Loading more monitors...
                 </div>
             </div>

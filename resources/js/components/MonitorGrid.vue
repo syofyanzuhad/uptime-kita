@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import type { Monitor } from '@/types/monitor';
 import { computed } from 'vue';
 import MonitorCard from './MonitorCard.vue';
-import type { Monitor } from '@/types/monitor';
 
 interface Props {
     monitors: Monitor[];

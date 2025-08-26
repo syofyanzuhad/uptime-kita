@@ -1,5 +1,5 @@
-import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface BookmarkState {
     pinnedMonitors: number[];
@@ -19,7 +19,6 @@ const STORAGE_KEY = 'uptime_kita_bookmarks';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 export function useBookmarks() {
-
     // Load bookmarks from localStorage on initialization
     const loadFromStorage = () => {
         try {
@@ -87,23 +86,27 @@ export function useBookmarks() {
 
             // Send request to server using Inertia router
             await new Promise<void>((resolve, reject) => {
-                router.post(`/monitor/${monitorId}/toggle-pin`, {
-                    is_pinned: newPinStatus,
-                }, {
-                    preserveScroll: true,
-                    onSuccess: (page: any) => {
-                        // Check if there's an error flash message
-                        if (page?.props?.flash?.type === 'error') {
-                            reject(new Error(page.props.flash.message));
-                        } else {
-                            // Success - the optimistic update was correct
-                            resolve();
-                        }
+                router.post(
+                    `/monitor/${monitorId}/toggle-pin`,
+                    {
+                        is_pinned: newPinStatus,
                     },
-                    onError: () => {
-                        reject(new Error('Failed to update pin status'));
+                    {
+                        preserveScroll: true,
+                        onSuccess: (page: any) => {
+                            // Check if there's an error flash message
+                            if (page?.props?.flash?.type === 'error') {
+                                reject(new Error(page.props.flash.message));
+                            } else {
+                                // Success - the optimistic update was correct
+                                resolve();
+                            }
+                        },
+                        onError: () => {
+                            reject(new Error('Failed to update pin status'));
+                        },
                     },
-                });
+                );
             });
 
             // Update lastSync timestamp
@@ -113,7 +116,7 @@ export function useBookmarks() {
             // Notify all components to refresh their monitor lists
             // Add a small delay to ensure Inertia response is fully processed
             setTimeout(() => {
-                refreshCallbacks.forEach(callback => {
+                refreshCallbacks.forEach((callback) => {
                     try {
                         callback();
                     } catch (err) {
@@ -121,7 +124,6 @@ export function useBookmarks() {
                     }
                 });
             }, 100);
-
         } catch (error) {
             console.error('Error toggling pin:', error);
             // Revert optimistic update on error - restore to original state
@@ -159,7 +161,7 @@ export function useBookmarks() {
     // Register a callback to be called when pins change
     const onPinChanged = (callback: () => void) => {
         refreshCallbacks.add(callback);
-        
+
         // Return a cleanup function
         return () => {
             refreshCallbacks.delete(callback);

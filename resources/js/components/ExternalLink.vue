@@ -1,92 +1,84 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import Icon from '@/components/Icon.vue'
-import { isExternalUrl, getExternalLinkAttributes, getCurrentPageReferrerParam, generateReferrerParam } from '@/lib/link-utils'
+import Icon from '@/components/Icon.vue';
+import { generateReferrerParam, getCurrentPageReferrerParam, getExternalLinkAttributes, isExternalUrl } from '@/lib/link-utils';
+import { computed } from 'vue';
 
 interface Props {
-  href: string
-  label?: string
-  showIcon?: boolean
-  iconSize?: 'sm' | 'md' | 'lg'
-  className?: string
-  iconClassName?: string
-  ariaLabel?: string
-  forceExternal?: boolean
-  referrerParam?: string
-  referrerSource?: string
-  referrerCampaign?: string
-  autoReferrer?: boolean
+    href: string;
+    label?: string;
+    showIcon?: boolean;
+    iconSize?: 'sm' | 'md' | 'lg';
+    className?: string;
+    iconClassName?: string;
+    ariaLabel?: string;
+    forceExternal?: boolean;
+    referrerParam?: string;
+    referrerSource?: string;
+    referrerCampaign?: string;
+    autoReferrer?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showIcon: true,
-  iconSize: 'sm',
-  className: 'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-blue-300 dark:decoration-blue-600 underline-offset-2 transition-colors duration-200',
-  iconClassName: 'text-gray-400 dark:text-gray-500',
-  ariaLabel: undefined,
-  forceExternal: false,
-  referrerParam: undefined,
-  referrerSource: undefined,
-  referrerCampaign: undefined,
-  autoReferrer: true
-})
+    showIcon: true,
+    iconSize: 'sm',
+    className:
+        'text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-blue-300 dark:decoration-blue-600 underline-offset-2 transition-colors duration-200',
+    iconClassName: 'text-gray-400 dark:text-gray-500',
+    ariaLabel: undefined,
+    forceExternal: false,
+    referrerParam: undefined,
+    referrerSource: undefined,
+    referrerCampaign: undefined,
+    autoReferrer: true,
+});
 
 // Check if link is external
-const isExternal = computed(() => props.forceExternal || isExternalUrl(props.href))
+const isExternal = computed(() => props.forceExternal || isExternalUrl(props.href));
 
 // Generate referrer parameter
 const referrerParam = computed(() => {
-  if (props.referrerParam) {
-    return props.referrerParam
-  }
-  
-  if (props.referrerSource || props.referrerCampaign) {
-    return generateReferrerParam(props.referrerSource, props.referrerCampaign)
-  }
-  
-  if (props.autoReferrer) {
-    return getCurrentPageReferrerParam()
-  }
-  
-  return undefined
-})
+    if (props.referrerParam) {
+        return props.referrerParam;
+    }
+
+    if (props.referrerSource || props.referrerCampaign) {
+        return generateReferrerParam(props.referrerSource, props.referrerCampaign);
+    }
+
+    if (props.autoReferrer) {
+        return getCurrentPageReferrerParam();
+    }
+
+    return undefined;
+});
 
 // Generate link attributes
 const linkAttributes = computed(() => {
-  return getExternalLinkAttributes(props.href, props.ariaLabel || props.label, referrerParam.value)
-})
+    return getExternalLinkAttributes(props.href, props.ariaLabel || props.label, referrerParam.value);
+});
 
 // Get icon size classes
 const iconSizeClasses = computed(() => {
-  switch (props.iconSize) {
-    case 'sm':
-      return 'w-3 h-3'
-    case 'md':
-      return 'w-4 h-4'
-    case 'lg':
-      return 'w-5 h-5'
-    default:
-      return 'w-3 h-3'
-  }
-})
+    switch (props.iconSize) {
+        case 'sm':
+            return 'w-3 h-3';
+        case 'md':
+            return 'w-4 h-4';
+        case 'lg':
+            return 'w-5 h-5';
+        default:
+            return 'w-3 h-3';
+    }
+});
 </script>
 
 <template>
-  <a
-    v-bind="linkAttributes"
-    :class="className"
-    class="inline-flex items-center gap-1"
-  >
-    <slot>
-      <span v-if="label">{{ label }}</span>
-      <span v-else>{{ href }}</span>
-    </slot>
+    <a v-bind="linkAttributes" :class="className" class="inline-flex items-center gap-1">
+        <slot>
+            <span v-if="label">{{ label }}</span>
+            <span v-else>{{ href }}</span>
+        </slot>
 
-    <Icon
-      v-if="showIcon && isExternal"
-      name="externalLink"
-      :class="`${iconSizeClasses} ${iconClassName}`"
-      aria-hidden="true"
-    />
-  </a>
+        <Icon v-if="showIcon && isExternal" name="externalLink" :class="`${iconSizeClasses} ${iconClassName}`" aria-hidden="true" />
+    </a>
 </template>
