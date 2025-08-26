@@ -42,7 +42,7 @@ describe('TelegramRateLimitService', function () {
                 'user_id' => $this->user->id,
             ]);
 
-            expect(fn() => $this->service->shouldSendNotification($this->user, $emailChannel))
+            expect(fn () => $this->service->shouldSendNotification($this->user, $emailChannel))
                 ->toThrow(InvalidArgumentException::class, 'NotificationChannel must be of type telegram');
         });
 

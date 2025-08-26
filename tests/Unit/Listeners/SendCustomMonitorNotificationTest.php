@@ -22,7 +22,7 @@ beforeEach(function () {
     $this->user1 = User::factory()->create();
     $this->user2 = User::factory()->create();
 
-    $this->listener = new SendCustomMonitorNotification();
+    $this->listener = new SendCustomMonitorNotification;
 
     Notification::fake();
     \Illuminate\Support\Facades\Queue::fake();
@@ -38,7 +38,7 @@ describe('SendCustomMonitorNotification', function () {
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
-            
+
             \App\Models\NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
@@ -52,7 +52,7 @@ describe('SendCustomMonitorNotification', function () {
 
             $downtimePeriod = new Period(now()->subMinutes(5), now());
             $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
-            
+
             $this->listener->handle($event);
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class);
@@ -68,7 +68,7 @@ describe('SendCustomMonitorNotification', function () {
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
-            
+
             \App\Models\NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
@@ -86,6 +86,7 @@ describe('SendCustomMonitorNotification', function () {
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
                 $data = $notification->toArray($this->user1);
+
                 return $data['status'] === 'UP';
             });
 
@@ -109,6 +110,7 @@ describe('SendCustomMonitorNotification', function () {
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
                 $data = $notification->toArray($this->user1);
+
                 return $data['status'] === 'UP';
             });
         });
@@ -167,7 +169,7 @@ describe('SendCustomMonitorNotification', function () {
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
-            
+
             \App\Models\NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
@@ -181,8 +183,8 @@ describe('SendCustomMonitorNotification', function () {
             // Mock user1's notify method to throw exception
             Notification::shouldReceive('send')
                 ->withArgs(function ($notifiables, $notification) {
-                    return $notifiables instanceof \App\Models\User && 
-                           $notifiables->id === $this->user1->id && 
+                    return $notifiables instanceof \App\Models\User &&
+                           $notifiables->id === $this->user1->id &&
                            $notification instanceof MonitorStatusChanged;
                 })
                 ->once()
@@ -191,8 +193,8 @@ describe('SendCustomMonitorNotification', function () {
             // Allow other notifications to be sent normally
             Notification::shouldReceive('send')
                 ->withArgs(function ($notifiables, $notification) {
-                    return $notifiables instanceof \App\Models\User && 
-                           $notifiables->id === $this->user2->id && 
+                    return $notifiables instanceof \App\Models\User &&
+                           $notifiables->id === $this->user2->id &&
                            $notification instanceof MonitorStatusChanged;
                 })
                 ->once()
@@ -203,7 +205,7 @@ describe('SendCustomMonitorNotification', function () {
 
             // This should not throw exception despite user1 failing
             $this->listener->handle($event);
-            
+
             // Since we're manually controlling the mocks, we can't use assertSentTo
             // Instead we verify via our mock expectations above
             expect(true)->toBeTrue();
@@ -275,6 +277,7 @@ describe('SendCustomMonitorNotification', function () {
                 expect($data['status'])->toBe('DOWN');
                 expect($data['message'])->toContain((string) $this->monitor->url);
                 expect($data['message'])->toContain('DOWN');
+
                 return true;
             });
         });

@@ -195,7 +195,7 @@ describe('CalculateSingleMonitorUptimeJob', function () {
         it('throws exception for invalid date format', function () {
             $job = new CalculateSingleMonitorUptimeJob($this->monitor->id, 'invalid-date');
 
-            expect(fn() => $job->handle())
+            expect(fn () => $job->handle())
                 ->toThrow(Exception::class, 'Invalid date format: invalid-date');
         });
 

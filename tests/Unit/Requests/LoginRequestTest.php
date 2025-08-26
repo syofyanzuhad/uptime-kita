@@ -20,17 +20,17 @@ beforeEach(function () {
 describe('LoginRequest', function () {
     describe('authorization', function () {
         it('is always authorized', function () {
-            $request = new LoginRequest();
-            
+            $request = new LoginRequest;
+
             expect($request->authorize())->toBeTrue();
         });
     });
 
     describe('validation rules', function () {
         it('requires email and password', function () {
-            $request = new LoginRequest();
+            $request = new LoginRequest;
             $rules = $request->rules();
-            
+
             expect($rules)->toHaveKey('email');
             expect($rules)->toHaveKey('password');
             expect($rules['email'])->toContain('required');
@@ -46,11 +46,11 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'password',
             ]);
-            
+
             expect(Auth::check())->toBeFalse();
-            
+
             $request->authenticate();
-            
+
             expect(Auth::check())->toBeTrue();
             expect(Auth::user()->email)->toBe('test@example.com');
         });
@@ -60,10 +60,10 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'wrong-password',
             ]);
-            
-            expect(fn() => $request->authenticate())
+
+            expect(fn () => $request->authenticate())
                 ->toThrow(ValidationException::class);
-            
+
             expect(Auth::check())->toBeFalse();
         });
 
@@ -72,13 +72,13 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'password',
             ]);
-            
+
             // Simulate some failed attempts
             RateLimiter::hit($request->throttleKey());
             expect(RateLimiter::attempts($request->throttleKey()))->toBe(1);
-            
+
             $request->authenticate();
-            
+
             expect(RateLimiter::attempts($request->throttleKey()))->toBe(0);
         });
 
@@ -87,15 +87,15 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'wrong-password',
             ]);
-            
+
             expect(RateLimiter::attempts($request->throttleKey()))->toBe(0);
-            
+
             try {
                 $request->authenticate();
             } catch (ValidationException $e) {
                 // Expected
             }
-            
+
             expect(RateLimiter::attempts($request->throttleKey()))->toBe(1);
         });
     });
@@ -106,10 +106,10 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'password',
             ]);
-            
+
             // Should not throw an exception
             $request->ensureIsNotRateLimited();
-            
+
             expect(true)->toBeTrue(); // If we get here, no exception was thrown
         });
 
@@ -118,13 +118,13 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'wrong-password',
             ]);
-            
+
             // Hit the rate limiter 5 times (the limit)
             for ($i = 0; $i < 5; $i++) {
                 RateLimiter::hit($request->throttleKey());
             }
-            
-            expect(fn() => $request->ensureIsNotRateLimited())
+
+            expect(fn () => $request->ensureIsNotRateLimited())
                 ->toThrow(ValidationException::class);
         });
 
@@ -133,9 +133,9 @@ describe('LoginRequest', function () {
                 'email' => 'Test@Example.COM',
                 'password' => 'password',
             ], [], [], ['REMOTE_ADDR' => '192.168.1.1']);
-            
+
             $throttleKey = $request->throttleKey();
-            
+
             expect($throttleKey)->toContain('test@example.com');
             expect($throttleKey)->toContain('192.168.1.1');
             expect($throttleKey)->toContain('|');
@@ -145,11 +145,11 @@ describe('LoginRequest', function () {
             $request1 = LoginRequest::create('/login', 'POST', [
                 'email' => 'Test@Example.COM',
             ], [], [], ['REMOTE_ADDR' => '192.168.1.1']);
-            
+
             $request2 = LoginRequest::create('/login', 'POST', [
                 'email' => 'test@example.com',
             ], [], [], ['REMOTE_ADDR' => '192.168.1.1']);
-            
+
             expect($request1->throttleKey())->toBe($request2->throttleKey());
         });
     });
@@ -161,9 +161,9 @@ describe('LoginRequest', function () {
                 'password' => 'password',
                 'remember' => true,
             ]);
-            
+
             $request->authenticate();
-            
+
             expect(Auth::check())->toBeTrue();
             // Note: In a real test, you might check for the remember cookie
         });
@@ -174,9 +174,9 @@ describe('LoginRequest', function () {
                 'password' => 'password',
                 'remember' => false,
             ]);
-            
+
             $request->authenticate();
-            
+
             expect(Auth::check())->toBeTrue();
         });
 
@@ -185,9 +185,9 @@ describe('LoginRequest', function () {
                 'email' => 'test@example.com',
                 'password' => 'password',
             ]);
-            
+
             $request->authenticate();
-            
+
             expect(Auth::check())->toBeTrue();
         });
     });

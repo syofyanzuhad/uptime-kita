@@ -201,8 +201,8 @@ describe('MonitorStatusChanged', function () {
 
             // Check that message contains DOWN indicators
             expect($result)->toBeInstanceOf(TelegramMessage::class);
-            
-            // TelegramMessage doesn't expose content property directly, 
+
+            // TelegramMessage doesn't expose content property directly,
             // so we'll verify it was created with the correct type
         });
 

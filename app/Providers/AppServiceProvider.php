@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
                 'inertia.page_paths' => [resource_path('js/pages')],
                 'inertia.testing.page_paths' => [resource_path('js/pages')],
             ]);
-            
+
             // Rebind the testing view finder with correct paths
             $this->app->bind('inertia.testing.view-finder', function ($app) {
                 return new \Illuminate\View\FileViewFinder(
