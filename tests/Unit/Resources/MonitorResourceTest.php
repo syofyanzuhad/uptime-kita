@@ -4,6 +4,7 @@ use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorUptimeDaily;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -11,6 +12,7 @@ use Illuminate\Support\Collection;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Carbon::setTestNow(now());
     $this->monitor = Monitor::factory()->create([
         'url' => 'https://example.com',
         'uptime_check_enabled' => true,
@@ -21,6 +23,10 @@ beforeEach(function () {
         'is_subscribed' => false,
         'uptime_check_failure_reason' => null,
     ]);
+});
+
+afterEach(function () {
+    Carbon::setTestNow(null);
 });
 
 describe('MonitorResource', function () {

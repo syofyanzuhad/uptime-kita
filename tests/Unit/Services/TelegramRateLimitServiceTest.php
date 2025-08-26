@@ -3,12 +3,14 @@
 use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Services\TelegramRateLimitService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Carbon::setTestNow(now());
     $this->service = app(TelegramRateLimitService::class);
     $this->user = User::factory()->create();
     $this->telegramChannel = NotificationChannel::factory()->create([
@@ -16,16 +18,20 @@ beforeEach(function () {
         'destination' => '123456789',
         'user_id' => $this->user->id,
     ]);
-    
+
     // Clear cache before each test
     Cache::flush();
+});
+
+afterEach(function () {
+    Carbon::setTestNow(null);
 });
 
 describe('TelegramRateLimitService', function () {
     describe('shouldSendNotification', function () {
         it('allows notification when no rate limits are hit', function () {
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeTrue();
         });
 
@@ -35,7 +41,7 @@ describe('TelegramRateLimitService', function () {
                 'destination' => 'test@example.com',
                 'user_id' => $this->user->id,
             ]);
-            
+
             expect(fn() => $this->service->shouldSendNotification($this->user, $emailChannel))
                 ->toThrow(InvalidArgumentException::class, 'NotificationChannel must be of type telegram');
         });
@@ -49,9 +55,9 @@ describe('TelegramRateLimitService', function () {
                 'minute_count' => 0,
                 'hour_count' => 0,
             ], 120);
-            
+
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeFalse();
         });
 
@@ -63,9 +69,9 @@ describe('TelegramRateLimitService', function () {
                 'hour_count' => 10,
                 'hour_window_start' => now()->timestamp,
             ], 120);
-            
+
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeFalse();
         });
 
@@ -77,9 +83,9 @@ describe('TelegramRateLimitService', function () {
                 'hour_count' => 101, // Over the 100 limit
                 'hour_window_start' => now()->timestamp,
             ], 120);
-            
+
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeFalse();
         });
 
@@ -91,9 +97,9 @@ describe('TelegramRateLimitService', function () {
                 'hour_count' => 10,
                 'hour_window_start' => now()->timestamp,
             ], 120);
-            
+
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeTrue();
         });
 
@@ -105,9 +111,9 @@ describe('TelegramRateLimitService', function () {
                 'hour_count' => 101, // Over limit but old window
                 'hour_window_start' => now()->subHours(2)->timestamp,
             ], 120);
-            
+
             $result = $this->service->shouldSendNotification($this->user, $this->telegramChannel);
-            
+
             expect($result)->toBeTrue();
         });
     });
@@ -115,7 +121,7 @@ describe('TelegramRateLimitService', function () {
     describe('trackSuccessfulNotification', function () {
         it('increments counters correctly', function () {
             $this->service->trackSuccessfulNotification($this->user, $this->telegramChannel);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['minute_count'])->toBe(1);
             expect($stats['hour_count'])->toBe(1);
@@ -131,9 +137,9 @@ describe('TelegramRateLimitService', function () {
                 'minute_count' => 0,
                 'hour_count' => 0,
             ], 120);
-            
+
             $this->service->trackSuccessfulNotification($this->user, $this->telegramChannel);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['backoff_count'])->toBe(0);
             expect($stats['backoff_until'])->toBeNull();
@@ -148,9 +154,9 @@ describe('TelegramRateLimitService', function () {
                 'hour_count' => 5,
                 'hour_window_start' => now()->timestamp,
             ], 120);
-            
+
             $this->service->trackSuccessfulNotification($this->user, $this->telegramChannel);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['minute_count'])->toBe(1); // Reset to 1
             expect($stats['hour_count'])->toBe(6); // Incremented from 5
@@ -160,7 +166,7 @@ describe('TelegramRateLimitService', function () {
     describe('trackFailedNotification', function () {
         it('sets initial backoff period', function () {
             $this->service->trackFailedNotification($this->user, $this->telegramChannel);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['backoff_count'])->toBe(1);
             expect($stats['backoff_until'])->not->toBeNull();
@@ -171,11 +177,11 @@ describe('TelegramRateLimitService', function () {
             // First failure
             $this->service->trackFailedNotification($this->user, $this->telegramChannel);
             $stats1 = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
-            
+
             // Second failure
             $this->service->trackFailedNotification($this->user, $this->telegramChannel);
             $stats2 = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
-            
+
             expect($stats2['backoff_count'])->toBe(2);
             expect($stats2['backoff_until'])->toBeGreaterThan($stats1['backoff_until']);
         });
@@ -187,9 +193,9 @@ describe('TelegramRateLimitService', function () {
                 'minute_count' => 0,
                 'hour_count' => 0,
             ], 120);
-            
+
             $this->service->trackFailedNotification($this->user, $this->telegramChannel);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['backoff_count'])->toBe(11);
             expect($stats['backoff_until'])->toBeLessThan(now()->addMinutes(61)->timestamp);
@@ -199,7 +205,7 @@ describe('TelegramRateLimitService', function () {
     describe('getRateLimitStats', function () {
         it('returns default stats for new user', function () {
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
-            
+
             expect($stats)->toMatchArray([
                 'minute_count' => 0,
                 'hour_count' => 0,
@@ -219,9 +225,9 @@ describe('TelegramRateLimitService', function () {
                 'backoff_count' => 2,
                 'backoff_until' => now()->addMinutes(30)->timestamp,
             ], 120);
-            
+
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
-            
+
             expect($stats['minute_count'])->toBe(5);
             expect($stats['hour_count'])->toBe(25);
             expect($stats['backoff_count'])->toBe(2);
@@ -234,14 +240,14 @@ describe('TelegramRateLimitService', function () {
             // Set up some rate limit data
             $this->service->trackSuccessfulNotification($this->user, $this->telegramChannel);
             $this->service->trackFailedNotification($this->user, $this->telegramChannel);
-            
+
             // Verify data exists
             $statsBeforeReset = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($statsBeforeReset['minute_count'])->toBeGreaterThan(0);
-            
+
             // Reset
             $this->service->resetRateLimit($this->user, $this->telegramChannel);
-            
+
             // Verify data is cleared
             $statsAfterReset = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($statsAfterReset['minute_count'])->toBe(0);

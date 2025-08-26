@@ -12,7 +12,7 @@ use Carbon\Carbon;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    Carbon::setTestNow(Carbon::parse('2024-01-01 12:00:00'));
+    Carbon::setTestNow(now());
     $this->user = User::factory()->create();
     $this->monitor = Monitor::factory()->create([
         'url' => 'https://example.com',
@@ -21,7 +21,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    Carbon::setTestNow(); // clear freeze
+    Carbon::setTestNow(null);
 });
 
 describe('Monitor Model', function () {

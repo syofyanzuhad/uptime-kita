@@ -10,11 +10,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Carbon::setTestNow(now());
     $this->service = app(MonitorPerformanceService::class);
     $this->monitor = Monitor::factory()->create([
         'url' => 'https://example.com',
         'uptime_check_enabled' => true,
     ]);
+});
+
+afterEach(function () {
+    Carbon::setTestNow(null);
 });
 
 describe('MonitorPerformanceService', function () {
