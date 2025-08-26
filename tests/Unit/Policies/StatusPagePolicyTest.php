@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 
 describe('StatusPagePolicy', function () {
     beforeEach(function () {
-        $this->policy = new StatusPagePolicy();
+        $this->policy = new StatusPagePolicy;
         $this->user = User::factory()->create();
         $this->otherUser = User::factory()->create();
         $this->statusPage = StatusPage::factory()->create(['user_id' => $this->user->id]);
@@ -83,7 +83,7 @@ describe('StatusPagePolicy', function () {
         it('correctly validates ownership across different users', function () {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
-            
+
             $statusPage1 = StatusPage::factory()->create(['user_id' => $user1->id]);
             $statusPage2 = StatusPage::factory()->create(['user_id' => $user2->id]);
 
