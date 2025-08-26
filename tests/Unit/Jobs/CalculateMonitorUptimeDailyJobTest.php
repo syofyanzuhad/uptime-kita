@@ -20,13 +20,13 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'url' => 'https://example.com',
                 'uptime_check_enabled' => true,
             ]);
-            
+
             $job = new CalculateMonitorUptimeDailyJob();
             $job->handle();
-            
+
             // Should dispatch 3 CalculateSingleMonitorUptimeJob instances
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 3);
-            
+
             // Verify each monitor gets a job
             foreach ($monitors as $monitor) {
                 Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitor) {
@@ -39,7 +39,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             // No monitors in database
             $job = new CalculateMonitorUptimeDailyJob();
             $job->handle();
-            
+
             // Should not dispatch any jobs
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 0);
         });
@@ -50,10 +50,10 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'url' => 'https://example.com',
                 'uptime_check_enabled' => true,
             ]);
-            
+
             $job = new CalculateMonitorUptimeDailyJob();
             $job->handle();
-            
+
             // Should dispatch 25 jobs
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 25);
         });
@@ -64,10 +64,10 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'url' => 'https://example.com',
                 'uptime_check_enabled' => true,
             ]);
-            
+
             $job = new CalculateMonitorUptimeDailyJob();
             $job->handle();
-            
+
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 50);
         });
 
@@ -76,26 +76,25 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'url' => 'https://example.com',
                 'uptime_check_enabled' => true,
             ]);
-            
+
             // Mock the Log facade to capture messages
             $this->expectLogged('info', 'Starting daily uptime calculation batch job');
             $this->expectLogged('info', 'Creating batch jobs for monitors');
             $this->expectLogged('info', 'All chunks dispatched successfully');
-            
+
             $job = new CalculateMonitorUptimeDailyJob();
             $job->handle();
         });
 
         it('re-throws exceptions for proper error handling', function () {
-            // Create a mock monitor repository that throws an exception
-            $this->mock(Monitor::class, function ($mock) {
-                $mock->shouldReceive('pluck')
-                    ->with('id')
-                    ->andThrow(new Exception('Database error'));
-            });
-            
-            $job = new CalculateMonitorUptimeDailyJob();
-            
+            // Create a partial mock of the job that allows mocking protected methods
+            $job = $this->partialMock(CalculateMonitorUptimeDailyJob::class);
+
+            // Mock the protected getMonitorIds method to throw an exception
+            $job->shouldReceive('getMonitorIds')
+                ->once()
+                ->andThrow(new Exception('Database error'));
+
             expect(fn() => $job->handle())
                 ->toThrow(Exception::class, 'Database error');
         });

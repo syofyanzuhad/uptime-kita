@@ -28,7 +28,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
         try {
             // Get all monitor IDs
-            $monitorIds = Monitor::pluck('id')->toArray();
+            $monitorIds = $this->getMonitorIds();
 
             if (empty($monitorIds)) {
                 Log::info('No monitors found for uptime calculation');
@@ -92,5 +92,15 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * Get all monitor IDs for uptime calculation.
+     *
+     * @return array
+     */
+    protected function getMonitorIds(): array
+    {
+        return Monitor::pluck('id')->toArray();
     }
 }
