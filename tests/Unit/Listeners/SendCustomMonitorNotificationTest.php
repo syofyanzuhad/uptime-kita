@@ -140,7 +140,7 @@ describe('SendCustomMonitorNotification', function () {
             Notification::assertSentTo($this->user2, MonitorStatusChanged::class);
         });
 
-        it('determines correct status for different event types', function () {
+        it('determines correct status for failed event type', function () {
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             // Test failed event
@@ -150,9 +150,10 @@ describe('SendCustomMonitorNotification', function () {
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
                 return $notification->toArray(null)['status'] === 'DOWN';
             });
+        });
 
-            // Clear notifications
-            Notification::fake();
+        it('determines correct status for recovered event type', function () {
+            $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             // Test recovered event
             $recoveredEvent = new UptimeCheckRecovered($this->monitor);
