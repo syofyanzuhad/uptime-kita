@@ -1,9 +1,18 @@
 <?php
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+
+beforeEach(function () {
+    Carbon::setTestNow(now());
+});
+
+afterEach(function () {
+    Carbon::setTestNow(null);
+});
 
 test('email verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();

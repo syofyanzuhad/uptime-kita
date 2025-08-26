@@ -135,7 +135,10 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'id' => $this->data['id'],
+            'url' => $this->data['url'],
+            'status' => $this->data['status'],
+            'message' => $this->data['message'],
         ];
     }
 }

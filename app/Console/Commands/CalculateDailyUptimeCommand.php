@@ -35,6 +35,18 @@ class CalculateDailyUptimeCommand extends Command
         $monitorId = $this->option('monitor-id');
         $force = $this->option('force');
 
+        // Validate monitor ID if provided
+        if ($monitorId !== null) {
+            if (!is_numeric($monitorId)) {
+                $this->error("Invalid monitor ID: {$monitorId}. Monitor ID must be a number.");
+                return 1;
+            }
+            if ((int)$monitorId < 0) {
+                $this->error("Invalid monitor ID: {$monitorId}. Monitor ID must be a number.");
+                return 1;
+            }
+        }
+
         // Validate date format
         if (! $this->isValidDate($date)) {
             $this->error("Invalid date format: {$date}. Please use Y-m-d format (e.g., 2024-01-15)");
@@ -45,15 +57,26 @@ class CalculateDailyUptimeCommand extends Command
         $this->info("Starting daily uptime calculation for date: {$date}");
 
         try {
+            $processedCount = 0;
+            
             if ($monitorId) {
                 // Calculate for specific monitor
-                $this->calculateForSpecificMonitor($monitorId, $date, $force);
+                $result = $this->calculateForSpecificMonitor($monitorId, $date, $force);
+                if ($result === false) {
+                    return 1;
+                }
+                $processedCount = $result;
             } else {
                 // Calculate for all monitors
-                $this->calculateForAllMonitors($date, $force);
+                $processedCount = $this->calculateForAllMonitors($date, $force);
             }
 
-            $this->info('Daily uptime calculation job dispatched successfully!');
+            if ($processedCount > 0) {
+                $this->info('Daily uptime calculation completed');
+                if (!$monitorId) {
+                    $this->info("Total monitors processed: {$processedCount}");
+                }
+            }
 
             return 0;
 
@@ -75,10 +98,13 @@ class CalculateDailyUptimeCommand extends Command
      */
     private function isValidDate(string $date): bool
     {
+        if (empty($date)) {
+            return false;
+        }
+        
         try {
-            Carbon::createFromFormat('Y-m-d', $date);
-
-            return true;
+            $parsed = Carbon::createFromFormat('Y-m-d', $date);
+            return $parsed && $parsed->format('Y-m-d') === $date;
         } catch (\Exception $e) {
             return false;
         }
@@ -87,23 +113,22 @@ class CalculateDailyUptimeCommand extends Command
     /**
      * Calculate uptime for a specific monitor
      */
-    private function calculateForSpecificMonitor(?string $monitorId, string $date, bool $force): void
+    private function calculateForSpecificMonitor(?string $monitorId, string $date, bool $force)
     {
         // Validate monitor exists
         $monitor = Monitor::find($monitorId);
         if (! $monitor) {
             $this->error("Monitor with ID {$monitorId} not found");
-
-            return;
+            return false;
         }
 
-        $this->info("Calculating uptime for monitor: {$monitor->name} (ID: {$monitorId})");
+        $displayName = $monitor->display_name ?: $monitor->url;
+        $this->info("Calculating uptime for monitor: {$displayName} (ID: {$monitorId})");
 
         // Check if calculation already exists (unless force is used)
         if (! $force && $this->calculationExists($monitorId, $date)) {
             $this->warn("Uptime calculation for monitor {$monitorId} on {$date} already exists. Use --force to recalculate.");
-
-            return;
+            return 0;
         }
 
         // Dispatch single monitor calculation job
@@ -111,12 +136,13 @@ class CalculateDailyUptimeCommand extends Command
         dispatch($job);
 
         $this->info("Job dispatched for monitor {$monitorId} for date {$date}");
+        return 1;
     }
 
     /**
      * Calculate uptime for all monitors
      */
-    private function calculateForAllMonitors(string $date, bool $force): void
+    private function calculateForAllMonitors(string $date, bool $force): int
     {
         $this->info("Calculating uptime for all monitors for date: {$date}");
 
@@ -124,9 +150,8 @@ class CalculateDailyUptimeCommand extends Command
         $monitorIds = Monitor::pluck('id')->toArray();
 
         if (empty($monitorIds)) {
-            $this->warn('No monitors found for uptime calculation');
-
-            return;
+            $this->info('No monitors found to calculate uptime for');
+            return 0;
         }
 
         $this->info('Found '.count($monitorIds).' monitors to process');
@@ -137,8 +162,7 @@ class CalculateDailyUptimeCommand extends Command
 
         if (empty($monitorsToProcess)) {
             $this->info('All monitors already have uptime calculations for this date. Use --force to recalculate.');
-
-            return;
+            return 0;
         }
 
         $this->info('Processing '.count($monitorsToProcess).' monitors');
@@ -150,6 +174,7 @@ class CalculateDailyUptimeCommand extends Command
         }
 
         $this->info('Dispatched '.count($monitorsToProcess).' calculation jobs');
+        return count($monitorsToProcess);
     }
 
     /**

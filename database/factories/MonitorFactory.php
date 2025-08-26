@@ -18,16 +18,16 @@ class MonitorFactory extends Factory
     public function definition(): array
     {
         return [
-            'url' => $this->faker->url(),
-            'uptime_status' => $this->faker->randomElement(['up', 'down', 'not yet checked']),
-            'uptime_check_enabled' => $this->faker->boolean(80), // 80% chance of being enabled
-            'certificate_check_enabled' => $this->faker->boolean(),
-            'uptime_check_interval_in_minutes' => $this->faker->randomElement([1, 5, 15, 30, 60]),
-            'is_public' => $this->faker->boolean(70), // 70% chance of being public
-            'uptime_last_check_date' => $this->faker->dateTimeBetween('-1 hour', 'now'),
-            'uptime_status_last_change_date' => $this->faker->dateTimeBetween('-1 day', 'now'),
-            'certificate_status' => $this->faker->randomElement(['valid', 'invalid', 'not applicable']),
-            'certificate_expiration_date' => $this->faker->dateTimeBetween('now', '+1 year'),
+            'url' => 'https://example' . $this->faker->unique()->numberBetween(1, 100000) . '.com',
+            'uptime_status' => 'up',
+            'uptime_check_enabled' => true,
+            'certificate_check_enabled' => false,
+            'uptime_check_interval_in_minutes' => 5,
+            'is_public' => true,
+            'uptime_last_check_date' => now(),
+            'uptime_status_last_change_date' => now(),
+            'certificate_status' => 'not applicable',
+            'certificate_expiration_date' => null,
         ];
     }
 
