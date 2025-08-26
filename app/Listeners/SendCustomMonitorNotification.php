@@ -60,7 +60,7 @@ class SendCustomMonitorNotification
             try {
                 $user->notify(new MonitorStatusChanged([
                     'id' => $monitor->id,
-                    'url' => $monitor->url,
+                    'url' => (string) $monitor->url,
                     'status' => $status,
                     'message' => "Website {$monitor->url} is {$status}",
                 ]));

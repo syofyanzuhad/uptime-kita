@@ -45,7 +45,7 @@
             <script defer src="https://cloud.umami.is/script.js" data-website-id="27ccc29a-1870-4f9f-9d22-9fd9f91e9b12"></script>
         @endif
         @routes
-        @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
+        @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
