@@ -21,7 +21,7 @@ withDefaults(defineProps<Props>(), {
         <div class="mx-4 my-1">
             <!-- Flash Message -->
             <FlashMessage />
-    
+
             <!-- Validation Alert -->
             <ValidationAlert :errors="(page.props as any).errors" />
         </div>

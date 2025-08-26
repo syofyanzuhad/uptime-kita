@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
+import { router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import NotificationChannelForm from './NotificationChannelForm.vue';
 import NotificationChannelItem from './NotificationChannelItem.vue';
 
@@ -23,28 +23,28 @@ watch(
     () => props.channels,
     (newVal) => {
         channels.value = [...newVal];
-    }
+    },
 );
 
 watch(
     () => props.showForm,
     (newVal) => {
         showForm.value = newVal || false;
-    }
+    },
 );
 
 watch(
     () => props.isEdit,
     (newVal) => {
         isEdit.value = newVal || false;
-    }
+    },
 );
 
 watch(
     () => props.editingChannel,
     (newVal) => {
         editingChannel.value = newVal || undefined;
-    }
+    },
 );
 
 function handleAdd(): void {
@@ -68,16 +68,13 @@ async function handleToggle(channel: any): Promise<void> {
 
 <template>
     <div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="mb-4 flex items-center justify-between">
             <h2 class="text-lg font-bold">Notification Channels</h2>
             <Button @click="handleAdd" variant="default">Add Channel</Button>
         </div>
         <div v-if="channels.length === 0" class="text-gray-500">No notification channels configured.</div>
         <div v-if="showForm" class="my-6">
-            <NotificationChannelForm
-                :channel="editingChannel"
-                :isEdit="isEdit"
-            />
+            <NotificationChannelForm :channel="editingChannel" :isEdit="isEdit" />
         </div>
         <div>
             <NotificationChannelItem
