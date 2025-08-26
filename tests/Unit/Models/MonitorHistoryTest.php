@@ -77,7 +77,7 @@ describe('MonitorHistory Model', function () {
         it('returns latest history for specific monitor', function () {
             // Clear existing history from beforeEach
             MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
-            
+
             MonitorHistory::factory()->create([
                 'monitor_id' => $this->monitor->id,
                 'created_at' => now()->subMinutes(10),
@@ -99,7 +99,7 @@ describe('MonitorHistory Model', function () {
         it('returns null when no history exists for monitor', function () {
             // Clean up all existing history first
             MonitorHistory::truncate();
-            
+
             $otherMonitor = Monitor::factory()->create();
 
             $latest = MonitorHistory::latestByMonitorId($otherMonitor->id)->first();
@@ -112,9 +112,9 @@ describe('MonitorHistory Model', function () {
         it('returns latest history for multiple monitors', function () {
             // Clear existing history
             MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
-            
+
             $monitor2 = Monitor::factory()->create();
-            
+
             MonitorHistory::factory()->create([
                 'monitor_id' => $this->monitor->id,
                 'created_at' => now()->subMinutes(5),
@@ -144,7 +144,7 @@ describe('MonitorHistory Model', function () {
         it('returns only latest record per minute', function () {
             // Clear existing history
             MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
-            
+
             $now = now();
 
             // Create multiple records within the same minute
@@ -170,7 +170,7 @@ describe('MonitorHistory Model', function () {
 
             // Should return 1 record: the latest from this minute
             expect($unique)->toHaveCount(1);
-            
+
             // The record should be the latest one (recovery)
             expect($unique->first()->uptime_status)->toBe('recovery');
         });
@@ -221,7 +221,7 @@ describe('MonitorHistory Model', function () {
             ]);
 
             // Call the prunable method on the model instance
-            $prunableQuery = (new MonitorHistory())->prunable();
+            $prunableQuery = (new MonitorHistory)->prunable();
             $prunableIds = $prunableQuery->pluck('id');
 
             expect($prunableIds)->toContain($oldHistory->id);

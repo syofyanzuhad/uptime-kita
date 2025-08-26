@@ -78,15 +78,15 @@ describe('User CRUD Operations', function () {
         });
 
         it('can search users by email', function () {
-            User::factory()->create(['email' => 'john@example.com']);
-            User::factory()->create(['email' => 'jane@example.com']);
+            User::factory()->create(['email' => 'johntest@example.com', 'name' => 'Test User']);
+            User::factory()->create(['email' => 'jane@example.com', 'name' => 'Another User']);
 
-            $response = actingAs($this->user)->get('/users?search=john');
+            $response = actingAs($this->user)->get('/users?search=johntest');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
                 ->component('users/Index')
-                ->where('search', 'john')
+                ->where('search', 'johntest')
                 ->has('users.data', 1)
             );
         });

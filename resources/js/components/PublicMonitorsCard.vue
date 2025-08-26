@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/Icon.vue';
-import type { Monitor } from '@/types/monitor';
-import { usePage, router } from '@inertiajs/vue3';
-import type { SharedData } from '@/types';
-import MonitorGrid from './MonitorGrid.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookmarks } from '@/composables/useBookmarks';
+import type { SharedData } from '@/types';
+import type { Monitor } from '@/types/monitor';
+import { router, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import MonitorGrid from './MonitorGrid.vue';
 
 interface Props {
     searchQuery?: string;
@@ -67,15 +67,15 @@ const filteredMonitors = computed(() => {
     let monitors = publicMonitors.value;
     // Filter by status
     if (props.statusFilter === 'up' || props.statusFilter === 'down') {
-        monitors = monitors.filter(monitor => monitor.uptime_status === props.statusFilter);
+        monitors = monitors.filter((monitor) => monitor.uptime_status === props.statusFilter);
     } else if (props.statusFilter === 'unsubscribed') {
-        monitors = monitors.filter(monitor => !monitor.is_subscribed);
+        monitors = monitors.filter((monitor) => !monitor.is_subscribed);
     } else if (props.statusFilter === 'globally_enabled') {
         // Filter for globally enabled monitors (uptime_check_enabled is true)
-        monitors = monitors.filter(monitor => monitor.uptime_check_enabled);
+        monitors = monitors.filter((monitor) => monitor.uptime_check_enabled);
     } else if (props.statusFilter === 'globally_disabled') {
         // Filter for globally disabled monitors (uptime_check_enabled is false)
-        monitors = monitors.filter(monitor => !monitor.uptime_check_enabled);
+        monitors = monitors.filter((monitor) => !monitor.uptime_check_enabled);
     }
     // Remove client-side search filter here
     return monitors;
@@ -122,9 +122,9 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         }
         const response = await fetch(`/public-monitors?${params.toString()}`, {
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
         });
         if (!response.ok) {
             throw new Error('Failed to fetch public monitors');
@@ -198,7 +198,7 @@ const subscribeToMonitor = async (monitorId: number) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     // Update the monitor's subscription status
-                    const monitor = publicMonitors.value.find(m => m.id === monitorId);
+                    const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.is_subscribed = true;
                     }
@@ -209,8 +209,8 @@ const subscribeToMonitor = async (monitorId: number) => {
                 },
                 onFinish: () => {
                     subscribingMonitors.value.delete(monitorId);
-                }
-            }
+                },
+            },
         );
     } catch {
         alert('Terjadi kesalahan saat berlangganan monitor');
@@ -237,7 +237,7 @@ const unsubscribeFromMonitor = async (monitorId: number) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     // Update the monitor's subscription status
-                    const monitor = publicMonitors.value.find(m => m.id === monitorId);
+                    const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.is_subscribed = false;
                     }
@@ -248,8 +248,8 @@ const unsubscribeFromMonitor = async (monitorId: number) => {
                 },
                 onFinish: () => {
                     unsubscribingMonitors.value.delete(monitorId);
-                }
-            }
+                },
+            },
         );
     } catch {
         alert('Terjadi kesalahan saat berhenti berlangganan monitor');
@@ -275,7 +275,7 @@ const toggleActive = async (monitorId: number) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     // Update the monitor's uptime_check_enabled status
-                    const monitor = publicMonitors.value.find(m => m.id === monitorId);
+                    const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
                     }
@@ -285,16 +285,14 @@ const toggleActive = async (monitorId: number) => {
                 },
                 onFinish: () => {
                     togglingMonitors.value.delete(monitorId);
-                }
-            }
+                },
+            },
         );
     } catch {
         alert('Terjadi kesalahan saat mengubah status monitor');
         togglingMonitors.value.delete(monitorId);
     }
 };
-
-
 
 // Cleanup function for pin change callback
 let cleanupPinCallback: (() => void) | null = null;
@@ -330,22 +328,18 @@ onUnmounted(() => {
                 <div class="flex items-center gap-2">
                     <Icon name="globe" class="text-blue-500" />
                     Public Monitors
-                    <div v-if="isPolling" class="flex items-center gap-1 ml-2">
-                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                    <div v-if="isPolling" class="ml-2 flex items-center gap-1">
+                        <div class="h-3 w-3 animate-spin rounded-full border-b-2 border-blue-500"></div>
                         <span class="text-xs text-gray-500">Updating...</span>
                     </div>
                 </div>
                 <button
                     @click="fetchPublicMonitors(false)"
                     :disabled="loading || isPolling"
-                    class="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-600 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                     title="Refresh monitors"
                 >
-                    <Icon
-                        name="refresh-cw"
-                        :class="refreshIconClass"
-                        size="16"
-                    />
+                    <Icon name="refresh-cw" :class="refreshIconClass" size="16" />
                     Refresh
                 </button>
             </CardTitle>
@@ -355,26 +349,38 @@ onUnmounted(() => {
                 <template v-if="filteredMonitors.length">
                     Showing {{ filteredMonitors.length }} of
                     {{
-                        props.statusFilter === 'all' ? props.allCount
-                        : props.statusFilter === 'up' ? props.onlineCount
-                        : props.statusFilter === 'down' ? props.offlineCount
-                        : props.statusFilter === 'unsubscribed' ? props.unsubscribedCount
-                        : props.statusFilter === 'globally_enabled' ? props.enabledCount
-                        : props.statusFilter === 'globally_disabled' ? props.disabledCount
-                        : props.allCount
+                        props.statusFilter === 'all'
+                            ? props.allCount
+                            : props.statusFilter === 'up'
+                              ? props.onlineCount
+                              : props.statusFilter === 'down'
+                                ? props.offlineCount
+                                : props.statusFilter === 'unsubscribed'
+                                  ? props.unsubscribedCount
+                                  : props.statusFilter === 'globally_enabled'
+                                    ? props.enabledCount
+                                    : props.statusFilter === 'globally_disabled'
+                                      ? props.disabledCount
+                                      : props.allCount
                     }}
                     monitor<span v-if="filteredMonitors.length !== 1">s</span>
                 </template>
                 <template v-else>
                     No
                     {{
-                        props.statusFilter === 'all' ? ''
-                        : props.statusFilter === 'up' ? 'online'
-                        : props.statusFilter === 'down' ? 'offline'
-                        : props.statusFilter === 'unsubscribed' ? 'unsubscribed'
-                        : props.statusFilter === 'globally_enabled' ? 'enabled'
-                        : props.statusFilter === 'globally_disabled' ? 'disabled'
-                        : ''
+                        props.statusFilter === 'all'
+                            ? ''
+                            : props.statusFilter === 'up'
+                              ? 'online'
+                              : props.statusFilter === 'down'
+                                ? 'offline'
+                                : props.statusFilter === 'unsubscribed'
+                                  ? 'unsubscribed'
+                                  : props.statusFilter === 'globally_enabled'
+                                    ? 'enabled'
+                                    : props.statusFilter === 'globally_disabled'
+                                      ? 'disabled'
+                                      : ''
                     }}
                     monitors found.
                 </template>
@@ -382,30 +388,22 @@ onUnmounted(() => {
 
             <!-- Search Results Counter -->
             <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                <span v-if="filteredMonitors.length === 1">
-                    Ditemukan 1 monitor
-                </span>
-                <span v-else>
-                    Ditemukan {{ filteredMonitors.length }} monitor
-                </span>
-                <span v-if="publicMonitors.length !== filteredMonitors.length">
-                    dari {{ publicMonitors.length }} total monitor
-                </span>
+                <span v-if="filteredMonitors.length === 1"> Ditemukan 1 monitor </span>
+                <span v-else> Ditemukan {{ filteredMonitors.length }} monitor </span>
+                <span v-if="publicMonitors.length !== filteredMonitors.length"> dari {{ publicMonitors.length }} total monitor </span>
             </div>
 
             <div v-if="loading" class="flex items-center justify-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
             </div>
 
-            <div v-else-if="error" class="text-center py-8 text-red-500">
+            <div v-else-if="error" class="py-8 text-center text-red-500">
                 {{ error }}
             </div>
 
-            <div v-else-if="publicMonitors.length === 0" class="text-center py-8 text-gray-500">
-                No public monitors available
-            </div>
+            <div v-else-if="publicMonitors.length === 0" class="py-8 text-center text-gray-500">No public monitors available</div>
 
-            <div v-else-if="props.searchQuery && filteredMonitors.length === 0" class="text-center py-8 text-gray-500">
+            <div v-else-if="props.searchQuery && filteredMonitors.length === 0" class="py-8 text-center text-gray-500">
                 <div class="flex flex-col items-center gap-2">
                     <Icon name="search" class="h-8 w-8 text-gray-400" />
                     <p>Tidak ada monitor yang ditemukan untuk "{{ props.searchQuery }}"</p>
@@ -438,13 +436,9 @@ onUnmounted(() => {
                 <Button
                     @click="loadMore"
                     :disabled="loadingMore"
-                    class="flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    class="flex items-center gap-2 rounded-lg bg-blue-50 px-6 py-3 font-medium text-blue-600 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                 >
-                    <Icon
-                        name="arrow-down"
-                        :class="loadingMore ? 'animate-spin' : ''"
-                        size="16"
-                    />
+                    <Icon name="arrow-down" :class="loadingMore ? 'animate-spin' : ''" size="16" />
                     <span v-if="loadingMore">Loading...</span>
                     <span v-else>Load More Monitors</span>
                 </Button>
@@ -453,7 +447,7 @@ onUnmounted(() => {
             <!-- Loading More Indicator -->
             <div v-if="loadingMore" class="mt-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-500"></div>
                     Loading more monitors...
                 </div>
             </div>

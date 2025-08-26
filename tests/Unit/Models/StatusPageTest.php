@@ -117,7 +117,7 @@ describe('StatusPage Model', function () {
 
             expect($token)->toStartWith('uptime-kita-verify-');
             expect(Str::length($token))->toBe(51); // 'uptime-kita-verify-' (19) + random (32)
-            
+
             $this->statusPage->refresh();
             expect($this->statusPage->custom_domain_verification_token)->toBe($token);
         });
@@ -141,7 +141,7 @@ describe('StatusPage Model', function () {
 
         it('returns false when DNS verification fails', function () {
             $this->statusPage->generateVerificationToken();
-            
+
             // Mock DNS failure (no actual DNS record exists)
             $result = $this->statusPage->verifyCustomDomain();
 
@@ -165,12 +165,12 @@ describe('StatusPage Model', function () {
     describe('checkDnsVerification', function () {
         it('returns false when no custom domain', function () {
             $statusPage = StatusPage::factory()->create(['custom_domain' => null]);
-            
+
             // Use reflection to call protected method
             $reflection = new ReflectionClass($statusPage);
             $method = $reflection->getMethod('checkDnsVerification');
             $method->setAccessible(true);
-            
+
             $result = $method->invoke($statusPage);
 
             expect($result)->toBeFalse();
@@ -181,12 +181,12 @@ describe('StatusPage Model', function () {
                 'custom_domain' => 'example.com',
                 'custom_domain_verification_token' => null,
             ]);
-            
+
             // Use reflection to call protected method
             $reflection = new ReflectionClass($statusPage);
             $method = $reflection->getMethod('checkDnsVerification');
             $method->setAccessible(true);
-            
+
             $result = $method->invoke($statusPage);
 
             expect($result)->toBeFalse();

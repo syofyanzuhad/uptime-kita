@@ -157,10 +157,10 @@ describe('User Model', function () {
 
             // Active user with active monitor
             $activeUser->monitors()->attach($monitor1->id, ['is_active' => true]);
-            
+
             // Inactive user with inactive monitor
             $inactiveUser->monitors()->attach($monitor2->id, ['is_active' => false]);
-            
+
             // No monitor user has no monitors attached
 
             $activeUsers = User::active()->get();

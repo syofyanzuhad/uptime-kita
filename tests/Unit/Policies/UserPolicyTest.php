@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 
 describe('UserPolicy', function () {
     beforeEach(function () {
-        $this->policy = new UserPolicy();
+        $this->policy = new UserPolicy;
         $this->regularUser = User::factory()->create(['is_admin' => false]);
         $this->adminUser = User::factory()->create(['is_admin' => true]);
     });

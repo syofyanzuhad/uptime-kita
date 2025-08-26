@@ -45,11 +45,11 @@ describe('SocialAccount Model', function () {
                 $account = SocialAccount::factory()->create([
                     'user_id' => $this->user->id,
                     'provider_name' => $provider,
-                    'provider_id' => 'test-id-' . $provider,
+                    'provider_id' => 'test-id-'.$provider,
                 ]);
 
                 expect($account->provider_name)->toBe($provider);
-                expect($account->provider_id)->toBe('test-id-' . $provider);
+                expect($account->provider_id)->toBe('test-id-'.$provider);
             }
         });
     });

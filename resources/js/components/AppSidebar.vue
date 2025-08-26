@@ -82,15 +82,13 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
-            <div class="text-xs text-gray-500 dark:text-gray-400 px-4 pt-1 pb-2">
-              Last update: {{ page.props.lastUpdate }}
-            </div>
-            <hr v-if="isAuthenticated" class="my-2 border-sidebar-border/70 dark:border-sidebar-border" />
+            <div class="px-4 pt-1 pb-2 text-xs text-gray-500 dark:text-gray-400">Last update: {{ page.props.lastUpdate }}</div>
+            <hr v-if="isAuthenticated" class="border-sidebar-border/70 dark:border-sidebar-border my-2" />
             <NavUser v-if="isAuthenticated" />
             <div v-else class="p-2">
                 <Link
                     :href="route('login')"
-                    class="flex w-full items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors"
                 >
                     Log in
                 </Link>
