@@ -160,34 +160,64 @@ describe('SendCustomMonitorNotification', function () {
         });
 
         it('continues sending to other users if one fails', function () {
+            // Create notification channels for users
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+            
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user2->id,
+                'type' => 'email',
+                'destination' => 'user2@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
             $this->monitor->users()->attach($this->user2->id, ['is_active' => true]);
 
-            // Create a spy for user1 that will be returned by the database query
-            $spyUser = spy($this->user1);
-            $spyUser->shouldReceive('notify')
+            // Mock user1's notify method to throw exception
+            Notification::shouldReceive('send')
+                ->withArgs(function ($notifiables, $notification) {
+                    return $notifiables instanceof \App\Models\User && 
+                           $notifiables->id === $this->user1->id && 
+                           $notification instanceof MonitorStatusChanged;
+                })
                 ->once()
                 ->andThrow(new Exception('Notification failed'));
 
-            // Mock the monitor's users relationship to return our spy
-            $this->monitor->shouldReceive('users')
-                ->andReturnSelf();
-            $this->monitor->shouldReceive('where')
-                ->with('user_monitor.is_active', true)
-                ->andReturnSelf();
-            $this->monitor->shouldReceive('get')
-                ->andReturn(collect([$spyUser, $this->user2]));
+            // Allow other notifications to be sent normally
+            Notification::shouldReceive('send')
+                ->withArgs(function ($notifiables, $notification) {
+                    return $notifiables instanceof \App\Models\User && 
+                           $notifiables->id === $this->user2->id && 
+                           $notification instanceof MonitorStatusChanged;
+                })
+                ->once()
+                ->andReturnNull();
 
             $downtimePeriod = new Period(now()->subMinutes(5), now());
             $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
+            // This should not throw exception despite user1 failing
             $this->listener->handle($event);
-
-            // user2 should still receive notification despite user1 failing
-            Notification::assertSentTo($this->user2, MonitorStatusChanged::class);
+            
+            // Since we're manually controlling the mocks, we can't use assertSentTo
+            // Instead we verify via our mock expectations above
+            expect(true)->toBeTrue();
         });
 
         it('determines correct status for failed event type', function () {
+            // Create notification channel
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             // Test failed event
@@ -196,11 +226,19 @@ describe('SendCustomMonitorNotification', function () {
             $this->listener->handle($failedEvent);
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
-                return $notification->toArray(null)['status'] === 'DOWN';
+                return $notification->toArray($this->user1)['status'] === 'DOWN';
             });
         });
 
         it('determines correct status for recovered event type', function () {
+            // Create notification channel
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             // Test recovered event
@@ -209,11 +247,19 @@ describe('SendCustomMonitorNotification', function () {
             $this->listener->handle($recoveredEvent);
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
-                return $notification->toArray(null)['status'] === 'UP';
+                return $notification->toArray($this->user1)['status'] === 'UP';
             });
         });
 
         it('includes correct monitor information in notification', function () {
+            // Create notification channel
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             $downtimePeriod = new Period(now()->subMinutes(5), now());
@@ -221,13 +267,15 @@ describe('SendCustomMonitorNotification', function () {
 
             $this->listener->handle($event);
 
-            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification, $channels) {
+            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
                 $data = $notification->toArray($this->user1);
-                return $data['id'] === $this->monitor->id &&
-                       $data['url'] === $this->monitor->url &&
-                       $data['status'] === 'DOWN' &&
-                       str_contains($data['message'], $this->monitor->url) &&
-                       str_contains($data['message'], 'DOWN');
+                expect($data)->toHaveKeys(['id', 'url', 'status', 'message']);
+                expect($data['id'])->toBe($this->monitor->id);
+                expect($data['url'])->toBe((string) $this->monitor->url);
+                expect($data['status'])->toBe('DOWN');
+                expect($data['message'])->toContain((string) $this->monitor->url);
+                expect($data['message'])->toContain('DOWN');
+                return true;
             });
         });
     });

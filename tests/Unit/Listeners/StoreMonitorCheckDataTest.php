@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
+use Spatie\UptimeMonitor\Helpers\Period;
 
 uses(RefreshDatabase::class);
 
@@ -50,7 +51,8 @@ describe('StoreMonitorCheckData', function () {
 
         it('stores failed check data', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'Connection timeout']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -68,7 +70,8 @@ describe('StoreMonitorCheckData', function () {
         });
 
         it('stores recovered check data', function () {
-            $event = new UptimeCheckRecovered($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(10), now()->subMinutes(5));
+            $event = new UptimeCheckRecovered($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -87,7 +90,8 @@ describe('StoreMonitorCheckData', function () {
 
         it('creates incident on failure', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'HTTP 500 Error']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -113,7 +117,8 @@ describe('StoreMonitorCheckData', function () {
             ]);
 
             $this->monitor->update(['uptime_check_failure_reason' => 'New failure']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -134,7 +139,8 @@ describe('StoreMonitorCheckData', function () {
                 'reason' => 'Previous failure',
             ]);
 
-            $event = new UptimeCheckRecovered($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(10), now()->subMinutes(5));
+            $event = new UptimeCheckRecovered($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -148,7 +154,8 @@ describe('StoreMonitorCheckData', function () {
 
         it('extracts status code from failure reason', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'HTTP 404 Not Found']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
@@ -176,7 +183,8 @@ describe('StoreMonitorCheckData', function () {
         });
 
         it('returns higher values for failed checks', function () {
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $reflection = new ReflectionClass($this->listener);
             $method = $reflection->getMethod('extractResponseTime');
@@ -204,7 +212,8 @@ describe('StoreMonitorCheckData', function () {
 
         it('extracts status code from failure reason', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'HTTP 503 Service Unavailable']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $reflection = new ReflectionClass($this->listener);
             $method = $reflection->getMethod('extractStatusCode');
@@ -217,7 +226,8 @@ describe('StoreMonitorCheckData', function () {
 
         it('returns 0 for connection failures', function () {
             $this->monitor->update(['uptime_check_failure_reason' => 'Connection timeout']);
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $reflection = new ReflectionClass($this->listener);
             $method = $reflection->getMethod('extractStatusCode');
@@ -243,7 +253,8 @@ describe('StoreMonitorCheckData', function () {
         });
 
         it('returns up for recovered checks', function () {
-            $event = new UptimeCheckRecovered($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(10), now()->subMinutes(5));
+            $event = new UptimeCheckRecovered($this->monitor, $downtimePeriod);
 
             $reflection = new ReflectionClass($this->listener);
             $method = $reflection->getMethod('determineStatus');
@@ -255,7 +266,8 @@ describe('StoreMonitorCheckData', function () {
         });
 
         it('returns down for failed checks', function () {
-            $event = new UptimeCheckFailed($this->monitor);
+            $downtimePeriod = new Period(now()->subMinutes(5), now());
+            $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
 
             $reflection = new ReflectionClass($this->listener);
             $method = $reflection->getMethod('determineStatus');

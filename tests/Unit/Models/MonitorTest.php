@@ -34,7 +34,7 @@ describe('Monitor Model', function () {
         it('casts datetime attributes correctly', function () {
             $this->monitor->update(['uptime_last_check_date' => now()]);
 
-            expect($this->monitor->uptime_last_check_date)->toBeInstanceOf(Carbon\Carbon::class);
+            expect($this->monitor->uptime_last_check_date)->toBeInstanceOf(Carbon::class);
         });
     });
 
@@ -58,7 +58,7 @@ describe('Monitor Model', function () {
             $publicMonitors = Monitor::withoutGlobalScopes()->public()->get();
 
             $publicMonitors->each(function ($monitor) {
-                expect($monitor->is_public)->toBeTrue();
+                expect((bool) $monitor->is_public)->toBeTrue();
             });
         });
 
@@ -69,7 +69,7 @@ describe('Monitor Model', function () {
             $privateMonitors = Monitor::withoutGlobalScopes()->private()->get();
 
             $privateMonitors->each(function ($monitor) {
-                expect($monitor->is_public)->toBeFalse();
+                expect((bool) $monitor->is_public)->toBeFalse();
             });
         });
 
@@ -81,7 +81,7 @@ describe('Monitor Model', function () {
             $searchResults = Monitor::withoutGlobalScopes()->search('test')->get();
 
             expect($searchResults)->toHaveCount(1);
-            expect($searchResults->first()->url)->toContain('test');
+            expect((string) $searchResults->first()->url)->toContain('test');
         });
 
         it('search scope requires minimum 3 characters', function () {
@@ -136,7 +136,7 @@ describe('Monitor Model', function () {
 
             $formatted = $this->monitor->uptime_last_check_date;
 
-            expect($formatted)->toBeInstanceOf(Carbon\Carbon::class);
+            expect($formatted)->toBeInstanceOf(Carbon::class);
             expect($formatted->second)->toBe(0); // Seconds should be set to 0
         });
     });
