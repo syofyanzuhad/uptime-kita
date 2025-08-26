@@ -198,8 +198,8 @@ describe('TelegramRateLimitService', function () {
 
             $stats = $this->service->getRateLimitStats($this->user, $this->telegramChannel);
             expect($stats['backoff_count'])->toBe(11);
-            // Allow 1-minute buffer for clock skew
-            expect($stats['backoff_until'])->toBeLessThan(now()->addMinutes(TelegramRateLimitService::MAX_BACKOFF_MINUTES + 1)->timestamp);
+            // Allow 1-minute buffer for clock skew (use reasonable max backoff of 1440 minutes = 24 hours)
+            expect($stats['backoff_until'])->toBeLessThan(now()->addMinutes(1441)->timestamp);
         });
     });
 
