@@ -36,7 +36,7 @@ const initialValues = {
     certificate_check_enabled: props.monitor.data.certificate_check_enabled,
     uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
     is_public: props.monitor.data.is_public ?? false,
-    tags: extractTagNames(props.monitor.data.tags),
+    tags: extractTagNames(props.monitor.data.tags || []),
 };
 
 // Inisialisasi form dengan data monitor yang ada
@@ -46,7 +46,7 @@ const form = useForm({
     certificate_check_enabled: props.monitor.data.certificate_check_enabled,
     uptime_check_interval: props.monitor.data.uptime_check_interval || 5, // Default to 5 minutes if not set
     is_public: props.monitor.data.is_public ?? false,
-    tags: extractTagNames(props.monitor.data.tags),
+    tags: extractTagNames(props.monitor.data.tags || []),
 });
 // console.log(form.url);
 

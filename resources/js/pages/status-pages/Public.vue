@@ -524,9 +524,9 @@ const { isDark, toggleTheme } = useTheme();
                                 <div
                                     v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date"
                                     class="text-xs text-gray-500 dark:text-gray-400"
-                                    :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date)"
+                                    :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined)"
                                 >
-                                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date) }}
+                                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined) }}
                                 </div>
                             </div>
                         </div>
