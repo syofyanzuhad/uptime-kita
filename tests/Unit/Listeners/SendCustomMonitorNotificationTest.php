@@ -31,16 +31,27 @@ beforeEach(function () {
 describe('SendCustomMonitorNotification', function () {
     describe('handle', function () {
         it('sends notifications to active users for failed check', function () {
+            // Create notification channels for users
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+            
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user2->id,
+                'type' => 'email',
+                'destination' => 'user2@example.com',
+                'is_enabled' => true,
+            ]);
+
             // Associate users with monitor
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
             $this->monitor->users()->attach($this->user2->id, ['is_active' => true]);
 
             $downtimePeriod = new Period(now()->subMinutes(5), now());
             $event = new UptimeCheckFailed($this->monitor, $downtimePeriod);
-
-            // Debug: Check if users were attached correctly
-            $attachedUsers = $this->monitor->users()->where('user_monitor.is_active', true)->get();
-            expect($attachedUsers->count())->toBe(2);
             
             $this->listener->handle($event);
 
@@ -50,6 +61,21 @@ describe('SendCustomMonitorNotification', function () {
         });
 
         it('sends notifications to active users for recovered check', function () {
+            // Create notification channels for users
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+            
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user2->id,
+                'type' => 'email',
+                'destination' => 'user2@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
             $this->monitor->users()->attach($this->user2->id, ['is_active' => true]);
 
@@ -58,8 +84,8 @@ describe('SendCustomMonitorNotification', function () {
 
             $this->listener->handle($event);
 
-            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification, $channels) {
-                $data = $notification->toArray(null);
+            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
+                $data = $notification->toArray($this->user1);
                 return $data['status'] === 'UP';
             });
 
@@ -67,14 +93,22 @@ describe('SendCustomMonitorNotification', function () {
         });
 
         it('sends notifications to active users for successful check', function () {
+            // Create notification channel for user
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
             $event = new UptimeCheckSucceeded($this->monitor);
 
             $this->listener->handle($event);
 
-            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification, $channels) {
-                $data = $notification->toArray(null);
+            Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification) {
+                $data = $notification->toArray($this->user1);
                 return $data['status'] === 'UP';
             });
         });
@@ -94,6 +128,14 @@ describe('SendCustomMonitorNotification', function () {
         });
 
         it('only sends notifications to users associated with the monitor', function () {
+            // Create notification channel for user1 only
+            \App\Models\NotificationChannel::factory()->create([
+                'user_id' => $this->user1->id,
+                'type' => 'email',
+                'destination' => 'user1@example.com',
+                'is_enabled' => true,
+            ]);
+
             // Only associate one user with the monitor
             $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
             // user2 is not associated
@@ -180,7 +222,7 @@ describe('SendCustomMonitorNotification', function () {
             $this->listener->handle($event);
 
             Notification::assertSentTo($this->user1, MonitorStatusChanged::class, function ($notification, $channels) {
-                $data = $notification->toArray(null);
+                $data = $notification->toArray($this->user1);
                 return $data['id'] === $this->monitor->id &&
                        $data['url'] === $this->monitor->url &&
                        $data['status'] === 'DOWN' &&
