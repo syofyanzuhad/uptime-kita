@@ -30,7 +30,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Override Inertia page paths to use lowercase 'pages' directory after package loads
+        $this->app->booted(function () {
+            config([
+                'inertia.page_paths' => [resource_path('js/pages')],
+                'inertia.testing.page_paths' => [resource_path('js/pages')],
+            ]);
+            
+            // Rebind the testing view finder with correct paths
+            $this->app->bind('inertia.testing.view-finder', function ($app) {
+                return new \Illuminate\View\FileViewFinder(
+                    $app['files'],
+                    [resource_path('js/pages')],
+                    ['js', 'jsx', 'svelte', 'ts', 'tsx', 'vue']
+                );
+            });
+        });
     }
 
     /**
