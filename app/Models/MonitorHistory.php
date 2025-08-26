@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 
 class MonitorHistory extends Model
 {
-    use Prunable;
+    use HasFactory, Prunable;
 
     protected $fillable = [
         'monitor_id',
