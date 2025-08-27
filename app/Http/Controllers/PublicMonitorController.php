@@ -20,7 +20,7 @@ class PublicMonitorController extends Controller
         if ($page < 1) {
             $page = 1;
         }
-        $perPage = 50; // Number of monitors per page
+        $perPage = min((int) $request->get('per_page', 15), 100); // Max 100 monitors per page, default 15
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
@@ -127,7 +127,7 @@ class PublicMonitorController extends Controller
         if ($page < 1) {
             $page = 1;
         }
-        $perPage = 50; // Number of monitors per page
+        $perPage = min((int) $request->get('per_page', 15), 100); // Max 100 monitors per page, default 15
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
