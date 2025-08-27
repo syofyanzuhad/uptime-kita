@@ -15,11 +15,11 @@ describe('SubscribeMonitorController', function () {
         $this->user = User::factory()->create();
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
         $this->privateMonitor = Monitor::factory()->create([
             'is_public' => false,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
     });
 
@@ -30,16 +30,16 @@ describe('SubscribeMonitorController', function () {
         $response->assertOk();
         $response->assertJson(['message' => 'Subscribed to monitor successfully']);
 
-        assertDatabaseHas('monitor_user', [
+        assertDatabaseHas('user_monitor', [
             'monitor_id' => $this->publicMonitor->id,
             'user_id' => $this->user->id,
-            'is_subscriber' => true,
+            'is_active' => true,
         ]);
     });
 
     it('prevents duplicate subscription', function () {
         // First subscription
-        $this->user->monitors()->attach($this->publicMonitor->id, ['is_subscriber' => true]);
+        $this->user->monitors()->attach($this->publicMonitor->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
             ->postJson("/monitor/{$this->publicMonitor->id}/subscribe");
@@ -60,17 +60,17 @@ describe('SubscribeMonitorController', function () {
 
     it('allows owner to subscribe to their private monitor', function () {
         // Make user the owner
-        $this->privateMonitor->users()->attach($this->user->id, ['is_owner' => true]);
+        $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
             ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
 
-        assertDatabaseHas('monitor_user', [
+        assertDatabaseHas('user_monitor', [
             'monitor_id' => $this->privateMonitor->id,
             'user_id' => $this->user->id,
-            'is_subscriber' => true,
+            'is_active' => true,
         ]);
     });
 
@@ -90,7 +90,7 @@ describe('SubscribeMonitorController', function () {
     it('prevents subscription to disabled monitor', function () {
         $disabledMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => false,
+            'uptime_check_enabled' => false,
         ]);
 
         $response = actingAs($this->user)
@@ -102,18 +102,17 @@ describe('SubscribeMonitorController', function () {
 
     it('maintains owner status when subscribing', function () {
         // User is owner but not subscriber
-        $this->privateMonitor->users()->attach($this->user->id, ['is_owner' => true, 'is_subscriber' => false]);
+        $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
             ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
 
-        assertDatabaseHas('monitor_user', [
+        assertDatabaseHas('user_monitor', [
             'monitor_id' => $this->privateMonitor->id,
             'user_id' => $this->user->id,
-            'is_owner' => true,
-            'is_subscriber' => true,
+            'is_active' => true,
         ]);
     });
 });
