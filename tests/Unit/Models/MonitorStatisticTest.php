@@ -34,9 +34,20 @@ describe('MonitorStatistic Model', function () {
             $statistic = MonitorStatistic::create($attributes);
 
             expect($statistic->monitor_id)->toBe($monitor->id);
-            expect($statistic->uptime_1h)->toBe('99.50');
-            expect($statistic->uptime_24h)->toBe('98.75');
+            expect($statistic->uptime_1h)->toBe(99.5);
+            expect($statistic->uptime_24h)->toBe(98.75);
+            expect($statistic->uptime_7d)->toBe(97.25);
+            expect($statistic->uptime_30d)->toBe(96.5);
+            expect($statistic->uptime_90d)->toBe(95.25);
             expect($statistic->avg_response_time_24h)->toBe(150);
+            expect($statistic->min_response_time_24h)->toBe(50);
+            expect($statistic->max_response_time_24h)->toBe(500);
+            expect($statistic->incidents_24h)->toBe(2);
+            expect($statistic->incidents_7d)->toBe(5);
+            expect($statistic->incidents_30d)->toBe(12);
+            expect($statistic->total_checks_24h)->toBe(1440);
+            expect($statistic->total_checks_7d)->toBe(10080);
+            expect($statistic->total_checks_30d)->toBe(43200);
             expect($statistic->recent_history_100m)->toBe(['up', 'down', 'up', 'up']);
         });
     });
@@ -44,13 +55,19 @@ describe('MonitorStatistic Model', function () {
     describe('casts', function () {
         it('casts uptime percentages to decimal', function () {
             $statistic = MonitorStatistic::factory()->create([
-                'uptime_24h' => 99.5,
-                'uptime_7d' => 98.75,
+                'uptime_1h' => 99.567,
+                'uptime_24h' => 98.234,
+                'uptime_7d' => 97.891,
+                'uptime_30d' => 96.456,
+                'uptime_90d' => 95.123,
             ]);
 
-            expect($statistic->uptime_24h)->toBeString();
-            expect($statistic->uptime_24h)->toBe('99.50');
-            expect($statistic->uptime_7d)->toBe('98.75');
+            expect($statistic->uptime_1h)->toBeFloat();
+            expect($statistic->uptime_1h)->toBe(99.567);
+            expect($statistic->uptime_24h)->toBe(98.234);
+            expect($statistic->uptime_7d)->toBe(97.891);
+            expect($statistic->uptime_30d)->toBe(96.456);
+            expect($statistic->uptime_90d)->toBe(95.123);
         });
 
         it('casts recent_history_100m to array', function () {
@@ -77,6 +94,7 @@ describe('MonitorStatistic Model', function () {
             ]);
 
             expect($statistic->calculated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($statistic->calculated_at->format('Y-m-d H:i:s'))->toBe('2024-01-01 12:00:00');
         });
     });
 
@@ -105,10 +123,10 @@ describe('MonitorStatistic Model', function () {
 
             expect($uptimeStats)->toBeArray();
             expect($uptimeStats)->toBe([
-                '24h' => '99.50',
-                '7d' => '98.75',
-                '30d' => '97.25',
-                '90d' => '96.50',
+                '24h' => 99.5,
+                '7d' => 98.75,
+                '30d' => 97.25,
+                '90d' => 96.5,
             ]);
         });
     });
@@ -192,7 +210,7 @@ describe('MonitorStatistic Model', function () {
                 'avg_response_time_24h' => null,
             ]);
 
-            expect($statistic->uptime_24h)->toBe('0.00');
+            expect($statistic->uptime_24h)->toBe(0.0);
             expect($statistic->incidents_24h)->toBe(0);
             expect($statistic->avg_response_time_24h)->toBeNull();
         });
@@ -206,9 +224,11 @@ describe('MonitorStatistic Model', function () {
                 'uptime_90d' => 100.00,
             ]);
 
-            expect($statistic->uptime_1h)->toBe('100.00');
-            expect($statistic->uptime_24h)->toBe('100.00');
-            expect($statistic->uptime_7d)->toBe('100.00');
+            expect($statistic->uptime_1h)->toBe(100.0);
+            expect($statistic->uptime_24h)->toBe(100.0);
+            expect($statistic->uptime_7d)->toBe(100.0);
+            expect($statistic->uptime_30d)->toBe(100.0);
+            expect($statistic->uptime_90d)->toBe(100.0);
         });
     });
 });
