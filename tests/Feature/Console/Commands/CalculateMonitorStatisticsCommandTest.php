@@ -114,11 +114,11 @@ describe('CalculateMonitorStatistics', function () {
             expect($statistic->calculated_at)->not->toBeNull();
 
             // Should have uptime percentages
-            expect($statistic->uptime_1h)->toBeString();
-            expect($statistic->uptime_24h)->toBeString();
-            expect($statistic->uptime_7d)->toBeString();
-            expect($statistic->uptime_30d)->toBeString();
-            expect($statistic->uptime_90d)->toBeString();
+            expect($statistic->uptime_1h)->toBeFloat();
+            expect($statistic->uptime_24h)->toBeFloat();
+            expect($statistic->uptime_7d)->toBeFloat();
+            expect($statistic->uptime_30d)->toBeFloat();
+            expect($statistic->uptime_90d)->toBeFloat();
 
             // Should have response time stats (may be null if no response times)
             expect($statistic->avg_response_time_24h)->toBeInt();
@@ -175,11 +175,11 @@ describe('CalculateMonitorStatistics', function () {
             expect($statistic)->not->toBeNull();
 
             // Should default to 100% uptime when no history exists
-            expect($statistic->uptime_1h)->toBe('100.00');
-            expect($statistic->uptime_24h)->toBe('100.00');
-            expect($statistic->uptime_7d)->toBe('100.00');
-            expect($statistic->uptime_30d)->toBe('100.00');
-            expect($statistic->uptime_90d)->toBe('100.00');
+            expect($statistic->uptime_1h)->toBe(100.0);
+            expect($statistic->uptime_24h)->toBe(100.0);
+            expect($statistic->uptime_7d)->toBe(100.0);
+            expect($statistic->uptime_30d)->toBe(100.0);
+            expect($statistic->uptime_90d)->toBe(100.0);
 
             // Response time stats should be null when no history
             expect($statistic->avg_response_time_24h)->toBeNull();
