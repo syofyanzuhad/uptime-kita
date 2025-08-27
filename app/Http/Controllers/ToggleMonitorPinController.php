@@ -18,7 +18,8 @@ class ToggleMonitorPinController extends Controller
         ]);
 
         try {
-            $monitor = Monitor::findOrFail($monitorId);
+            // Use withoutGlobalScopes to handle disabled monitors
+            $monitor = Monitor::withoutGlobalScopes()->findOrFail($monitorId);
 
             // Check if user is subscribed to this monitor
             if (! $monitor->is_subscribed) {
