@@ -96,7 +96,9 @@ class PinnedMonitorController extends Controller
         $user = auth()->user();
 
         // Get the pivot record directly from the database
+        // Need to remove global scopes to handle disabled monitors
         $pivotRecord = $user->monitors()
+            ->withoutGlobalScopes()
             ->wherePivot('monitor_id', $monitor->id)
             ->withPivot('is_pinned', 'is_active')
             ->first();
@@ -123,7 +125,8 @@ class PinnedMonitorController extends Controller
             $newPinnedStatus = false;
         } else {
             // Update the pinned status
-            $user->monitors()->updateExistingPivot($monitor->id, [
+            // Need to use withoutGlobalScopes to handle disabled monitors
+            $user->monitors()->withoutGlobalScopes()->updateExistingPivot($monitor->id, [
                 'is_pinned' => $isPinned,
             ]);
             $newPinnedStatus = $isPinned;
