@@ -17,16 +17,16 @@ describe('LatestHistoryController', function () {
 
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         $this->privateMonitor = Monitor::factory()->create([
             'is_public' => false,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         // User owns the private monitor
-        $this->privateMonitor->users()->attach($this->user->id, ['is_owner' => true]);
+        $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
     });
 
     it('returns latest history for public monitor', function () {
@@ -50,18 +50,22 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJsonStructure([
-            'id',
-            'monitor_id',
-            'uptime_status',
-            'response_time',
-            'status_code',
-            'checked_at',
-            'created_at',
+            'latest_history' => [
+                'id',
+                'monitor_id',
+                'uptime_status',
+                'response_time',
+                'status_code',
+                'checked_at',
+                'created_at',
+            ],
         ]);
         $response->assertJson([
-            'id' => $latestHistory->id,
-            'uptime_status' => 'up',
-            'response_time' => 250,
+            'latest_history' => [
+                'id' => $latestHistory->id,
+                'uptime_status' => 'up',
+                'response_time' => 250,
+            ],
         ]);
     });
 
@@ -78,9 +82,11 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJson([
-            'id' => $latestHistory->id,
-            'monitor_id' => $this->privateMonitor->id,
-            'uptime_status' => 'up',
+            'latest_history' => [
+                'id' => $latestHistory->id,
+                'monitor_id' => $this->privateMonitor->id,
+                'uptime_status' => 'up',
+            ],
         ]);
     });
 
@@ -96,19 +102,20 @@ describe('LatestHistoryController', function () {
         $response = actingAs($otherUser)
             ->get("/monitor/{$this->privateMonitor->id}/latest-history");
 
-        $response->assertForbidden();
+        // Global scope will prevent access to private monitors by non-owners
+        $response->assertNotFound();
     });
 
     it('returns null when monitor has no history', function () {
         $monitorWithoutHistory = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         $response = get("/monitor/{$monitorWithoutHistory->id}/latest-history");
 
         $response->assertOk();
-        $response->assertJson(null);
+        $response->assertJson(['latest_history' => null]);
     });
 
     it('returns 404 for non-existent monitor', function () {
@@ -130,9 +137,11 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJson([
-            'id' => $latestHistory->id,
-            'uptime_status' => 'down',
-            'message' => 'Connection timeout',
+            'latest_history' => [
+                'id' => $latestHistory->id,
+                'uptime_status' => 'down',
+                'message' => 'Connection timeout',
+            ],
         ]);
     });
 
@@ -158,8 +167,10 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJson([
-            'id' => $latestHistory->id,
-            'uptime_status' => 'recovery',
+            'latest_history' => [
+                'id' => $latestHistory->id,
+                'uptime_status' => 'recovery',
+            ],
         ]);
     });
 
@@ -178,22 +189,24 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJsonStructure([
-            'id',
-            'monitor_id',
-            'uptime_status',
-            'message',
-            'response_time',
-            'status_code',
-            'checked_at',
-            'created_at',
-            'updated_at',
+            'latest_history' => [
+                'id',
+                'monitor_id',
+                'uptime_status',
+                'message',
+                'response_time',
+                'status_code',
+                'checked_at',
+                'created_at',
+                'updated_at',
+            ],
         ]);
     });
 
     it('works with disabled monitors', function () {
         $disabledMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => false,
+            'uptime_check_enabled' => false,
         ]);
 
         $history = MonitorHistory::factory()->create([
@@ -202,18 +215,15 @@ describe('LatestHistoryController', function () {
             'created_at' => now(),
         ]);
 
+        // Disabled monitors are filtered by global scope, so it should return 404
         $response = get("/monitor/{$disabledMonitor->id}/latest-history");
 
-        $response->assertOk();
-        $response->assertJson([
-            'id' => $history->id,
-            'monitor_id' => $disabledMonitor->id,
-        ]);
+        $response->assertNotFound();
     });
 
     it('allows subscriber to view private monitor history', function () {
         $subscriber = User::factory()->create();
-        $this->privateMonitor->users()->attach($subscriber->id, ['is_subscriber' => true]);
+        $this->privateMonitor->users()->attach($subscriber->id, ['is_active' => true]);
 
         $history = MonitorHistory::factory()->create([
             'monitor_id' => $this->privateMonitor->id,
@@ -226,8 +236,10 @@ describe('LatestHistoryController', function () {
 
         $response->assertOk();
         $response->assertJson([
-            'id' => $history->id,
-            'monitor_id' => $this->privateMonitor->id,
+            'latest_history' => [
+                'id' => $history->id,
+                'monitor_id' => $this->privateMonitor->id,
+            ],
         ]);
     });
 });
