@@ -67,7 +67,11 @@ class Monitor extends SpatieMonitor
         }
 
         // Fallback query jika relasi belum dimuat
-        return $this->users()->where('user_id', auth()->id())->exists();
+        // Check directly in pivot table to avoid issues with global scopes
+        return \DB::table('user_monitor')
+            ->where('monitor_id', $this->id)
+            ->where('user_id', auth()->id())
+            ->exists();
         // });
     }
 
@@ -87,7 +91,11 @@ class Monitor extends SpatieMonitor
             }
 
             // Fallback query if relation is not loaded
-            $pivot = $this->users()->where('user_id', auth()->id())->first()?->pivot;
+            // Check directly in pivot table to avoid issues with global scopes
+            $pivot = \DB::table('user_monitor')
+                ->where('monitor_id', $this->id)
+                ->where('user_id', auth()->id())
+                ->first();
 
             return $pivot ? (bool) $pivot->is_pinned : false;
         });
