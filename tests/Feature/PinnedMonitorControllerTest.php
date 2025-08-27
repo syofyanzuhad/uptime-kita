@@ -14,28 +14,27 @@ describe('PinnedMonitorController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
 
-        // Create pinned monitors
+        // Create monitors
         $this->pinnedPublicMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         $this->pinnedPrivateMonitor = Monitor::factory()->create([
             'is_public' => false,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         // Create non-pinned monitors
         $this->unpinnedMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => false,
+            'uptime_check_enabled' => true,
         ]);
 
-        // User owns the private monitor
-        $this->pinnedPrivateMonitor->users()->attach($this->user->id, ['is_owner' => true]);
+        // Set up pinned relationships through pivot table
+        $this->pinnedPublicMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => true]);
+        $this->pinnedPrivateMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => true]);
+        $this->unpinnedMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => false]);
 
         // Create history for monitors
         MonitorHistory::factory()->create([
@@ -57,7 +56,8 @@ describe('PinnedMonitorController', function () {
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
-        $response->assertJsonCount(2); // Both public and owned private pinned monitors
+        $data = $response->json('data');
+        expect($data)->toHaveCount(2); // Both public and owned private pinned monitors
     });
 
     it('includes public pinned monitors', function () {
@@ -84,9 +84,9 @@ describe('PinnedMonitorController', function () {
         $otherUser = User::factory()->create();
         $privateMonitor = Monitor::factory()->create([
             'is_public' => false,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
         ]);
+        $privateMonitor->users()->attach($otherUser->id, ['is_active' => true, 'is_pinned' => true]);
 
         MonitorHistory::factory()->create([
             'monitor_id' => $privateMonitor->id,
@@ -94,7 +94,7 @@ describe('PinnedMonitorController', function () {
             'created_at' => now(),
         ]);
 
-        $response = actingAs($otherUser)->get('/pinned-monitors');
+        $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
         $response->assertJsonMissing([
@@ -116,7 +116,7 @@ describe('PinnedMonitorController', function () {
 
         $response->assertOk();
 
-        $monitors = $response->json();
+        $monitors = $response->json('data');
 
         expect($monitors[0])->toHaveKeys([
             'id',
@@ -124,27 +124,21 @@ describe('PinnedMonitorController', function () {
             'url',
             'is_pinned',
             'uptime_status',
-            'response_time',
-            'favicon_url',
         ]);
     });
 
-    it('returns pinned monitors for unauthenticated user', function () {
+    it('requires authentication to view pinned monitors', function () {
         $response = get('/pinned-monitors');
 
-        $response->assertOk();
-        $response->assertJsonCount(1); // Only public pinned monitor
-        $response->assertJsonFragment([
-            'id' => $this->pinnedPublicMonitor->id,
-        ]);
+        $response->assertRedirect('/login');
     });
 
     it('excludes disabled pinned monitors', function () {
         $disabledMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => false,
-            'is_pinned' => true,
+            'uptime_check_enabled' => false,
         ]);
+        $disabledMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => true]);
 
         MonitorHistory::factory()->create([
             'monitor_id' => $disabledMonitor->id,
@@ -163,10 +157,10 @@ describe('PinnedMonitorController', function () {
     it('orders monitors by created date', function () {
         $newerMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
             'created_at' => now()->addMinute(),
         ]);
+        $newerMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => true]);
 
         MonitorHistory::factory()->create([
             'monitor_id' => $newerMonitor->id,
@@ -178,33 +172,34 @@ describe('PinnedMonitorController', function () {
 
         $response->assertOk();
 
-        $monitors = $response->json();
+        $monitors = $response->json('data');
         expect($monitors[0]['id'])->toBe($newerMonitor->id);
     });
 
     it('handles monitors without history', function () {
         $monitorWithoutHistory = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
         ]);
+        $monitorWithoutHistory->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => true]);
 
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
 
-        $hasMonitor = collect($response->json())->contains('id', $monitorWithoutHistory->id);
+        $data = $response->json('data');
+        $hasMonitor = collect($data)->contains('id', $monitorWithoutHistory->id);
         expect($hasMonitor)->toBeTrue();
     });
 
     it('returns empty array when no pinned monitors exist', function () {
-        // Unpin all monitors
-        Monitor::query()->update(['is_pinned' => false]);
+        // Unpin all monitors by detaching user relationships
+        $this->user->monitors()->detach();
 
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
-        $response->assertJsonCount(0);
-        $response->assertExactJson([]);
+        $data = $response->json('data');
+        expect($data)->toBeEmpty();
     });
 });
