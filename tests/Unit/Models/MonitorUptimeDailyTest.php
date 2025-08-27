@@ -1,0 +1,208 @@
+<?php
+
+use App\Models\Monitor;
+use App\Models\MonitorUptimeDaily;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
+describe('MonitorUptimeDaily Model', function () {
+    describe('fillable attributes', function () {
+        it('allows mass assignment of fillable attributes', function () {
+            $monitor = Monitor::factory()->create();
+
+            $attributes = [
+                'monitor_id' => $monitor->id,
+                'date' => now()->toDateString(),
+                'uptime_percentage' => 99.75,
+                'avg_response_time' => 250.5,
+                'min_response_time' => 100.0,
+                'max_response_time' => 500.0,
+                'total_checks' => 1440,
+                'failed_checks' => 5,
+            ];
+
+            $uptimeDaily = MonitorUptimeDaily::create($attributes);
+
+            expect($uptimeDaily->monitor_id)->toBe($monitor->id);
+            expect($uptimeDaily->date->toDateString())->toBe($attributes['date']);
+            expect($uptimeDaily->uptime_percentage)->toBe(99.75);
+            expect($uptimeDaily->avg_response_time)->toBe(250.5);
+            expect($uptimeDaily->min_response_time)->toBe(100.0);
+            expect($uptimeDaily->max_response_time)->toBe(500.0);
+            expect($uptimeDaily->total_checks)->toBe(1440);
+            expect($uptimeDaily->failed_checks)->toBe(5);
+        });
+    });
+
+    describe('casts', function () {
+        it('casts date to date', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'date' => '2024-01-15',
+            ]);
+
+            expect($uptimeDaily->date)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($uptimeDaily->date->toDateString())->toBe('2024-01-15');
+        });
+
+        it('casts uptime_percentage to float', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'uptime_percentage' => '99.75',
+            ]);
+
+            expect($uptimeDaily->uptime_percentage)->toBeFloat();
+            expect($uptimeDaily->uptime_percentage)->toBe(99.75);
+        });
+
+        it('casts response times to float', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'avg_response_time' => '250.5',
+                'min_response_time' => '100.25',
+                'max_response_time' => '500.75',
+            ]);
+
+            expect($uptimeDaily->avg_response_time)->toBeFloat();
+            expect($uptimeDaily->avg_response_time)->toBe(250.5);
+            expect($uptimeDaily->min_response_time)->toBeFloat();
+            expect($uptimeDaily->min_response_time)->toBe(100.25);
+            expect($uptimeDaily->max_response_time)->toBeFloat();
+            expect($uptimeDaily->max_response_time)->toBe(500.75);
+        });
+
+        it('casts check counts to integer', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'total_checks' => '1440',
+                'failed_checks' => '5',
+            ]);
+
+            expect($uptimeDaily->total_checks)->toBeInt();
+            expect($uptimeDaily->total_checks)->toBe(1440);
+            expect($uptimeDaily->failed_checks)->toBeInt();
+            expect($uptimeDaily->failed_checks)->toBe(5);
+        });
+    });
+
+    describe('monitor relationship', function () {
+        it('belongs to a monitor', function () {
+            $monitor = Monitor::factory()->create();
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $monitor->id,
+            ]);
+
+            expect($uptimeDaily->monitor)->toBeInstanceOf(Monitor::class);
+            expect($uptimeDaily->monitor->id)->toBe($monitor->id);
+        });
+    });
+
+    describe('model attributes', function () {
+        it('has correct table name', function () {
+            $uptimeDaily = new MonitorUptimeDaily;
+            expect($uptimeDaily->getTable())->toBe('monitor_uptime_dailies');
+        });
+
+        it('uses factory trait', function () {
+            expect(class_uses(MonitorUptimeDaily::class))->toContain(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+        });
+
+        it('handles timestamps', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create();
+
+            expect($uptimeDaily->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($uptimeDaily->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+        });
+    });
+
+    describe('uptime calculations', function () {
+        it('can store 100% uptime', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'uptime_percentage' => 100,
+                'failed_checks' => 0,
+                'total_checks' => 1440,
+            ]);
+
+            expect($uptimeDaily->uptime_percentage)->toBe(100.0);
+            expect($uptimeDaily->failed_checks)->toBe(0);
+        });
+
+        it('can store 0% uptime', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'uptime_percentage' => 0,
+                'failed_checks' => 1440,
+                'total_checks' => 1440,
+            ]);
+
+            expect($uptimeDaily->uptime_percentage)->toBe(0.0);
+            expect($uptimeDaily->failed_checks)->toBe(1440);
+        });
+
+        it('can store partial uptime', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'uptime_percentage' => 95.5,
+                'failed_checks' => 65,
+                'total_checks' => 1440,
+            ]);
+
+            expect($uptimeDaily->uptime_percentage)->toBe(95.5);
+            expect($uptimeDaily->failed_checks)->toBe(65);
+        });
+    });
+
+    describe('response time data', function () {
+        it('can store null response times', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'avg_response_time' => null,
+                'min_response_time' => null,
+                'max_response_time' => null,
+            ]);
+
+            expect($uptimeDaily->avg_response_time)->toBeNull();
+            expect($uptimeDaily->min_response_time)->toBeNull();
+            expect($uptimeDaily->max_response_time)->toBeNull();
+        });
+
+        it('can store zero response times', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'avg_response_time' => 0,
+                'min_response_time' => 0,
+                'max_response_time' => 0,
+            ]);
+
+            expect($uptimeDaily->avg_response_time)->toBe(0.0);
+            expect($uptimeDaily->min_response_time)->toBe(0.0);
+            expect($uptimeDaily->max_response_time)->toBe(0.0);
+        });
+
+        it('maintains logical response time relationships', function () {
+            $uptimeDaily = MonitorUptimeDaily::factory()->create([
+                'min_response_time' => 50.0,
+                'avg_response_time' => 150.0,
+                'max_response_time' => 300.0,
+            ]);
+
+            // Min should be less than or equal to average
+            expect($uptimeDaily->min_response_time)->toBeLessThanOrEqual($uptimeDaily->avg_response_time);
+            // Average should be less than or equal to max
+            expect($uptimeDaily->avg_response_time)->toBeLessThanOrEqual($uptimeDaily->max_response_time);
+        });
+    });
+
+    describe('date handling', function () {
+        it('can store different dates', function () {
+            $yesterday = MonitorUptimeDaily::factory()->create([
+                'date' => now()->subDay()->toDateString(),
+            ]);
+
+            $today = MonitorUptimeDaily::factory()->create([
+                'date' => now()->toDateString(),
+            ]);
+
+            $lastWeek = MonitorUptimeDaily::factory()->create([
+                'date' => now()->subWeek()->toDateString(),
+            ]);
+
+            expect($yesterday->date->toDateString())->toBe(now()->subDay()->toDateString());
+            expect($today->date->toDateString())->toBe(now()->toDateString());
+            expect($lastWeek->date->toDateString())->toBe(now()->subWeek()->toDateString());
+        });
+    });
+});
