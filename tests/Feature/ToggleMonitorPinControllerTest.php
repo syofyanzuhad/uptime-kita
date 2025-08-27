@@ -14,7 +14,7 @@ describe('ToggleMonitorPinController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
         $this->admin = User::factory()->create(['is_admin' => true]);
-        
+
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
             'is_enabled' => true,
@@ -43,7 +43,7 @@ describe('ToggleMonitorPinController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_pinned' => true]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
             'is_pinned' => true,
@@ -56,7 +56,7 @@ describe('ToggleMonitorPinController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_pinned' => false]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->pinnedMonitor->id,
             'is_pinned' => false,
@@ -69,7 +69,7 @@ describe('ToggleMonitorPinController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_pinned' => true]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
             'is_pinned' => true,
@@ -83,7 +83,7 @@ describe('ToggleMonitorPinController', function () {
             ->postJson("/monitor/{$this->privateMonitor->id}/toggle-pin");
 
         $response->assertForbidden();
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
             'is_pinned' => false,
@@ -95,7 +95,7 @@ describe('ToggleMonitorPinController', function () {
             ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin");
 
         $response->assertForbidden();
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
             'is_pinned' => false,
@@ -104,7 +104,7 @@ describe('ToggleMonitorPinController', function () {
 
     it('handles non-existent monitor', function () {
         $response = actingAs($this->admin)
-            ->postJson("/monitor/999999/toggle-pin");
+            ->postJson('/monitor/999999/toggle-pin');
 
         $response->assertNotFound();
     });
@@ -150,7 +150,7 @@ describe('ToggleMonitorPinController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_pinned' => true]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $disabledMonitor->id,
             'is_pinned' => true,
@@ -164,7 +164,7 @@ describe('ToggleMonitorPinController', function () {
 
         $response->assertOk();
         $response->assertJsonStructure(['is_pinned']);
-        
+
         $isPinned = $response->json('is_pinned');
         expect($isPinned)->toBeTrue();
     });

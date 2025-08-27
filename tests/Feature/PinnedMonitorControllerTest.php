@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
 describe('PinnedMonitorController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
-        
+
         // Create pinned monitors
         $this->pinnedPublicMonitor = Monitor::factory()->create([
             'is_public' => true,
@@ -115,9 +115,9 @@ describe('PinnedMonitorController', function () {
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
-        
+
         expect($monitors[0])->toHaveKeys([
             'id',
             'name',
@@ -177,7 +177,7 @@ describe('PinnedMonitorController', function () {
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         expect($monitors[0]['id'])->toBe($newerMonitor->id);
     });
@@ -192,7 +192,7 @@ describe('PinnedMonitorController', function () {
         $response = actingAs($this->user)->get('/pinned-monitors');
 
         $response->assertOk();
-        
+
         $hasMonitor = collect($response->json())->contains('id', $monitorWithoutHistory->id);
         expect($hasMonitor)->toBeTrue();
     });

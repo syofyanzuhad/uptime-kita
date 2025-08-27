@@ -14,7 +14,7 @@ describe('LatestHistoryController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
         $this->admin = User::factory()->create(['is_admin' => true]);
-        
+
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
             'is_enabled' => true,
@@ -92,7 +92,7 @@ describe('LatestHistoryController', function () {
         ]);
 
         $otherUser = User::factory()->create();
-        
+
         $response = actingAs($otherUser)
             ->get("/monitor/{$this->privateMonitor->id}/latest-history");
 
@@ -112,7 +112,7 @@ describe('LatestHistoryController', function () {
     });
 
     it('returns 404 for non-existent monitor', function () {
-        $response = get("/monitor/999999/latest-history");
+        $response = get('/monitor/999999/latest-history');
 
         $response->assertNotFound();
     });

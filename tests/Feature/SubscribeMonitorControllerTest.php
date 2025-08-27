@@ -29,7 +29,7 @@ describe('SubscribeMonitorController', function () {
 
         $response->assertOk();
         $response->assertJson(['message' => 'Subscribed to monitor successfully']);
-        
+
         assertDatabaseHas('monitor_user', [
             'monitor_id' => $this->publicMonitor->id,
             'user_id' => $this->user->id,
@@ -66,7 +66,7 @@ describe('SubscribeMonitorController', function () {
             ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
-        
+
         assertDatabaseHas('monitor_user', [
             'monitor_id' => $this->privateMonitor->id,
             'user_id' => $this->user->id,
@@ -76,7 +76,7 @@ describe('SubscribeMonitorController', function () {
 
     it('prevents subscription to non-existent monitor', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/999999/subscribe");
+            ->postJson('/monitor/999999/subscribe');
 
         $response->assertNotFound();
     });
@@ -108,7 +108,7 @@ describe('SubscribeMonitorController', function () {
             ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
-        
+
         assertDatabaseHas('monitor_user', [
             'monitor_id' => $this->privateMonitor->id,
             'user_id' => $this->user->id,

@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 describe('TagController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
-        
+
         // Create monitors with various tags
         Monitor::factory()->create([
             'is_public' => true,
@@ -56,9 +56,9 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toBeArray();
             expect($tags)->toContain('production');
             expect($tags)->toContain('api');
@@ -71,9 +71,9 @@ describe('TagController', function () {
             $response = get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('production');
             expect($tags)->toContain('api');
             expect($tags)->not->toContain('development'); // From private monitor
@@ -86,15 +86,15 @@ describe('TagController', function () {
                 'is_enabled' => true,
                 'tags' => ['private-tag', 'internal'],
             ]);
-            
+
             $privateMonitor->users()->attach($this->user->id, ['is_owner' => true]);
 
             $response = actingAs($this->user)->get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('private-tag');
             expect($tags)->toContain('internal');
         });
@@ -103,9 +103,9 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->not->toContain('archived');
             expect($tags)->not->toContain('old');
         });
@@ -114,15 +114,15 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             // Count occurrences of 'production' tag
-            $productionCount = count(array_filter($tags, fn($tag) => $tag === 'production'));
+            $productionCount = count(array_filter($tags, fn ($tag) => $tag === 'production'));
             expect($productionCount)->toBe(1);
-            
+
             // Count occurrences of 'api' tag
-            $apiCount = count(array_filter($tags, fn($tag) => $tag === 'api'));
+            $apiCount = count(array_filter($tags, fn ($tag) => $tag === 'api'));
             expect($apiCount)->toBe(1);
         });
 
@@ -130,11 +130,11 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
             $sortedTags = $tags;
             sort($sortedTags);
-            
+
             expect($tags)->toBe($sortedTags);
         });
 
@@ -154,9 +154,9 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags/search?q=prod');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('production');
             expect($tags)->not->toContain('staging');
             expect($tags)->not->toContain('api');
@@ -173,9 +173,9 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags/search?q=PROD');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('production');
         });
 
@@ -199,16 +199,16 @@ describe('TagController', function () {
                 Monitor::factory()->create([
                     'is_public' => true,
                     'is_enabled' => true,
-                    'tags' => ["test-tag-$i", "test-common"],
+                    'tags' => ["test-tag-$i", 'test-common'],
                 ]);
             }
 
             $response = actingAs($this->user)->get('/tags/search?q=test');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect(count($tags))->toBeLessThanOrEqual(20); // Default limit
         });
 
@@ -220,7 +220,7 @@ describe('TagController', function () {
             ]);
 
             $otherUser = User::factory()->create();
-            
+
             $response = actingAs($otherUser)->get('/tags/search?q=secret');
 
             $response->assertOk();
@@ -237,9 +237,9 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags/search?q=duct');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('production');
             expect($tags)->toContain('production-server');
             expect($tags)->toContain('production-database');
@@ -256,10 +256,10 @@ describe('TagController', function () {
             $response = actingAs($this->user)->get('/tags/search?q=duplicate');
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
-            $duplicateCount = count(array_filter($tags, fn($tag) => $tag === 'duplicate-tag'));
+
+            $duplicateCount = count(array_filter($tags, fn ($tag) => $tag === 'duplicate-tag'));
             expect($duplicateCount)->toBe(1);
         });
 
@@ -270,12 +270,12 @@ describe('TagController', function () {
                 'tags' => ['test@special', 'test#hash', 'test$money'],
             ]);
 
-            $response = actingAs($this->user)->get('/tags/search?q=' . urlencode('test@'));
+            $response = actingAs($this->user)->get('/tags/search?q='.urlencode('test@'));
 
             $response->assertOk();
-            
+
             $tags = $response->json();
-            
+
             expect($tags)->toContain('test@special');
         });
     });

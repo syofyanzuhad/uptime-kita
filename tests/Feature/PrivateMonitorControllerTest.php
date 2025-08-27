@@ -14,7 +14,7 @@ describe('PrivateMonitorController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
         $this->otherUser = User::factory()->create();
-        
+
         // Create owned private monitors
         $this->ownedPrivateMonitor1 = Monitor::factory()->create([
             'is_public' => false,
@@ -92,10 +92,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->toContain($this->ownedPrivateMonitor1->id);
         expect($monitorIds)->toContain($this->ownedPrivateMonitor2->id);
     });
@@ -104,10 +104,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->toContain($this->subscribedPrivateMonitor->id);
     });
 
@@ -115,10 +115,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->not->toContain($this->otherPrivateMonitor->id);
     });
 
@@ -126,10 +126,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->not->toContain($this->publicMonitor->id);
     });
 
@@ -143,10 +143,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $upMonitor = collect($monitors)->firstWhere('id', $this->ownedPrivateMonitor1->id);
-        
+
         expect($upMonitor['uptime_status'])->toBe('up');
         expect($upMonitor['response_time'])->toBe(200);
     });
@@ -156,9 +156,9 @@ describe('PrivateMonitorController', function () {
             'is_public' => false,
             'is_enabled' => false,
         ]);
-        
+
         $disabledMonitor->users()->attach($this->user->id, ['is_owner' => true]);
-        
+
         MonitorHistory::factory()->create([
             'monitor_id' => $disabledMonitor->id,
             'uptime_status' => 'up',
@@ -168,10 +168,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->not->toContain($disabledMonitor->id);
     });
 
@@ -179,14 +179,14 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
-        
+
         // Verify the monitors are ordered correctly
         for ($i = 0; $i < count($monitors) - 1; $i++) {
             $current = $monitors[$i];
             $next = $monitors[$i + 1];
-            
+
             expect($current['id'])->toBeGreaterThan($next['id']); // Since IDs are incremental, newer has higher ID
         }
     });
@@ -206,12 +206,12 @@ describe('PrivateMonitorController', function () {
             'is_public' => false,
             'is_enabled' => true,
         ]);
-        
+
         $bothMonitor->users()->attach($this->user->id, [
             'is_owner' => true,
             'is_subscriber' => true,
         ]);
-        
+
         MonitorHistory::factory()->create([
             'monitor_id' => $bothMonitor->id,
             'uptime_status' => 'up',
@@ -221,10 +221,10 @@ describe('PrivateMonitorController', function () {
         $response = actingAs($this->user)->get('/private-monitors');
 
         $response->assertOk();
-        
+
         $monitors = $response->json();
         $monitorIds = collect($monitors)->pluck('id');
-        
+
         expect($monitorIds)->toContain($bothMonitor->id);
         expect($monitors)->toHaveCount(4); // 2 owned + 1 subscribed + 1 both
     });

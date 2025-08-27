@@ -14,7 +14,7 @@ describe('UptimesDailyController', function () {
     beforeEach(function () {
         $this->user = User::factory()->create();
         $this->admin = User::factory()->create(['is_admin' => true]);
-        
+
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
             'is_enabled' => true,
@@ -62,14 +62,14 @@ describe('UptimesDailyController', function () {
         $response = get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
 
         $response->assertOk();
-        
+
         $uptimes = $response->json();
-        
+
         // Check that dates are in descending order
         for ($i = 0; $i < count($uptimes) - 1; $i++) {
             $currentDate = $uptimes[$i]['date'];
             $nextDate = $uptimes[$i + 1]['date'];
-            
+
             expect($currentDate)->toBeGreaterThan($nextDate);
         }
     });
@@ -149,7 +149,7 @@ describe('UptimesDailyController', function () {
     });
 
     it('returns 404 for non-existent monitor', function () {
-        $response = get("/monitor/999999/uptimes-daily");
+        $response = get('/monitor/999999/uptimes-daily');
 
         $response->assertNotFound();
     });
@@ -158,9 +158,9 @@ describe('UptimesDailyController', function () {
         $response = get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=1");
 
         $response->assertOk();
-        
+
         $uptime = $response->json()[0];
-        
+
         expect($uptime)->toHaveKeys([
             'id',
             'monitor_id',
@@ -170,7 +170,7 @@ describe('UptimesDailyController', function () {
             'successful_checks',
             'average_response_time',
         ]);
-        
+
         expect($uptime['uptime_percentage'])->toBeFloat();
         expect($uptime['total_checks'])->toBeInt();
         expect($uptime['successful_checks'])->toBeInt();
@@ -237,7 +237,7 @@ describe('UptimesDailyController', function () {
         $response = get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=1000");
 
         $response->assertOk();
-        
+
         $count = count($response->json());
         expect($count)->toBeLessThanOrEqual(365); // Should cap at 1 year max
     });

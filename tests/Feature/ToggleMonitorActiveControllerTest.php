@@ -15,7 +15,7 @@ describe('ToggleMonitorActiveController', function () {
         $this->user = User::factory()->create();
         $this->admin = User::factory()->create(['is_admin' => true]);
         $this->otherUser = User::factory()->create();
-        
+
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
             'is_enabled' => true,
@@ -41,7 +41,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_enabled' => false]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
             'is_enabled' => false,
@@ -54,7 +54,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_enabled' => true]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->disabledMonitor->id,
             'is_enabled' => true,
@@ -67,7 +67,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_enabled' => false]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
             'is_enabled' => false,
@@ -86,7 +86,7 @@ describe('ToggleMonitorActiveController', function () {
             ->postJson("/monitor/{$this->privateMonitor->id}/toggle-active");
 
         $response->assertForbidden();
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
             'is_enabled' => true, // Should remain unchanged
@@ -98,7 +98,7 @@ describe('ToggleMonitorActiveController', function () {
             ->postJson("/monitor/{$this->publicMonitor->id}/toggle-active");
 
         $response->assertForbidden();
-        
+
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
             'is_enabled' => true,
@@ -113,7 +113,7 @@ describe('ToggleMonitorActiveController', function () {
 
     it('handles non-existent monitor', function () {
         $response = actingAs($this->admin)
-            ->postJson("/monitor/999999/toggle-active");
+            ->postJson('/monitor/999999/toggle-active');
 
         $response->assertNotFound();
     });
@@ -154,7 +154,7 @@ describe('ToggleMonitorActiveController', function () {
             ->postJson("/monitor/{$monitor->id}/toggle-active");
 
         $response->assertOk();
-        
+
         assertDatabaseHas('monitors', [
             'id' => $monitor->id,
             'name' => 'Test Monitor',
@@ -172,7 +172,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response->assertOk();
         $response->assertJsonStructure(['is_enabled']);
-        
+
         $isEnabled = $response->json('is_enabled');
         expect($isEnabled)->toBeFalse();
     });
@@ -189,7 +189,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response->assertOk();
         $response->assertJson(['is_enabled' => false]);
-        
+
         assertDatabaseHas('monitors', [
             'id' => $pinnedMonitor->id,
             'is_enabled' => false,

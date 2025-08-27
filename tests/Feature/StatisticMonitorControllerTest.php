@@ -2,8 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
-use App\Models\MonitorStatistic;
-use App\Models\MonitorUptimeDaily;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\get;
@@ -237,7 +235,7 @@ describe('StatisticMonitorController', function () {
     it('handles mixed monitor statuses', function () {
         // Create monitors with various statuses
         $statuses = ['up', 'down', 'recovery', 'maintenance'];
-        
+
         foreach ($statuses as $status) {
             $monitor = Monitor::factory()->create([
                 'is_public' => true,
@@ -254,7 +252,7 @@ describe('StatisticMonitorController', function () {
         $response = get('/statistic-monitor');
 
         $response->assertOk();
-        
+
         $data = $response->json();
         expect($data['total'])->toBe(7); // 3 from beforeEach + 4 new
         expect($data['up'] + $data['down'])->toBeLessThanOrEqual($data['total']);
