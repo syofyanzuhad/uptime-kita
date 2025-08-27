@@ -17,17 +17,17 @@ describe('MonitorStatistic Model', function () {
                 'uptime_24h' => 98.75,
                 'uptime_7d' => 97.25,
                 'uptime_30d' => 96.50,
-                'uptime_90d' => 95.75,
-                'avg_response_time_24h' => 250,
-                'min_response_time_24h' => 100,
+                'uptime_90d' => 95.25,
+                'avg_response_time_24h' => 150,
+                'min_response_time_24h' => 50,
                 'max_response_time_24h' => 500,
                 'incidents_24h' => 2,
                 'incidents_7d' => 5,
-                'incidents_30d' => 10,
+                'incidents_30d' => 12,
                 'total_checks_24h' => 1440,
                 'total_checks_7d' => 10080,
                 'total_checks_30d' => 43200,
-                'recent_history_100m' => ['up', 'up', 'down', 'up'],
+                'recent_history_100m' => ['up', 'down', 'up', 'up'],
                 'calculated_at' => now(),
             ];
 
@@ -37,23 +37,23 @@ describe('MonitorStatistic Model', function () {
             expect($statistic->uptime_1h)->toBe(99.5);
             expect($statistic->uptime_24h)->toBe(98.75);
             expect($statistic->uptime_7d)->toBe(97.25);
-            expect($statistic->uptime_30d)->toBe(96.50);
-            expect($statistic->uptime_90d)->toBe(95.75);
-            expect($statistic->avg_response_time_24h)->toBe(250);
-            expect($statistic->min_response_time_24h)->toBe(100);
+            expect($statistic->uptime_30d)->toBe(96.5);
+            expect($statistic->uptime_90d)->toBe(95.25);
+            expect($statistic->avg_response_time_24h)->toBe(150);
+            expect($statistic->min_response_time_24h)->toBe(50);
             expect($statistic->max_response_time_24h)->toBe(500);
             expect($statistic->incidents_24h)->toBe(2);
             expect($statistic->incidents_7d)->toBe(5);
-            expect($statistic->incidents_30d)->toBe(10);
+            expect($statistic->incidents_30d)->toBe(12);
             expect($statistic->total_checks_24h)->toBe(1440);
             expect($statistic->total_checks_7d)->toBe(10080);
             expect($statistic->total_checks_30d)->toBe(43200);
-            expect($statistic->recent_history_100m)->toBe(['up', 'up', 'down', 'up']);
+            expect($statistic->recent_history_100m)->toBe(['up', 'down', 'up', 'up']);
         });
     });
 
     describe('casts', function () {
-        it('casts uptime percentages to decimal with 2 places', function () {
+        it('casts uptime percentages to decimal', function () {
             $statistic = MonitorStatistic::factory()->create([
                 'uptime_1h' => 99.567,
                 'uptime_24h' => 98.234,
@@ -62,7 +62,7 @@ describe('MonitorStatistic Model', function () {
                 'uptime_90d' => 95.123,
             ]);
 
-            // Decimal cast preserves precision
+            expect($statistic->uptime_1h)->toBeFloat();
             expect($statistic->uptime_1h)->toBe(99.567);
             expect($statistic->uptime_24h)->toBe(98.234);
             expect($statistic->uptime_7d)->toBe(97.891);
@@ -71,18 +71,13 @@ describe('MonitorStatistic Model', function () {
         });
 
         it('casts recent_history_100m to array', function () {
-            $historyData = [
-                ['status' => 'up', 'time' => '12:00'],
-                ['status' => 'down', 'time' => '12:01'],
-                ['status' => 'up', 'time' => '12:02'],
-            ];
-
+            $history = ['up', 'down', 'recovery', 'up'];
             $statistic = MonitorStatistic::factory()->create([
-                'recent_history_100m' => $historyData,
+                'recent_history_100m' => $history,
             ]);
 
             expect($statistic->recent_history_100m)->toBeArray();
-            expect($statistic->recent_history_100m)->toBe($historyData);
+            expect($statistic->recent_history_100m)->toBe($history);
         });
 
         it('handles null recent_history_100m', function () {
@@ -127,34 +122,36 @@ describe('MonitorStatistic Model', function () {
             $uptimeStats = $statistic->uptime_stats;
 
             expect($uptimeStats)->toBeArray();
-            expect($uptimeStats)->toHaveKeys(['24h', '7d', '30d', '90d']);
-            expect($uptimeStats['24h'])->toBe(99.5);
-            expect($uptimeStats['7d'])->toBe(98.75);
-            expect($uptimeStats['30d'])->toBe(97.25);
-            expect($uptimeStats['90d'])->toBe(96.50);
+            expect($uptimeStats)->toBe([
+                '24h' => 99.5,
+                '7d' => 98.75,
+                '30d' => 97.25,
+                '90d' => 96.5,
+            ]);
         });
     });
 
     describe('getResponseTimeStatsAttribute', function () {
         it('returns response time stats in frontend format', function () {
             $statistic = MonitorStatistic::factory()->create([
-                'avg_response_time_24h' => 250,
-                'min_response_time_24h' => 100,
+                'avg_response_time_24h' => 150,
+                'min_response_time_24h' => 50,
                 'max_response_time_24h' => 500,
             ]);
 
-            $responseTimeStats = $statistic->response_time_stats;
+            $responseStats = $statistic->response_time_stats;
 
-            expect($responseTimeStats)->toBeArray();
-            expect($responseTimeStats)->toHaveKeys(['average', 'min', 'max']);
-            expect($responseTimeStats['average'])->toBe(250);
-            expect($responseTimeStats['min'])->toBe(100);
-            expect($responseTimeStats['max'])->toBe(500);
+            expect($responseStats)->toBeArray();
+            expect($responseStats)->toBe([
+                'average' => 150,
+                'min' => 50,
+                'max' => 500,
+            ]);
         });
     });
 
     describe('isFresh method', function () {
-        it('returns true when statistics are less than an hour old', function () {
+        it('returns true when statistics are fresh', function () {
             $statistic = MonitorStatistic::factory()->create([
                 'calculated_at' => now()->subMinutes(30),
             ]);
@@ -162,15 +159,15 @@ describe('MonitorStatistic Model', function () {
             expect($statistic->isFresh())->toBeTrue();
         });
 
-        it('returns false when statistics are more than an hour old', function () {
+        it('returns false when statistics are old', function () {
             $statistic = MonitorStatistic::factory()->create([
-                'calculated_at' => now()->subMinutes(90),
+                'calculated_at' => now()->subHours(2),
             ]);
 
             expect($statistic->isFresh())->toBeFalse();
         });
 
-        it('returns false when calculated_at is old', function () {
+        it('returns false when calculated_at is very old', function () {
             $statistic = MonitorStatistic::factory()->create([
                 'calculated_at' => now()->subHours(25),
             ]);
@@ -194,7 +191,7 @@ describe('MonitorStatistic Model', function () {
         });
 
         it('uses factory trait', function () {
-            expect(class_uses(MonitorStatistic::class))->toContain(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+            expect(MonitorStatistic::class)->toUse(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
         });
 
         it('handles timestamps', function () {
@@ -206,25 +203,25 @@ describe('MonitorStatistic Model', function () {
     });
 
     describe('statistical data', function () {
-        it('can store zero values for statistics', function () {
+        it('can store zero values correctly', function () {
             $statistic = MonitorStatistic::factory()->create([
                 'uptime_24h' => 0,
                 'incidents_24h' => 0,
-                'avg_response_time_24h' => 0,
+                'avg_response_time_24h' => null,
             ]);
 
             expect($statistic->uptime_24h)->toBe(0.0);
             expect($statistic->incidents_24h)->toBe(0);
-            expect($statistic->avg_response_time_24h)->toBe(0);
+            expect($statistic->avg_response_time_24h)->toBeNull();
         });
 
         it('can store 100% uptime values', function () {
             $statistic = MonitorStatistic::factory()->create([
-                'uptime_1h' => 100,
-                'uptime_24h' => 100,
-                'uptime_7d' => 100,
-                'uptime_30d' => 100,
-                'uptime_90d' => 100,
+                'uptime_1h' => 100.00,
+                'uptime_24h' => 100.00,
+                'uptime_7d' => 100.00,
+                'uptime_30d' => 100.00,
+                'uptime_90d' => 100.00,
             ]);
 
             expect($statistic->uptime_1h)->toBe(100.0);

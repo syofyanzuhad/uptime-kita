@@ -67,42 +67,27 @@ describe('StatusPageMonitor Model', function () {
 
     describe('ordering functionality', function () {
         it('can store different order values', function () {
-            $statusPage = StatusPage::factory()->create();
+            $statusPageMonitor1 = StatusPageMonitor::factory()->create(['order' => 1]);
+            $statusPageMonitor2 = StatusPageMonitor::factory()->create(['order' => 5]);
+            $statusPageMonitor3 = StatusPageMonitor::factory()->create(['order' => 10]);
 
-            $first = StatusPageMonitor::factory()->create([
-                'status_page_id' => $statusPage->id,
-                'order' => 1,
-            ]);
-
-            $second = StatusPageMonitor::factory()->create([
-                'status_page_id' => $statusPage->id,
-                'order' => 2,
-            ]);
-
-            $third = StatusPageMonitor::factory()->create([
-                'status_page_id' => $statusPage->id,
-                'order' => 3,
-            ]);
-
-            expect($first->order)->toBe(1);
-            expect($second->order)->toBe(2);
-            expect($third->order)->toBe(3);
+            expect($statusPageMonitor1->order)->toBe(1);
+            expect($statusPageMonitor2->order)->toBe(5);
+            expect($statusPageMonitor3->order)->toBe(10);
         });
 
         it('can handle zero and negative order values', function () {
-            $statusPageMonitor = StatusPageMonitor::factory()->create([
-                'order' => 0,
-            ]);
+            $statusPageMonitor1 = StatusPageMonitor::factory()->create(['order' => 0]);
+            $statusPageMonitor2 = StatusPageMonitor::factory()->create(['order' => -1]);
 
-            expect($statusPageMonitor->order)->toBe(0);
+            expect($statusPageMonitor1->order)->toBe(0);
+            expect($statusPageMonitor2->order)->toBe(-1);
         });
 
         it('can handle large order values', function () {
-            $statusPageMonitor = StatusPageMonitor::factory()->create([
-                'order' => 999,
-            ]);
+            $statusPageMonitor = StatusPageMonitor::factory()->create(['order' => 999999]);
 
-            expect($statusPageMonitor->order)->toBe(999);
+            expect($statusPageMonitor->order)->toBe(999999);
         });
     });
 
@@ -112,7 +97,6 @@ describe('StatusPageMonitor Model', function () {
             $monitor1 = Monitor::factory()->create();
             $monitor2 = Monitor::factory()->create();
 
-            // Create pivot records
             StatusPageMonitor::create([
                 'status_page_id' => $statusPage->id,
                 'monitor_id' => $monitor1->id,
@@ -125,7 +109,6 @@ describe('StatusPageMonitor Model', function () {
                 'order' => 2,
             ]);
 
-            // Verify relationships exist
             $statusPageMonitors = StatusPageMonitor::where('status_page_id', $statusPage->id)->get();
 
             expect($statusPageMonitors)->toHaveCount(2);
@@ -163,8 +146,9 @@ describe('StatusPageMonitor Model', function () {
                 'status_page_id' => $statusPage->id,
             ]);
 
-            // Verify the status page still exists
-            expect($statusPageMonitor->fresh()->statusPage)->not->toBeNull();
+            // Verify the status page still exists and relationship works
+            $statusPageMonitor = $statusPageMonitor->fresh();
+            expect($statusPageMonitor->statusPage)->not->toBeNull();
             expect($statusPageMonitor->statusPage->id)->toBe($statusPage->id);
         });
 
@@ -174,8 +158,9 @@ describe('StatusPageMonitor Model', function () {
                 'monitor_id' => $monitor->id,
             ]);
 
-            // Verify the monitor still exists
-            expect($statusPageMonitor->fresh()->monitor)->not->toBeNull();
+            // Verify the monitor still exists and relationship works
+            $statusPageMonitor = $statusPageMonitor->fresh();
+            expect($statusPageMonitor->monitor)->not->toBeNull();
             expect($statusPageMonitor->monitor->id)->toBe($monitor->id);
         });
     });

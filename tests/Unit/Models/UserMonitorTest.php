@@ -147,17 +147,13 @@ describe('UserMonitor Model', function () {
 
     describe('active status handling', function () {
         it('can store true is_active status', function () {
-            $userMonitor = UserMonitor::factory()->create([
-                'is_active' => true,
-            ]);
+            $userMonitor = UserMonitor::factory()->active()->create();
 
             expect($userMonitor->is_active)->toBe(true);
         });
 
         it('can store false is_active status', function () {
-            $userMonitor = UserMonitor::factory()->create([
-                'is_active' => false,
-            ]);
+            $userMonitor = UserMonitor::factory()->inactive()->create();
 
             expect($userMonitor->is_active)->toBe(false);
         });
