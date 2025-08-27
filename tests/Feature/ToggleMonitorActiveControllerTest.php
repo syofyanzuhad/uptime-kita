@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\postJson;
+use function Pest\Laravel\post;
 
 uses(RefreshDatabase::class);
 
@@ -18,182 +18,219 @@ describe('ToggleMonitorActiveController', function () {
 
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         $this->privateMonitor = Monitor::factory()->create([
             'is_public' => false,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
 
         $this->disabledMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => false,
+            'uptime_check_enabled' => false,
         ]);
 
         // User owns the private monitor
-        $this->privateMonitor->users()->attach($this->user->id, ['is_owner' => true]);
+        $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
     });
 
     it('allows admin to disable an active monitor', function () {
-        $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-active");
+        // Admin needs to be attached to the monitor to toggle it
+        $this->publicMonitor->users()->attach($this->admin->id, ['is_active' => true]);
 
-        $response->assertOk();
-        $response->assertJson(['is_enabled' => false]);
+        $response = actingAs($this->admin)
+            ->from('/dashboard')
+            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
+
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'success');
 
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
-            'is_enabled' => false,
+            'uptime_check_enabled' => false,
         ]);
     });
 
     it('allows admin to enable a disabled monitor', function () {
-        $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->disabledMonitor->id}/toggle-active");
+        // Admin needs to be attached to the monitor
+        $this->disabledMonitor->users()->attach($this->admin->id, ['is_active' => true]);
 
-        $response->assertOk();
-        $response->assertJson(['is_enabled' => true]);
+        $response = actingAs($this->admin)
+            ->from('/dashboard')
+            ->post("/monitor/{$this->disabledMonitor->id}/toggle-active");
+
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'success');
 
         assertDatabaseHas('monitors', [
             'id' => $this->disabledMonitor->id,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
     });
 
     it('allows owner to toggle their private monitor', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
 
-        $response->assertOk();
-        $response->assertJson(['is_enabled' => false]);
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'success');
 
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
-            'is_enabled' => false,
+            'uptime_check_enabled' => false,
         ]);
 
         // Toggle back
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
 
-        $response->assertOk();
-        $response->assertJson(['is_enabled' => true]);
+        $response->assertRedirect('/dashboard');
+        assertDatabaseHas('monitors', [
+            'id' => $this->privateMonitor->id,
+            'uptime_check_enabled' => true,
+        ]);
     });
 
     it('prevents non-owner from toggling private monitor', function () {
         $response = actingAs($this->otherUser)
-            ->postJson("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
 
-        $response->assertForbidden();
+        // User not subscribed will get redirect with error
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'error');
 
         assertDatabaseHas('monitors', [
             'id' => $this->privateMonitor->id,
-            'is_enabled' => true, // Should remain unchanged
+            'uptime_check_enabled' => true, // Should remain unchanged
         ]);
     });
 
-    it('prevents regular user from toggling public monitor', function () {
+    it('prevents regular user from toggling public monitor not subscribed to', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
 
-        $response->assertForbidden();
+        // User not subscribed will get redirect with error
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'error');
 
         assertDatabaseHas('monitors', [
             'id' => $this->publicMonitor->id,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
     });
 
     it('requires authentication', function () {
-        $response = postJson("/monitor/{$this->publicMonitor->id}/toggle-active");
+        $response = post("/monitor/{$this->publicMonitor->id}/toggle-active");
 
-        $response->assertUnauthorized();
+        $response->assertRedirect('/login');
     });
 
     it('handles non-existent monitor', function () {
         $response = actingAs($this->admin)
-            ->postJson('/monitor/999999/toggle-active');
+            ->from('/dashboard')
+            ->post('/monitor/999999/toggle-active');
 
-        $response->assertNotFound();
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('flash.type', 'error');
     });
 
     it('toggles state correctly multiple times', function () {
         $monitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
+            'uptime_check_enabled' => true,
         ]);
+        $monitor->users()->attach($this->admin->id, ['is_active' => true]);
 
         // First toggle - disable
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$monitor->id}/toggle-active");
-        $response->assertJson(['is_enabled' => false]);
+            ->from('/dashboard')
+            ->post("/monitor/{$monitor->id}/toggle-active");
+        $response->assertRedirect();
+        assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => false]);
 
         // Second toggle - enable
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$monitor->id}/toggle-active");
-        $response->assertJson(['is_enabled' => true]);
+            ->from('/dashboard')
+            ->post("/monitor/{$monitor->id}/toggle-active");
+        $response->assertRedirect();
+        assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => true]);
 
         // Third toggle - disable again
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$monitor->id}/toggle-active");
-        $response->assertJson(['is_enabled' => false]);
+            ->from('/dashboard')
+            ->post("/monitor/{$monitor->id}/toggle-active");
+        $response->assertRedirect();
+        assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => false]);
     });
 
     it('maintains other monitor properties when toggling', function () {
         $monitor = Monitor::factory()->create([
-            'name' => 'Test Monitor',
-            'url' => 'https://example.com',
+            'url' => 'https://example-toggle.com',
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => true,
-            'check_interval' => 60,
+            'uptime_check_enabled' => true,
         ]);
+        $monitor->users()->attach($this->admin->id, ['is_active' => true]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$monitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$monitor->id}/toggle-active");
 
-        $response->assertOk();
+        $response->assertRedirect();
 
         assertDatabaseHas('monitors', [
             'id' => $monitor->id,
-            'name' => 'Test Monitor',
-            'url' => 'https://example.com',
+            'url' => 'https://example-toggle.com',
             'is_public' => true,
-            'is_enabled' => false,
-            'is_pinned' => true,
-            'check_interval' => 60,
+            'uptime_check_enabled' => false,
         ]);
     });
 
-    it('returns updated status in response', function () {
+    it('returns success message in session', function () {
+        $this->publicMonitor->users()->attach($this->admin->id, ['is_active' => true]);
+
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
 
-        $response->assertOk();
-        $response->assertJsonStructure(['is_enabled']);
+        $response->assertRedirect();
+        $response->assertSessionHas('flash.type', 'success');
 
-        $isEnabled = $response->json('is_enabled');
-        expect($isEnabled)->toBeFalse();
+        assertDatabaseHas('monitors', [
+            'id' => $this->publicMonitor->id,
+            'uptime_check_enabled' => false,
+        ]);
     });
 
     it('works with pinned monitors', function () {
         $pinnedMonitor = Monitor::factory()->create([
             'is_public' => true,
-            'is_enabled' => true,
-            'is_pinned' => true,
+            'uptime_check_enabled' => true,
         ]);
+        // Set as pinned through pivot table
+        $pinnedMonitor->users()->attach($this->admin->id, ['is_active' => true, 'is_pinned' => true]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$pinnedMonitor->id}/toggle-active");
+            ->from('/dashboard')
+            ->post("/monitor/{$pinnedMonitor->id}/toggle-active");
 
-        $response->assertOk();
-        $response->assertJson(['is_enabled' => false]);
+        $response->assertRedirect();
+        $response->assertSessionHas('flash.type', 'success');
 
         assertDatabaseHas('monitors', [
             'id' => $pinnedMonitor->id,
-            'is_enabled' => false,
-            'is_pinned' => true, // Pin status should remain
+            'uptime_check_enabled' => false,
+        ]);
+
+        // Check pin status remains in pivot table
+        assertDatabaseHas('user_monitor', [
+            'monitor_id' => $pinnedMonitor->id,
+            'user_id' => $this->admin->id,
+            'is_pinned' => true,
         ]);
     });
 });
