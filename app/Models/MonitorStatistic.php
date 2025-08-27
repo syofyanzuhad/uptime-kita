@@ -31,11 +31,11 @@ class MonitorStatistic extends Model
     ];
 
     protected $casts = [
-        'uptime_1h' => 'decimal:2',
-        'uptime_24h' => 'decimal:2',
-        'uptime_7d' => 'decimal:2',
-        'uptime_30d' => 'decimal:2',
-        'uptime_90d' => 'decimal:2',
+        'uptime_1h' => 'float',
+        'uptime_24h' => 'float',
+        'uptime_7d' => 'float',
+        'uptime_30d' => 'float',
+        'uptime_90d' => 'float',
         'recent_history_100m' => 'array',
         'calculated_at' => 'datetime',
     ];
