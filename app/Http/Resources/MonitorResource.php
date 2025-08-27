@@ -30,6 +30,7 @@ class MonitorResource extends JsonResource
             'down_for_events_count' => $this->getDownEventsCount(),
             'uptime_check_interval' => $this->uptime_check_interval_in_minutes,
             'is_subscribed' => $this->is_subscribed,
+            'is_pinned' => $this->is_pinned,
             'is_public' => $this->is_public,
             'today_uptime_percentage' => $this->getTodayUptimePercentage(),
             'uptime_status_last_change_date' => $this->uptime_status_last_change_date,
