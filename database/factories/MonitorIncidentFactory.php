@@ -17,13 +17,13 @@ class MonitorIncidentFactory extends Factory
      */
     public function definition(): array
     {
-        $startedAt = $this->faker->dateTimeBetween('-1 week', 'now');
-        $endedAt = $this->faker->optional(0.8)->dateTimeBetween($startedAt, 'now');
+        $startedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'));
+        $endedAt = $this->faker->optional(0.8)->passthrough(\Carbon\Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now')));
         $durationMinutes = $endedAt ? $startedAt->diffInMinutes($endedAt) : null;
 
         return [
             'monitor_id' => Monitor::factory(),
-            'type' => $this->faker->randomElement(['downtime', 'slow_response', 'certificate_issue', 'maintenance']),
+            'type' => $this->faker->randomElement(['down', 'degraded', 'recovered']),
             'started_at' => $startedAt,
             'ended_at' => $endedAt,
             'duration_minutes' => $durationMinutes,
@@ -49,8 +49,8 @@ class MonitorIncidentFactory extends Factory
      */
     public function ended(): static
     {
-        $startedAt = $this->faker->dateTimeBetween('-1 week', '-1 hour');
-        $endedAt = $this->faker->dateTimeBetween($startedAt, 'now');
+        $startedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', '-1 hour'));
+        $endedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now'));
 
         return $this->state(fn (array $attributes) => [
             'started_at' => $startedAt,

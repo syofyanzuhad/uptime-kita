@@ -22,7 +22,7 @@ class MonitorPerformanceHourlyFactory extends Factory
 
         return [
             'monitor_id' => Monitor::factory(),
-            'hour' => $this->faker->dateTimeBetween('-1 week', 'now')->startOfHour(),
+            'hour' => \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'))->startOfHour(),
             'avg_response_time' => $this->faker->randomFloat(2, 50, 1000),
             'p95_response_time' => $this->faker->randomFloat(2, 200, 2000),
             'p99_response_time' => $this->faker->randomFloat(2, 500, 5000),

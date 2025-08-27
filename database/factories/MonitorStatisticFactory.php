@@ -34,7 +34,7 @@ class MonitorStatisticFactory extends Factory
             'total_checks_7d' => $this->faker->numberBetween(5000, 10080),
             'total_checks_30d' => $this->faker->numberBetween(20000, 43200),
             'recent_history_100m' => $this->faker->optional()->randomElements(['up', 'down', 'recovery'], $this->faker->numberBetween(50, 100), true),
-            'calculated_at' => $this->faker->dateTimeBetween('-1 hour', 'now'),
+            'calculated_at' => now()->subMinutes($this->faker->numberBetween(1, 60)),
         ];
     }
 }
