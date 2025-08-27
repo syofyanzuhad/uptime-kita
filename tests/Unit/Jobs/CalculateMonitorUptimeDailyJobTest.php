@@ -4,7 +4,6 @@ use App\Jobs\CalculateMonitorUptimeDailyJob;
 use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
@@ -21,7 +20,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'uptime_check_enabled' => true,
             ]);
 
-            $job = new CalculateMonitorUptimeDailyJob();
+            $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
             // Should dispatch 3 CalculateSingleMonitorUptimeJob instances
@@ -37,7 +36,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
 
         it('handles empty monitor list gracefully', function () {
             // No monitors in database
-            $job = new CalculateMonitorUptimeDailyJob();
+            $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
             // Should not dispatch any jobs
@@ -50,7 +49,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'uptime_check_enabled' => true,
             ]);
 
-            $job = new CalculateMonitorUptimeDailyJob();
+            $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
             // Should dispatch 25 jobs
@@ -63,7 +62,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'uptime_check_enabled' => true,
             ]);
 
-            $job = new CalculateMonitorUptimeDailyJob();
+            $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 50);
@@ -74,11 +73,11 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 'uptime_check_enabled' => true,
             ]);
 
-            $job = new CalculateMonitorUptimeDailyJob();
-            
+            $job = new CalculateMonitorUptimeDailyJob;
+
             // Test that the job completes without error (logging happens internally)
             $job->handle();
-            
+
             // Verify the expected jobs were dispatched
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 5);
         });
@@ -93,7 +92,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
                 ->once()
                 ->andThrow(new Exception('Database error'));
 
-            expect(fn() => $job->handle())
+            expect(fn () => $job->handle())
                 ->toThrow(Exception::class, 'Database error');
         });
     });

@@ -6,8 +6,6 @@ use App\Models\MonitorHistory;
 use App\Models\MonitorUptimeDaily;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 
 uses(RefreshDatabase::class);
 

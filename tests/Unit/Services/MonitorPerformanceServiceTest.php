@@ -26,9 +26,9 @@ describe('MonitorPerformanceService', function () {
     describe('updateHourlyMetrics', function () {
         it('creates new hourly performance record when none exists', function () {
             $responseTime = 250;
-            
+
             $this->service->updateHourlyMetrics($this->monitor->id, $responseTime, true);
-            
+
             $performance = MonitorPerformanceHourly::where('monitor_id', $this->monitor->id)->first();
             expect($performance)->not->toBeNull();
             expect($performance->success_count)->toBe(1);
@@ -53,7 +53,7 @@ describe('MonitorPerformanceService', function () {
 
         it('increments failure count for failed checks', function () {
             $this->service->updateHourlyMetrics($this->monitor->id, null, false);
-            
+
             $performance = MonitorPerformanceHourly::where('monitor_id', $this->monitor->id)->first();
             expect($performance->success_count)->toBe(0);
             expect($performance->failure_count)->toBe(1);
@@ -90,7 +90,7 @@ describe('MonitorPerformanceService', function () {
         it('returns correct metrics for a day with data', function () {
             $date = '2024-01-01';
             $startDate = Carbon::parse($date)->startOfDay();
-            
+
             // Create test data
             MonitorHistory::create([
                 'monitor_id' => $this->monitor->id,
@@ -125,7 +125,7 @@ describe('MonitorPerformanceService', function () {
 
         it('returns zeros for day with no data', function () {
             $date = '2024-01-01';
-            
+
             $metrics = $this->service->aggregateDailyMetrics($this->monitor->id, $date);
 
             expect($metrics['total_checks'])->toBe(0);
@@ -140,7 +140,7 @@ describe('MonitorPerformanceService', function () {
         it('calculates stats correctly with data', function () {
             $startDate = Carbon::now()->subHours(2);
             $endDate = Carbon::now();
-            
+
             MonitorHistory::create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
@@ -166,7 +166,7 @@ describe('MonitorPerformanceService', function () {
         it('returns zeros when no data available', function () {
             $startDate = Carbon::now()->subHours(2);
             $endDate = Carbon::now();
-            
+
             $stats = $this->service->getResponseTimeStats($this->monitor->id, $startDate, $endDate);
 
             expect($stats['avg'])->toBe(0);
@@ -177,7 +177,7 @@ describe('MonitorPerformanceService', function () {
         it('excludes failed checks from stats', function () {
             $startDate = Carbon::now()->subHours(2);
             $endDate = Carbon::now();
-            
+
             MonitorHistory::create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
@@ -204,15 +204,15 @@ describe('MonitorPerformanceService', function () {
     describe('calculatePercentile', function () {
         it('calculates percentile correctly', function () {
             $sortedArray = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-            
+
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('calculatePercentile');
             $method->setAccessible(true);
-            
+
             $p50 = $method->invoke($this->service, $sortedArray, 50);
             $p95 = $method->invoke($this->service, $sortedArray, 95);
             $p99 = $method->invoke($this->service, $sortedArray, 99);
-            
+
             expect($p50)->toBe(55.0); // Between 50 and 60
             expect($p95)->toBe(95.5); // Between 90 and 100
             expect($p99)->toBe(99.1); // Close to 100
@@ -220,13 +220,13 @@ describe('MonitorPerformanceService', function () {
 
         it('handles single value array', function () {
             $sortedArray = [100];
-            
+
             $reflection = new ReflectionClass($this->service);
             $method = $reflection->getMethod('calculatePercentile');
             $method->setAccessible(true);
-            
+
             $p95 = $method->invoke($this->service, $sortedArray, 95);
-            
+
             expect($p95)->toBe(100.0);
         });
     });

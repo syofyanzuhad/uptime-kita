@@ -5,9 +5,9 @@ use App\Models\MonitorHistory;
 use App\Models\MonitorUptimeDaily;
 use App\Models\StatusPage;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Url\Url;
-use Carbon\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -104,7 +104,7 @@ describe('Monitor Model', function () {
         });
 
         it('returns null url when not set', function () {
-            $monitor = new Monitor();
+            $monitor = new Monitor;
 
             expect($monitor->url)->toBeNull();
         });
@@ -118,7 +118,7 @@ describe('Monitor Model', function () {
         });
 
         it('returns null favicon when url not set', function () {
-            $monitor = new Monitor();
+            $monitor = new Monitor;
 
             expect($monitor->favicon)->toBeNull();
         });

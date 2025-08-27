@@ -96,8 +96,6 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
     /**
      * Get all monitor IDs for uptime calculation.
-     *
-     * @return array
      */
     protected function getMonitorIds(): array
     {

@@ -4,9 +4,9 @@ import { Head } from '@inertiajs/vue3';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { type BreadcrumbItem } from '@/types';
 
+import NotificationChannelList from '@/components/NotificationChannelList.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import NotificationChannelList from '@/components/NotificationChannelList.vue';
 
 const props = defineProps<{
     channels: any[];

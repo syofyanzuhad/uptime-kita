@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { watch, computed, nextTick } from 'vue';
-import { useForm, router } from '@inertiajs/vue3';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import Select from '@/components/ui/input/Select.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import Select from '@/components/ui/input/Select.vue';
+import { router, useForm } from '@inertiajs/vue3';
+import { computed, nextTick, watch } from 'vue';
 
 const props = defineProps({
     channel: {
@@ -43,8 +43,8 @@ const isMetadataValid = computed(() => {
 function clearMetadata() {
     form.metadata = '';
     nextTick(() => {
-      const el = document.getElementById('metadata-textarea');
-      if (el) el.style.height = 'auto';
+        const el = document.getElementById('metadata-textarea');
+        if (el) el.style.height = 'auto';
     });
 }
 
@@ -54,14 +54,17 @@ function autoResize(e: Event) {
     el.style.height = el.scrollHeight + 'px';
 }
 
-watch(() => props.channel, (newVal) => {
-    if (newVal) {
-        form.type = newVal.type || '';
-        form.destination = newVal.destination || '';
-        form.is_enabled = newVal.is_enabled ?? true;
-        form.metadata = newVal.metadata ? JSON.stringify(newVal.metadata, null, 2) : '';
-    }
-});
+watch(
+    () => props.channel,
+    (newVal) => {
+        if (newVal) {
+            form.type = newVal.type || '';
+            form.destination = newVal.destination || '';
+            form.is_enabled = newVal.is_enabled ?? true;
+            form.metadata = newVal.metadata ? JSON.stringify(newVal.metadata, null, 2) : '';
+        }
+    },
+);
 
 function validate() {
     let valid = true;
@@ -104,48 +107,47 @@ function handleSubmit() {
 <template>
     <form @submit.prevent="handleSubmit" class="space-y-4">
         <div>
-            <label class="block font-medium mb-1">Type<span class="text-red-500">*</span></label>
+            <label class="mb-1 block font-medium">Type<span class="text-red-500">*</span></label>
             <Select v-model="form.type" :items="typeOptions" placeholder="Select type" />
-            <div v-if="form.errors.type" class="text-red-500 text-sm mt-1">{{ form.errors.type }}</div>
+            <div v-if="form.errors.type" class="mt-1 text-sm text-red-500">{{ form.errors.type }}</div>
         </div>
         <div>
-            <label class="block font-medium mb-1">Destination<span class="text-red-500">*</span></label>
+            <label class="mb-1 block font-medium">Destination<span class="text-red-500">*</span></label>
             <Input v-model="form.destination" type="text" class="w-full" placeholder="chat_id, email, webhook, etc." />
-            <small class="text-gray-500 text-sm mt-1">
+            <small class="mt-1 text-sm text-gray-500">
                 (Telegram: chat_id, Slack: webhook url, Email: email)
                 <span v-if="form.type === 'telegram'" class="text-gray-500">
-                    <br>
+                    <br />
                     <span class="text-sm">
-                        Send a /start to the <a href="https://t.me/@uptime_kita_bot" target="_blank" class="text-blue-500">@uptime_kita_bot</a> to get your chat_id.
+                        Send a /start to the <a href="https://t.me/@uptime_kita_bot" target="_blank" class="text-blue-500">@uptime_kita_bot</a> to get
+                        your chat_id.
                     </span>
                 </span>
             </small>
-            <div v-if="form.errors.destination" class="text-red-500 text-sm mt-1">{{ form.errors.destination }}</div>
+            <div v-if="form.errors.destination" class="mt-1 text-sm text-red-500">{{ form.errors.destination }}</div>
         </div>
         <div class="flex items-center space-x-2">
             <Checkbox v-model="form.is_enabled" id="is_enabled" />
             <label for="is_enabled">Enabled</label>
         </div>
         <div>
-            <label class="block font-medium mb-1">Metadata (Optional)</label>
+            <label class="mb-1 block font-medium">Metadata (Optional)</label>
             <textarea
                 id="metadata-textarea"
                 v-model="form.metadata"
-                class="w-full p-2 border rounded resize-none"
+                class="w-full resize-none rounded border p-2"
                 placeholder='{"note": "Optional metadata"}'
                 @input="autoResize"
                 :class="{ 'border-red-500': form.metadata && !isMetadataValid }"
             ></textarea>
-            <div v-if="form.metadata && !isMetadataValid" class="text-red-500 text-sm mt-1">Invalid JSON format</div>
-            <button type="button" @click="clearMetadata" class="text-sm text-gray-500 mt-1">Clear metadata</button>
+            <div v-if="form.metadata && !isMetadataValid" class="mt-1 text-sm text-red-500">Invalid JSON format</div>
+            <button type="button" @click="clearMetadata" class="mt-1 text-sm text-gray-500">Clear metadata</button>
         </div>
         <div class="flex space-x-2">
             <Button type="submit" :disabled="form.processing">
-                {{ form.processing ? 'Saving...' : (isEdit ? 'Update Channel' : 'Create Channel') }}
+                {{ form.processing ? 'Saving...' : isEdit ? 'Update Channel' : 'Create Channel' }}
             </Button>
-            <Button type="button" variant="outline" @click="router.visit(route('notifications.index'))">
-                Cancel
-            </Button>
+            <Button type="button" variant="outline" @click="router.visit(route('notifications.index'))"> Cancel </Button>
         </div>
     </form>
 </template>

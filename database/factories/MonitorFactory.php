@@ -18,7 +18,7 @@ class MonitorFactory extends Factory
     public function definition(): array
     {
         return [
-            'url' => 'https://example' . $this->faker->unique()->numberBetween(1, 100000) . '.com',
+            'url' => 'https://example'.$this->faker->unique()->numberBetween(1, 100000).'.com',
             'uptime_status' => 'up',
             'uptime_check_enabled' => true,
             'certificate_check_enabled' => false,

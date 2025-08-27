@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Commands\CalculateDailyUptimeCommand;
 use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use Carbon\Carbon;
@@ -24,7 +23,7 @@ describe('CalculateDailyUptimeCommand', function () {
             $monitor = Monitor::factory()->create();
 
             $this->artisan('uptime:calculate-daily')
-                ->expectsOutput('Starting daily uptime calculation for date: ' . now()->toDateString())
+                ->expectsOutput('Starting daily uptime calculation for date: '.now()->toDateString())
                 ->assertSuccessful();
         });
 
