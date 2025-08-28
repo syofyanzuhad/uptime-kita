@@ -12,12 +12,11 @@ class TelegramWebhookController extends Controller
         // Mengambil update dari request yang dikirim Telegram
         $updates = $request->all();
         // info('request', $request->all());
-        $message = $updates['message'];
-        // info('message', $message);
 
         // --- BAGIAN YANG DIPERBAIKI TOTAL ---
         // Periksa apakah update berisi 'message' dan di dalamnya ada 'text'
-        if (isset($message['text'])) {
+        if (isset($updates['message']) && isset($updates['message']['text'])) {
+            $message = $updates['message'];
 
             // Ambil data langsung dari properti array
             $chatId = $message['chat']['id'];
