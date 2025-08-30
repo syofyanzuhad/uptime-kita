@@ -231,4 +231,3 @@ test('creates user without email if provider does not provide email', function (
         'provider_name' => $provider,
     ]);
 });
-
