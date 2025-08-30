@@ -28,6 +28,8 @@ describe('MonitorUptimeDaily Model', function () {
             expect($uptimeDaily->date->format('Y-m-d'))->toBe('2024-01-01');
             expect($uptimeDaily->uptime_percentage)->toBe(99.5);
             expect($uptimeDaily->avg_response_time)->toBe(150.75);
+            expect($uptimeDaily->min_response_time)->toBe(50.25);
+            expect($uptimeDaily->max_response_time)->toBe(500.50);
             expect($uptimeDaily->total_checks)->toBe(1440);
             expect($uptimeDaily->failed_checks)->toBe(7);
         });
@@ -63,6 +65,8 @@ describe('MonitorUptimeDaily Model', function () {
             expect($uptimeDaily->min_response_time)->toBeFloat();
             expect($uptimeDaily->max_response_time)->toBeFloat();
             expect($uptimeDaily->avg_response_time)->toBe(150.25);
+            expect($uptimeDaily->min_response_time)->toBe(50.75);
+            expect($uptimeDaily->max_response_time)->toBe(500.50);
         });
 
         it('casts check counts to integer', function () {

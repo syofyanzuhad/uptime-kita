@@ -19,6 +19,9 @@ class MonitorHistoryResource extends JsonResource
             'monitor_id' => $this->monitor_id,
             'uptime_status' => $this->uptime_status,
             'message' => $this->message,
+            'response_time' => $this->response_time,
+            'status_code' => $this->status_code,
+            'checked_at' => $this->checked_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
