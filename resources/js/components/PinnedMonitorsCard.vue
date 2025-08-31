@@ -218,14 +218,16 @@ watch(
 let pollingInterval: number | null = null;
 let cleanupPinCallback: (() => void) | null = null;
 
-function startPolling() {
-    if (pollingInterval) return;
-    pollingInterval = window.setInterval(() => {
-        if (!loading.value && !loadingMore.value) {
-            fetchPinnedMonitors(false, 1); // Polling update - always fetch first page
-        }
-    }, 60000); // Poll every 60 seconds
-}
+// function startPolling() {
+//     // Auto-fetch disabled - polling is not active
+//     return;
+//     // if (pollingInterval) return;
+//     // pollingInterval = window.setInterval(() => {
+//     //     if (!loading.value && !loadingMore.value) {
+//     //         fetchPinnedMonitors(false, 1); // Polling update - always fetch first page
+//     //     }
+//     // }, 60000); // Poll every 60 seconds
+// }
 
 function stopPolling() {
     if (pollingInterval) {
@@ -236,7 +238,7 @@ function stopPolling() {
 
 onMounted(() => {
     fetchPinnedMonitors(true);
-    startPolling();
+    // startPolling(); // Auto-fetch disabled
 
     // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
