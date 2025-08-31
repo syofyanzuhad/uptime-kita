@@ -63,6 +63,7 @@ class SendCustomMonitorNotification
                     'url' => (string) $monitor->url,
                     'status' => $status,
                     'message' => "Website {$monitor->url} is {$status}",
+                    'is_public' => $monitor->is_public,
                 ]));
 
                 Log::info('SendCustomMonitorNotification: Notification sent successfully', [
