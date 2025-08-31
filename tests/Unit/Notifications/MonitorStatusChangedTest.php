@@ -229,6 +229,44 @@ describe('MonitorStatusChanged', function () {
             // so we'll verify it was created with the correct type
             expect($result)->toBeInstanceOf(TelegramMessage::class);
         });
+
+        it('includes both view monitor and open website buttons', function () {
+            $telegramChannel = NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => '123456789',
+            ]);
+
+            $rateLimitService = mock(TelegramRateLimitService::class);
+            $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(true);
+            $rateLimitService->shouldReceive('trackSuccessfulNotification');
+
+            $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
+
+            $result = $this->notification->toTelegram($this->user);
+
+            expect($result)->toBeInstanceOf(TelegramMessage::class);
+
+            // Check the payload contains both buttons
+            $payload = $result->toArray();
+            expect($payload)->toHaveKey('reply_markup');
+
+            $replyMarkup = json_decode($payload['reply_markup'], true);
+            expect($replyMarkup)->toHaveKey('inline_keyboard');
+            expect($replyMarkup['inline_keyboard'])->toHaveCount(1); // One row with 2 buttons
+            expect($replyMarkup['inline_keyboard'][0])->toHaveCount(2); // Two buttons in the row
+
+            // Check first button (View Monitor)
+            $viewMonitorButton = $replyMarkup['inline_keyboard'][0][0];
+            expect($viewMonitorButton['text'])->toBe('View Monitor');
+            expect($viewMonitorButton['url'])->toBe(config('app.url') . '/monitor/1');
+
+            // Check second button (Open Website)
+            $openWebsiteButton = $replyMarkup['inline_keyboard'][0][1];
+            expect($openWebsiteButton['text'])->toBe('Open Website');
+            expect($openWebsiteButton['url'])->toBe('https://example.com');
+        });
     });
 
     describe('toArray', function () {
