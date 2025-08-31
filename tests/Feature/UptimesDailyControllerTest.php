@@ -239,4 +239,260 @@ describe('UptimesDailyController', function () {
         $count = count($response->json());
         expect($count)->toBeLessThanOrEqual(365); // Should cap at 1 year max
     });
+
+    describe('date query parameter functionality', function () {
+        it('returns uptime data for specific date when date parameter is provided', function () {
+            $specificDate = now()->subDays(35)->toDateString(); // Use a date outside the 30-day range
+
+            // Create a specific uptime record for that date
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $specificDate,
+                'uptime_percentage' => 97.5,
+                'total_checks' => 1440,
+                'failed_checks' => 36,
+                'avg_response_time' => 250,
+            ]);
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
+
+            $response->assertOk();
+            $response->assertJson([
+                'uptimes_daily' => [[
+                    'date' => $specificDate,
+                    'uptime_percentage' => 97.5,
+                ]],
+            ]);
+
+            // Should return only one record for the specific date
+            $data = $response->json();
+            expect(count($data['uptimes_daily']))->toBe(1);
+        });
+
+        it('returns empty array when no uptime data exists for specific date', function () {
+            $nonExistentDate = now()->addDays(10)->toDateString(); // Future date with no data
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$nonExistentDate}");
+
+            $response->assertOk();
+            $response->assertJson([
+                'uptimes_daily' => [],
+            ]);
+        });
+
+        it('handles invalid date format gracefully', function () {
+            $invalidDate = 'not-a-date';
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$invalidDate}");
+
+            $response->assertOk();
+            $response->assertJson([
+                'uptimes_daily' => [],
+            ]);
+        });
+
+        it('returns correct data when multiple uptimes exist but only one matches date', function () {
+            $targetDate = now()->subDays(40)->toDateString();
+            $otherDate1 = now()->subDays(41)->toDateString();
+            $otherDate2 = now()->subDays(42)->toDateString();
+
+            // Create multiple uptime records
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $targetDate,
+                'uptime_percentage' => 98.0,
+            ]);
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $otherDate1,
+                'uptime_percentage' => 99.0,
+            ]);
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $otherDate2,
+                'uptime_percentage' => 97.0,
+            ]);
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$targetDate}");
+
+            $response->assertOk();
+
+            $data = $response->json();
+            expect(count($data['uptimes_daily']))->toBe(1);
+            expect($data['uptimes_daily'][0]['date'])->toBe($targetDate);
+            expect($data['uptimes_daily'][0]['uptime_percentage'])->toEqual(98.0);
+        });
+
+        it('works with private monitor when user has access and date is provided', function () {
+            $specificDate = now()->subDays(33)->toDateString();
+
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->privateMonitor->id,
+                'date' => $specificDate,
+                'uptime_percentage' => 99.9,
+            ]);
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
+
+            $response->assertOk();
+            $response->assertJson([
+                'uptimes_daily' => [[
+                    'date' => $specificDate,
+                    'uptime_percentage' => 99.9,
+                ]],
+            ]);
+        });
+
+        it('returns 404 for non-owner accessing private monitor with date parameter', function () {
+            $otherUser = User::factory()->create();
+            $specificDate = now()->subDays(2)->toDateString();
+
+            $response = actingAs($otherUser)
+                ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
+
+            $response->assertNotFound();
+        });
+
+        it('handles date parameter correctly', function () {
+            $date = now()->subDays(37);
+            $dateString = $date->toDateString(); // Y-m-d format
+
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $dateString,
+                'uptime_percentage' => 96.5,
+            ]);
+
+            // Test with Y-m-d format
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$dateString}");
+
+            $response->assertOk();
+            $data = $response->json();
+            expect(count($data['uptimes_daily']))->toBe(1);
+            expect($data['uptimes_daily'][0]['uptime_percentage'])->toBe(96.5);
+
+            // Test with URL encoded date
+            $urlEncodedDate = urlencode($dateString);
+            $response2 = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$urlEncodedDate}");
+
+            $response2->assertOk();
+            $data2 = $response2->json();
+            expect(count($data2['uptimes_daily']))->toBe(1);
+            expect($data2['uptimes_daily'][0]['uptime_percentage'])->toEqual(96.5);
+        });
+
+        it('returns empty array when monitor exists but has no data for given date', function () {
+            // Create a monitor with no uptime data at all
+            $emptyMonitor = Monitor::factory()->create([
+                'is_public' => true,
+                'uptime_check_enabled' => true,
+            ]);
+            $emptyMonitor->users()->attach($this->user->id, ['is_active' => true]);
+
+            $specificDate = now()->toDateString();
+
+            $response = actingAs($this->user)
+                ->get("/monitor/{$emptyMonitor->id}/uptimes-daily?date={$specificDate}");
+
+            $response->assertOk();
+            $response->assertJson([
+                'uptimes_daily' => [],
+            ]);
+        });
+
+        it('ignores limit parameter when date is provided', function () {
+            $specificDate = now()->subDays(44)->toDateString();
+
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $specificDate,
+                'uptime_percentage' => 95.5,
+            ]);
+
+            // Even with limit=100, should only return the one record for the date
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}&limit=100");
+
+            $response->assertOk();
+
+            $data = $response->json();
+            expect(count($data['uptimes_daily']))->toBe(1);
+            expect($data['uptimes_daily'][0]['date'])->toBe($specificDate);
+        });
+
+        it('uses cache when date parameter is not provided', function () {
+            // Clear any existing cache
+            cache()->forget("monitor_{$this->publicMonitor->id}_uptimes_daily");
+
+            // First request should cache the result
+            $response1 = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+
+            $response1->assertOk();
+            $data1 = $response1->json();
+            $originalCount = count($data1['uptimes_daily']);
+
+            // Add more data after caching
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => now()->addDay()->toDateString(),
+                'uptime_percentage' => 100.0,
+            ]);
+
+            // Second request should return cached result (without the new data)
+            $response2 = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+
+            $response2->assertOk();
+            $data2 = $response2->json();
+            expect(count($data2['uptimes_daily']))->toBe($originalCount);
+
+            // Clear cache
+            cache()->forget("monitor_{$this->publicMonitor->id}_uptimes_daily");
+
+            // Third request should show updated data
+            $response3 = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+
+            $response3->assertOk();
+            $data3 = $response3->json();
+            expect(count($data3['uptimes_daily']))->toBeGreaterThan($originalCount);
+        });
+
+        it('does not use cache when date parameter is provided', function () {
+            $specificDate = now()->subDays(46)->toDateString();
+
+            // Set up cache with different data
+            cache()->put("monitor_{$this->publicMonitor->id}_uptimes_daily", collect([
+                ['date' => 'cached-date', 'uptime_percentage' => 50.0],
+            ]), 60);
+
+            // Create actual data for the date
+            MonitorUptimeDaily::factory()->create([
+                'monitor_id' => $this->publicMonitor->id,
+                'date' => $specificDate,
+                'uptime_percentage' => 98.5,
+            ]);
+
+            // Request with date parameter should bypass cache
+            $response = actingAs($this->user)
+                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
+
+            $response->assertOk();
+
+            $data = $response->json();
+            expect(count($data['uptimes_daily']))->toBe(1);
+            expect($data['uptimes_daily'][0]['date'])->toBe($specificDate);
+            expect($data['uptimes_daily'][0]['uptime_percentage'])->toBe(98.5);
+            // Should not return cached data
+            expect($data['uptimes_daily'][0]['date'])->not->toBe('cached-date');
+        });
+    });
 });
