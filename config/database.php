@@ -62,6 +62,14 @@ return [
             'synchronous' => 'NORMAL', // Balance between safety and performance
         ],
 
+        'sqlite_health' => [
+            'driver' => 'sqlite',
+            'database' => env('DB_DATABASE_HEALTH', database_path('health.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 15000, // 15 seconds timeout for health operations
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
