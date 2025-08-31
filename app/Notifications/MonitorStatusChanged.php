@@ -96,7 +96,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             $statusText = $this->data['status'] === 'DOWN' ? 'Website DOWN' : 'Website UP';
 
             // if monitor is public, use public url
-            if ($this->data['is_public']) {
+            if (@$this->data['is_public']) {
                 $monitorUrl = config('app.url').'/m/'.$this->data['url'];
             } else {
                 $monitorUrl = config('app.url').'/monitor/'.$this->data['id'];
