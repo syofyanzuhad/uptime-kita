@@ -260,7 +260,7 @@ describe('MonitorStatusChanged', function () {
             // Check first button (View Monitor)
             $viewMonitorButton = $replyMarkup['inline_keyboard'][0][0];
             expect($viewMonitorButton['text'])->toBe('View Monitor');
-            expect($viewMonitorButton['url'])->toBe(config('app.url') . '/monitor/1');
+            expect($viewMonitorButton['url'])->toBe(config('app.url').'/monitor/1');
 
             // Check second button (Open Website)
             $openWebsiteButton = $replyMarkup['inline_keyboard'][0][1];
