@@ -22,6 +22,7 @@ export interface Monitor {
     uptime_check_interval: number;
     is_subscribed?: boolean;
     is_public?: boolean;
+    is_pinned?: boolean;
     favicon?: string;
     today_uptime_percentage?: number;
     uptime_status_last_change_date?: string | null;
