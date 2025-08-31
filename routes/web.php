@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MonitorListController;
 use App\Http\Controllers\PinnedMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
 use App\Http\Controllers\PublicMonitorController;
@@ -35,6 +36,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Dynamic monitor listing route (for pinned, private, public)
+    Route::get('/monitors/{type}', [MonitorListController::class, 'index'])
+        ->where('type', 'pinned|private|public')
+        ->name('monitors.list');
+
     // Inertia route for toggle pin action
     Route::post('/monitor/{monitorId}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
     // Route untuk private monitor
