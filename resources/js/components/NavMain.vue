@@ -7,12 +7,12 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
-import { ref, onMounted, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     items: NavItem[];
@@ -23,7 +23,7 @@ const expandedItems = ref<Set<string>>(new Set());
 
 // Auto-expand submenus when current page matches
 const initializeExpandedItems = () => {
-    props.items.forEach(item => {
+    props.items.forEach((item) => {
         if (item.items && isItemActive(item)) {
             expandedItems.value.add(item.title);
         }
@@ -36,9 +36,12 @@ onMounted(() => {
 });
 
 // Watch for page changes and update expanded items
-watch(() => page.url, () => {
-    initializeExpandedItems();
-});
+watch(
+    () => page.url,
+    () => {
+        initializeExpandedItems();
+    },
+);
 
 const toggleItem = (itemTitle: string) => {
     if (expandedItems.value.has(itemTitle)) {
@@ -51,7 +54,7 @@ const toggleItem = (itemTitle: string) => {
 const isItemActive = (item: NavItem): boolean => {
     if (item.href && item.href === page.url) return true;
     if (item.items) {
-        return item.items.some(subItem => subItem.href === page.url);
+        return item.items.some((subItem) => subItem.href === page.url);
     }
     return false;
 };
@@ -68,11 +71,7 @@ const isSubItemActive = (subItem: NavItem): boolean => {
             <SidebarMenuItem v-for="item in props.items" :key="item.title">
                 <!-- Regular menu item without subitems -->
                 <template v-if="!item.items">
-                    <SidebarMenuButton
-                        as-child
-                        :is-active="isItemActive(item)"
-                        :tooltip="item.title"
-                    >
+                    <SidebarMenuButton as-child :is-active="isItemActive(item)" :tooltip="item.title">
                         <Link :href="item.href!">
                             <component :is="item.icon" />
                             <span>{{ item.title }}</span>
@@ -90,19 +89,13 @@ const isSubItemActive = (subItem: NavItem): boolean => {
                     >
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
-                        <ChevronRight
-                            class="ml-auto transition-transform duration-200"
-                            :class="{ 'rotate-90': expandedItems.has(item.title) }"
-                        />
+                        <ChevronRight class="ml-auto transition-transform duration-200" :class="{ 'rotate-90': expandedItems.has(item.title) }" />
                     </SidebarMenuButton>
 
                     <!-- Submenu -->
                     <SidebarMenuSub v-show="expandedItems.has(item.title)">
                         <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
-                            <SidebarMenuSubButton
-                                as-child
-                                :is-active="isSubItemActive(subItem)"
-                            >
+                            <SidebarMenuSubButton as-child :is-active="isSubItemActive(subItem)">
                                 <Link :href="subItem.href!">
                                     <component :is="subItem.icon" v-if="subItem.icon" />
                                     <span>{{ subItem.title }}</span>

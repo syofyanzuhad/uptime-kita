@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import type { Monitor, Paginator } from '@/types/monitor';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '@/components/Icon.vue';
+import MonitorGrid from '@/components/MonitorGrid.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';
@@ -14,7 +10,11 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import Input from '@/components/ui/input/Input.vue';
 import Select from '@/components/ui/input/Select.vue';
-import MonitorGrid from '@/components/MonitorGrid.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import type { Monitor, Paginator } from '@/types/monitor';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     monitors: Paginator<Monitor>;
@@ -123,8 +123,8 @@ const applyFilters = () => {
                 const newData = (page.props as any).monitors;
                 allMonitors.value = [...newData.data];
                 hasMorePages.value = newData.meta.current_page < newData.meta.last_page;
-            }
-        }
+            },
+        },
     );
 };
 
@@ -135,18 +135,12 @@ watch([statusFilter, visibilityFilter, tagFilter, perPage], () => {
 
 // Debounced search
 let searchTimeout: number;
-watch(searchQuery, (newValue) => {
+watch(searchQuery, () => {
     clearTimeout(searchTimeout);
     searchTimeout = window.setTimeout(() => {
         applyFilters();
     }, 300);
 });
-
-// Delete monitor functions
-const confirmDelete = (monitor: Monitor) => {
-    monitorToDelete.value = monitor;
-    showDeleteModal.value = true;
-};
 
 const deleteMonitor = () => {
     if (!monitorToDelete.value) return;
@@ -167,7 +161,7 @@ const deleteMonitor = () => {
 // Pinned monitors set
 const pinnedMonitors = computed(() => {
     const pinned = new Set<number>();
-    allMonitors.value.forEach(monitor => {
+    allMonitors.value.forEach((monitor) => {
         if (monitor.is_pinned) {
             pinned.add(monitor.id);
         }
@@ -178,10 +172,10 @@ const pinnedMonitors = computed(() => {
 // Load more monitors
 const loadMore = () => {
     if (loadingMore.value || !hasMorePages.value) return;
-    
+
     loadingMore.value = true;
     const nextPage = props.monitors.meta.current_page + 1;
-    
+
     router.get(
         `/monitors/${props.type}`,
         {
@@ -204,8 +198,8 @@ const loadMore = () => {
             },
             onError: () => {
                 loadingMore.value = false;
-            }
-        }
+            },
+        },
     );
 };
 
@@ -213,35 +207,47 @@ const loadMore = () => {
 const togglePin = (monitorId: number) => {
     loadingMonitors.value.add(monitorId);
     const isPinned = pinnedMonitors.value.has(monitorId);
-    router.post(`/monitor/${monitorId}/toggle-pin`, {
-        is_pinned: !isPinned,
-    }, {
-        onFinish: () => {
-            loadingMonitors.value.delete(monitorId);
-        }
-    });
+    router.post(
+        `/monitor/${monitorId}/toggle-pin`,
+        {
+            is_pinned: !isPinned,
+        },
+        {
+            onFinish: () => {
+                loadingMonitors.value.delete(monitorId);
+            },
+        },
+    );
 };
 
 // Toggle active status
 const toggleActive = (monitorId: number) => {
     togglingMonitors.value.add(monitorId);
-    router.post(`/monitor/${monitorId}/toggle-active`, {
-        is_active: false, // This will be handled by the backend
-    }, {
-        onFinish: () => {
-            togglingMonitors.value.delete(monitorId);
-        }
-    });
+    router.post(
+        `/monitor/${monitorId}/toggle-active`,
+        {
+            is_active: false, // This will be handled by the backend
+        },
+        {
+            onFinish: () => {
+                togglingMonitors.value.delete(monitorId);
+            },
+        },
+    );
 };
 
 // Subscribe monitor
 const subscribeMonitor = (monitorId: number) => {
     subscribingMonitors.value.add(monitorId);
-    router.post(`/monitor/${monitorId}/subscribe`, {}, {
-        onFinish: () => {
-            subscribingMonitors.value.delete(monitorId);
-        }
-    });
+    router.post(
+        `/monitor/${monitorId}/subscribe`,
+        {},
+        {
+            onFinish: () => {
+                subscribingMonitors.value.delete(monitorId);
+            },
+        },
+    );
 };
 
 // Unsubscribe monitor
@@ -250,7 +256,7 @@ const unsubscribeMonitor = (monitorId: number) => {
     router.delete(`/monitor/${monitorId}/unsubscribe`, {
         onFinish: () => {
             unsubscribingMonitors.value.delete(monitorId);
-        }
+        },
     });
 };
 
@@ -270,19 +276,17 @@ onUnmounted(() => {
 
         <div class="container mx-auto px-4 py-8">
             <!-- Header -->
-            <div class="flex justify-between items-center mb-6">
+            <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold">{{ pageTitle }}</h1>
-                    <p class="text-gray-600 dark:text-gray-400 mt-2">
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">
                         <span v-if="type === 'pinned'">Your pinned monitors for quick access</span>
                         <span v-else-if="type === 'private'">Monitors only visible to you</span>
                         <span v-else>Publicly accessible monitors</span>
                     </p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        Auto-refresh in {{ countdown }}s
-                    </div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Auto-refresh in {{ countdown }}s</div>
                     <Link href="/monitor/create">
                         <Button>
                             <Icon name="heroicons:plus" class="mr-2" />
@@ -293,28 +297,24 @@ onUnmounted(() => {
             </div>
 
             <!-- Filters -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="mb-6 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <!-- Search -->
                     <div>
-                        <label class="block text-sm font-medium mb-2">Search</label>
-                        <Input
-                            v-model="searchQuery"
-                            placeholder="Search monitors..."
-                            class="w-full"
-                        />
+                        <label class="mb-2 block text-sm font-medium">Search</label>
+                        <Input v-model="searchQuery" placeholder="Search monitors..." class="w-full" />
                     </div>
 
                     <!-- Status Filter -->
                     <div>
-                        <label class="block text-sm font-medium mb-2">Status</label>
+                        <label class="mb-2 block text-sm font-medium">Status</label>
                         <Select
                             v-model="statusFilter"
                             :items="[
                                 { label: 'All', value: 'all' },
                                 { label: 'Up', value: 'up' },
                                 { label: 'Down', value: 'down' },
-                                { label: 'Disabled', value: 'disabled' }
+                                { label: 'Disabled', value: 'disabled' },
                             ]"
                             placeholder="All statuses"
                         />
@@ -322,13 +322,13 @@ onUnmounted(() => {
 
                     <!-- Visibility Filter (only for non-type-specific views) -->
                     <div v-if="type !== 'private' && type !== 'public'">
-                        <label class="block text-sm font-medium mb-2">Visibility</label>
+                        <label class="mb-2 block text-sm font-medium">Visibility</label>
                         <Select
                             v-model="visibilityFilter"
                             :items="[
                                 { label: 'All', value: 'all' },
                                 { label: 'Public', value: 'public' },
-                                { label: 'Private', value: 'private' }
+                                { label: 'Private', value: 'private' },
                             ]"
                             placeholder="All visibility"
                         />
@@ -336,14 +336,14 @@ onUnmounted(() => {
 
                     <!-- Per Page -->
                     <div>
-                        <label class="block text-sm font-medium mb-2">Per Page</label>
+                        <label class="mb-2 block text-sm font-medium">Per Page</label>
                         <Select
                             v-model="perPage"
                             :items="[
                                 { label: '12', value: 12 },
                                 { label: '24', value: 24 },
                                 { label: '48', value: 48 },
-                                { label: '96', value: 96 }
+                                { label: '96', value: 96 },
                             ]"
                         />
                     </div>
@@ -351,7 +351,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Monitors Grid -->
-            <div class="bg-card rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+            <div class="bg-card rounded-lg border border-gray-200 p-6 shadow dark:border-gray-700">
                 <MonitorGrid
                     v-if="allMonitors.length > 0"
                     :monitors="allMonitors"
@@ -373,9 +373,9 @@ onUnmounted(() => {
                     :show-last-checked="true"
                     grid-cols="grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
                 />
-                <div v-else class="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <Icon name="heroicons:exclamation-triangle" class="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <h3 class="text-lg font-medium mb-2">No monitors found</h3>
+                <div v-else class="py-12 text-center text-gray-500 dark:text-gray-400">
+                    <Icon name="heroicons:exclamation-triangle" class="mx-auto mb-4 h-16 w-16 text-gray-400" />
+                    <h3 class="mb-2 text-lg font-medium">No monitors found</h3>
                     <p class="text-sm">
                         <span v-if="type === 'pinned'">You haven't pinned any monitors yet.</span>
                         <span v-else-if="type === 'private'">You don't have any private monitors.</span>
@@ -393,14 +393,9 @@ onUnmounted(() => {
 
             <!-- Load More Button -->
             <div class="mt-6 text-center" v-if="hasMorePages">
-                <Button 
-                    @click="loadMore" 
-                    :disabled="loadingMore"
-                    variant="outline"
-                    size="lg"
-                >
-                    <Icon v-if="loadingMore" name="heroicons:arrow-path" class="w-4 h-4 mr-2 animate-spin" />
-                    <Icon v-else name="heroicons:chevron-down" class="w-4 h-4 mr-2" />
+                <Button @click="loadMore" :disabled="loadingMore" variant="outline" size="lg">
+                    <Icon v-if="loadingMore" name="heroicons:arrow-path" class="mr-2 h-4 w-4 animate-spin" />
+                    <Icon v-else name="heroicons:chevron-down" class="mr-2 h-4 w-4" />
                     {{ loadingMore ? 'Loading...' : 'Load More' }}
                 </Button>
             </div>
@@ -413,13 +408,12 @@ onUnmounted(() => {
                     <DialogTitle>Delete Monitor</DialogTitle>
                     <DialogDescription>
                         Are you sure you want to delete the monitor for
-                        <strong>{{ monitorToDelete?.url }}</strong>? This action cannot be undone.
+                        <strong>{{ monitorToDelete?.url }}</strong
+                        >? This action cannot be undone.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" @click="showDeleteModal = false" :disabled="isDeleting">
-                        Cancel
-                    </Button>
+                    <Button variant="outline" @click="showDeleteModal = false" :disabled="isDeleting"> Cancel </Button>
                     <Button variant="destructive" @click="deleteMonitor" :disabled="isDeleting">
                         {{ isDeleting ? 'Deleting...' : 'Delete' }}
                     </Button>
