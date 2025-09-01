@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
+use App\Models\MonitorHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PublicMonitorController extends Controller
@@ -112,6 +114,7 @@ class PublicMonitorController extends Controller
                 'up' => Monitor::public()->where('uptime_status', 'up')->count(),
                 'down' => Monitor::public()->where('uptime_status', 'down')->count(),
                 'total_public' => Monitor::public()->count(),
+                'daily_checks' => $this->getDailyChecksCount(),
             ],
         ]);
     }
@@ -190,5 +193,33 @@ class PublicMonitorController extends Controller
         });
 
         return response()->json($publicMonitors);
+    }
+
+    /**
+     * Get the total number of checks performed today for public monitors.
+     */
+    private function getDailyChecksCount(): int
+    {
+        // Cache the daily checks count for 5 minutes
+        return cache()->remember('public_monitors_daily_checks', 300, function () {
+            // First try to get from monitor_statistics table (if data exists)
+            $statsCount = DB::table('monitor_statistics')
+                ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
+                ->where('monitors.is_public', true)
+                ->sum('monitor_statistics.total_checks_24h');
+
+            if ($statsCount > 0) {
+                return (int) $statsCount;
+            }
+
+            // Fallback to counting from monitor_histories for today
+            return MonitorHistory::whereIn('monitor_id', function ($query) {
+                $query->select('id')
+                    ->from('monitors')
+                    ->where('is_public', true);
+            })
+                ->whereDate('checked_at', today())
+                ->count();
+        });
     }
 }
