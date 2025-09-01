@@ -81,7 +81,7 @@
                 <Card>
                     <CardContent class="p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" title="{{ stats.daily_checks || 0 }} checks today">
                                 {{ formatDailyChecks(stats.daily_checks || 0) }}
                             </div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">Checks Today</div>
