@@ -200,8 +200,8 @@ class PublicMonitorController extends Controller
      */
     private function getDailyChecksCount(): int
     {
-        // Cache the daily checks count for 5 minutes
-        return cache()->remember('public_monitors_daily_checks', 300, function () {
+        // Cache the daily checks count for 15 minutes
+        return cache()->remember('public_monitors_daily_checks', 900, function () {
             // First try to get from monitor_statistics table (if data exists)
             $statsCount = DB::table('monitor_statistics')
                 ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
