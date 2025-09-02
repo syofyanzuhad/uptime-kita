@@ -180,9 +180,9 @@ return [
     */
 
     'defaults' => [
-        'supervisor-1' => [
+        'supervisor-default' => [
             'connection' => 'redis',
-            'queue' => ['default', 'uptime-calculations'],
+            'queue' => ['default', 'uptime-calculations', 'statistics'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -193,9 +193,9 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
-        'supervisor-2' => [
+        'supervisor-calculate' => [
             'connection' => 'redis',
-            'queue' => ['uptime-calculations', 'default'],
+            'queue' => ['uptime-calculations', 'default', 'statistics'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -206,9 +206,9 @@ return [
             'timeout' => 300,
             'nice' => 0,
         ],
-        'supervisor-statistics' => [
+        'supervisor-statistic' => [
             'connection' => 'redis',
-            'queue' => ['statistics'],
+            'queue' => ['statistics', 'default', 'uptime-calculations'],
             'balance' => 'simple',
             'maxProcesses' => 1,
             'maxTime' => 0,
@@ -222,29 +222,31 @@ return [
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
+            'supervisor-default' => [
                 'maxProcesses' => 10,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
-            'supervisor-2' => [
+            'supervisor-calculate' => [
                 'maxProcesses' => 15,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
-            'supervisor-statistics' => [
+            'supervisor-statistic' => [
                 'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
+            'supervisor-default' => [
                 'maxProcesses' => 2,
             ],
-            'supervisor-2' => [
+            'supervisor-calculate' => [
                 'maxProcesses' => 5,
             ],
-            'supervisor-statistics' => [
+            'supervisor-statistic' => [
                 'maxProcesses' => 1,
             ],
         ],
