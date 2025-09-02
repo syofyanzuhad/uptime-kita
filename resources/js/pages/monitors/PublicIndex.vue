@@ -378,10 +378,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-for (const tag of props?.availableTags || []) {
-    console.log('%cresources/js/pages/monitors/PublicIndex.vue:419 tag', 'color: #007acc;', tag);
-}
-
 // Reactive data for monitors
 const monitorsData = ref(props.monitors.data || []);
 
