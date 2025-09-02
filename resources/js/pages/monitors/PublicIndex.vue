@@ -132,7 +132,7 @@
                                 class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                             >
                                 <option value="">All Tags</option>
-                                <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name">
+                                <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">
                                     {{ tag.name.en }}
                                 </option>
                             </select>
@@ -377,6 +377,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+for (const tag of props?.availableTags || []) {
+    console.log('%cresources/js/pages/monitors/PublicIndex.vue:419 tag', 'color: #007acc;', tag);
+}
 
 // Reactive data for monitors
 const monitorsData = ref(props.monitors.data || []);
