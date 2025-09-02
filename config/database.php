@@ -47,9 +47,11 @@ return [
             'database' => env('DB_DATABASE_QUEUE', database_path('queue.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => true,
-            'busy_timeout' => 30000, // 30 seconds timeout for queue operations
+            'busy_timeout' => 60000, // 60 seconds timeout for queue operations (increased)
             'journal_mode' => 'WAL', // Write-Ahead Logging for better concurrency
             'synchronous' => 'NORMAL', // Balance between safety and performance
+            'cache_size' => 20000, // Increase cache size for better performance
+            'temp_store' => 'MEMORY', // Use memory for temporary tables
         ],
 
         'sqlite_telescope' => [
