@@ -36,8 +36,8 @@ Schedule::command('model:prune', ['--model' => [\Spatie\Health\Models\HealthChec
 Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFifteenMinutes()
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
-// Calculate monitor statistics for public monitors every 15 minutes
-Schedule::command('monitor:calculate-statistics')->everyFifteenMinutes();
+// Calculate monitor statistics for public monitors every 15 minutes using a job
+Schedule::job(new \App\Jobs\CalculateMonitorStatisticsJob)->everyFifteenMinutes();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();

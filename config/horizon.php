@@ -206,6 +206,18 @@ return [
             'timeout' => 300,
             'nice' => 0,
         ],
+        'supervisor-statistics' => [
+            'connection' => 'redis',
+            'queue' => ['statistics'],
+            'balance' => 'simple',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 300,
+            'nice' => 10, // Lower priority for statistics
+        ],
     ],
 
     'environments' => [
@@ -220,6 +232,9 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-statistics' => [
+                'maxProcesses' => 3,
+            ],
         ],
 
         'local' => [
@@ -228,6 +243,9 @@ return [
             ],
             'supervisor-2' => [
                 'maxProcesses' => 5,
+            ],
+            'supervisor-statistics' => [
+                'maxProcesses' => 1,
             ],
         ],
     ],
