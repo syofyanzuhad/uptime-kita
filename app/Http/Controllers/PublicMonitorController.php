@@ -115,6 +115,7 @@ class PublicMonitorController extends Controller
                 'down' => Monitor::public()->where('uptime_status', 'down')->count(),
                 'total_public' => Monitor::public()->count(),
                 'daily_checks' => $this->getDailyChecksCount(),
+                'monthly_checks' => $this->getMonthlyChecksCount(),
             ],
         ]);
     }
@@ -219,6 +220,35 @@ class PublicMonitorController extends Controller
                     ->where('is_public', true);
             })
                 ->whereDate('checked_at', today())
+                ->count();
+        });
+    }
+
+    /**
+     * Get the total number of checks performed this month for public monitors.
+     */
+    private function getMonthlyChecksCount(): int
+    {
+        // Cache the monthly checks count for 1 hour
+        return cache()->remember('public_monitors_monthly_checks', 3600, function () {
+            // First try to get from monitor_statistics table (if data exists)
+            $statsCount = DB::table('monitor_statistics')
+                ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
+                ->where('monitors.is_public', true)
+                ->sum('monitor_statistics.total_checks_30d');
+
+            if ($statsCount > 0) {
+                return (int) $statsCount;
+            }
+
+            // Fallback to counting from monitor_histories for the current month
+            return MonitorHistory::whereIn('monitor_id', function ($query) {
+                $query->select('id')
+                    ->from('monitors')
+                    ->where('is_public', true);
+            })
+                ->whereMonth('checked_at', now()->month)
+                ->whereYear('checked_at', now()->year)
                 ->count();
         });
     }

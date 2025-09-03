@@ -43,7 +43,7 @@
         <!-- Main Content -->
         <div class="mx-auto mt-24 max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
             <!-- Stats Overview -->
-            <div class="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 <Card>
                     <CardContent class="p-4">
                         <div class="text-center">
@@ -84,7 +84,17 @@
                             <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} daily checks`">
                                 {{ formatDailyChecks(stats.daily_checks || 0) }}
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Checks Today</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Today</div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400" :title="`${(stats.monthly_checks || 0).toLocaleString('id-ID')} monthly checks`">
+                                {{ formatChecksCount(stats.monthly_checks || 0) }}
+                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">This Month</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -372,6 +382,7 @@ interface Props {
         down: number;
         total_public: number;
         daily_checks?: number;
+        monthly_checks?: number;
     };
     availableTags?: Array<{ id: number; name: { en: string } }>;
 }
@@ -578,6 +589,17 @@ const getTagDisplayName = (tag: any): string => {
 
 const formatDailyChecks = (count: number): string => {
     if (count >= 1000000) {
+        return (count / 1000000).toFixed(1) + 'M';
+    } else if (count >= 1000) {
+        return (count / 1000).toFixed(1) + 'K';
+    }
+    return count.toString();
+};
+
+const formatChecksCount = (count: number): string => {
+    if (count >= 1000000000) {
+        return (count / 1000000000).toFixed(1) + 'B';
+    } else if (count >= 1000000) {
         return (count / 1000000).toFixed(1) + 'M';
     } else if (count >= 1000) {
         return (count / 1000).toFixed(1) + 'K';
