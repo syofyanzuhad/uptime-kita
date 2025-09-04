@@ -43,58 +43,58 @@
         <!-- Main Content -->
         <div class="mx-auto mt-24 max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
             <!-- Stats Overview -->
-            <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <div class="mb-8 grid grid-cols-3 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total_public }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Total Public</div>
+                            <div class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{{ stats.total_public }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Total Public</div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.up }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Operational</div>
+                            <div class="text-xl font-bold text-green-600 dark:text-green-400 sm:text-2xl">{{ stats.up }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Operational</div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ stats.down }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Down</div>
+                            <div class="text-xl font-bold text-red-600 dark:text-red-400 sm:text-2xl">{{ stats.down }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Down</div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            <div class="text-xl font-bold text-blue-600 dark:text-blue-400 sm:text-2xl">
                                 {{ Math.round((stats.up / stats.total_public) * 100) || 0 }}%
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Uptime</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Uptime</div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} daily checks`">
+                            <div class="text-xl font-bold text-purple-600 dark:text-purple-400 sm:text-2xl" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} daily checks`">
                                 {{ formatDailyChecks(stats.daily_checks || 0) }}
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Today</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Today</div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent class="p-1 sm:p-4">
                         <div class="text-center">
-                            <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400" :title="`${(stats.monthly_checks || 0).toLocaleString('id-ID')} monthly checks`">
+                            <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400 sm:text-2xl" :title="`${(stats.monthly_checks || 0).toLocaleString('id-ID')} monthly checks`">
                                 {{ formatChecksCount(stats.monthly_checks || 0) }}
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">This Month</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">This Month</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -112,47 +112,49 @@
                                 v-model="searchQuery"
                                 type="text"
                                 placeholder="Search monitors..."
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 sm:px-3 sm:py-2"
                                 @input="debounceSearch"
                             />
                         </div>
 
-                        <!-- Status Filter -->
-                        <div class="sm:w-48">
-                            <label for="status-filter" class="sr-only">Filter by status</label>
-                            <select
-                                id="status-filter"
-                                v-model="statusFilter"
-                                @change="applyFilters"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="up">Operational</option>
-                                <option value="down">Down</option>
-                            </select>
-                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <!-- Status Filter -->
+                            <div class="w-full sm:w-48">
+                                <label for="status-filter" class="sr-only">Filter by status</label>
+                                <select
+                                    id="status-filter"
+                                    v-model="statusFilter"
+                                    @change="applyFilters"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="up">Operational</option>
+                                    <option value="down">Down</option>
+                                </select>
+                            </div>
 
-                        <!-- Tag Filter -->
-                        <div class="sm:w-48">
-                            <label for="tag-filter" class="sr-only">Filter by tag</label>
-                            <select
-                                id="tag-filter"
-                                v-model="tagFilter"
-                                @change="applyFilters"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option value="">All Tags</option>
-                                <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">
-                                    {{ tag.name.en }}
-                                </option>
-                            </select>
+                            <!-- Tag Filter -->
+                            <div class="w-full sm:w-48">
+                                <label for="tag-filter" class="sr-only">Filter by tag</label>
+                                <select
+                                    id="tag-filter"
+                                    v-model="tagFilter"
+                                    @change="applyFilters"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"
+                                >
+                                    <option value="">All Tags</option>
+                                    <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">
+                                        {{ tag.name.en }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Create Button -->
-                        <div class="sm:w-auto">
+                        <div class="w-full sm:w-auto">
                             <button
                                 @click="createMonitor"
-                                class="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
+                                class="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 active:scale-[0.98] sm:w-auto sm:px-4 sm:py-2"
                             >
                                 <Icon name="plus" class="h-4 w-4" />
                                 <span>Create Monitor</span>
@@ -169,26 +171,26 @@
                 <p class="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
             </div>
 
-            <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                 <Card
                     v-for="monitor in monitorsData"
                     :key="monitor.id"
-                    class="cursor-pointer p-0 transition-shadow hover:shadow-md md:hover:shadow-lg"
+                    class="cursor-pointer p-0 transition-all duration-200 hover:shadow-md active:scale-[0.98] md:hover:shadow-lg"
                     @click="viewMonitor(monitor)"
                 >
                     <!-- Mobile Compact View -->
-                    <CardContent class="p-3 md:hidden">
+                    <CardContent class="p-4 md:hidden">
                         <!-- Header with Favicon and Status -->
-                        <div class="mb-2 flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
+                        <div class="mb-3 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
                                 <img
                                     v-if="monitor.favicon"
                                     :src="monitor.favicon"
                                     :alt="`${monitor.name} favicon`"
-                                    class="h-4 w-4 flex-shrink-0 rounded drop-shadow-sm dark:drop-shadow-white/30"
+                                    class="h-5 w-5 flex-shrink-0 rounded drop-shadow-sm dark:drop-shadow-white/30"
                                     @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
                                 />
-                                <div v-else class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
+                                <div v-else class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
                                     <Icon name="globe" class="h-3 w-3 text-gray-500 dark:text-gray-400" />
                                 </div>
                             </div>
@@ -196,12 +198,12 @@
                             <!-- Status Indicator -->
                             <span
                                 :class="[
-                                    'inline-flex items-center justify-center rounded-full p-1',
+                                    'inline-flex items-center justify-center rounded-full p-1.5',
                                     monitor.uptime_status === 'up' ? 'bg-green-500' : monitor.uptime_status === 'down' ? 'bg-red-500' : 'bg-gray-400',
                                 ]"
                                 :title="getStatusText(monitor.uptime_status)"
                             >
-                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-3 w-3" />
+                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-3.5 w-3.5 text-white" />
                             </span>
                         </div>
 
@@ -209,36 +211,55 @@
                         <MonitorLink
                             :monitor="monitor"
                             :show-favicon="false"
-                            class-name="mb-1"
-                            link-class-name="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 line-clamp-2"
+                            class-name="mb-2"
+                            link-class-name="text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 line-clamp-2 leading-tight"
                         />
 
                         <!-- URL -->
-                        <p class="mb-2 truncate text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mb-3 truncate text-sm text-gray-500 dark:text-gray-400">
                             {{ monitor.url }}
                         </p>
 
-                        <!-- Uptime Percentage -->
-                        <div v-if="monitor.today_uptime_percentage" class="text-xs font-medium text-gray-600 dark:text-gray-300">
-                            {{ monitor.today_uptime_percentage }}% uptime
+                        <!-- Status and Uptime Row -->
+                        <div class="mb-3 flex items-center justify-between">
+                            <!-- Status Badge -->
+                            <span
+                                :class="[
+                                    'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
+                                    monitor.uptime_status === 'up'
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                        : monitor.uptime_status === 'down'
+                                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+                                ]"
+                            >
+                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="mr-1.5 inline h-3 w-3" />
+                                {{ getStatusText(monitor.uptime_status) }}
+                            </span>
+
+                            <!-- Uptime Percentage -->
+                            <div v-if="monitor.today_uptime_percentage" class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                {{ monitor.today_uptime_percentage }}%
+                            </div>
                         </div>
 
                         <!-- Last Check -->
-                        <div v-if="monitor.last_check_date_human" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            Last checked {{ monitor.last_check_date_human }}
+                        <div v-if="monitor.last_check_date_human" class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                            <Icon name="clock" class="mr-1.5 inline h-3.5 w-3.5" />
+                            {{ monitor.last_check_date_human }}
                         </div>
 
                         <!-- Tags (Compact) -->
-                        <div v-if="monitor.tags && monitor.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+                        <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-2">
                             <span
-                                v-for="tag in monitor.tags.slice(0, 2)"
+                                v-for="tag in monitor.tags.slice(0, 3)"
                                 :key="tag.id || tag.name"
-                                class="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                             >
                                 {{ getTagDisplayName(tag) }}
                             </span>
-                            <span v-if="monitor.tags.length > 2" class="text-xs text-gray-500 dark:text-gray-400">
-                                +{{ monitor.tags.length - 2 }}
+                            <span v-if="monitor.tags.length > 3" class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                +{{ monitor.tags.length - 3 }}
                             </span>
                         </div>
                     </CardContent>
@@ -317,7 +338,7 @@
                 <button
                     @click="loadMore"
                     :disabled="isLoading"
-                    class="inline-flex cursor-pointer items-center rounded-lg bg-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:bg-gray-400"
+                    class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-gray-600 px-6 py-4 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-700 active:scale-[0.98] disabled:bg-gray-400 sm:w-auto sm:py-3"
                 >
                     <Icon v-if="isLoading" name="loader" class="mr-2 h-4 w-4 animate-spin" />
                     <span v-else>Load More Monitors</span>

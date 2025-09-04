@@ -16,7 +16,9 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
     use Queueable;
 
     public $timeout = 300; // 5 minutes timeout
+
     public $tries = 3;
+
     public $backoff = [60, 120, 300]; // Exponential backoff: 1 min, 2 min, 5 min
 
     protected ?int $monitorId;
@@ -47,6 +49,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
 
         if ($monitors->isEmpty()) {
             Log::info('No public monitors found for statistics calculation.');
+
             return;
         }
 
@@ -62,7 +65,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 // Continue with other monitors even if one fails
                 continue;
             }
