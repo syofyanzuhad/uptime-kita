@@ -84,7 +84,7 @@
                             <div class="text-xl font-bold text-purple-600 dark:text-purple-400 sm:text-2xl" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} daily checks`">
                                 {{ formatDailyChecks(stats.daily_checks || 0) }}
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Today</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Last 24 H</div>
                         </div>
                     </CardContent>
                 </Card>
