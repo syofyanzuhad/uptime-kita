@@ -38,7 +38,7 @@
   </a>
 </p>
 
-<img width="2880" height="2168" alt="uptime-syofyanzuhad-dev" src="https://github.com/user-attachments/assets/d1daa7b9-2e58-42e1-af6e-4f7b2da510ab" />
+<img width="2880" height="2726" alt="uptime syofyanzuhad dev" src="https://github.com/user-attachments/assets/f6e52829-489f-4ffd-9b1c-c048abb1e588" />
 
 "Kita" is the Indonesian word that means "Us"; this means that the uptime can be used for all of us
 
