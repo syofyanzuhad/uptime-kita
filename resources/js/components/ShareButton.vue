@@ -95,6 +95,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 interface Props {
     title: string;
     url?: string;
+    status?: string;
+    uptime?: number;
+    responseTime?: number;
+    sslStatus?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -121,8 +125,33 @@ onUnmounted(() => {
 const shareUrl = computed(() => props.url || window.location.href);
 const shareTitle = computed(() => `${props.title} - Monitor Status`);
 
+// Build detailed share text with stats
+const buildShareText = () => {
+    let text = `Uptime Status: ${props.title}`;
+
+    if (props.status) {
+        const statusEmoji = props.status === 'up' ? '✅' : props.status === 'down' ? '❌' : '⚠️';
+        text += `\n${statusEmoji} Status: ${props.status === 'up' ? 'Operational' : props.status === 'down' ? 'Down' : 'Unknown'}`;
+    }
+
+    if (props.uptime !== undefined && props.uptime !== null) {
+        text += `\n📊 Uptime: ${props.uptime}%`;
+    }
+
+    if (props.responseTime !== undefined && props.responseTime !== null) {
+        text += `\n⚡ Avg Response: ${props.responseTime}ms`;
+    }
+
+    if (props.sslStatus) {
+        const sslEmoji = props.sslStatus === 'valid' ? '🔒' : '⚠️';
+        text += `\n${sslEmoji} SSL: ${props.sslStatus === 'valid' ? 'Valid' : props.sslStatus}`;
+    }
+
+    return text;
+};
+
 const twitterShareUrl = computed(() => {
-    const text = encodeURIComponent(`Check the status of ${props.title}`);
+    const text = encodeURIComponent(buildShareText());
     const url = encodeURIComponent(shareUrl.value);
     return `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
 });
@@ -135,12 +164,13 @@ const facebookShareUrl = computed(() => {
 const linkedinShareUrl = computed(() => {
     const url = encodeURIComponent(shareUrl.value);
     const title = encodeURIComponent(shareTitle.value);
-    return `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`;
+    const summary = encodeURIComponent(buildShareText());
+    return `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`;
 });
 
 const emailShareUrl = computed(() => {
     const subject = encodeURIComponent(shareTitle.value);
-    const body = encodeURIComponent(`Check the status of ${props.title}: ${shareUrl.value}`);
+    const body = encodeURIComponent(`${buildShareText()}\n\nView details: ${shareUrl.value}`);
     return `mailto:?subject=${subject}&body=${body}`;
 });
 

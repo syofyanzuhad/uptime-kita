@@ -80,7 +80,13 @@
                             </span>
 
                             <!-- Share Button -->
-                            <ShareButton :title="monitor.host || ''" />
+                            <ShareButton 
+                                :title="monitor.host || ''" 
+                                :status="monitor.uptime_status"
+                                :uptime="uptimeStats['24h']"
+                                :responseTime="avgResponseTime"
+                                :sslStatus="monitor.certificate_check_enabled ? monitor.certificate_status : null"
+                            />
 
                             <!-- Theme Toggle -->
                             <Tooltip>
