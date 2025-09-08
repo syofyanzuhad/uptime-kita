@@ -44,7 +44,7 @@
                             </div>
                         </div>
 
-                        <!-- Current Status Badge and Theme Toggle -->
+                        <!-- Current Status Badge, Share Button and Theme Toggle -->
                         <div class="flex items-center justify-center space-x-2 sm:justify-end">
                             <!-- Mobile: Icon only -->
                             <span
@@ -78,6 +78,9 @@
                                 <Icon :name="getStatusIcon(monitor.uptime_status)" class="mr-1 h-4 w-4" />
                                 {{ getStatusText(monitor.uptime_status) }}
                             </span>
+
+                            <!-- Share Button -->
+                            <ShareButton :title="monitor.host || ''" />
 
                             <!-- Theme Toggle -->
                             <Tooltip>
@@ -411,6 +414,7 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
+import ShareButton from '@/components/ShareButton.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
@@ -496,8 +500,6 @@ onUnmounted(() => {
         clearInterval(refreshInterval.value);
     }
 });
-
-// console.log('%cresources/js/pages/monitors/PublicShow.vue:291 monitor', 'color: #007acc;', monitor.value);
 
 // Function to get last 100 minutes timeline
 function getLast100Minutes() {
