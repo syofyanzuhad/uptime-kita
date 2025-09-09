@@ -38,17 +38,30 @@ class CheckDatabaseHealth extends Command
                 
                 // Check journal mode
                 $journalMode = DB::select('PRAGMA journal_mode');
-                $this->info("Journal mode: {$journalMode[0]->journal_mode}");
+                if (!empty($journalMode)) {
+                    $mode = $journalMode[0]->journal_mode ?? 'unknown';
+                    $this->info("Journal mode: {$mode}");
+                    if ($mode !== 'wal') {
+                        $this->warn("⚠ Consider using WAL mode for better concurrency (current: {$mode})");
+                    }
+                }
                 
                 // Get database stats
-                $pageCount = DB::select('PRAGMA page_count')[0]->page_count;
-                $pageSize = DB::select('PRAGMA page_size')[0]->page_size;
-                $dbSize = ($pageCount * $pageSize) / (1024 * 1024);
-                $this->info(sprintf("Database size: %.2f MB", $dbSize));
+                $pageCount = DB::select('PRAGMA page_count');
+                $pageSize = DB::select('PRAGMA page_size');
+                if (!empty($pageCount) && !empty($pageSize)) {
+                    $pages = $pageCount[0]->page_count ?? 0;
+                    $size = $pageSize[0]->page_size ?? 0;
+                    $dbSize = ($pages * $size) / (1024 * 1024);
+                    $this->info(sprintf("Database size: %.2f MB", $dbSize));
+                }
                 
                 // Check for locked tables
-                $busyTimeout = DB::select('PRAGMA busy_timeout')[0]->busy_timeout;
-                $this->info("Busy timeout: {$busyTimeout}ms");
+                $busyTimeout = DB::select('PRAGMA busy_timeout');
+                if (!empty($busyTimeout)) {
+                    $timeout = $busyTimeout[0]->timeout ?? $busyTimeout[0]->busy_timeout ?? 'unknown';
+                    $this->info("Busy timeout: {$timeout}ms");
+                }
                 
                 if ($this->option('repair')) {
                     $this->performOptimizations();
