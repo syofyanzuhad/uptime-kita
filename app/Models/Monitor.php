@@ -327,8 +327,8 @@ class Monitor extends SpatieMonitor
                 $monitor->createOrUpdateHistory([
                     'uptime_status' => $monitor->uptime_status,
                     'message' => $monitor->uptime_check_failure_reason,
-                    'response_time' => $monitor->getAttribute('response_time'), // Include if available
-                    'status_code' => $monitor->getAttribute('status_code'), // Include if available
+                    'response_time' => null, // Response time should be passed when available, not retrieved from model
+                    'status_code' => null, // Status code should be passed when available, not retrieved from model
                     'checked_at' => $monitor->uptime_last_check_date,
                 ]);
             }
