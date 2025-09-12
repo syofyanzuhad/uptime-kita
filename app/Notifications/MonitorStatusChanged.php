@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Services\EmailRateLimitService;
 use App\Services\TelegramRateLimitService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,6 +38,14 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
         // Sesuaikan nama channel database dengan nama channel Laravel Notification
         return collect($channels)->map(function ($channel) use ($notifiable) {
+            // Check email rate limit before adding mail channel
+            if ($channel === 'email') {
+                $emailRateLimitService = app(EmailRateLimitService::class);
+                if (! $emailRateLimitService->canSendEmail($notifiable, 'monitor_status_changed')) {
+                    return null; // Skip email channel if rate limited
+                }
+            }
+
             return match ($channel) {
                 'telegram' => $notifiable->notificationChannels()->where('type', 'telegram')->where('is_enabled', true)->exists()
                     ? 'telegram' : null,
@@ -53,15 +62,50 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        // Check email rate limit
+        $emailRateLimitService = app(EmailRateLimitService::class);
+
+        if (! $emailRateLimitService->canSendEmail($notifiable, 'monitor_status_changed')) {
+            Log::warning('Email notification rate limited', [
+                'user_id' => $notifiable->id,
+                'email' => $notifiable->email,
+                'notification_type' => 'monitor_status_changed',
+                'monitor_id' => $this->data['id'] ?? null,
+                'status' => $this->data['status'] ?? null,
+                'remaining_emails' => $emailRateLimitService->getRemainingEmailCount($notifiable),
+            ]);
+
+            // Return null to skip sending the email
+            return null;
+        }
+
+        // Log the email being sent
+        $emailRateLimitService->logEmailSent($notifiable, 'monitor_status_changed', [
+            'monitor_id' => $this->data['id'] ?? null,
+            'url' => $this->data['url'] ?? null,
+            'status' => $this->data['status'] ?? null,
+        ]);
+
+        // Check if user is approaching limit and add a warning
+        $message = (new MailMessage)
             ->subject("Website Status: {$this->data['status']}")
             ->greeting("Halo, {$notifiable->name}")
             ->line('Website berikut mengalami perubahan status:')
             ->line("🔗 URL: {$this->data['url']}")
-            ->line("⚠️ Status: {$this->data['status']}")
-            ->action('Lihat Detail', url('/monitors/'.$this->data['id']))
+            ->line("⚠️ Status: {$this->data['status']}");
+
+        // Add warning if approaching daily limit
+        if ($emailRateLimitService->isApproachingLimit($notifiable)) {
+            $remaining = $emailRateLimitService->getRemainingEmailCount($notifiable);
+            $message->line('')
+                ->line("⚠️ Perhatian: Anda memiliki {$remaining} email notifikasi tersisa untuk hari ini (batas: {$emailRateLimitService->getDailyLimit()} per hari).");
+        }
+
+        $message->action('Lihat Detail', url('/monitors/'.$this->data['id']))
             ->line('Kunjungi [Uptime Kita]('.url('/').') untuk informasi lebih lanjut.')
             ->salutation('Terima kasih,');
+
+        return $message;
     }
 
     public function toTelegram($notifiable)
