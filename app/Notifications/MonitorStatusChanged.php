@@ -60,7 +60,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): ?MailMessage
     {
         // Check email rate limit
         $emailRateLimitService = app(EmailRateLimitService::class);
@@ -108,7 +108,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         return $message;
     }
 
-    public function toTelegram($notifiable)
+    public function toTelegram($notifiable): ?TelegramMessage
     {
         // Ambil channel Telegram user
         $telegramChannel = $notifiable->notificationChannels()
@@ -117,7 +117,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             ->first();
 
         if (! $telegramChannel) {
-            return;
+            return null;
         }
 
         // Use the rate limiting service
@@ -132,7 +132,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
                 'status' => $this->data['status'] ?? null,
             ]);
 
-            return;
+            return null;
         }
 
         try {

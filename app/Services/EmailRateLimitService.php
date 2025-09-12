@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\UptimeHelper;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -9,13 +10,19 @@ use Illuminate\Support\Facades\Log;
 
 class EmailRateLimitService
 {
-    private const DAILY_EMAIL_LIMIT = 10;
-
     /**
      * Check if the user can send an email notification
      */
     public function canSendEmail(User $user, string $notificationType): bool
     {
+        // Get the daily limit based on deployment type and user plan
+        $dailyLimit = $this->getDailyLimitForUser($user);
+
+        // If limit is 0 (unlimited), always allow
+        if ($dailyLimit === 0) {
+            return true;
+        }
+
         $today = Carbon::today()->toDateString();
 
         $count = DB::table('email_notification_logs')
@@ -23,13 +30,14 @@ class EmailRateLimitService
             ->where('sent_date', $today)
             ->count();
 
-        if ($count >= self::DAILY_EMAIL_LIMIT) {
+        if ($count >= $dailyLimit) {
             Log::warning('User exceeded daily email limit', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'current_count' => $count,
-                'limit' => self::DAILY_EMAIL_LIMIT,
+                'limit' => $dailyLimit,
                 'notification_type' => $notificationType,
+                'deployment_type' => UptimeHelper::getDeploymentType(),
             ]);
 
             return false;
@@ -65,6 +73,13 @@ class EmailRateLimitService
      */
     public function getRemainingEmailCount(User $user): int
     {
+        $dailyLimit = $this->getDailyLimitForUser($user);
+
+        // If unlimited, return a large number or -1 to indicate unlimited
+        if ($dailyLimit === 0) {
+            return -1; // -1 indicates unlimited
+        }
+
         $today = Carbon::today()->toDateString();
 
         $count = DB::table('email_notification_logs')
@@ -72,7 +87,7 @@ class EmailRateLimitService
             ->where('sent_date', $today)
             ->count();
 
-        return max(0, self::DAILY_EMAIL_LIMIT - $count);
+        return max(0, $dailyLimit - $count);
     }
 
     /**
@@ -89,11 +104,24 @@ class EmailRateLimitService
     }
 
     /**
-     * Get the daily email limit
+     * Get the daily email limit for display
      */
     public function getDailyLimit(): int
     {
-        return self::DAILY_EMAIL_LIMIT;
+        return UptimeHelper::getEmailDailyLimit();
+    }
+
+    /**
+     * Get the daily limit for a specific user based on deployment type and plan
+     */
+    public function getDailyLimitForUser(User $user): int
+    {
+        if (UptimeHelper::isSelfHosted()) {
+            return UptimeHelper::getEmailDailyLimit();
+        }
+
+        // For SaaS, get limit based on user's plan
+        return UptimeHelper::getUserPlan($user, 'email_daily_limit');
     }
 
     /**
@@ -101,8 +129,15 @@ class EmailRateLimitService
      */
     public function isApproachingLimit(User $user): bool
     {
+        $dailyLimit = $this->getDailyLimitForUser($user);
+
+        // If unlimited, never approaching limit
+        if ($dailyLimit === 0) {
+            return false;
+        }
+
         $currentCount = $this->getTodayEmailCount($user);
-        $threshold = self::DAILY_EMAIL_LIMIT * 0.8;
+        $threshold = $dailyLimit * 0.8;
 
         return $currentCount >= $threshold;
     }
