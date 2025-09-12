@@ -295,7 +295,7 @@ function onPerPageChange() {
                                     </TableCell>
                                     <TableCell class="text-right">
                                         <Link
-                                            :href="route('monitor.index', monitor.id)"
+                                            :href="route('monitor.show', monitor.id)"
                                             class="mr-3 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                             >View</Link
                                         >
