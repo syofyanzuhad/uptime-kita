@@ -346,8 +346,8 @@
             </div>
 
             <!-- Latest Incidents Section -->
-            <div v-if="props.latestIncidents && props.latestIncidents.length > 0" class="mb-8 max-h-[50vh] overflow-y-auto">
-                <Card>
+            <div v-if="props.latestIncidents && props.latestIncidents.length > 0" class="mb-8">
+                <Card class="max-h-[50vh] overflow-y-auto">
                     <CardContent class="px-4 sm:px-6">
                         <div class="mb-4 flex items-center justify-between">
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2>
