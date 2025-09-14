@@ -41,7 +41,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="mx-auto mt-24 max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div class="mx-auto mt-24 max-w-7xl px-4 pt-4 sm:px-6 sm:py-6 lg:px-8 lg:pt-8">
             <!-- Stats Overview -->
             <div class="mb-8 grid grid-cols-3 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 <Card>
