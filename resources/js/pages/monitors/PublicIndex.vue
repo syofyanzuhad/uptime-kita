@@ -100,6 +100,80 @@
                 </Card>
             </div>
 
+            <!-- Latest Incidents Section -->
+            <div v-if="props.latestIncidents && props.latestIncidents.length > 0" class="mb-8">
+                <Card>
+                    <CardContent class="p-4 sm:p-6">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Last 10 incidents</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div
+                                v-for="incident in props.latestIncidents"
+                                :key="incident.id"
+                                class="flex items-start space-x-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50"
+                            >
+                                <div class="flex-shrink-0">
+                                    <div
+                                        :class="[
+                                            'flex h-8 w-8 items-center justify-center rounded-full',
+                                            incident.ended_at
+                                                ? 'bg-green-100 dark:bg-green-900/30'
+                                                : 'bg-red-100 dark:bg-red-900/30',
+                                        ]"
+                                    >
+                                        <Icon
+                                            :name="incident.ended_at ? 'checkCircle' : 'alertCircle'"
+                                            :class="[
+                                                'h-4 w-4',
+                                                incident.ended_at
+                                                    ? 'text-green-600 dark:text-green-400'
+                                                    : 'text-red-600 dark:text-red-400',
+                                            ]"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                {{ incident.monitor.display_name || incident.monitor.url }}
+                                            </p>
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                <span v-if="incident.type">Type: {{ incident.type }} • </span>
+                                                <span v-if="incident.status_code">Status: {{ incident.status_code }} • </span>
+                                                Started {{ formatRelativeTime(incident.started_at) }}
+                                            </p>
+                                            <p v-if="incident.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                                {{ incident.reason }}
+                                            </p>
+                                        </div>
+                                        <div class="ml-4 flex-shrink-0">
+                                            <span
+                                                v-if="incident.ended_at"
+                                                class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                            >
+                                                Resolved
+                                            </span>
+                                            <span
+                                                v-else
+                                                class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                            >
+                                                Ongoing
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p v-if="incident.duration_minutes" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Duration: {{ formatDuration(incident.duration_minutes) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <!-- Filters -->
             <Card class="mb-6 p-2">
                 <CardContent class="p-4">
@@ -390,6 +464,23 @@ interface Paginator<T> {
     };
 }
 
+interface Incident {
+    id: number;
+    monitor_id: number;
+    type: string;
+    started_at: string;
+    ended_at: string | null;
+    duration_minutes: number | null;
+    reason: string | null;
+    status_code: number | null;
+    monitor: {
+        id: number;
+        url: string;
+        display_name: string | null;
+        is_public: boolean;
+    };
+}
+
 interface Props {
     monitors: Paginator<Monitor>;
     filters: {
@@ -406,6 +497,7 @@ interface Props {
         monthly_checks?: number;
     };
     availableTags?: Array<{ id: number; name: { en: string } }>;
+    latestIncidents?: Incident[];
 }
 
 const props = defineProps<Props>();
@@ -626,6 +718,45 @@ const formatChecksCount = (count: number): string => {
         return (count / 1000).toFixed(1) + 'K';
     }
     return count.toString();
+};
+
+const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+        return 'just now';
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 604800) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    } else {
+        return date.toLocaleDateString();
+    }
+};
+
+const formatDuration = (minutes: number): string => {
+    if (minutes < 60) {
+        return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (hours < 24) {
+        return remainingMinutes > 0
+            ? `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`
+            : `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return remainingHours > 0
+        ? `${days} day${days !== 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+        : `${days} day${days !== 1 ? 's' : ''}`;
 };
 
 // Track if this is the first time we're setting up data

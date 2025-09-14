@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
+use App\Models\MonitorIncident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -101,6 +102,17 @@ class PublicMonitorController extends Controller
                 });
         })->orderBy('name')->get(['id', 'name']);
 
+        // Get latest incidents for public monitors
+        $latestIncidents = cache()->remember('public_monitors_latest_incidents', 300, function () {
+            return MonitorIncident::with(['monitor:id,url,display_name,is_public'])
+                ->whereHas('monitor', function ($query) {
+                    $query->where('is_public', true);
+                })
+                ->orderBy('started_at', 'desc')
+                ->limit(10)
+                ->get(['id', 'monitor_id', 'type', 'started_at', 'ended_at', 'duration_minutes', 'reason', 'status_code']);
+        });
+
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
             'filters' => [
@@ -109,6 +121,7 @@ class PublicMonitorController extends Controller
                 'tag_filter' => $tagFilter,
             ],
             'availableTags' => $availableTags,
+            'latestIncidents' => $latestIncidents,
             'stats' => [
                 'total' => $publicMonitors->total(),
                 'up' => Monitor::public()->where('uptime_status', 'up')->count(),
