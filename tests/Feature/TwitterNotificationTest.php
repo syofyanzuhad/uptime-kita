@@ -1,0 +1,193 @@
+<?php
+
+use App\Models\Monitor;
+use App\Models\NotificationChannel;
+use App\Models\User;
+use App\Notifications\MonitorStatusChanged;
+use App\Services\TwitterRateLimitService;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
+use NotificationChannels\Twitter\TwitterChannel;
+
+beforeEach(function () {
+    // Clear cache before each test
+    Cache::flush();
+});
+
+it('sends twitter notification when monitor goes down', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $monitor = Monitor::factory()->create([
+        'url' => 'https://example.com',
+        'uptime_check_enabled' => true,
+        'uptime_status' => 'DOWN',
+    ]);
+
+    // Associate user with monitor
+    $monitor->users()->attach($user->id, ['is_active' => true]);
+
+    // Create Twitter notification channel for the user
+    $twitterChannel = NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'twitter',
+        'destination' => '@testuser',
+        'is_enabled' => true,
+    ]);
+
+    $notificationData = [
+        'id' => $monitor->id,
+        'url' => $monitor->url,
+        'status' => 'DOWN',
+        'message' => 'Monitor is down',
+        'is_public' => false,
+    ];
+
+    $user->notify(new MonitorStatusChanged($notificationData));
+
+    Notification::assertSentTo(
+        [$user],
+        MonitorStatusChanged::class,
+        function ($notification, $channels) {
+            return in_array(TwitterChannel::class, $channels);
+        }
+    );
+});
+
+it('respects twitter rate limits', function () {
+    $user = User::factory()->create();
+    $channel = NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'twitter',
+        'destination' => '@testuser',
+        'is_enabled' => true,
+    ]);
+
+    $service = new TwitterRateLimitService;
+
+    // Initially should be able to send
+    expect($service->shouldSendNotification($user, $channel))->toBeTrue();
+
+    // Simulate sending 50 notifications (hourly limit)
+    for ($i = 0; $i < 50; $i++) {
+        $service->trackSuccessfulNotification($user, $channel);
+    }
+
+    // Should not be able to send after hitting hourly limit
+    expect($service->shouldSendNotification($user, $channel))->toBeFalse();
+
+    // Check remaining tweets
+    $remaining = $service->getRemainingTweets($user, $channel);
+    expect($remaining['hourly_remaining'])->toBe(0);
+    expect($remaining['daily_remaining'])->toBe(250); // 300 - 50
+});
+
+it('tracks twitter notifications in cache', function () {
+    $user = User::factory()->create();
+    $channel = NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'twitter',
+        'destination' => '@testuser',
+        'is_enabled' => true,
+    ]);
+
+    $service = new TwitterRateLimitService;
+
+    // Track a successful notification
+    $service->trackSuccessfulNotification($user, $channel);
+
+    // Check cache keys exist
+    $hourlyKey = sprintf('twitter_rate_limit:hourly:%d:%d', $user->id, $channel->id);
+    $dailyKey = sprintf('twitter_rate_limit:daily:%d:%d', $user->id, $channel->id);
+
+    expect(Cache::has($hourlyKey))->toBeTrue();
+    expect(Cache::has($dailyKey))->toBeTrue();
+    expect(Cache::get($hourlyKey))->toBe(1);
+    expect(Cache::get($dailyKey))->toBe(1);
+});
+
+it('does not send twitter notification when channel is disabled', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $monitor = Monitor::factory()->create([
+        'url' => 'https://example.com',
+        'uptime_check_enabled' => true,
+        'uptime_status' => 'DOWN',
+    ]);
+
+    // Associate user with monitor
+    $monitor->users()->attach($user->id, ['is_active' => true]);
+
+    // Create disabled Twitter notification channel
+    $twitterChannel = NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'twitter',
+        'destination' => '@testuser',
+        'is_enabled' => false,
+    ]);
+
+    // Also create an enabled email channel so notification is still sent
+    NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'email',
+        'destination' => $user->email,
+        'is_enabled' => true,
+    ]);
+
+    $notificationData = [
+        'id' => $monitor->id,
+        'url' => $monitor->url,
+        'status' => 'DOWN',
+        'message' => 'Monitor is down',
+        'is_public' => false,
+    ];
+
+    $user->notify(new MonitorStatusChanged($notificationData));
+
+    Notification::assertSentTo(
+        [$user],
+        MonitorStatusChanged::class,
+        function ($notification, $channels) {
+            // Twitter channel should not be included when disabled
+            return ! in_array(TwitterChannel::class, $channels);
+        }
+    );
+});
+
+it('includes public monitor link in tweet when monitor is public', function () {
+    $user = User::factory()->create();
+    $monitor = Monitor::factory()->create([
+        'url' => 'https://example.com',
+        'uptime_check_enabled' => true,
+        'uptime_status' => 'DOWN',
+        'is_public' => true,
+    ]);
+
+    // Associate user with monitor
+    $monitor->users()->attach($user->id, ['is_active' => true]);
+
+    $twitterChannel = NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'twitter',
+        'destination' => '@testuser',
+        'is_enabled' => true,
+    ]);
+
+    $notificationData = [
+        'id' => $monitor->id,
+        'url' => $monitor->url,
+        'status' => 'DOWN',
+        'message' => 'Monitor is down',
+        'is_public' => true,
+    ];
+
+    $notification = new MonitorStatusChanged($notificationData);
+    $twitterUpdate = $notification->toTwitter($user);
+
+    expect($twitterUpdate)->not->toBeNull();
+    expect($twitterUpdate->getContent())->toContain('Monitor Alert');
+    expect($twitterUpdate->getContent())->toContain($monitor->url);
+    expect($twitterUpdate->getContent())->toContain('#UptimeMonitoring');
+    expect($twitterUpdate->getContent())->toContain('Details:');
+});

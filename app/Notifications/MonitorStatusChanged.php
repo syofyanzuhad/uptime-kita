@@ -4,12 +4,15 @@ namespace App\Notifications;
 
 use App\Services\EmailRateLimitService;
 use App\Services\TelegramRateLimitService;
+use App\Services\TwitterRateLimitService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use NotificationChannels\Telegram\TelegramMessage;
+use NotificationChannels\Twitter\TwitterChannel;
+use NotificationChannels\Twitter\TwitterStatusUpdate;
 
 class MonitorStatusChanged extends Notification implements ShouldQueue
 {
@@ -52,6 +55,8 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
                 'email' => 'mail',
                 'slack' => 'slack',
                 'sms' => 'nexmo',
+                'twitter' => $notifiable->notificationChannels()->where('type', 'twitter')->where('is_enabled', true)->exists()
+                    ? TwitterChannel::class : null,
                 default => null,
             };
         })->filter()->unique()->values()->all();
@@ -176,6 +181,65 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             }
 
             // Re-throw the exception so Laravel can handle it
+            throw $e;
+        }
+    }
+
+    public function toTwitter($notifiable)
+    {
+        // Get Twitter channel for user
+        $twitterChannel = $notifiable->notificationChannels()
+            ->where('type', 'twitter')
+            ->where('is_enabled', true)
+            ->first();
+
+        if (! $twitterChannel) {
+            return;
+        }
+
+        // Use the rate limiting service
+        $rateLimitService = app(TwitterRateLimitService::class);
+
+        // Check if we should send the notification
+        if (! $rateLimitService->shouldSendNotification($notifiable, $twitterChannel)) {
+            Log::info('Twitter notification rate limited', [
+                'user_id' => $notifiable->id,
+                'monitor_id' => $this->data['id'] ?? null,
+                'status' => $this->data['status'] ?? null,
+            ]);
+
+            return;
+        }
+
+        try {
+            $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
+            $statusText = $this->data['status'] === 'DOWN' ? 'DOWN' : 'UP';
+
+            // Create tweet content
+            $tweetContent = "{$statusEmoji} Monitor Alert: {$this->data['url']} is {$statusText}\n\n";
+
+            // Add timestamp
+            $tweetContent .= 'Time: '.now()->format('Y-m-d H:i:s')." UTC\n";
+
+            // Add hashtags
+            $tweetContent .= '#UptimeMonitoring #WebsiteStatus';
+
+            // If monitor is public, add link
+            if (@$this->data['is_public']) {
+                $monitorUrl = config('app.url').'/m/'.$this->data['url'];
+                $tweetContent .= "\n\nDetails: {$monitorUrl}";
+            }
+
+            // Track successful notification
+            $rateLimitService->trackSuccessfulNotification($notifiable, $twitterChannel);
+
+            return new TwitterStatusUpdate($tweetContent);
+        } catch (\Exception $e) {
+            Log::error('Twitter notification failed', [
+                'user_id' => $notifiable->id,
+                'error' => $e->getMessage(),
+            ]);
+
             throw $e;
         }
     }
