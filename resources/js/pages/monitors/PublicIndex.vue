@@ -383,7 +383,7 @@
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
                                             <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                {{ incident.monitor.name || incident.monitor.url }}
+                                                {{ incident.monitor.raw_url }}
                                             </p>
                                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                                 <span v-if="incident.type">Type: {{ incident.type }} • </span>
@@ -419,7 +419,6 @@
                 </Card>
             </div>
         </div>
-
 
         <!-- Back to Top Button -->
         <button
@@ -479,6 +478,7 @@ interface Incident {
         url: string;
         name: string | null;
         is_public: boolean;
+        raw_url: string;
     };
 }
 
