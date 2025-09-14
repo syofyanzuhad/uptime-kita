@@ -104,7 +104,7 @@ class PublicMonitorController extends Controller
 
         // Get latest incidents for public monitors
         $latestIncidents = cache()->remember('public_monitors_latest_incidents', 300, function () {
-            return MonitorIncident::with(['monitor:id,url,display_name,is_public'])
+            return MonitorIncident::with(['monitor:id,url,name,is_public'])
                 ->whereHas('monitor', function ($query) {
                     $query->where('is_public', true);
                 })
