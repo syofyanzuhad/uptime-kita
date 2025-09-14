@@ -14,6 +14,7 @@
         "inertiajs/inertia-laravel": "^2.0",
         "larabug/larabug": "^3.3",
         "laravel-notification-channels/telegram": "^6.0",
+        "laravel-notification-channels/twitter": "^8.3",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.32",
         "laravel/nightwatch": "^1.11",
