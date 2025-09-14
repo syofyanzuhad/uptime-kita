@@ -101,7 +101,7 @@
             </div>
 
             <!-- Latest Incidents Section -->
-            <div v-if="props.latestIncidents && props.latestIncidents.length > 0" class="mb-8">
+            <div v-if="props.latestIncidents && props.latestIncidents.length > 0" class="mb-8 max-h-[50vh] overflow-y-auto">
                 <Card>
                     <CardContent class="p-4 sm:p-6">
                         <div class="mb-4 flex items-center justify-between">
@@ -130,7 +130,7 @@
                                                 incident.ended_at
                                                     ? 'text-green-600 dark:text-green-400'
                                                     : 'text-red-600 dark:text-red-400',
-                                            ]"
+                                            ].join(' ')"
                                         />
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
                                             <p class="text-sm font-medium text-gray-900 dark:text-white">
-                                                {{ incident.monitor.display_name || incident.monitor.url }}
+                                                {{ incident.monitor.name || incident.monitor.url }}
                                             </p>
                                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                                 <span v-if="incident.type">Type: {{ incident.type }} • </span>
@@ -476,7 +476,7 @@ interface Incident {
     monitor: {
         id: number;
         url: string;
-        display_name: string | null;
+        name: string | null;
         is_public: boolean;
     };
 }
