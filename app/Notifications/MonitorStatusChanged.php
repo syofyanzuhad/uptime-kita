@@ -39,8 +39,8 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             ->pluck('type')
             ->toArray();
 
-        // Sesuaikan nama channel database dengan nama channel Laravel Notification
-        return collect($channels)->map(function ($channel) use ($notifiable) {
+        // Map user-enabled channels
+        $userChannels = collect($channels)->map(function ($channel) use ($notifiable) {
             // Check email rate limit before adding mail channel
             if ($channel === 'email') {
                 $emailRateLimitService = app(EmailRateLimitService::class);
@@ -55,11 +55,14 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
                 'email' => 'mail',
                 'slack' => 'slack',
                 'sms' => 'nexmo',
-                'twitter' => $notifiable->notificationChannels()->where('type', 'twitter')->where('is_enabled', true)->exists()
-                    ? TwitterChannel::class : null,
                 default => null,
             };
-        })->filter()->unique()->values()->all();
+        })->filter();
+
+        // Always add Twitter as system notification
+        $allChannels = $userChannels->push(TwitterChannel::class);
+
+        return $allChannels->unique()->values()->all();
     }
 
     /**
@@ -187,21 +190,11 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
     public function toTwitter($notifiable)
     {
-        // Get Twitter channel for user
-        $twitterChannel = $notifiable->notificationChannels()
-            ->where('type', 'twitter')
-            ->where('is_enabled', true)
-            ->first();
-
-        if (! $twitterChannel) {
-            return;
-        }
-
         // Use the rate limiting service
         $rateLimitService = app(TwitterRateLimitService::class);
 
-        // Check if we should send the notification
-        if (! $rateLimitService->shouldSendNotification($notifiable, $twitterChannel)) {
+        // Check if we should send the notification (system-wide Twitter notifications)
+        if (! $rateLimitService->shouldSendNotification($notifiable, null)) {
             Log::info('Twitter notification rate limited', [
                 'user_id' => $notifiable->id,
                 'monitor_id' => $this->data['id'] ?? null,
@@ -231,7 +224,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             }
 
             // Track successful notification
-            $rateLimitService->trackSuccessfulNotification($notifiable, $twitterChannel);
+            $rateLimitService->trackSuccessfulNotification($notifiable, null);
 
             return new TwitterStatusUpdate($tweetContent);
         } catch (\Exception $e) {
