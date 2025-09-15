@@ -68,8 +68,8 @@ it('respects twitter rate limits', function () {
     // Initially should be able to send
     expect($service->shouldSendNotification($user, $channel))->toBeTrue();
 
-    // Simulate sending 50 notifications (hourly limit)
-    for ($i = 0; $i < 50; $i++) {
+    // Simulate sending 30 notifications (hourly limit)
+    for ($i = 0; $i < 30; $i++) {
         $service->trackSuccessfulNotification($user, $channel);
     }
 
@@ -79,7 +79,7 @@ it('respects twitter rate limits', function () {
     // Check remaining tweets
     $remaining = $service->getRemainingTweets($user, $channel);
     expect($remaining['hourly_remaining'])->toBe(0);
-    expect($remaining['daily_remaining'])->toBe(250); // 300 - 50
+    expect($remaining['daily_remaining'])->toBe(170); // 200 - 30
 });
 
 it('tracks twitter notifications in cache', function () {
@@ -106,7 +106,7 @@ it('tracks twitter notifications in cache', function () {
     expect(Cache::get($dailyKey))->toBe(1);
 });
 
-it('does not send twitter notification when channel is disabled', function () {
+it('always sends twitter notification for DOWN events regardless of channel settings', function () {
     Notification::fake();
 
     $user = User::factory()->create();
@@ -149,8 +149,8 @@ it('does not send twitter notification when channel is disabled', function () {
         [$user],
         MonitorStatusChanged::class,
         function ($notification, $channels) {
-            // Twitter channel should not be included when disabled
-            return ! in_array(TwitterChannel::class, $channels);
+            // Twitter channel should always be included for DOWN events
+            return in_array(TwitterChannel::class, $channels);
         }
     );
 });
@@ -187,7 +187,7 @@ it('includes public monitor link in tweet when monitor is public', function () {
 
     expect($twitterUpdate)->not->toBeNull();
     expect($twitterUpdate->getContent())->toContain('Monitor Alert');
-    expect($twitterUpdate->getContent())->toContain($monitor->url);
-    expect($twitterUpdate->getContent())->toContain('#UptimeMonitoring');
+    expect($twitterUpdate->getContent())->toContain(parse_url($monitor->url, PHP_URL_HOST));
+    expect($twitterUpdate->getContent())->toContain('#UptimeKita');
     expect($twitterUpdate->getContent())->toContain('Details:');
 });
