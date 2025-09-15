@@ -211,19 +211,21 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         try {
             $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
             $statusText = $this->data['status'] === 'DOWN' ? 'DOWN' : 'UP';
+            $parsedUrl = parse_url($this->data['url']);
+            $host = $parsedUrl['host'];
 
             // Create tweet content
-            $tweetContent = "{$statusEmoji} Monitor Alert: {$this->data['url']} is {$statusText}\n\n";
+            $tweetContent = "{$statusEmoji} Monitor Alert: {$host} is {$statusText}\n\n";
 
             // Add timestamp
             $tweetContent .= 'Time: '.now()->format('Y-m-d H:i:s')." UTC\n";
 
             // Add hashtags
-            $tweetContent .= '#UptimeMonitoring #WebsiteStatus';
+            $tweetContent .= '#UptimeKita #UptimeMonitoring #WebsiteStatus';
 
             // If monitor is public, add link
             if (@$this->data['is_public']) {
-                $monitorUrl = config('app.url').'/m/'.$this->data['url'];
+                $monitorUrl = config('app.url').'/m/'.$host;
                 $tweetContent .= "\n\nDetails: {$monitorUrl}";
             }
 
