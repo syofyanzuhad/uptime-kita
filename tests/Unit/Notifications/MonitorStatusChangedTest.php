@@ -72,14 +72,28 @@ describe('MonitorStatusChanged', function () {
             expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
 
-        it('returns Twitter channel when no user channels enabled', function () {
+        it('returns Twitter channel when no user channels enabled and status is DOWN', function () {
             $channels = $this->notification->via($this->user);
 
             expect($channels)->toHaveCount(1);
             expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
 
-        it('maps channel types correctly and includes Twitter', function () {
+        it('returns empty array when no user channels enabled and status is UP', function () {
+            $upData = [
+                'id' => 1,
+                'url' => 'https://example.com',
+                'status' => 'UP',
+                'message' => 'Website https://example.com is UP',
+            ];
+            $upNotification = new MonitorStatusChanged($upData);
+
+            $channels = $upNotification->via($this->user);
+
+            expect($channels)->toBeEmpty();
+        });
+
+        it('maps channel types correctly and includes Twitter for DOWN status', function () {
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'slack',
@@ -90,6 +104,27 @@ describe('MonitorStatusChanged', function () {
 
             expect($channels)->toContain('slack');
             expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
+        });
+
+        it('maps channel types correctly but excludes Twitter for UP status', function () {
+            NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'slack',
+                'is_enabled' => true,
+            ]);
+
+            $upData = [
+                'id' => 1,
+                'url' => 'https://example.com',
+                'status' => 'UP',
+                'message' => 'Website https://example.com is UP',
+            ];
+            $upNotification = new MonitorStatusChanged($upData);
+
+            $channels = $upNotification->via($this->user);
+
+            expect($channels)->toContain('slack');
+            expect($channels)->not->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
     });
 

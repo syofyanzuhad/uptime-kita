@@ -59,8 +59,12 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             };
         })->filter();
 
-        // Always add Twitter as system notification
-        $allChannels = $userChannels->push(TwitterChannel::class);
+        // Add Twitter as system notification only for DOWN events
+        if ($this->data['status'] === 'DOWN') {
+            $allChannels = $userChannels->push(TwitterChannel::class);
+        } else {
+            $allChannels = $userChannels;
+        }
 
         return $allChannels->unique()->values()->all();
     }
