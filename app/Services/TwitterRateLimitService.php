@@ -15,7 +15,7 @@ class TwitterRateLimitService
 
     private const CACHE_TTL_HOURS = 24;
 
-    public function shouldSendNotification(User $user, NotificationChannel $channel): bool
+    public function shouldSendNotification(User $user, ?NotificationChannel $channel = null): bool
     {
         $hourlyKey = $this->getHourlyCacheKey($user, $channel);
         $dailyKey = $this->getDailyCacheKey($user, $channel);
@@ -26,7 +26,7 @@ class TwitterRateLimitService
         if ($hourlyCount >= self::RATE_LIMIT_PER_HOUR) {
             Log::warning('Twitter hourly rate limit reached', [
                 'user_id' => $user->id,
-                'channel_id' => $channel->id,
+                'channel_id' => $channel?->id ?? 'system',
                 'hourly_count' => $hourlyCount,
             ]);
 
@@ -36,7 +36,7 @@ class TwitterRateLimitService
         if ($dailyCount >= self::RATE_LIMIT_PER_DAY) {
             Log::warning('Twitter daily rate limit reached', [
                 'user_id' => $user->id,
-                'channel_id' => $channel->id,
+                'channel_id' => $channel?->id ?? 'system',
                 'daily_count' => $dailyCount,
             ]);
 
@@ -46,7 +46,7 @@ class TwitterRateLimitService
         return true;
     }
 
-    public function trackSuccessfulNotification(User $user, NotificationChannel $channel): void
+    public function trackSuccessfulNotification(User $user, ?NotificationChannel $channel = null): void
     {
         $hourlyKey = $this->getHourlyCacheKey($user, $channel);
         $dailyKey = $this->getDailyCacheKey($user, $channel);
@@ -63,7 +63,7 @@ class TwitterRateLimitService
         }
     }
 
-    public function getRemainingTweets(User $user, NotificationChannel $channel): array
+    public function getRemainingTweets(User $user, ?NotificationChannel $channel = null): array
     {
         $hourlyKey = $this->getHourlyCacheKey($user, $channel);
         $dailyKey = $this->getDailyCacheKey($user, $channel);
@@ -77,13 +77,17 @@ class TwitterRateLimitService
         ];
     }
 
-    private function getHourlyCacheKey(User $user, NotificationChannel $channel): string
+    private function getHourlyCacheKey(User $user, ?NotificationChannel $channel = null): string
     {
-        return sprintf('twitter_rate_limit:hourly:%d:%d', $user->id, $channel->id);
+        $channelId = $channel?->id ?? 'system';
+
+        return sprintf('twitter_rate_limit:hourly:%d:%s', $user->id, $channelId);
     }
 
-    private function getDailyCacheKey(User $user, NotificationChannel $channel): string
+    private function getDailyCacheKey(User $user, ?NotificationChannel $channel = null): string
     {
-        return sprintf('twitter_rate_limit:daily:%d:%d', $user->id, $channel->id);
+        $channelId = $channel?->id ?? 'system';
+
+        return sprintf('twitter_rate_limit:daily:%d:%s', $user->id, $channelId);
     }
 }

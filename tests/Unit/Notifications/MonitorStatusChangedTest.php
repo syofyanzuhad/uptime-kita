@@ -29,7 +29,7 @@ describe('MonitorStatusChanged', function () {
     });
 
     describe('via', function () {
-        it('returns channels based on user notification channels', function () {
+        it('returns channels based on user notification channels plus Twitter', function () {
             // Create notification channels for user
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
@@ -48,9 +48,10 @@ describe('MonitorStatusChanged', function () {
 
             expect($channels)->toContain('mail');
             expect($channels)->toContain('telegram');
+            expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
 
-        it('only returns enabled channels', function () {
+        it('only returns enabled channels plus Twitter', function () {
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'email',
@@ -68,15 +69,17 @@ describe('MonitorStatusChanged', function () {
 
             expect($channels)->toContain('mail');
             expect($channels)->not->toContain('telegram');
+            expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
 
-        it('returns empty array when no channels enabled', function () {
+        it('returns Twitter channel when no user channels enabled', function () {
             $channels = $this->notification->via($this->user);
 
-            expect($channels)->toBeEmpty();
+            expect($channels)->toHaveCount(1);
+            expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
 
-        it('maps channel types correctly', function () {
+        it('maps channel types correctly and includes Twitter', function () {
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'slack',
@@ -86,6 +89,7 @@ describe('MonitorStatusChanged', function () {
             $channels = $this->notification->via($this->user);
 
             expect($channels)->toContain('slack');
+            expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
     });
 
