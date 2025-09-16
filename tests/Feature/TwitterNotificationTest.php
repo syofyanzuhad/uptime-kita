@@ -191,3 +191,73 @@ it('includes public monitor link in tweet when monitor is public', function () {
     expect($twitterUpdate->getContent())->toContain('#UptimeKita');
     expect($twitterUpdate->getContent())->toContain('Details:');
 });
+
+it('excludes twitter channel when rate limited', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $monitor = Monitor::factory()->create([
+        'url' => 'https://example.com',
+        'uptime_check_enabled' => true,
+        'uptime_status' => 'DOWN',
+    ]);
+
+    // Associate user with monitor
+    $monitor->users()->attach($user->id, ['is_active' => true]);
+
+    // Create email channel to ensure notification still sends
+    NotificationChannel::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'email',
+        'destination' => $user->email,
+        'is_enabled' => true,
+    ]);
+
+    // Simulate hitting Twitter rate limit
+    $service = new TwitterRateLimitService;
+    for ($i = 0; $i < 30; $i++) {
+        $service->trackSuccessfulNotification($user, null);
+    }
+
+    $notificationData = [
+        'id' => $monitor->id,
+        'url' => $monitor->url,
+        'status' => 'DOWN',
+        'message' => 'Monitor is down',
+        'is_public' => false,
+    ];
+
+    $user->notify(new MonitorStatusChanged($notificationData));
+
+    Notification::assertSentTo(
+        [$user],
+        MonitorStatusChanged::class,
+        function ($notification, $channels) {
+            // Twitter channel should NOT be included when rate limited
+            return ! in_array(TwitterChannel::class, $channels) && in_array('mail', $channels);
+        }
+    );
+});
+
+it('returns null from toTwitter when rate limited', function () {
+    $user = User::factory()->create();
+
+    // Simulate hitting Twitter rate limit
+    $service = new TwitterRateLimitService;
+    for ($i = 0; $i < 30; $i++) {
+        $service->trackSuccessfulNotification($user, null);
+    }
+
+    $notificationData = [
+        'id' => 1,
+        'url' => 'https://example.com',
+        'status' => 'DOWN',
+        'message' => 'Monitor is down',
+        'is_public' => false,
+    ];
+
+    $notification = new MonitorStatusChanged($notificationData);
+    $twitterUpdate = $notification->toTwitter($user);
+
+    expect($twitterUpdate)->toBeNull();
+});

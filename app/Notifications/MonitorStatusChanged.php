@@ -60,6 +60,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         })->filter();
 
         // Add Twitter as system notification only for DOWN events if not rate limited
+        $allChannels = $userChannels;
         if ($this->data['status'] === 'DOWN') {
             $twitterRateLimitService = app(TwitterRateLimitService::class);
             if ($twitterRateLimitService->shouldSendNotification($notifiable, null)) {
@@ -69,10 +70,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
                     'user_id' => $notifiable->id,
                     'monitor_status' => $this->data['status'] ?? null,
                 ]);
-                $allChannels = $userChannels;
             }
-        } else {
-            $allChannels = $userChannels;
         }
 
         return $allChannels->unique()->values()->all();
