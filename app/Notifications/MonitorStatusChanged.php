@@ -201,21 +201,24 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
     public function toTwitter($notifiable)
     {
-        // Use the rate limiting service
-        $rateLimitService = app(TwitterRateLimitService::class);
-
-        // Check if we should send the notification (system-wide Twitter notifications)
-        if (! $rateLimitService->shouldSendNotification($notifiable, null)) {
-            Log::info('Twitter notification rate limited', [
-                'user_id' => $notifiable->id,
-                'monitor_id' => $this->data['id'] ?? null,
-                'status' => $this->data['status'] ?? null,
-            ]);
-
-            return null;
-        }
-
         try {
+            // Use the rate limiting service
+            $rateLimitService = app(TwitterRateLimitService::class);
+
+            // Double-check rate limit at the time of sending
+            // This handles race conditions between via() and toTwitter() calls
+            if (! $rateLimitService->shouldSendNotification($notifiable, null)) {
+                Log::info('Twitter notification rate limited in toTwitter method', [
+                    'user_id' => $notifiable->id,
+                    'monitor_id' => $this->data['id'] ?? null,
+                    'status' => $this->data['status'] ?? null,
+                ]);
+
+                // Return empty tweet instead of null to avoid TypeError
+                // The Twitter API will reject empty tweets, effectively skipping the notification
+                return new TwitterStatusUpdate('');
+            }
+
             $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
             $statusText = $this->data['status'] === 'DOWN' ? 'DOWN' : 'UP';
             $parsedUrl = parse_url($this->data['url']);

@@ -239,7 +239,7 @@ it('excludes twitter channel when rate limited', function () {
     );
 });
 
-it('returns null from toTwitter when rate limited', function () {
+it('returns empty TwitterStatusUpdate from toTwitter when rate limited', function () {
     $user = User::factory()->create();
 
     // Simulate hitting Twitter rate limit
@@ -259,5 +259,6 @@ it('returns null from toTwitter when rate limited', function () {
     $notification = new MonitorStatusChanged($notificationData);
     $twitterUpdate = $notification->toTwitter($user);
 
-    expect($twitterUpdate)->toBeNull();
+    expect($twitterUpdate)->toBeInstanceOf(\NotificationChannels\Twitter\TwitterStatusUpdate::class);
+    expect($twitterUpdate->getContent())->toBe('');
 });
