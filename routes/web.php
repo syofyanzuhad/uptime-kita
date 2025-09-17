@@ -84,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Test route for flash messages
 Route::get('/test-flash', TestFlashController::class)->name('test.flash');
+
+// Debug route for stats
+Route::get('/debug-stats', \App\Http\Controllers\DebugStatsController::class)->name('debug.stats')->middleware('auth');
 // route group for health check
 Route::get('/health', \Spatie\Health\Http\Controllers\SimpleHealthCheckController::class)->name('health.index');
 Route::middleware('auth')->prefix('health')->as('health.')->group(function () {
