@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Monitor;
+use App\Models\NotificationChannel;
 use App\Models\StatusPage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,6 +41,7 @@ describe('User CRUD Operations', function () {
             $monitor = Monitor::factory()->create();
             $monitor->users()->attach($testUser->id);
             StatusPage::factory()->create(['user_id' => $testUser->id]);
+            NotificationChannel::factory()->count(2)->create(['user_id' => $testUser->id]);
 
             $response = actingAs($this->user)->get('/users');
 

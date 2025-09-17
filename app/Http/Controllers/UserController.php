@@ -15,7 +15,8 @@ class UserController extends Controller
     {
         $query = User::query()
             ->withCount('monitors')
-            ->withCount('statusPages');
+            ->withCount('statusPages')
+            ->withCount('notificationChannels');
 
         // Search functionality
         if ($request->filled('search') && strlen($request->search) >= 3) {

@@ -118,6 +118,7 @@ const confirmDeleteUser = () => {
                                 <TableHead>Email</TableHead>
                                 <TableHead>Monitors</TableHead>
                                 <TableHead>Status Pages</TableHead>
+                                <TableHead>Notification Channels</TableHead>
                                 <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -128,6 +129,7 @@ const confirmDeleteUser = () => {
                                 <TableCell>{{ user.email }}</TableCell>
                                 <TableCell>{{ user.monitors_count }}</TableCell>
                                 <TableCell>{{ user.status_pages_count }}</TableCell>
+                                <TableCell>{{ user.notification_channels_count }}</TableCell>
                                 <TableCell class="flex gap-2">
                                     <Link :href="route('users.show', user.id)" class="text-blue-600 hover:underline">View</Link>
                                     <Link :href="route('users.edit', user.id)" class="text-yellow-600 hover:underline">Edit</Link>
