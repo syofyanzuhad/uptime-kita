@@ -253,7 +253,7 @@ it('returns empty TwitterStatusUpdate from toTwitter when rate limited', functio
         'url' => 'https://example.com',
         'status' => 'DOWN',
         'message' => 'Monitor is down',
-        'is_public' => false,
+        'is_public' => true,
     ];
 
     $notification = new MonitorStatusChanged($notificationData);
