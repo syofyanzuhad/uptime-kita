@@ -202,6 +202,11 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     public function toTwitter($notifiable)
     {
         try {
+            // check if monitor is public
+            if (@$this->data['is_public']) {
+                return;
+            }
+
             // Use the rate limiting service
             $rateLimitService = app(TwitterRateLimitService::class);
 
