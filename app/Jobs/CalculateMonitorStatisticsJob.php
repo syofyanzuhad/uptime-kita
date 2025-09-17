@@ -15,11 +15,13 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
 {
     use Queueable;
 
-    public $timeout = 300; // 5 minutes timeout
+    public $timeout = 600; // 10 minutes timeout
 
     public $tries = 3;
 
     public $backoff = [60, 120, 300]; // Exponential backoff: 1 min, 2 min, 5 min
+
+    public $maxExceptions = 1; // Fail after 1 exception
 
     protected ?int $monitorId;
 
@@ -42,14 +44,30 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
                 ->where('is_public', true)
                 ->get();
         } else {
+            // Process in batches to avoid memory issues
             $monitors = Monitor::where('is_public', true)
                 ->where('uptime_check_enabled', true)
-                ->get();
+                ->chunk(10, function ($chunk) {
+                    foreach ($chunk as $monitor) {
+                        try {
+                            $this->calculateStatistics($monitor);
+                        } catch (\Exception $e) {
+                            Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
+                                'monitor_id' => $monitor->id,
+                                'monitor_url' => $monitor->url,
+                                'error' => $e->getMessage(),
+                            ]);
+                            continue;
+                        }
+                    }
+                });
+
+            Log::info('Monitor statistics calculation completed successfully!');
+            return;
         }
 
         if ($monitors->isEmpty()) {
             Log::info('No public monitors found for statistics calculation.');
-
             return;
         }
 
@@ -63,10 +81,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
                     'monitor_id' => $monitor->id,
                     'monitor_url' => $monitor->url,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
                 ]);
-
-                // Continue with other monitors even if one fails
                 continue;
             }
         }
@@ -135,36 +150,43 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
 
     private function calculateUptimePercentage(Monitor $monitor, Carbon $startDate): float
     {
-        $histories = MonitorHistory::where('monitor_id', $monitor->id)
+        // Use aggregation query instead of fetching all records
+        $stats = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $startDate)
-            ->select('uptime_status')
-            ->get();
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN uptime_status = ? THEN 1 ELSE 0 END) as up_count
+            ', ['up'])
+            ->first();
 
-        if ($histories->isEmpty()) {
+        if (!$stats || $stats->total == 0) {
             return 100.0;
         }
 
-        $upCount = $histories->where('uptime_status', 'up')->count();
-        $totalCount = $histories->count();
-
-        return round(($upCount / $totalCount) * 100, 2);
+        return round(($stats->up_count / $stats->total) * 100, 2);
     }
 
     private function calculateResponseTimeStats(Monitor $monitor, Carbon $startDate): array
     {
-        $histories = MonitorHistory::where('monitor_id', $monitor->id)
+        // Use aggregation query instead of fetching all records
+        $stats = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $startDate)
             ->whereNotNull('response_time')
-            ->pluck('response_time');
+            ->selectRaw('
+                AVG(response_time) as avg,
+                MIN(response_time) as min,
+                MAX(response_time) as max
+            ')
+            ->first();
 
-        if ($histories->isEmpty()) {
+        if (!$stats || !$stats->avg) {
             return ['avg' => null, 'min' => null, 'max' => null];
         }
 
         return [
-            'avg' => (int) round($histories->avg()),
-            'min' => $histories->min(),
-            'max' => $histories->max(),
+            'avg' => (int) round($stats->avg),
+            'min' => (int) $stats->min,
+            'max' => (int) $stats->max,
         ];
     }
 
@@ -187,28 +209,11 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
 
-        // Get unique history IDs using raw SQL to ensure only one record per minute
-        $sql = "
-            SELECT id FROM (
-                SELECT id, created_at, ROW_NUMBER() OVER (
-                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
-                    ORDER BY created_at DESC, id DESC
-                ) as rn
-                FROM monitor_histories
-                WHERE monitor_id = ?
-            ) ranked
-            WHERE rn = 1
-            ORDER BY created_at DESC
-            LIMIT 100
-        ";
-
-        $uniqueIds = DB::select($sql, [$monitor->id]);
-        $ids = array_column($uniqueIds, 'id');
-
-        // Get unique histories and filter by time
-        $histories = MonitorHistory::whereIn('id', $ids)
+        // Simpler approach - just get recent history without complex window functions
+        $histories = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $oneHundredMinutesAgo)
             ->orderBy('created_at', 'desc')
+            ->limit(100)
             ->select(['created_at', 'uptime_status', 'response_time', 'message'])
             ->get();
 
