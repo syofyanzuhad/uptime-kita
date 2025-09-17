@@ -203,8 +203,8 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     {
         try {
             // check if monitor is public
-            if (@$this->data['is_public']) {
-                return;
+            if (! @$this->data['is_public']) {
+                return null;
             }
 
             // Use the rate limiting service
