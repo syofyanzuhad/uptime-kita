@@ -43,6 +43,40 @@ export interface User {
     created_at: string;
     updated_at: string;
     is_admin: boolean;
+    monitors?: Monitor[];
+    status_pages?: StatusPage[];
+    notification_channels?: NotificationChannel[];
+}
+
+export interface Monitor {
+    id: number;
+    display_name: string;
+    url: string;
+    uptime_status: string;
+    created_at: string;
+    pivot: {
+        is_active: boolean;
+        is_pinned: boolean;
+        created_at: string;
+    };
+}
+
+export interface StatusPage {
+    id: number;
+    user_id: number;
+    title: string;
+    description: string | null;
+    path: string;
+    created_at: string;
+}
+
+export interface NotificationChannel {
+    id: number;
+    user_id: number;
+    type: string;
+    destination: string;
+    is_enabled: boolean;
+    created_at: string;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
