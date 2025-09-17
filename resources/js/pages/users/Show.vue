@@ -75,10 +75,10 @@ const getStatusBadge = (isEnabled: boolean) => {
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-for="monitor in props.user.monitors" :key="monitor.id">
-                                    <TableCell class="font-medium">{{ monitor.display_name || monitor.url }}</TableCell>
+                                    <TableCell class="font-medium">{{ monitor.display_name || monitor.raw_url }}</TableCell>
                                     <TableCell>
-                                        <a :href="monitor.url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
-                                            {{ monitor.url }}
+                                        <a :href="monitor.raw_url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                            {{ monitor.raw_url }}
                                         </a>
                                     </TableCell>
                                     <TableCell>

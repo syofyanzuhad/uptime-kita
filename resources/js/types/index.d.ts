@@ -51,9 +51,11 @@ export interface User {
 export interface Monitor {
     id: number;
     display_name: string;
-    url: string;
+    url: URL;
     uptime_status: string;
     created_at: string;
+    raw_url: string;
+    host: string;
     pivot: {
         is_active: boolean;
         is_pinned: boolean;
