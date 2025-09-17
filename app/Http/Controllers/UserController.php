@@ -74,6 +74,19 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $user->load([
+            'monitors' => function ($query) {
+                $query->select('monitors.id', 'monitors.display_name', 'monitors.url', 'monitors.uptime_status', 'monitors.created_at')
+                    ->withPivot(['is_active', 'is_pinned', 'created_at']);
+            },
+            'statusPages' => function ($query) {
+                $query->select('id', 'user_id', 'title', 'description', 'path', 'created_at');
+            },
+            'notificationChannels' => function ($query) {
+                $query->select('id', 'user_id', 'type', 'destination', 'is_enabled', 'created_at');
+            },
+        ]);
+
         return Inertia::render('users/Show', [
             'user' => $user,
         ]);

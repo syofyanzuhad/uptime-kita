@@ -245,6 +245,29 @@ describe('User CRUD Operations', function () {
             );
         });
 
+        it('includes all related data for user', function () {
+            $viewUser = User::factory()->create();
+
+            // Create related data
+            $monitor = Monitor::factory()->create();
+            $monitor->users()->attach($viewUser->id, ['is_active' => true, 'is_pinned' => false]);
+
+            StatusPage::factory()->create(['user_id' => $viewUser->id]);
+            NotificationChannel::factory()->count(2)->create(['user_id' => $viewUser->id]);
+
+            $response = actingAs($this->user)->get("/users/{$viewUser->id}");
+
+            $response->assertSuccessful();
+            $response->assertInertia(fn ($page) => $page
+                ->component('users/Show')
+                ->has('user')
+                ->has('user.monitors')
+                ->has('user.status_pages')
+                ->has('user.notification_channels')
+                ->where('user.id', $viewUser->id)
+            );
+        });
+
         it('requires authentication to view user', function () {
             $viewUser = User::factory()->create();
 
