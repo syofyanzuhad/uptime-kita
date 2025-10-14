@@ -52,6 +52,9 @@ Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)-
 Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
+
+Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
+
 // === BACKUP DB ===
 // Schedule::command('backup:clean')->daily()->at('01:00');
 // Schedule::command('backup:run')->daily()->at('01:30')
