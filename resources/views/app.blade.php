@@ -30,7 +30,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Uptime Kita') }}</title>
+        <title inertia>Uptime Kita</title>
         <meta name="description" content="{{ config('app.description', 'Uptime Kita - Simple Uptime Monitoring (open-source)') }}">
         <meta name="author" content="syofyanzuhad">
 
