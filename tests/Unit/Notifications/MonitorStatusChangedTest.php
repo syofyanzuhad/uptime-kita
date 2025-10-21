@@ -129,17 +129,17 @@ describe('MonitorStatusChanged', function () {
     });
 
     describe('toMail', function () {
-        it('creates mail message with correct content', function () {
+        it('creates mail message with correct content using hostname only', function () {
             $mailMessage = $this->notification->toMail($this->user);
 
             expect($mailMessage)->toBeInstanceOf(MailMessage::class);
             expect($mailMessage->subject)->toBe('Website Status: DOWN');
             expect($mailMessage->greeting)->toBe('Halo, John Doe');
 
-            // Check that the message contains expected content
+            // Check that the message contains expected content with hostname only
             $mailData = $mailMessage->data();
             expect($mailData['introLines'])->toContain('Website berikut mengalami perubahan status:');
-            expect($mailData['introLines'])->toContain('🔗 URL: https://example.com');
+            expect($mailData['introLines'])->toContain('🔗 URL: example.com');
             expect($mailData['introLines'])->toContain('⚠️ Status: DOWN');
         });
 
@@ -305,6 +305,31 @@ describe('MonitorStatusChanged', function () {
             $openWebsiteButton = $replyMarkup['inline_keyboard'][0][1];
             expect($openWebsiteButton['text'])->toBe('Open Website');
             expect($openWebsiteButton['url'])->toBe('https://example.com');
+        });
+
+        it('uses hostname only in telegram message content', function () {
+            $telegramChannel = NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => '123456789',
+            ]);
+
+            $rateLimitService = mock(TelegramRateLimitService::class);
+            $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(true);
+            $rateLimitService->shouldReceive('trackSuccessfulNotification');
+
+            $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
+
+            $result = $this->notification->toTelegram($this->user);
+
+            expect($result)->toBeInstanceOf(TelegramMessage::class);
+
+            // Check the message content contains hostname only (not full URL)
+            $payload = $result->toArray();
+            expect($payload)->toHaveKey('text');
+            expect($payload['text'])->toContain('example.com');
+            expect($payload['text'])->not->toContain('https://example.com');
         });
     });
 

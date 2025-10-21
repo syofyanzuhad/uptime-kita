@@ -98,10 +98,14 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             return null;
         }
 
+        // Extract hostname from URL
+        $parsedUrl = parse_url($this->data['url']);
+        $host = $parsedUrl['host'] ?? $this->data['url'];
+
         // Log the email being sent
         $emailRateLimitService->logEmailSent($notifiable, 'monitor_status_changed', [
             'monitor_id' => $this->data['id'] ?? null,
-            'url' => $this->data['url'] ?? null,
+            'url' => $host,
             'status' => $this->data['status'] ?? null,
         ]);
 
@@ -110,7 +114,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             ->subject("Website Status: {$this->data['status']}")
             ->greeting("Halo, {$notifiable->name}")
             ->line('Website berikut mengalami perubahan status:')
-            ->line("🔗 URL: {$this->data['url']}")
+            ->line("🔗 URL: {$host}")
             ->line("⚠️ Status: {$this->data['status']}");
 
         // Add warning if approaching daily limit
@@ -158,16 +162,20 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
             $statusText = $this->data['status'] === 'DOWN' ? 'Website DOWN' : 'Website UP';
 
+            // Extract hostname from URL
+            $parsedUrl = parse_url($this->data['url']);
+            $host = $parsedUrl['host'] ?? $this->data['url'];
+
             // if monitor is public, use public url
             if (@$this->data['is_public']) {
-                $monitorUrl = config('app.url').'/m/'.$this->data['url'];
+                $monitorUrl = config('app.url').'/m/'.$host;
             } else {
                 $monitorUrl = config('app.url').'/monitor/'.$this->data['id'];
             }
 
             $message = TelegramMessage::create()
                 ->to($telegramChannel->destination)
-                ->content("{$statusEmoji} *{$statusText}*\n\nURL: `{$this->data['url']}`\nStatus: *{$this->data['status']}*")
+                ->content("{$statusEmoji} *{$statusText}*\n\nURL: `{$host}`\nStatus: *{$this->data['status']}*")
                 ->options(['parse_mode' => 'Markdown'])
                 ->button('View Monitor', $monitorUrl)
                 ->button('Open Website', $this->data['url']);
