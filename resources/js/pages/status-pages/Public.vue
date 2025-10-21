@@ -489,7 +489,7 @@ const { isDark, toggleTheme } = useTheme();
                                             />
                                             <Icon
                                                 v-else-if="['invalid', 'expired'].includes(monitor.certificate_status.toLowerCase())"
-                                                name="lock-open"
+                                                name="lockOpen"
                                                 class="inline-block h-4 w-4"
                                             />
                                             <Icon
