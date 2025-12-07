@@ -20,7 +20,7 @@ interface Props {
     excludedTables: string[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
