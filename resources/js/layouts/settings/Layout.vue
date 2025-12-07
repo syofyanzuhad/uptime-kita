@@ -23,6 +23,10 @@ const sidebarNavItems: NavItem[] = [
         title: 'Notifications',
         href: '/settings/notifications',
     },
+    {
+        title: 'Database',
+        href: '/settings/database',
+    },
 ];
 
 const page = usePage<SharedData>();
