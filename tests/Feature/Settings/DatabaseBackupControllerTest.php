@@ -82,8 +82,8 @@ test('database restore requires a file', function () {
 test('database restore validates file size', function () {
     $user = User::factory()->create();
 
-    // Create a fake file that exceeds the max size (500MB)
-    $file = UploadedFile::fake()->create('backup.sqlite', 512001);
+    // Create a fake file that exceeds the max size (512 * 1024 KB = 524288 KB)
+    $file = UploadedFile::fake()->create('backup.sqlite', 524289);
 
     $response = $this
         ->actingAs($user)

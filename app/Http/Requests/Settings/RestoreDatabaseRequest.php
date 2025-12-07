@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\File;
 
 class RestoreDatabaseRequest extends FormRequest
 {
@@ -20,8 +19,9 @@ class RestoreDatabaseRequest extends FormRequest
         return [
             'database' => [
                 'required',
-                File::types(['sql', 'sqlite', 'sqlite3', 'db'])
-                    ->max(512 * 1024), // 500MB max
+                'file',
+                'extensions:sql,sqlite,sqlite3,db',
+                'max:'.(512 * 1024), // 500MB max in KB
             ],
         ];
     }
