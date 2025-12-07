@@ -27,6 +27,17 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     }
 
     /**
+     * Check if Twitter credentials are configured.
+     */
+    protected function isTwitterConfigured(): bool
+    {
+        return ! empty(config('services.twitter.consumer_key'))
+            && ! empty(config('services.twitter.consumer_secret'))
+            && ! empty(config('services.twitter.access_token'))
+            && ! empty(config('services.twitter.access_secret'));
+    }
+
+    /**
      * Get the notification's delivery channels.
      *
      * @return array<int, string>
@@ -59,17 +70,21 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             };
         })->filter();
 
-        // Add Twitter as system notification only for DOWN events if not rate limited
+        // Add Twitter as system notification only for DOWN events if configured and not rate limited
         $allChannels = $userChannels;
         if ($this->data['status'] === 'DOWN') {
-            $twitterRateLimitService = app(TwitterRateLimitService::class);
-            if ($twitterRateLimitService->shouldSendNotification($notifiable, null)) {
-                $allChannels = $userChannels->push(TwitterChannel::class);
+            if (! $this->isTwitterConfigured()) {
+                Log::debug('Twitter channel skipped: credentials not configured');
             } else {
-                Log::info('Twitter channel excluded due to rate limit', [
-                    'user_id' => $notifiable->id,
-                    'monitor_status' => $this->data['status'] ?? null,
-                ]);
+                $twitterRateLimitService = app(TwitterRateLimitService::class);
+                if ($twitterRateLimitService->shouldSendNotification($notifiable, null)) {
+                    $allChannels = $userChannels->push(TwitterChannel::class);
+                } else {
+                    Log::info('Twitter channel excluded due to rate limit', [
+                        'user_id' => $notifiable->id,
+                        'monitor_status' => $this->data['status'] ?? null,
+                    ]);
+                }
             }
         }
 
@@ -210,6 +225,13 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     public function toTwitter($notifiable)
     {
         try {
+            // Check if Twitter credentials are configured
+            if (! $this->isTwitterConfigured()) {
+                Log::debug('Twitter notification skipped: credentials not configured');
+
+                return new TwitterStatusUpdate('');
+            }
+
             // check if monitor is public
             if (! @$this->data['is_public']) {
                 return null;

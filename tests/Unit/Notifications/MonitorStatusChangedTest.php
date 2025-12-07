@@ -19,6 +19,14 @@ beforeEach(function () {
         'message' => 'Website https://example.com is DOWN',
     ];
     $this->notification = new MonitorStatusChanged($this->data);
+
+    // Set Twitter credentials for tests that expect Twitter channel
+    config([
+        'services.twitter.consumer_key' => 'test-consumer-key',
+        'services.twitter.consumer_secret' => 'test-consumer-secret',
+        'services.twitter.access_token' => 'test-access-token',
+        'services.twitter.access_secret' => 'test-access-secret',
+    ]);
 });
 
 describe('MonitorStatusChanged', function () {
@@ -124,6 +132,41 @@ describe('MonitorStatusChanged', function () {
             $channels = $upNotification->via($this->user);
 
             expect($channels)->toContain('slack');
+            expect($channels)->not->toContain('NotificationChannels\Twitter\TwitterChannel');
+        });
+
+        it('excludes Twitter channel when credentials are not configured', function () {
+            // Clear Twitter credentials
+            config([
+                'services.twitter.consumer_key' => null,
+                'services.twitter.consumer_secret' => null,
+                'services.twitter.access_token' => null,
+                'services.twitter.access_secret' => null,
+            ]);
+
+            NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'email',
+                'is_enabled' => true,
+            ]);
+
+            $channels = $this->notification->via($this->user);
+
+            expect($channels)->toContain('mail');
+            expect($channels)->not->toContain('NotificationChannels\Twitter\TwitterChannel');
+        });
+
+        it('excludes Twitter channel when only some credentials are configured', function () {
+            // Set only partial Twitter credentials
+            config([
+                'services.twitter.consumer_key' => 'test-key',
+                'services.twitter.consumer_secret' => null,
+                'services.twitter.access_token' => 'test-token',
+                'services.twitter.access_secret' => null,
+            ]);
+
+            $channels = $this->notification->via($this->user);
+
             expect($channels)->not->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
     });
