@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\MaintenanceWindowService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Spatie\Tags\HasTags;
@@ -23,6 +24,11 @@ class Monitor extends SpatieMonitor
         'max_response_time' => 'integer',
         'check_locations' => 'array',
         'notification_settings' => 'array',
+        'maintenance_windows' => 'array',
+        'maintenance_starts_at' => 'datetime',
+        'maintenance_ends_at' => 'datetime',
+        'is_in_maintenance' => 'boolean',
+        'transient_failures_count' => 'integer',
     ];
 
     protected $guarded = [];
@@ -215,6 +221,19 @@ class Monitor extends SpatieMonitor
         return $query->where('is_public', false);
     }
 
+    public function scopeNotInMaintenance($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('is_in_maintenance', false)
+                ->orWhereNull('is_in_maintenance');
+        });
+    }
+
+    public function scopeInMaintenance($query)
+    {
+        return $query->where('is_in_maintenance', true);
+    }
+
     public function scopePinned($query)
     {
         return $query->whereHas('users', function ($query) {
@@ -260,6 +279,22 @@ class Monitor extends SpatieMonitor
         $owner = $this->owner;
 
         return $owner && $owner->id === $user->id;
+    }
+
+    /**
+     * Check if the monitor is currently in a maintenance window.
+     */
+    public function isInMaintenance(): bool
+    {
+        return app(MaintenanceWindowService::class)->isInMaintenance($this);
+    }
+
+    /**
+     * Get the next scheduled maintenance window.
+     */
+    public function getNextMaintenanceWindow(): ?array
+    {
+        return app(MaintenanceWindowService::class)->getNextMaintenanceWindow($this);
     }
 
     /**

@@ -144,6 +144,29 @@ return [
     ],
 
     /*
+     * Confirmation check settings for reducing false positives.
+     * When a monitor fails, a confirmation check will be performed
+     * after the specified delay to verify the failure before incrementing
+     * the failure counter.
+     */
+    'confirmation_check' => [
+        /*
+         * Enable or disable confirmation checks.
+         */
+        'enabled' => env('UPTIME_CONFIRMATION_CHECK_ENABLED', true),
+
+        /*
+         * Delay in seconds before performing the confirmation check.
+         */
+        'delay_seconds' => env('UPTIME_CONFIRMATION_CHECK_DELAY', 30),
+
+        /*
+         * Timeout in seconds for the confirmation check request.
+         */
+        'timeout_seconds' => env('UPTIME_CONFIRMATION_CHECK_TIMEOUT', 5),
+    ],
+
+    /*
      * To add or modify behaviour to the Monitor model you can specify your
      * own model here. The only requirement is that it should extend
      * `Spatie\UptimeMonitor\Models\Monitor`.
