@@ -52,8 +52,13 @@ Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)-
 Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
-
 Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
+
+// Update maintenance status for monitors every minute
+Schedule::command('monitor:update-maintenance-status')->everyMinute();
+
+// Cleanup expired one-time maintenance windows daily
+Schedule::command('monitor:update-maintenance-status --cleanup')->daily();
 
 // === BACKUP DB ===
 // Schedule::command('backup:clean')->daily()->at('01:00');

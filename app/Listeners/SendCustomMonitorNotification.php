@@ -29,6 +29,17 @@ class SendCustomMonitorNotification
             'monitor_url' => $monitor->url,
         ]);
 
+        // Skip notification if monitor is in maintenance window
+        if ($monitor->isInMaintenance()) {
+            Log::info('SendCustomMonitorNotification: Skipping notification - monitor is in maintenance window', [
+                'monitor_id' => $monitor->id,
+                'monitor_url' => (string) $monitor->url,
+                'maintenance_ends_at' => $monitor->maintenance_ends_at,
+            ]);
+
+            return;
+        }
+
         // Get all users associated with this monitor
         $users = $monitor->users()->where('user_monitor.is_active', true)->get();
 

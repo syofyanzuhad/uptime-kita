@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
 use App\Listeners\StoreMonitorCheckData;
 use Illuminate\Database\Eloquent\Model;
@@ -61,7 +62,11 @@ class AppServiceProvider extends ServiceProvider
 
         LogViewer::auth(fn ($request) => auth()->id() === 1);
 
-        // Register uptime monitor event listeners
+        // Register confirmation check listener FIRST to intercept initial failures
+        // This listener will dispatch a delayed confirmation job to reduce false positives
+        Event::listen(UptimeCheckFailed::class, DispatchConfirmationCheck::class);
+
+        // Register uptime monitor event listeners for notifications
         Event::listen(UptimeCheckFailed::class, SendCustomMonitorNotification::class);
         Event::listen(UptimeCheckRecovered::class, SendCustomMonitorNotification::class);
 
