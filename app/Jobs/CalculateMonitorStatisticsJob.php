@@ -8,7 +8,6 @@ use App\Models\MonitorStatistic;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CalculateMonitorStatisticsJob implements ShouldQueue
@@ -57,17 +56,20 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
                                 'monitor_url' => $monitor->url,
                                 'error' => $e->getMessage(),
                             ]);
+
                             continue;
                         }
                     }
                 });
 
             Log::info('Monitor statistics calculation completed successfully!');
+
             return;
         }
 
         if ($monitors->isEmpty()) {
             Log::info('No public monitors found for statistics calculation.');
+
             return;
         }
 
@@ -82,6 +84,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
                     'monitor_url' => $monitor->url,
                     'error' => $e->getMessage(),
                 ]);
+
                 continue;
             }
         }
@@ -159,7 +162,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
             ', ['up'])
             ->first();
 
-        if (!$stats || $stats->total == 0) {
+        if (! $stats || $stats->total == 0) {
             return 100.0;
         }
 
@@ -179,7 +182,7 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
             ')
             ->first();
 
-        if (!$stats || !$stats->avg) {
+        if (! $stats || ! $stats->avg) {
             return ['avg' => null, 'min' => null, 'max' => null];
         }
 

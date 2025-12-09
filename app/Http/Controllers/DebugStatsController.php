@@ -41,17 +41,17 @@ class DebugStatsController extends Controller
         $results['monitor_histories'] = [
             'total_rows' => MonitorHistory::count(),
             'public_monitor_checks_today' => MonitorHistory::whereIn('monitor_id', function ($query) {
-                    $query->select('id')
-                        ->from('monitors')
-                        ->where('is_public', true);
-                })
+                $query->select('id')
+                    ->from('monitors')
+                    ->where('is_public', true);
+            })
                 ->whereDate('checked_at', today())
                 ->count(),
             'public_monitor_checks_this_month' => MonitorHistory::whereIn('monitor_id', function ($query) {
-                    $query->select('id')
-                        ->from('monitors')
-                        ->where('is_public', true);
-                })
+                $query->select('id')
+                    ->from('monitors')
+                    ->where('is_public', true);
+            })
                 ->whereMonth('checked_at', now()->month)
                 ->whereYear('checked_at', now()->year)
                 ->count(),

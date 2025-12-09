@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\MonitorLog;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\MonitorLog;
-use Exception;
 
 class OptimizeSqliteDatabase extends Command
 {
@@ -37,23 +37,23 @@ class OptimizeSqliteDatabase extends Command
                     $this->info("🧹 Deleting {$count} old monitor_logs entries (>{ $days } days)...");
                     MonitorLog::where('created_at', '<', now()->subDays($days))->delete();
                 } else {
-                    $this->info("✅ No old monitor_logs to delete.");
+                    $this->info('✅ No old monitor_logs to delete.');
                 }
             }
 
             // 2️⃣ Optimize PRAGMA settings
-            $this->info("⚙️ Applying SQLite PRAGMA tuning...");
+            $this->info('⚙️ Applying SQLite PRAGMA tuning...');
             DB::statement('PRAGMA journal_mode = WAL;');
             DB::statement('PRAGMA synchronous = NORMAL;');
             DB::statement('PRAGMA temp_store = MEMORY;');
             DB::statement('PRAGMA cache_size = -20000;');
 
             // 3️⃣ Analyze query planner
-            $this->info("🔍 Running ANALYZE...");
+            $this->info('🔍 Running ANALYZE...');
             DB::statement('ANALYZE;');
 
             // 4️⃣ Compact database
-            $this->info("💾 Running VACUUM (this may take a while)...");
+            $this->info('💾 Running VACUUM (this may take a while)...');
             DB::statement('VACUUM;');
 
             // 5️⃣ Log and notify
@@ -66,11 +66,12 @@ class OptimizeSqliteDatabase extends Command
 
             return Command::SUCCESS;
         } catch (Exception $e) {
-            $this->error("❌ Optimization failed: " . $e->getMessage());
+            $this->error('❌ Optimization failed: '.$e->getMessage());
             Log::error('SQLite optimization failed', ['error' => $e]);
             if (app()->bound('sentry')) {
                 app('sentry')->captureException($e);
             }
+
             return Command::FAILURE;
         }
     }
