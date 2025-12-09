@@ -65,25 +65,41 @@ class BadgeController extends Controller
     }
 
     /**
-     * Generate SVG badge.
+     * Generate SVG badge using shields.io compatible format.
      */
     private function generateBadge(string $label, string $value, string $color, string $style): string
     {
-        // Calculate widths based on text length (approximate)
-        $labelWidth = max(strlen($label) * 6.5 + 10, 40);
-        $valueWidth = max(strlen($value) * 7 + 10, 40);
+        // For "for-the-badge" style, use uppercase and different sizing
+        $isForTheBadge = $style === 'for-the-badge';
+        $displayLabel = $isForTheBadge ? strtoupper($label) : $label;
+        $displayValue = $isForTheBadge ? strtoupper($value) : $value;
+
+        // Calculate widths - more generous padding for readability
+        $charWidth = $isForTheBadge ? 7.5 : 6.5;
+        $padding = $isForTheBadge ? 14 : 12;
+        $labelWidth = (int) ceil(strlen($displayLabel) * $charWidth + $padding);
+        $valueWidth = (int) ceil(strlen($displayValue) * $charWidth + $padding);
         $totalWidth = $labelWidth + $valueWidth;
+
+        $height = $isForTheBadge ? 28 : 20;
+        $fontSize = $isForTheBadge ? 90 : 110;
+        $textY = $isForTheBadge ? 170 : 140;
+        $shadowY = $isForTheBadge ? 180 : 150;
 
         $borderRadius = match ($style) {
             'flat-square' => 0,
+            'for-the-badge' => 4,
             default => 3,
         };
 
         $gradient = $style === 'plastic' ? $this->getGradientDef() : '';
-        $gradientFill = $style === 'plastic' ? 'url(#gradient)' : '';
+
+        // Calculate center positions (multiply by 10 for SVG coordinate system with scale 0.1)
+        $labelCenterX = ($labelWidth / 2) * 10;
+        $valueCenterX = ($labelWidth + $valueWidth / 2) * 10;
 
         return <<<SVG
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{$totalWidth}" height="20" role="img" aria-label="{$label}: {$value}">
+<svg xmlns="http://www.w3.org/2000/svg" width="{$totalWidth}" height="{$height}" role="img" aria-label="{$label}: {$value}">
   <title>{$label}: {$value}</title>
   {$gradient}
   <linearGradient id="s" x2="0" y2="100%">
@@ -91,18 +107,18 @@ class BadgeController extends Controller
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
   <clipPath id="r">
-    <rect width="{$totalWidth}" height="20" rx="{$borderRadius}" fill="#fff"/>
+    <rect width="{$totalWidth}" height="{$height}" rx="{$borderRadius}" fill="#fff"/>
   </clipPath>
   <g clip-path="url(#r)">
-    <rect width="{$labelWidth}" height="20" fill="#555"/>
-    <rect x="{$labelWidth}" width="{$valueWidth}" height="20" fill="{$color}"/>
-    <rect width="{$totalWidth}" height="20" fill="url(#s)"/>
+    <rect width="{$labelWidth}" height="{$height}" fill="#555"/>
+    <rect x="{$labelWidth}" width="{$valueWidth}" height="{$height}" fill="{$color}"/>
+    <rect width="{$totalWidth}" height="{$height}" fill="url(#s)"/>
   </g>
-  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
-    <text aria-hidden="true" x="{$this->getCenterX($labelWidth)}0" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="{$this->getTextLength($label)}0">{$label}</text>
-    <text x="{$this->getCenterX($labelWidth)}0" y="140" transform="scale(.1)" fill="#fff" textLength="{$this->getTextLength($label)}0">{$label}</text>
-    <text aria-hidden="true" x="{$this->getValueCenterX($labelWidth, $valueWidth)}0" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="{$this->getTextLength($value)}0">{$value}</text>
-    <text x="{$this->getValueCenterX($labelWidth, $valueWidth)}0" y="140" transform="scale(.1)" fill="#fff" textLength="{$this->getTextLength($value)}0">{$value}</text>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="{$fontSize}">
+    <text aria-hidden="true" x="{$labelCenterX}" y="{$shadowY}" fill="#010101" fill-opacity=".3" transform="scale(.1)">{$displayLabel}</text>
+    <text x="{$labelCenterX}" y="{$textY}" transform="scale(.1)" fill="#fff">{$displayLabel}</text>
+    <text aria-hidden="true" x="{$valueCenterX}" y="{$shadowY}" fill="#010101" fill-opacity=".3" transform="scale(.1)">{$displayValue}</text>
+    <text x="{$valueCenterX}" y="{$textY}" transform="scale(.1)" fill="#fff">{$displayValue}</text>
   </g>
 </svg>
 SVG;
@@ -121,30 +137,6 @@ SVG;
     <stop offset="1" stop-opacity=".5"/>
   </linearGradient>
 GRADIENT;
-    }
-
-    /**
-     * Calculate center X position for label.
-     */
-    private function getCenterX(float $labelWidth): int
-    {
-        return (int) ($labelWidth / 2);
-    }
-
-    /**
-     * Calculate center X position for value.
-     */
-    private function getValueCenterX(float $labelWidth, float $valueWidth): int
-    {
-        return (int) ($labelWidth + $valueWidth / 2);
-    }
-
-    /**
-     * Calculate text length for SVG.
-     */
-    private function getTextLength(string $text): int
-    {
-        return (int) (strlen($text) * 60);
     }
 
     /**
