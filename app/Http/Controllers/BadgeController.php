@@ -65,7 +65,7 @@ class BadgeController extends Controller
     }
 
     /**
-     * Generate SVG badge using shields.io compatible format.
+     * Generate SVG badge using simple approach without complex scaling.
      */
     private function generateBadge(string $label, string $value, string $color, string $style): string
     {
@@ -74,17 +74,16 @@ class BadgeController extends Controller
         $displayLabel = $isForTheBadge ? strtoupper($label) : $label;
         $displayValue = $isForTheBadge ? strtoupper($value) : $value;
 
-        // Calculate widths - more generous padding for readability
-        $charWidth = $isForTheBadge ? 7.5 : 6.5;
-        $padding = $isForTheBadge ? 14 : 12;
+        // Calculate widths - generous padding for readability
+        $charWidth = $isForTheBadge ? 8 : 7;
+        $padding = 16;
         $labelWidth = (int) ceil(strlen($displayLabel) * $charWidth + $padding);
         $valueWidth = (int) ceil(strlen($displayValue) * $charWidth + $padding);
         $totalWidth = $labelWidth + $valueWidth;
 
         $height = $isForTheBadge ? 28 : 20;
-        $fontSize = $isForTheBadge ? 90 : 110;
-        $textY = $isForTheBadge ? 170 : 140;
-        $shadowY = $isForTheBadge ? 180 : 150;
+        $fontSize = $isForTheBadge ? 11 : 11;
+        $textY = $isForTheBadge ? 18 : 14;
 
         $borderRadius = match ($style) {
             'flat-square' => 0,
@@ -94,9 +93,9 @@ class BadgeController extends Controller
 
         $gradient = $style === 'plastic' ? $this->getGradientDef() : '';
 
-        // Calculate center positions (multiply by 10 for SVG coordinate system with scale 0.1)
-        $labelCenterX = ($labelWidth / 2) * 10;
-        $valueCenterX = ($labelWidth + $valueWidth / 2) * 10;
+        // Calculate center positions directly
+        $labelCenterX = $labelWidth / 2;
+        $valueCenterX = $labelWidth + ($valueWidth / 2);
 
         return <<<SVG
 <svg xmlns="http://www.w3.org/2000/svg" width="{$totalWidth}" height="{$height}" role="img" aria-label="{$label}: {$value}">
@@ -115,10 +114,10 @@ class BadgeController extends Controller
     <rect width="{$totalWidth}" height="{$height}" fill="url(#s)"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="{$fontSize}">
-    <text aria-hidden="true" x="{$labelCenterX}" y="{$shadowY}" fill="#010101" fill-opacity=".3" transform="scale(.1)">{$displayLabel}</text>
-    <text x="{$labelCenterX}" y="{$textY}" transform="scale(.1)" fill="#fff">{$displayLabel}</text>
-    <text aria-hidden="true" x="{$valueCenterX}" y="{$shadowY}" fill="#010101" fill-opacity=".3" transform="scale(.1)">{$displayValue}</text>
-    <text x="{$valueCenterX}" y="{$textY}" transform="scale(.1)" fill="#fff">{$displayValue}</text>
+    <text aria-hidden="true" x="{$labelCenterX}" y="{$textY}" fill="#010101" fill-opacity=".3" dy=".1em">{$displayLabel}</text>
+    <text x="{$labelCenterX}" y="{$textY}" fill="#fff">{$displayLabel}</text>
+    <text aria-hidden="true" x="{$valueCenterX}" y="{$textY}" fill="#010101" fill-opacity=".3" dy=".1em">{$displayValue}</text>
+    <text x="{$valueCenterX}" y="{$textY}" fill="#fff">{$displayValue}</text>
   </g>
 </svg>
 SVG;
