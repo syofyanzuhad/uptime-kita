@@ -9,8 +9,16 @@ test('server resources page requires authentication', function () {
     $response->assertRedirect('/login');
 });
 
-test('authenticated user can access server resources page', function () {
-    $user = User::factory()->create();
+test('non-admin user cannot access server resources page', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $response = $this->actingAs($user)->get('/settings/server-resources');
+
+    $response->assertForbidden();
+});
+
+test('admin user can access server resources page', function () {
+    $user = User::factory()->create(['is_admin' => true]);
 
     $response = $this->actingAs($user)->get('/settings/server-resources');
 
@@ -27,8 +35,16 @@ test('server resources api requires authentication', function () {
     $response->assertUnauthorized();
 });
 
-test('authenticated user can access server resources api', function () {
-    $user = User::factory()->create();
+test('non-admin user cannot access server resources api', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $response = $this->actingAs($user)->getJson('/api/server-resources');
+
+    $response->assertForbidden();
+});
+
+test('admin user can access server resources api', function () {
+    $user = User::factory()->create(['is_admin' => true]);
 
     $response = $this->actingAs($user)->getJson('/api/server-resources');
 

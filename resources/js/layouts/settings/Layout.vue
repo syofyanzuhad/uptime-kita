@@ -5,8 +5,17 @@ import { Separator } from '@/components/ui/separator';
 import type { SharedData } from '@/types';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-const sidebarNavItems: NavItem[] = [
+interface ExtendedNavItem extends NavItem {
+    adminOnly?: boolean;
+}
+
+const page = usePage<SharedData>();
+
+const isAdmin = computed(() => page.props.auth?.user?.is_admin ?? false);
+
+const allNavItems: ExtendedNavItem[] = [
     {
         title: 'Profile',
         href: '/settings/profile',
@@ -30,10 +39,13 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Server Resources',
         href: '/settings/server-resources',
+        adminOnly: true,
     },
 ];
 
-const page = usePage<SharedData>();
+const sidebarNavItems = computed(() => {
+    return allNavItems.filter(item => !item.adminOnly || isAdmin.value);
+});
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
 </script>
