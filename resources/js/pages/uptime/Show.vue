@@ -26,6 +26,34 @@ const breadcrumbs = [
 
 // Computed properties for better data handling
 const domainName = computed(() => getDomainFromUrl(monitorData.value.url));
+
+// Badge embed functionality
+const badgeUrl = computed(() => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/badge/${monitorData.value.host}`;
+});
+
+const badgeMarkdown = computed(() => {
+    return `![Uptime](${badgeUrl.value})`;
+});
+
+const badgeHtml = computed(() => {
+    return `<img src="${badgeUrl.value}" alt="Uptime" />`;
+});
+
+const copiedType = ref<string | null>(null);
+
+const copyToClipboard = async (text: string, type: string) => {
+    try {
+        await navigator.clipboard.writeText(text);
+        copiedType.value = type;
+        setTimeout(() => {
+            copiedType.value = null;
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+    }
+};
 const statusColor = computed(() => {
     switch (monitorData.value.uptime_status) {
         case 'up':
@@ -460,6 +488,161 @@ onMounted(() => {
                                     </TableRow>
                                 </TableBody>
                             </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Embed Badge Card -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Icon name="code" class="h-5 w-5" />
+                            Embed Badge
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                        <!-- Badge Preview -->
+                        <div class="flex justify-center rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                            <img :src="badgeUrl" :alt="`${domainName} uptime badge`" class="h-5" />
+                        </div>
+
+                        <!-- Copy Buttons -->
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Markdown</label>
+                                <div class="relative">
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeMarkdown }}</code>
+                                    <button
+                                        @click="copyToClipboard(badgeMarkdown, 'markdown')"
+                                        class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+                                    >
+                                        <Icon :name="copiedType === 'markdown' ? 'check' : 'copy'" class="h-3 w-3" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">HTML</label>
+                                <div class="relative">
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeHtml }}</code>
+                                    <button
+                                        @click="copyToClipboard(badgeHtml, 'html')"
+                                        class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+                                    >
+                                        <Icon :name="copiedType === 'html' ? 'check' : 'copy'" class="h-3 w-3" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">URL Only</label>
+                                <div class="relative">
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeUrl }}</code>
+                                    <button
+                                        @click="copyToClipboard(badgeUrl, 'url')"
+                                        class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+                                    >
+                                        <Icon :name="copiedType === 'url' ? 'check' : 'copy'" class="h-3 w-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Usage Guide -->
+                        <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+                            <div class="mb-3 flex items-center space-x-2">
+                                <Icon name="helpCircle" class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Guide</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <!-- Available Parameters -->
+                                <div class="space-y-2 text-sm">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Available Parameters:</span>
+                                    <ul class="ml-3 list-disc space-y-1 text-gray-600 dark:text-gray-400">
+                                        <li>
+                                            <code class="rounded bg-gray-100 px-1 dark:bg-gray-700">period</code> - Time period
+                                            <div class="mt-0.5 ml-2 text-xs text-gray-500">
+                                                <code class="bg-gray-100 dark:bg-gray-700">24h</code> (default),
+                                                <code class="bg-gray-100 dark:bg-gray-700">7d</code>,
+                                                <code class="bg-gray-100 dark:bg-gray-700">30d</code>,
+                                                <code class="bg-gray-100 dark:bg-gray-700">90d</code>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <code class="rounded bg-gray-100 px-1 dark:bg-gray-700">style</code> - Badge style
+                                            <div class="mt-0.5 ml-2 text-xs text-gray-500">
+                                                <code class="bg-gray-100 dark:bg-gray-700">flat</code> (default),
+                                                <code class="bg-gray-100 dark:bg-gray-700">flat-square</code>,
+                                                <code class="bg-gray-100 dark:bg-gray-700">plastic</code>,
+                                                <code class="bg-gray-100 dark:bg-gray-700">for-the-badge</code>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Style Preview -->
+                                <div class="space-y-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Style Preview:</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                        <img :src="`${badgeUrl}?style=flat`" alt="flat style" class="h-5" />
+                                                        <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">flat</span>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Default style</TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                        <img :src="`${badgeUrl}?style=flat-square`" alt="flat-square style" class="h-5" />
+                                                        <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">flat-square</span>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Flat with square corners</TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                        <img :src="`${badgeUrl}?style=plastic`" alt="plastic style" class="h-5" />
+                                                        <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">plastic</span>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Plastic 3D style</TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                        <img :src="`${badgeUrl}?style=for-the-badge`" alt="for-the-badge style" class="h-5" />
+                                                        <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">for-the-badge</span>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Large badge style</TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Example URLs -->
+                            <div class="mt-4 space-y-2">
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Example URLs:</span>
+                                <div class="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
+                                    <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
+                                        <div class="mb-1 text-gray-500 dark:text-gray-400">Weekly uptime:</div>
+                                        <code class="break-all">{{ badgeUrl }}?period=7d</code>
+                                    </div>
+                                    <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
+                                        <div class="mb-1 text-gray-500 dark:text-gray-400">30-day flat-square:</div>
+                                        <code class="break-all">{{ badgeUrl }}?period=30d&amp;style=flat-square</code>
+                                    </div>
+                                    <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
+                                        <div class="mb-1 text-gray-500 dark:text-gray-400">Large badge:</div>
+                                        <code class="break-all">{{ badgeUrl }}?style=for-the-badge</code>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
