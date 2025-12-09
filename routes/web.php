@@ -25,6 +25,11 @@ Route::get('/m/{domain}', [App\Http\Controllers\PublicMonitorShowController::cla
     ->where('domain', '[a-zA-Z0-9.-]+')
     ->name('monitor.public.show');
 
+// Badge route for embedding in README/websites (like Shields.io)
+Route::get('/badge/{domain}', [App\Http\Controllers\BadgeController::class, 'show'])
+    ->where('domain', '[a-zA-Z0-9.-]+')
+    ->name('badge.show');
+
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
