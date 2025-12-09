@@ -56,6 +56,9 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 - ✨ Fancy, Reactive, Fast UI/UX
 - 📩 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
 - 📊 Multiple status pages
+- 🐳 Docker support for easy deployment
+- 📈 Server resources monitoring (CPU, Memory, Disk, etc.)
+- 🏷️ Uptime badge for embedding in README/websites
 
 ## 🔧 How to Install
 
@@ -224,6 +227,129 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 > [!NOTE]
 > change the path to your project path
 
+## 🐳 Docker Deployment
+
+You can deploy Uptime Kita using Docker for easier setup and production deployment.
+
+### Quick Start with Docker
+
+```bash
+# Build the image
+docker build -t uptime-kita .
+
+# Run with docker-compose
+docker compose up -d
+```
+
+### Docker Compose
+
+```bash
+# Production
+docker compose up -d
+
+# Development (with hot reload)
+docker compose --profile dev up -d
+```
+
+### Environment Variables
+
+Create a `.env` file or pass environment variables to the container:
+
+```bash
+APP_NAME=Uptime-Kita
+APP_ENV=production
+APP_KEY=base64:your-key-here
+APP_URL=https://your-domain.com
+```
+
+The Docker image includes:
+- Nginx web server
+- PHP-FPM
+- Supervisor for process management
+- Cronless scheduler (no cron required)
+- Queue workers
+
+### Cronless Scheduler
+
+For environments without cron access (like some Docker/container setups), use the cronless scheduler:
+
+```bash
+# Run directly
+php artisan schedule:run-cronless-safe
+
+# With options
+php artisan schedule:run-cronless-safe --frequency=60 --max-memory=256 --max-runtime=86400
+```
+
+Options:
+- `--frequency=60`: Check interval in seconds (default: 60)
+- `--max-memory=512`: Maximum memory in MB before restart (default: 512)
+- `--max-runtime=86400`: Maximum runtime in seconds before restart (default: 24 hours)
+
+See [TROUBLESHOOTING-CRONLESS.md](TROUBLESHOOTING-CRONLESS.md) for troubleshooting tips.
+
+## 📈 Server Resources Monitoring
+
+Monitor your server's health in real-time from the Settings page.
+
+### Features
+- **CPU Usage**: Current usage percentage and core count
+- **Memory**: Total, used, and free memory with usage percentage
+- **Disk**: Storage usage for the application directory
+- **Server Uptime**: How long the server has been running
+- **Load Average**: 1, 5, and 15-minute load averages
+- **PHP Info**: Version, memory limit, loaded extensions
+- **Laravel Info**: Version, environment, debug mode status
+- **Database**: Connection status and size
+- **Queue**: Driver, pending and failed jobs count
+- **Cache**: Driver and status
+
+### Access
+Navigate to **Settings > Server Resources** to view the monitoring dashboard.
+
+The page auto-refreshes every 5 seconds (configurable), with color-coded progress bars:
+- 🟢 Green: < 70% usage
+- 🟡 Yellow: 70-90% usage
+- 🔴 Red: > 90% usage
+
+## 🏷️ Uptime Badge
+
+Embed an uptime badge in your README or website to show your service status.
+
+### Usage
+
+```markdown
+![Uptime](https://your-uptime-instance.com/badge/your-domain.com)
+```
+
+### Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `period` | Time period for uptime calculation | `24h` |
+
+Available periods: `1h`, `24h`, `7d`, `30d`, `90d`
+
+### Examples
+
+```markdown
+<!-- Default 24h uptime -->
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
+
+<!-- 7-day uptime -->
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d)
+
+<!-- 30-day uptime -->
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d)
+```
+
+### Badge Appearance
+
+The badge shows:
+- Label: "uptime {period}" (e.g., "uptime 24h")
+- Value: Uptime percentage (e.g., "99.9%")
+- Color: Green (>= 99%), Yellow (>= 95%), Red (< 95%)
+
 ## 🛣️ Roadmap
 
 - [x] Uptime monitoring
@@ -235,6 +361,10 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
   - [ ] Slack
   - [ ] Discord
 - [x] Status page
+- [x] Docker deployment
+- [x] Server resources monitoring
+- [x] Uptime badge for embedding
+- [x] Cronless scheduler for container environments
 - [ ] Do you have any suggestions?
 
 ## 📸 Screenshots
