@@ -36,6 +36,7 @@
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
     <img src="https://visitor-badge.laobi.icu/badge?page_id=syofyanzuhad.uptime-kita" />
   </a>
+    <img src="https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev" alt="Uptime" />
 </p>
 
 <img width="2880" height="2726" alt="uptime syofyanzuhad dev" src="https://github.com/user-attachments/assets/f6e52829-489f-4ffd-9b1c-c048abb1e588" />
