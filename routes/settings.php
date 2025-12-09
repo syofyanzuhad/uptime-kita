@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\DatabaseBackupController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\TelemetryController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('settings', '/settings/profile');
@@ -28,6 +29,14 @@ Route::middleware('auth')
         Route::post('database/restore', [DatabaseBackupController::class, 'restore'])->name('database.restore');
 
         Route::get('server-resources', [ServerResourceController::class, 'index'])->name('server-resources.index');
+
+        // Telemetry settings routes (admin-only)
+        Route::prefix('telemetry')->as('telemetry.')->group(function () {
+            Route::get('/', [TelemetryController::class, 'index'])->name('index');
+            Route::get('/preview', [TelemetryController::class, 'preview'])->name('preview');
+            Route::post('/test-ping', [TelemetryController::class, 'testPing'])->name('test-ping');
+            Route::post('/regenerate-id', [TelemetryController::class, 'regenerateInstanceId'])->name('regenerate-id');
+        });
 
         Route::resource('notifications', NotificationController::class);
         Route::patch('notifications/{notification}/toggle', [NotificationController::class, 'toggle'])->name('notifications.toggle');

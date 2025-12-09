@@ -54,6 +54,20 @@ Schedule::command('sitemap:generate')->daily();
 
 Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
 
+// === ANONYMOUS TELEMETRY ===
+// Only runs if telemetry is enabled in config (opt-in)
+if (config('telemetry.enabled')) {
+    $frequency = config('telemetry.frequency', 'daily');
+
+    $telemetrySchedule = Schedule::job(new \App\Jobs\SendTelemetryPingJob);
+
+    match ($frequency) {
+        'hourly' => $telemetrySchedule->hourly(),
+        'weekly' => $telemetrySchedule->weekly(),
+        default => $telemetrySchedule->daily(),
+    };
+}
+
 // Update maintenance status for monitors every minute
 Schedule::command('monitor:update-maintenance-status')->everyMinute();
 

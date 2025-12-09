@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\TelemetryReceiverController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitorListController;
 use App\Http\Controllers\PinnedMonitorController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\PublicStatusPageController;
 use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\TelemetryDashboardController;
 use App\Http\Controllers\TestFlashController;
 use App\Http\Controllers\UnsubscribeMonitorController;
 use App\Http\Controllers\UptimeMonitorController;
@@ -101,6 +103,18 @@ Route::middleware('auth')->prefix('health')->as('health.')->group(function () {
 
 Route::prefix('webhook')->as('webhook.')->group(function () {
     Route::post('/telegram', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('telegram');
+});
+
+// === TELEMETRY API (Public, rate-limited) ===
+// This endpoint receives anonymous telemetry pings from other Uptime-Kita instances
+Route::post('/api/telemetry/ping', [TelemetryReceiverController::class, 'receive'])
+    ->middleware('throttle:60,1')
+    ->name('api.telemetry.ping');
+
+// === TELEMETRY DASHBOARD (Admin-only) ===
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/telemetry', [TelemetryDashboardController::class, 'index'])->name('admin.telemetry.index');
+    Route::get('/admin/telemetry/stats', [TelemetryDashboardController::class, 'stats'])->name('admin.telemetry.stats');
 });
 
 require __DIR__.'/settings.php';

@@ -41,6 +41,11 @@ const allNavItems: ExtendedNavItem[] = [
         href: '/settings/server-resources',
         adminOnly: true,
     },
+    {
+        title: 'Telemetry',
+        href: '/settings/telemetry',
+        adminOnly: true,
+    },
 ];
 
 const sidebarNavItems = computed(() => {
