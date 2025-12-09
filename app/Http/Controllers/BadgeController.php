@@ -15,7 +15,9 @@ class BadgeController extends Controller
     {
         $period = $request->get('period', '24h');
         $style = $request->get('style', 'flat');
-        $label = $request->get('label', 'uptime');
+        $showPeriod = $request->boolean('show_period', true);
+        $baseLabel = $request->get('label', 'uptime');
+        $label = $showPeriod ? "{$baseLabel} {$period}" : $baseLabel;
 
         // Build the full HTTPS URL
         $url = 'https://'.urldecode($domain);
