@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ServerResourceController;
 use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\DatabaseBackupController;
 use App\Http\Controllers\Settings\PasswordController;
@@ -26,6 +27,15 @@ Route::middleware('auth')
         Route::get('database/download', [DatabaseBackupController::class, 'download'])->name('database.download');
         Route::post('database/restore', [DatabaseBackupController::class, 'restore'])->name('database.restore');
 
+        Route::get('server-resources', [ServerResourceController::class, 'index'])->name('server-resources.index');
+
         Route::resource('notifications', NotificationController::class);
         Route::patch('notifications/{notification}/toggle', [NotificationController::class, 'toggle'])->name('notifications.toggle');
+    });
+
+// API route for server resources polling (authenticated)
+Route::middleware('auth')
+    ->prefix('api')
+    ->group(function () {
+        Route::get('server-resources', [ServerResourceController::class, 'metrics'])->name('api.server-resources');
     });
