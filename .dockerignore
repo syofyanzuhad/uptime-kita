@@ -1,0 +1,74 @@
+# ==============================================================================
+# Docker Ignore File for Uptime-Kita
+# ==============================================================================
+
+# Git
+.git
+.gitattributes
+.gitignore
+
+# Dependencies (rebuilt in container)
+node_modules
+vendor
+
+# Environment files (use docker env vars)
+.env
+.env.*
+!.env.example
+
+# IDE and editors
+.idea
+.vscode
+*.swp
+*.swo
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+public/build
+public/hot
+public/storage
+
+# Cache and logs
+storage/logs/*
+!storage/logs/.gitkeep
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+
+# SQLite databases (will be created in container)
+database/*.sqlite
+database/*.sqlite-journal
+database/*.sql
+
+# Testing
+tests
+phpunit.xml
+.phpunit.result.cache
+coverage
+
+# Documentation
+*.md
+!README.md
+LICENSE
+docs
+
+# Docker files (not needed inside container)
+docker-compose*.yml
+Dockerfile*
+
+# Development tools
+.serena
+.claude
+scripts/monitor-cronless.sh
+
+# Backup files
+*.bak
+*.backup
+*~
