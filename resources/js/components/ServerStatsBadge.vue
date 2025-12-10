@@ -63,10 +63,32 @@ onUnmounted(() => {
 
 <template>
     <div v-if="stats?.enabled !== false" class="relative inline-block">
-        <!-- Collapsed Badge -->
+        <!-- Collapsed Badge - Mobile (Icon only) -->
         <button
             @click="expanded = !expanded"
-            class="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white/80 px-2.5 py-1 text-xs shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow dark:border-gray-700 dark:bg-gray-800/80 dark:hover:bg-gray-800"
+            class="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white/80 p-2 text-xs shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow sm:hidden dark:border-gray-700 dark:bg-gray-800/80 dark:hover:bg-gray-800"
+            :class="{ 'ring-2 ring-primary/20': expanded }"
+            title="Server Stats"
+        >
+            <template v-if="loading">
+                <Icon name="Loader2" class="h-4 w-4 animate-spin text-gray-400" />
+            </template>
+            <template v-else-if="error">
+                <Icon name="AlertCircle" class="h-4 w-4 text-red-500" />
+            </template>
+            <template v-else-if="stats">
+                <Icon
+                    name="Server"
+                    class="h-4 w-4"
+                    :class="getStatusColor(Math.max(stats.cpu_percent || 0, stats.memory_percent || 0))"
+                />
+            </template>
+        </button>
+
+        <!-- Collapsed Badge - Desktop (Full info) -->
+        <button
+            @click="expanded = !expanded"
+            class="hidden items-center gap-1.5 rounded-full border border-gray-200 bg-white/80 px-2.5 py-1 text-xs shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow sm:flex dark:border-gray-700 dark:bg-gray-800/80 dark:hover:bg-gray-800"
             :class="{ 'ring-2 ring-primary/20': expanded }"
         >
             <template v-if="loading">

@@ -7,6 +7,15 @@ export interface Tag {
     color?: string;
 }
 
+export interface MonitorStatistics {
+    uptime_24h?: number | null;
+    uptime_7d?: number | null;
+    uptime_30d?: number | null;
+    avg_response_time_24h?: number | null;
+    incidents_24h?: number;
+    incidents_7d?: number;
+}
+
 export interface Monitor {
     id: number;
     name: string; // This comes from raw_url in MonitorResource
@@ -37,6 +46,9 @@ export interface Monitor {
     }>;
     host?: string;
     tags?: Tag[];
+    page_views_count?: number;
+    formatted_page_views?: string;
+    statistics?: MonitorStatistics;
 }
 
 export interface FlashMessage {

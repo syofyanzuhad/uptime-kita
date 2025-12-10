@@ -61,6 +61,16 @@ class MonitorResource extends JsonResource
                     ];
                 });
             }),
+            'statistics' => $this->whenLoaded('statistics', function () {
+                return [
+                    'uptime_24h' => $this->statistics->uptime_24h ?? null,
+                    'uptime_7d' => $this->statistics->uptime_7d ?? null,
+                    'uptime_30d' => $this->statistics->uptime_30d ?? null,
+                    'avg_response_time_24h' => $this->statistics->avg_response_time_24h ?? null,
+                    'incidents_24h' => $this->statistics->incidents_24h ?? 0,
+                    'incidents_7d' => $this->statistics->incidents_7d ?? 0,
+                ];
+            }),
         ];
     }
 

@@ -194,7 +194,7 @@
                     class="cursor-pointer p-0 transition-all duration-200 hover:shadow-md active:scale-[0.98] md:hover:shadow-lg"
                     @click="viewMonitor(monitor)"
                 >
-                    <!-- Mobile Compact View -->
+                    <!-- Mobile Compact View (Simplified) -->
                     <CardContent class="p-4 md:hidden">
                         <!-- Header with Favicon and Status -->
                         <div class="mb-3 flex items-center justify-between">
@@ -236,52 +236,77 @@
                             {{ monitor.url }}
                         </p>
 
-                        <!-- Status and Uptime Row -->
-                        <div class="mb-3 flex items-center justify-between">
-                            <!-- Status Badge -->
+                        <!-- Stats Row: Status+Uptime, Response Time, Incidents, Views -->
+                        <div class="mb-3 flex flex-wrap items-center gap-2">
+                            <!-- Combined Status + Uptime Badge -->
                             <span
                                 :class="[
-                                    'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
+                                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                                     monitor.uptime_status === 'up'
                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                         : monitor.uptime_status === 'down'
                                           ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                                           : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
                                 ]"
+                                :title="getUptime7d(monitor) !== null ? `7-day uptime: ${getUptime7d(monitor)}%` : `Status: ${getStatusText(monitor.uptime_status)}`"
                             >
-                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="mr-1.5 inline h-3 w-3" />
-                                {{ getStatusText(monitor.uptime_status) }}
+                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-3 w-3" />
+                                <span v-if="getUptime7d(monitor) !== null">{{ getUptime7d(monitor) }}%</span>
+                                <span v-else-if="monitor.today_uptime_percentage">{{ monitor.today_uptime_percentage }}%</span>
+                                <span v-else>{{ getStatusText(monitor.uptime_status) }}</span>
                             </span>
 
-                            <div class="flex items-center gap-2">
-                                <!-- Page Views -->
-                                <span v-if="monitor.page_views_count > 0" class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" :title="`${monitor.page_views_count.toLocaleString()} views`">
-                                    <Icon name="eye" class="h-3 w-3" />
-                                    {{ monitor.formatted_page_views }}
-                                </span>
-                                <!-- Uptime Percentage -->
-                                <span v-if="monitor.today_uptime_percentage" class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                                    {{ monitor.today_uptime_percentage }}%
-                                </span>
-                            </div>
+                            <!-- Response Time -->
+                            <span
+                                v-if="getResponseTime(monitor)"
+                                class="flex items-center gap-0.5 text-xs"
+                                :class="getResponseTimeColorClass(getResponseTime(monitor))"
+                                :title="`Average response time (24h): ${getResponseTime(monitor)}ms`"
+                            >
+                                <Icon name="zap" class="h-3 w-3" />
+                                {{ getResponseTime(monitor) }}ms
+                            </span>
+
+                            <!-- Incidents Badge -->
+                            <span
+                                v-if="getIncidents24h(monitor) > 0"
+                                class="flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                :title="`${getIncidents24h(monitor)} incidents in last 24 hours`"
+                            >
+                                <Icon name="alertTriangle" class="h-3 w-3" />
+                                {{ getIncidents24h(monitor) }}
+                            </span>
+
+                            <!-- Page Views -->
+                            <span
+                                v-if="monitor.page_views_count > 0"
+                                class="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400"
+                                :title="`${monitor.page_views_count.toLocaleString()} views`"
+                            >
+                                <Icon name="eye" class="h-3 w-3" />
+                                {{ monitor.formatted_page_views }}
+                            </span>
                         </div>
 
                         <!-- Last Check -->
-                        <div v-if="monitor.last_check_date_human" class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-                            <Icon name="clock" class="mr-1.5 inline h-3.5 w-3.5" />
+                        <div v-if="monitor.last_check_date_human" class="text-xs text-gray-500 dark:text-gray-400">
+                            <Icon name="clock" class="mr-1 inline h-3 w-3" />
                             {{ monitor.last_check_date_human }}
                         </div>
 
-                        <!-- Tags (Compact) -->
-                        <div v-if="monitor.tags && monitor.tags.length > 0" class="flex flex-wrap gap-2">
+                        <!-- Tags (Mobile) -->
+                        <div v-if="monitor.tags && monitor.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
                             <span
                                 v-for="tag in monitor.tags.slice(0, 3)"
                                 :key="tag.id || tag.name"
-                                class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                             >
                                 {{ getTagDisplayName(tag) }}
                             </span>
-                            <span v-if="monitor.tags.length > 3" class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                            <span
+                                v-if="monitor.tags.length > 3"
+                                class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                            >
                                 +{{ monitor.tags.length - 3 }}
                             </span>
                         </div>
@@ -314,35 +339,77 @@
                                     {{ monitor.url }}
                                 </p>
 
-                                <!-- Status Badge -->
-                                <div class="mt-3 flex items-center space-x-2">
+                                <!-- Status & Stats Row -->
+                                <div class="mt-3 flex flex-wrap items-center gap-2">
+                                    <!-- Combined Status + Uptime Badge -->
                                     <span
                                         :class="[
-                                            'rounded-full px-2 py-1 text-xs font-medium',
+                                            'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
                                             monitor.uptime_status === 'up'
                                                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                                                 : monitor.uptime_status === 'down'
                                                   ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                                                   : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
                                         ]"
+                                        :title="getUptime7d(monitor) !== null ? `7-day uptime: ${getUptime7d(monitor)}%` : `Status: ${getStatusText(monitor.uptime_status)}`"
                                     >
-                                        <Icon :name="getStatusIcon(monitor.uptime_status)" class="mr-1 inline h-3 w-3" />
-                                        {{ getStatusText(monitor.uptime_status) }}
+                                        <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-3 w-3" />
+                                        <span v-if="getUptime7d(monitor) !== null">{{ getUptime7d(monitor) }}% (7d)</span>
+                                        <span v-else-if="monitor.today_uptime_percentage">{{ monitor.today_uptime_percentage }}%</span>
+                                        <span v-else>{{ getStatusText(monitor.uptime_status) }}</span>
                                     </span>
 
-                                    <span v-if="monitor.today_uptime_percentage" class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ monitor.today_uptime_percentage }}% uptime
+                                    <!-- Response Time -->
+                                    <span
+                                        v-if="getResponseTime(monitor)"
+                                        class="flex items-center gap-0.5 text-xs"
+                                        :class="getResponseTimeColorClass(getResponseTime(monitor))"
+                                        :title="`Average response time (24h): ${getResponseTime(monitor)}ms`"
+                                    >
+                                        <Icon name="zap" class="h-3 w-3" />
+                                        {{ getResponseTime(monitor) }}ms
                                     </span>
 
-                                    <span v-if="monitor.page_views_count > 0" class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" :title="`${monitor.page_views_count.toLocaleString()} views`">
+                                    <!-- Incidents Badge -->
+                                    <span
+                                        v-if="getIncidents24h(monitor) > 0"
+                                        class="flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                        :title="`${getIncidents24h(monitor)} incidents in last 24 hours`"
+                                    >
+                                        <Icon name="alertTriangle" class="h-3 w-3" />
+                                        {{ getIncidents24h(monitor) }}
+                                    </span>
+
+                                    <!-- Page Views -->
+                                    <span
+                                        v-if="monitor.page_views_count > 0"
+                                        class="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400"
+                                        :title="`${monitor.page_views_count.toLocaleString()} views`"
+                                    >
                                         <Icon name="eye" class="h-3 w-3" />
-                                        {{ monitor.formatted_page_views }} views
+                                        {{ monitor.formatted_page_views }}
                                     </span>
+
+                                    <!-- 7-Day Sparkline -->
+                                    <div
+                                        v-if="monitor.uptimes_daily && monitor.uptimes_daily.length > 0"
+                                        class="flex items-center gap-0.5"
+                                        :title="getSparklineTitle(monitor.uptimes_daily)"
+                                    >
+                                        <div
+                                            v-for="(day, index) in getSparklineData(monitor.uptimes_daily)"
+                                            :key="index"
+                                            class="h-3 w-1.5 rounded-sm"
+                                            :class="getSparklineColor(day.uptime_percentage)"
+                                            :title="`${day.date}: ${day.uptime_percentage !== null ? day.uptime_percentage + '%' : 'No data'}`"
+                                        ></div>
+                                    </div>
                                 </div>
 
                                 <!-- Last Check -->
                                 <div v-if="monitor.last_check_date_human" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    Last checked {{ monitor.last_check_date_human }}
+                                    <Icon name="clock" class="mr-1 inline h-3 w-3" />
+                                    {{ monitor.last_check_date_human }}
                                 </div>
 
                                 <!-- Tags -->
@@ -747,6 +814,75 @@ const getStatusText = (status: string): string => {
 const getTagDisplayName = (tag: any): string => {
     const tagName = typeof tag.name === 'string' ? tag.name : tag.name?.en || tag.name || tag;
     return tagName.length > 8 ? tagName.substring(0, 8) + '...' : tagName;
+};
+
+// Helper functions for statistics
+const getUptime7d = (monitor: Monitor): number | null => {
+    return monitor.statistics?.uptime_7d ?? null;
+};
+
+const getResponseTime = (monitor: Monitor): number | null => {
+    const rt = monitor.statistics?.avg_response_time_24h;
+    return rt ? Math.round(rt) : null;
+};
+
+const getIncidents24h = (monitor: Monitor): number => {
+    return monitor.statistics?.incidents_24h ?? 0;
+};
+
+// Color classes for uptime percentage
+const getUptimeColorClass = (uptime: number | null): string => {
+    if (uptime === null) return 'text-gray-500 dark:text-gray-400';
+    if (uptime >= 99.9) return 'text-green-600 dark:text-green-400';
+    if (uptime >= 99) return 'text-green-500 dark:text-green-400';
+    if (uptime >= 95) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+};
+
+// Color classes for response time
+const getResponseTimeColorClass = (responseTime: number | null): string => {
+    if (responseTime === null) return 'text-gray-500 dark:text-gray-400';
+    if (responseTime < 300) return 'text-green-600 dark:text-green-400';
+    if (responseTime < 1000) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+};
+
+// Sparkline helpers
+interface UptimeDay {
+    date: string;
+    uptime_percentage: number | null;
+}
+
+const getSparklineData = (uptimesDaily: UptimeDay[]): UptimeDay[] => {
+    // Ensure we have exactly 7 days, pad with nulls if needed
+    const last7Days: UptimeDay[] = [];
+    const today = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+
+        const dayData = uptimesDaily.find((d) => d.date === dateStr);
+        last7Days.push({
+            date: dateStr,
+            uptime_percentage: dayData?.uptime_percentage ?? null,
+        });
+    }
+
+    return last7Days;
+};
+
+const getSparklineColor = (uptime: number | null): string => {
+    if (uptime === null) return 'bg-gray-300 dark:bg-gray-600';
+    if (uptime >= 100) return 'bg-green-500';
+    if (uptime >= 95) return 'bg-yellow-500';
+    return 'bg-red-500';
+};
+
+const getSparklineTitle = (uptimesDaily: UptimeDay[]): string => {
+    const data = getSparklineData(uptimesDaily);
+    return '7-day uptime trend: ' + data.map((d) => (d.uptime_percentage !== null ? `${d.uptime_percentage}%` : '-')).join(' | ');
 };
 
 const formatDailyChecks = (count: number): string => {

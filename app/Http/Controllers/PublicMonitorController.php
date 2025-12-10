@@ -54,7 +54,16 @@ class PublicMonitorController extends Controller
         $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily', 'tags', 'statistics'])
+                ->with([
+                    'users:id',
+                    'uptimeDaily',
+                    'tags',
+                    'statistics',
+                    'uptimesDaily' => function ($query) {
+                        $query->where('date', '>=', now()->subDays(7)->toDateString())
+                            ->orderBy('date', 'asc');
+                    },
+                ])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
@@ -213,7 +222,16 @@ class PublicMonitorController extends Controller
         $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily', 'tags', 'statistics'])
+                ->with([
+                    'users:id',
+                    'uptimeDaily',
+                    'tags',
+                    'statistics',
+                    'uptimesDaily' => function ($query) {
+                        $query->where('date', '>=', now()->subDays(7)->toDateString())
+                            ->orderBy('date', 'asc');
+                    },
+                ])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
