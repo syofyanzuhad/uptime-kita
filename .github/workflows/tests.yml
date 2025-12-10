@@ -46,7 +46,7 @@ jobs:
         run: npm run build
 
       - name: Tests
-        run: ./vendor/bin/pest --coverage --coverage-clover=storage/coverage/coverage.xml --no-parallel
+        run: ./vendor/bin/pest --coverage --coverage-clover=storage/coverage/coverage.xml
 
       - name: Show Coverage
         run: ls -lah ./storage/coverage
