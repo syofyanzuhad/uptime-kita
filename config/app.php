@@ -126,6 +126,9 @@ return [
     // Custom: Last update date for display in the UI
     'last_update' => env('APP_LAST_UPDATE', '2025-07-15'),
 
+    // Show server stats on public pages (CPU, Memory, Uptime)
+    'show_public_server_stats' => env('SHOW_PUBLIC_SERVER_STATS', true),
+
     // Admin credentials
     'admin_credentials' => [
         'email' => env('ADMIN_EMAIL', 'mail@syofyanzuhad.dev'),

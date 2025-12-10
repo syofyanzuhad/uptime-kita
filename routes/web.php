@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicMonitorController::class, 'index'])->name('home');
 
+// Public server stats API (for transparency badge)
+Route::get('/api/server-stats', \App\Http\Controllers\PublicServerStatsController::class)
+    ->middleware('throttle:30,1')
+    ->name('api.server-stats');
+
 Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

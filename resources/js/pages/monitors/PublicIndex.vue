@@ -18,8 +18,9 @@
                         </div>
                     </div>
 
-                    <!-- Theme Toggle -->
+                    <!-- Theme Toggle & Server Stats -->
                     <div class="flex items-center justify-center space-x-2 sm:justify-end">
+                        <ServerStatsBadge />
                         <button
                             @click="toggleTheme"
                             class="cursor-pointer rounded-full bg-gray-100 p-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
@@ -440,6 +441,7 @@
 import Icon from '@/components/Icon.vue';
 import MonitorLink from '@/components/MonitorLink.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
+import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Monitor } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';

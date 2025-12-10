@@ -3,6 +3,7 @@ import DailyUptimeChart from '@/components/DailyUptimeChart.vue';
 import Icon from '@/components/Icon.vue';
 import OfflineBanner from '@/components/OfflineBanner.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
+import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import { useTheme } from '@/composables/useTheme';
 import { Head } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -371,11 +372,13 @@ const { isDark, toggleTheme } = useTheme();
                             <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
                         </div>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-2">
+                        <!-- Server Stats Badge -->
+                        <ServerStatsBadge />
                         <!-- Theme Toggle Button -->
                         <button
                             @click="toggleTheme"
-                            class="ml-4 cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                            class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
                         >
                             <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
@@ -383,7 +386,7 @@ const { isDark, toggleTheme } = useTheme();
                         </button>
                         <button
                             @click="toggleFullscreen"
-                            class="ml-2 cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                            class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                             :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
                             :title="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
                         >
