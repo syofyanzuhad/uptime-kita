@@ -569,11 +569,12 @@ const toggleTheme = () => {
 const searchQuery = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status_filter);
 const tagFilter = ref(props.filters.tag_filter || '');
-const sortBy = ref(props.filters.sort_by || 'newest');
+const sortBy = ref(props.filters.sort_by || 'default');
 const isLoading = ref(false);
 
 // Sorting options
 const sortOptions = [
+    { value: 'default', label: 'Default (by ID)', icon: 'hash' },
     { value: 'popular', label: 'Most Popular', icon: 'trendingUp' },
     { value: 'uptime', label: 'Best Uptime', icon: 'arrowUp' },
     { value: 'response_time', label: 'Fastest Response', icon: 'zap' },
@@ -604,7 +605,7 @@ const applyFilters = () => {
     if (tagFilter.value) {
         params.append('tag_filter', tagFilter.value);
     }
-    if (sortBy.value !== 'newest') {
+    if (sortBy.value !== 'default') {
         params.append('sort_by', sortBy.value);
     }
 
@@ -647,7 +648,7 @@ const loadMore = async () => {
     if (tagFilter.value) {
         params.append('tag_filter', tagFilter.value);
     }
-    if (sortBy.value !== 'newest') {
+    if (sortBy.value !== 'default') {
         params.append('sort_by', sortBy.value);
     }
 
@@ -867,7 +868,7 @@ watch(
         searchQuery.value = newFilters.search || '';
         statusFilter.value = newFilters.status_filter;
         tagFilter.value = newFilters.tag_filter || '';
-        sortBy.value = newFilters.sort_by || 'newest';
+        sortBy.value = newFilters.sort_by || 'default';
 
         // Reset the initial setup flag when filters change so monitors data gets replaced
         isInitialSetup = true;

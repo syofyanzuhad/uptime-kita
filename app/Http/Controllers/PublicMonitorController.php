@@ -27,16 +27,16 @@ class PublicMonitorController extends Controller
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
-        $sortBy = $request->get('sort_by', 'newest'); // Default sort by newest
+        $sortBy = $request->get('sort_by', 'default'); // Default sort by id
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
         }
 
         // Validate sort option
-        $validSortOptions = ['popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
+        $validSortOptions = ['default', 'popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
         if (! in_array($sortBy, $validSortOptions)) {
-            $sortBy = 'newest';
+            $sortBy = 'default';
         }
 
         // Differentiate cache keys for authenticated and guest users, and also by page number
@@ -109,8 +109,11 @@ class PublicMonitorController extends Controller
                     $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
                     break;
                 case 'newest':
-                default:
                     $query->orderBy('created_at', 'desc');
+                    break;
+                case 'default':
+                default:
+                    $query->orderBy('id', 'asc');
                     break;
             }
 
@@ -183,16 +186,16 @@ class PublicMonitorController extends Controller
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
-        $sortBy = $request->get('sort_by', 'newest');
+        $sortBy = $request->get('sort_by', 'default');
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
         }
 
         // Validate sort option
-        $validSortOptions = ['popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
+        $validSortOptions = ['default', 'popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
         if (! in_array($sortBy, $validSortOptions)) {
-            $sortBy = 'newest';
+            $sortBy = 'default';
         }
 
         // Differentiate cache keys for authenticated and guest users, and also by page number
@@ -265,8 +268,11 @@ class PublicMonitorController extends Controller
                     $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
                     break;
                 case 'newest':
-                default:
                     $query->orderBy('created_at', 'desc');
+                    break;
+                case 'default':
+                default:
+                    $query->orderBy('id', 'asc');
                     break;
             }
 
