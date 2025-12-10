@@ -122,7 +122,7 @@
 
             <!-- Main Content -->
             <div class="mx-auto mt-24 max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-                <!-- Latest 100 Minutes History Bar -->
+                <!-- Latest 100 Minutes History -->
                 <div class="mb-6">
                     <div class="mb-3 flex items-center justify-between">
                         <div class="flex items-center space-x-2">
@@ -132,13 +132,51 @@
                                 <span>{{ isRefreshing ? 'Refreshing...' : 'Auto-refresh every minute' }}</span>
                             </div>
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ latestHistory.length }} checks</div>
+                        <div class="flex items-center space-x-3">
+                            <!-- Chart View Toggle -->
+                            <div class="flex items-center rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            @click="setChartViewMode('bar')"
+                                            :class="[
+                                                'rounded-md px-2 py-1 text-xs transition-colors',
+                                                chartViewMode === 'bar'
+                                                    ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
+                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                                            ]"
+                                        >
+                                            <Icon name="chartBar" class="h-4 w-4" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Status Bar View</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            @click="setChartViewMode('line')"
+                                            :class="[
+                                                'rounded-md px-2 py-1 text-xs transition-colors',
+                                                chartViewMode === 'line'
+                                                    ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
+                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                                            ]"
+                                        >
+                                            <Icon name="chartLine" class="h-4 w-4" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Response Time Graph</TooltipContent>
+                                </Tooltip>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ latestHistory.length }} checks</div>
+                        </div>
                     </div>
                     <div v-if="monitor.uptime_status === 'not yet checked'" class="rounded-lg bg-gray-50 py-8 text-center dark:bg-gray-800">
                         <Icon name="clock" class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                         <p class="text-sm text-gray-500 dark:text-gray-400">No history data available yet</p>
                     </div>
-                    <div v-else class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <!-- Bar View -->
+                    <div v-else-if="chartViewMode === 'bar'" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
                         <div class="flex items-center space-x-1 overflow-x-auto">
                             <Tooltip v-for="(date, i) in last100Minutes" :key="i">
                                 <TooltipTrigger asChild>
@@ -181,6 +219,28 @@
                             <div class="flex items-center space-x-1">
                                 <div class="h-3 w-3 rounded-sm bg-gray-300 dark:bg-gray-600"></div>
                                 <span>No data</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Line Graph View -->
+                    <div v-else class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                        <ResponseTimeLineChart :histories="histories" :last100Minutes="last100Minutes" />
+                        <div class="mt-2 flex justify-between text-xs text-gray-400">
+                            <span>{{ last100Minutes[0].toLocaleString() }}</span>
+                            <span>{{ last100Minutes[last100Minutes.length - 1].toLocaleString() }}</span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-center space-x-4 text-xs text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center space-x-1">
+                                <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                                <span>Up</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                                <span>Down</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <div class="h-1 w-6 bg-green-500"></div>
+                                <span>Response Time</span>
                             </div>
                         </div>
                     </div>
@@ -279,8 +339,43 @@
 
                         <!-- Uptime Graph -->
                         <Card>
-                            <CardHeader>
+                            <CardHeader class="flex flex-row items-center justify-between space-y-0">
                                 <CardTitle>Uptime History (Last 90 Days)</CardTitle>
+                                <!-- Chart View Toggle for Uptime -->
+                                <div v-if="monitor.uptime_status !== 'not yet checked'" class="flex items-center rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                @click="setUptimeChartViewMode('bar')"
+                                                :class="[
+                                                    'rounded-md px-2 py-1 text-xs transition-colors',
+                                                    uptimeChartViewMode === 'bar'
+                                                        ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
+                                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                                                ]"
+                                            >
+                                                <Icon name="chartBar" class="h-4 w-4" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Daily Bar View</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                @click="setUptimeChartViewMode('line')"
+                                                :class="[
+                                                    'rounded-md px-2 py-1 text-xs transition-colors',
+                                                    uptimeChartViewMode === 'line'
+                                                        ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
+                                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                                                ]"
+                                            >
+                                                <Icon name="chartLine" class="h-4 w-4" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Uptime Line Graph</TooltipContent>
+                                    </Tooltip>
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
@@ -288,7 +383,8 @@
                                     <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No uptime history available yet</p>
                                     <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
                                 </div>
-                                <div v-else class="space-y-2">
+                                <!-- Bar View -->
+                                <div v-else-if="uptimeChartViewMode === 'bar'" class="space-y-2">
                                     <div class="flex items-center justify-between text-xs text-gray-600 sm:text-sm dark:text-gray-400">
                                         <span>{{ getDateRange() }}</span>
                                         <span>Today</span>
@@ -328,6 +424,28 @@
                                         <div class="flex items-center space-x-1">
                                             <div class="h-2 w-2 rounded-sm bg-red-500 sm:h-3 sm:w-3"></div>
                                             <span class="text-xs">Major Outage</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Line Graph View -->
+                                <div v-else class="space-y-2">
+                                    <UptimeLineChart :uptimesDaily="monitor.uptimes_daily || []" />
+                                    <div class="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-600 sm:gap-4 dark:text-gray-400">
+                                        <div class="flex items-center space-x-1">
+                                            <div class="h-2 w-2 rounded-full bg-green-500 sm:h-3 sm:w-3"></div>
+                                            <span class="text-xs">100% Uptime</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="h-2 w-2 rounded-full bg-yellow-500 sm:h-3 sm:w-3"></div>
+                                            <span class="text-xs">95-99.9% Uptime</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="h-2 w-2 rounded-full bg-red-500 sm:h-3 sm:w-3"></div>
+                                            <span class="text-xs">&lt;95% Uptime</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="h-1 w-6 bg-green-500"></div>
+                                            <span class="text-xs">Uptime %</span>
                                         </div>
                                     </div>
                                 </div>
@@ -598,7 +716,9 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
+import ResponseTimeLineChart from '@/components/ResponseTimeLineChart.vue';
 import ShareButton from '@/components/ShareButton.vue';
+import UptimeLineChart from '@/components/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
@@ -679,6 +799,21 @@ const isRefreshing = ref(false);
 // Theme toggle functionality
 const isDark = ref(false);
 
+// Chart view mode: 'bar' or 'line'
+type ChartViewMode = 'bar' | 'line';
+const chartViewMode = ref<ChartViewMode>('bar');
+const uptimeChartViewMode = ref<ChartViewMode>('bar');
+
+const setChartViewMode = (mode: ChartViewMode) => {
+    chartViewMode.value = mode;
+    localStorage.setItem('chartViewMode', mode);
+};
+
+const setUptimeChartViewMode = (mode: ChartViewMode) => {
+    uptimeChartViewMode.value = mode;
+    localStorage.setItem('uptimeChartViewMode', mode);
+};
+
 const toggleTheme = () => {
     isDark.value = !isDark.value;
     if (isDark.value) {
@@ -718,6 +853,17 @@ onMounted(() => {
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
         isDark.value = true;
         document.documentElement.classList.add('dark');
+    }
+
+    // Load saved chart view mode preferences
+    const savedChartViewMode = localStorage.getItem('chartViewMode') as ChartViewMode | null;
+    if (savedChartViewMode && (savedChartViewMode === 'bar' || savedChartViewMode === 'line')) {
+        chartViewMode.value = savedChartViewMode;
+    }
+
+    const savedUptimeChartViewMode = localStorage.getItem('uptimeChartViewMode') as ChartViewMode | null;
+    if (savedUptimeChartViewMode && (savedUptimeChartViewMode === 'bar' || savedUptimeChartViewMode === 'line')) {
+        uptimeChartViewMode.value = savedUptimeChartViewMode;
     }
 
     // Start auto-refresh timer (every 60 seconds)
