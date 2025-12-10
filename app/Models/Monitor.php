@@ -33,7 +33,7 @@ class Monitor extends SpatieMonitor
 
     protected $guarded = [];
 
-    protected $appends = ['raw_url'];
+    protected $appends = ['raw_url', 'formatted_page_views'];
 
     public function scopeEnabled($query)
     {
@@ -122,6 +122,24 @@ class Monitor extends SpatieMonitor
     public function getHostAttribute()
     {
         return $this->url->getHost();
+    }
+
+    /**
+     * Get the formatted page views count (e.g., "1.2k", "5.4M").
+     */
+    public function getFormattedPageViewsAttribute(): string
+    {
+        $count = $this->page_views_count ?? 0;
+
+        if ($count >= 1000000) {
+            return round($count / 1000000, 1).'M';
+        }
+
+        if ($count >= 1000) {
+            return round($count / 1000, 1).'k';
+        }
+
+        return (string) $count;
     }
 
     public function users()

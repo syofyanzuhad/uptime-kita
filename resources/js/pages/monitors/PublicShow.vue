@@ -79,6 +79,19 @@
                                 {{ getStatusText(monitor.uptime_status) }}
                             </span>
 
+                            <!-- Page Views Badge -->
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                        <Icon name="eye" class="h-3 w-3" />
+                                        <span>{{ monitor.formatted_page_views }}</span>
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {{ monitor.page_views_count.toLocaleString() }} page views
+                                </TooltipContent>
+                            </Tooltip>
+
                             <!-- Share Button -->
                             <ShareButton 
                                 :title="monitor.host || ''" 

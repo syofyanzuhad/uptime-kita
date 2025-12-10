@@ -32,6 +32,8 @@ class MonitorResource extends JsonResource
             'is_subscribed' => $this->is_subscribed,
             'is_pinned' => $this->is_pinned,
             'is_public' => $this->is_public,
+            'page_views_count' => $this->page_views_count ?? 0,
+            'formatted_page_views' => $this->formatted_page_views,
             'today_uptime_percentage' => $this->getTodayUptimePercentage(),
             'uptime_status_last_change_date' => $this->uptime_status_last_change_date,
             'uptime_check_failure_reason' => $this->uptime_check_failure_reason,

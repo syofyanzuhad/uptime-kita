@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\MonitorResource;
+use App\Jobs\IncrementMonitorPageViewJob;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Services\MonitorPerformanceService;
@@ -35,6 +36,9 @@ class PublicMonitorShowController extends Controller
         if (! $monitor) {
             return $this->showNotFound($domain);
         }
+
+        // Dispatch job to increment page view count (non-blocking)
+        IncrementMonitorPageViewJob::dispatch($monitor->id, $request->ip());
 
         // Use real-time data with short cache like private monitor show
         $histories = cache()->remember("public_monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
