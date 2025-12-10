@@ -783,7 +783,7 @@ const viewMonitor = (monitor: Monitor) => {
 };
 
 const viewIncidentMonitor = (incident: Incident) => {
-    const domain = incident.monitor.url.replace('https://', '').replace('http://', '');
+    const domain = incident.monitor.raw_url.replace('https://', '').replace('http://', '');
     router.visit(`/m/${domain}`);
 };
 
