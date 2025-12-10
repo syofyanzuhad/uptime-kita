@@ -24,3 +24,4 @@ yarn-error.log
 /.vscode
 /.zed
 /storage/coverage
+/resources/js/ziggy.js

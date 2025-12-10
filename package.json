@@ -2,7 +2,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "ziggy:generate": "php artisan ziggy:generate resources/js/ziggy.js",
+        "build": "npm run ziggy:generate && vite build",
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "format": "prettier --write resources/",
