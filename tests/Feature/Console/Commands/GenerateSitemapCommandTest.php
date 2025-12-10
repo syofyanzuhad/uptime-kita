@@ -1,11 +1,8 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Spatie\Sitemap\SitemapGenerator;
-
-uses(RefreshDatabase::class);
 
 describe('GenerateSitemap', function () {
     describe('handle', function () {

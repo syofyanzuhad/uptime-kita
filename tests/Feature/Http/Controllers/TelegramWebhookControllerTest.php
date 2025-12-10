@@ -1,9 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
-
 // Constants to avoid duplication
 const WEBHOOK_ENDPOINT = '/webhook/telegram';
 const START_COMMAND = '/start';

@@ -3,10 +3,7 @@
 use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-
-uses(RefreshDatabase::class);
 
 describe('StatusPage Model', function () {
     beforeEach(function () {

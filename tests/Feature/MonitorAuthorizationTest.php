@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\User;
 use App\Policies\MonitorPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('only user with is_admin true can update public monitors', function () {
     // Create users

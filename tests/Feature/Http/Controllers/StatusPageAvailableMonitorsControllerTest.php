@@ -4,9 +4,6 @@ use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('StatusPageAvailableMonitorsController', function () {
     it('returns available monitors for status page owner', function () {

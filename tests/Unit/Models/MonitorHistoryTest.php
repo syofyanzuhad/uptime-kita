@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('MonitorHistory Model', function () {
     beforeEach(function () {

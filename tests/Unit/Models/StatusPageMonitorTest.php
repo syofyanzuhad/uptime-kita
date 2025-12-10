@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('StatusPageMonitor Model', function () {
     describe('fillable attributes', function () {

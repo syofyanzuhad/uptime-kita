@@ -15,6 +15,14 @@ beforeEach(function () {
 });
 
 it('sends twitter notification when monitor goes down', function () {
+    // Configure Twitter credentials for testing
+    config([
+        'services.twitter.consumer_key' => 'test_key',
+        'services.twitter.consumer_secret' => 'test_secret',
+        'services.twitter.access_token' => 'test_token',
+        'services.twitter.access_secret' => 'test_access_secret',
+    ]);
+
     Notification::fake();
 
     $user = User::factory()->create();
@@ -107,6 +115,14 @@ it('tracks twitter notifications in cache', function () {
 });
 
 it('always sends twitter notification for DOWN events regardless of channel settings', function () {
+    // Configure Twitter credentials for testing
+    config([
+        'services.twitter.consumer_key' => 'test_key',
+        'services.twitter.consumer_secret' => 'test_secret',
+        'services.twitter.access_token' => 'test_token',
+        'services.twitter.access_secret' => 'test_access_secret',
+    ]);
+
     Notification::fake();
 
     $user = User::factory()->create();
@@ -156,6 +172,14 @@ it('always sends twitter notification for DOWN events regardless of channel sett
 });
 
 it('includes public monitor link in tweet when monitor is public', function () {
+    // Configure Twitter credentials for testing
+    config([
+        'services.twitter.consumer_key' => 'test_key',
+        'services.twitter.consumer_secret' => 'test_secret',
+        'services.twitter.access_token' => 'test_token',
+        'services.twitter.access_secret' => 'test_access_secret',
+    ]);
+
     $user = User::factory()->create();
     $monitor = Monitor::factory()->create([
         'url' => 'https://example.com',

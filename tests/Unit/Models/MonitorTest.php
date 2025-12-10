@@ -6,10 +6,7 @@ use App\Models\MonitorUptimeDaily;
 use App\Models\StatusPage;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Url\Url;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Carbon::setTestNow(now());

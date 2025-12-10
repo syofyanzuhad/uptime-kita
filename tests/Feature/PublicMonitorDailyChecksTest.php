@@ -2,9 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('displays daily checks count for public monitors', function () {
     // Create public monitors

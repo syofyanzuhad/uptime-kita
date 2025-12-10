@@ -3,12 +3,9 @@
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-
-uses(RefreshDatabase::class);
 
 describe('LatestHistoryController', function () {
     beforeEach(function () {

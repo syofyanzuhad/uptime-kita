@@ -2,9 +2,6 @@
 
 use App\Models\NotificationChannel;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('NotificationChannel Model', function () {
     beforeEach(function () {

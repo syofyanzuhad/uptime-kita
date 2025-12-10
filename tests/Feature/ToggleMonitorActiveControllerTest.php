@@ -2,13 +2,10 @@
 
 use App\Models\Monitor;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\post;
-
-uses(RefreshDatabase::class);
 
 describe('ToggleMonitorActiveController', function () {
     beforeEach(function () {

@@ -3,11 +3,8 @@
 use App\Models\Monitor;
 use App\Models\MonitorUptimeDaily;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
-
-uses(RefreshDatabase::class);
 
 describe('UptimesDailyController', function () {
     beforeEach(function () {

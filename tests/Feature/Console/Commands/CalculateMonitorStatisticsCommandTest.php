@@ -4,9 +4,6 @@ use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorStatistic;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Carbon::setTestNow(now());

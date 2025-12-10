@@ -2,9 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorUptimeDaily;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('MonitorUptimeDaily Model', function () {
     describe('fillable attributes', function () {

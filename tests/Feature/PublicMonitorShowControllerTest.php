@@ -2,11 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\get;
-
-uses(RefreshDatabase::class);
 
 describe('PublicMonitorShowController', function () {
     beforeEach(function () {

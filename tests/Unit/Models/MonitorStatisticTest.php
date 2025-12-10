@@ -2,9 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorStatistic;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('MonitorStatistic Model', function () {
     describe('fillable attributes', function () {

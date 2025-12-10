@@ -3,10 +3,7 @@
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Carbon::setTestNow(now());

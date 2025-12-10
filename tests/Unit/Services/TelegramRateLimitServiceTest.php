@@ -4,10 +4,7 @@ use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Services\TelegramRateLimitService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Carbon::setTestNow(now());

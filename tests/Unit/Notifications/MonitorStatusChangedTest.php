@@ -4,11 +4,8 @@ use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
 use App\Services\TelegramRateLimitService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create(['name' => 'John Doe']);

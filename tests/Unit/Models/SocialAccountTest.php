@@ -2,9 +2,6 @@
 
 use App\Models\SocialAccount;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('SocialAccount Model', function () {
     beforeEach(function () {

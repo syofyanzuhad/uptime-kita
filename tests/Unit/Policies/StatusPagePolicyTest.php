@@ -3,9 +3,6 @@
 use App\Models\StatusPage;
 use App\Models\User;
 use App\Policies\StatusPagePolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('StatusPagePolicy', function () {
     beforeEach(function () {

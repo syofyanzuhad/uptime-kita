@@ -4,14 +4,11 @@ use App\Listeners\SendCustomMonitorNotification;
 use App\Models\Monitor;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 use Spatie\UptimeMonitor\Helpers\Period;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->monitor = Monitor::factory()->create([

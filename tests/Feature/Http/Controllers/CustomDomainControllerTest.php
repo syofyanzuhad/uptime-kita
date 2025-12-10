@@ -2,10 +2,7 @@
 
 use App\Models\StatusPage;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-
-uses(RefreshDatabase::class);
 
 describe('CustomDomainController', function () {
     describe('update method', function () {

@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\User;
 use App\Policies\MonitorPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->policy = new MonitorPolicy;

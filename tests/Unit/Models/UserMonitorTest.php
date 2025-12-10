@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\User;
 use App\Models\UserMonitor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('UserMonitor Model', function () {
     describe('fillable attributes', function () {

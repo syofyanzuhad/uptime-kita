@@ -3,11 +3,8 @@
 use App\Http\Middleware\CustomDomainMiddleware;
 use App\Models\StatusPage;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-
-uses(RefreshDatabase::class);
 
 function testMainAppDomainHandling()
 {

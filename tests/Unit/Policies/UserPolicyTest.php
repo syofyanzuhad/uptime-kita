@@ -2,9 +2,6 @@
 
 use App\Models\User;
 use App\Policies\UserPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('UserPolicy', function () {
     beforeEach(function () {

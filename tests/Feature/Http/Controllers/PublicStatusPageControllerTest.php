@@ -4,11 +4,8 @@ use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia;
-
-uses(RefreshDatabase::class);
 
 describe('PublicStatusPageController', function () {
     describe('show method', function () {

@@ -2,9 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorIncident;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('MonitorIncident Model', function () {
     describe('fillable attributes', function () {

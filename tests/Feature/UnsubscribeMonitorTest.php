@@ -2,10 +2,7 @@
 
 use App\Models\Monitor;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-
-uses(RefreshDatabase::class);
 
 // No global beforeEach - create users per test to avoid constraint violations
 

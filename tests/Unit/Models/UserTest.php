@@ -5,10 +5,7 @@ use App\Models\NotificationChannel;
 use App\Models\SocialAccount;
 use App\Models\StatusPage;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-
-uses(RefreshDatabase::class);
 
 describe('User Model', function () {
     beforeEach(function () {

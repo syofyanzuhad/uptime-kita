@@ -4,9 +4,6 @@ use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('StatusPageOrderController', function () {
     it('updates monitor order successfully', function () {

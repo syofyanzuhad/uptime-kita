@@ -2,9 +2,6 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorPerformanceHourly;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('MonitorPerformanceHourly Model', function () {
     describe('fillable attributes', function () {

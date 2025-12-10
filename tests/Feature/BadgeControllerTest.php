@@ -2,11 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorStatistic;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\get;
-
-uses(RefreshDatabase::class);
 
 describe('BadgeController', function () {
     beforeEach(function () {

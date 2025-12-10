@@ -4,10 +4,7 @@ use App\Http\Controllers\ToggleMonitorPinController;
 use App\Models\Monitor;
 use App\Models\User;
 use App\Models\UserMonitor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-
-uses(RefreshDatabase::class);
 
 describe('ToggleMonitorPinController', function () {
     it('pins a monitor successfully when user is subscribed', function () {

@@ -3,9 +3,6 @@
 use App\Models\Monitor;
 use App\Models\User;
 use App\Models\UserMonitor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('PinnedMonitorController toggle method', function () {
     it('pins monitor successfully when user is subscribed', function () {
