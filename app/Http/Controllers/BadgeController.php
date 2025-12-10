@@ -67,16 +67,23 @@ class BadgeController extends Controller
 
         dispatch(function () use ($domain, $hostname, $referrer) {
             try {
-                $response = Http::timeout(5)->post('https://umami.syofyanzuhad.dev/api/send', [
-                    'payload' => [
-                        'hostname' => $hostname,
-                        'url' => "/badge/{$domain}",
-                        'referrer' => $referrer,
-                        'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
-                        'name' => 'badge-view',
-                    ],
-                    'type' => 'event',
-                ]);
+                $response = Http::timeout(5)
+                    ->withHeaders([
+                        'User-Agent' => 'Uptime-Kita/1.0 (Badge Tracker)',
+                    ])
+                    ->post('https://umami.syofyanzuhad.dev/api/send', [
+                        'payload' => [
+                            'hostname' => $hostname,
+                            'language' => 'en-US',
+                            'referrer' => $referrer,
+                            'screen' => '1920x1080',
+                            'title' => "Badge: {$domain}",
+                            'url' => "/badge/{$domain}",
+                            'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
+                            'name' => 'badge-view',
+                        ],
+                        'type' => 'event',
+                    ]);
 
                 Log::info('Umami badge tracking', [
                     'domain' => $domain,
