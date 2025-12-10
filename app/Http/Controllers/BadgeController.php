@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 
 class BadgeController extends Controller
 {
@@ -46,9 +47,35 @@ class BadgeController extends Controller
         $color = $this->getColorForUptime($uptime);
         $value = number_format($uptime, 1).'%';
 
+        // Track badge view in Umami (non-blocking)
+        $this->trackBadgeView($request, $domain);
+
         return $this->svgResponse(
             $this->generateBadge($label, $value, $color, $style)
         );
+    }
+
+    /**
+     * Track badge view in Umami analytics.
+     */
+    private function trackBadgeView(Request $request, string $domain): void
+    {
+        // Extract only serializable data before dispatching
+        $hostname = parse_url(config('app.url'), PHP_URL_HOST);
+        $referrer = $request->header('Referer', '');
+
+        dispatch(function () use ($domain, $hostname, $referrer) {
+            Http::timeout(5)->post('https://umami.syofyanzuhad.dev/api/send', [
+                'payload' => [
+                    'hostname' => $hostname,
+                    'url' => "/badge/{$domain}",
+                    'referrer' => $referrer,
+                    'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
+                    'name' => 'badge-view',
+                ],
+                'type' => 'event',
+            ]);
+        })->afterResponse();
     }
 
     /**
