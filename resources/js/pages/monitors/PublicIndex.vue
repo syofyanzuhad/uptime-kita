@@ -452,7 +452,8 @@
                             <div
                                 v-for="incident in props.latestIncidents"
                                 :key="incident.id"
-                                class="flex items-start space-x-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50"
+                                class="flex cursor-pointer items-start space-x-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 active:scale-[0.99] dark:border-gray-700 dark:hover:bg-gray-800/50"
+                                @click="viewIncidentMonitor(incident)"
                             >
                                 <div class="flex-shrink-0">
                                     <div
@@ -778,6 +779,11 @@ const loadMore = async () => {
 
 const viewMonitor = (monitor: Monitor) => {
     const domain = monitor.url.replace('https://', '').replace('http://', '');
+    router.visit(`/m/${domain}`);
+};
+
+const viewIncidentMonitor = (incident: Incident) => {
+    const domain = incident.monitor.url.replace('https://', '').replace('http://', '');
     router.visit(`/m/${domain}`);
 };
 
