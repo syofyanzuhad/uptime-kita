@@ -27,13 +27,20 @@ class PublicMonitorController extends Controller
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
+        $sortBy = $request->get('sort_by', 'newest'); // Default sort by newest
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
         }
 
+        // Validate sort option
+        $validSortOptions = ['popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
+        if (! in_array($sortBy, $validSortOptions)) {
+            $sortBy = 'newest';
+        }
+
         // Differentiate cache keys for authenticated and guest users, and also by page number
-        $cacheKey = 'public_monitors_page_'.$page;
+        $cacheKey = 'public_monitors_page_'.$page.'_sort_'.$sortBy;
         if ($search) {
             $cacheKey .= '_search_'.md5($search);
         }
@@ -44,10 +51,10 @@ class PublicMonitorController extends Controller
             $cacheKey .= '_tag_'.md5($tagFilter);
         }
 
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter) {
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily', 'tags'])
+                ->with(['users:id', 'uptimeDaily', 'tags', 'statistics'])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
@@ -78,6 +85,33 @@ class PublicMonitorController extends Controller
             // Apply tag filter
             if ($tagFilter) {
                 $query->withAnyTags([$tagFilter]);
+            }
+
+            // Apply sorting
+            switch ($sortBy) {
+                case 'popular':
+                    $query->orderBy('page_views_count', 'desc');
+                    break;
+                case 'uptime':
+                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                        ->orderByRaw('COALESCE(monitor_statistics.uptime_24h, 0) DESC')
+                        ->select('monitors.*');
+                    break;
+                case 'response_time':
+                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                        ->orderByRaw('COALESCE(monitor_statistics.avg_response_time_24h, 999999) ASC')
+                        ->select('monitors.*');
+                    break;
+                case 'name':
+                    $query->orderBy('url', 'asc');
+                    break;
+                case 'status':
+                    $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
+                    break;
+                case 'newest':
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
             }
 
             return new MonitorCollection(
@@ -119,6 +153,7 @@ class PublicMonitorController extends Controller
                 'search' => $search,
                 'status_filter' => $statusFilter,
                 'tag_filter' => $tagFilter,
+                'sort_by' => $sortBy,
             ],
             'availableTags' => $availableTags,
             'latestIncidents' => $latestIncidents,
@@ -148,13 +183,20 @@ class PublicMonitorController extends Controller
         $search = $request->get('search');
         $statusFilter = $request->get('status_filter', 'all');
         $tagFilter = $request->get('tag_filter');
+        $sortBy = $request->get('sort_by', 'newest');
 
         if ($search && mb_strlen($search) < 3) {
             $search = null;
         }
 
+        // Validate sort option
+        $validSortOptions = ['popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
+        if (! in_array($sortBy, $validSortOptions)) {
+            $sortBy = 'newest';
+        }
+
         // Differentiate cache keys for authenticated and guest users, and also by page number
-        $cacheKey = ($authenticated ? 'public_monitors_authenticated_'.auth()->id() : 'public_monitors_guest').'_page_'.$page;
+        $cacheKey = ($authenticated ? 'public_monitors_authenticated_'.auth()->id() : 'public_monitors_guest').'_page_'.$page.'_sort_'.$sortBy;
         if ($search) {
             $cacheKey .= '_search_'.md5($search);
         }
@@ -165,10 +207,10 @@ class PublicMonitorController extends Controller
             $cacheKey .= '_tag_'.md5($tagFilter);
         }
 
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter) {
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
             // Always only show public monitors
             $query = Monitor::withoutGlobalScope('user')
-                ->with(['users:id', 'uptimeDaily', 'tags'])
+                ->with(['users:id', 'uptimeDaily', 'tags', 'statistics'])
                 ->public();
 
             // Exclude pinned monitors for authenticated users
@@ -199,6 +241,33 @@ class PublicMonitorController extends Controller
             // Apply tag filter
             if ($tagFilter) {
                 $query->withAnyTags([$tagFilter]);
+            }
+
+            // Apply sorting
+            switch ($sortBy) {
+                case 'popular':
+                    $query->orderBy('page_views_count', 'desc');
+                    break;
+                case 'uptime':
+                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                        ->orderByRaw('COALESCE(monitor_statistics.uptime_24h, 0) DESC')
+                        ->select('monitors.*');
+                    break;
+                case 'response_time':
+                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                        ->orderByRaw('COALESCE(monitor_statistics.avg_response_time_24h, 999999) ASC')
+                        ->select('monitors.*');
+                    break;
+                case 'name':
+                    $query->orderBy('url', 'asc');
+                    break;
+                case 'status':
+                    $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
+                    break;
+                case 'newest':
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
             }
 
             return new MonitorCollection(

@@ -118,9 +118,24 @@
                             />
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-3 gap-2">
+                            <!-- Sort By -->
+                            <div class="w-full sm:w-44">
+                                <label for="sort-by" class="sr-only">Sort by</label>
+                                <select
+                                    id="sort-by"
+                                    v-model="sortBy"
+                                    @change="applyFilters"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"
+                                >
+                                    <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+                            </div>
+
                             <!-- Status Filter -->
-                            <div class="w-full sm:w-48">
+                            <div class="w-full sm:w-36">
                                 <label for="status-filter" class="sr-only">Filter by status</label>
                                 <select
                                     id="status-filter"
@@ -135,7 +150,7 @@
                             </div>
 
                             <!-- Tag Filter -->
-                            <div class="w-full sm:w-48">
+                            <div class="w-full sm:w-36">
                                 <label for="tag-filter" class="sr-only">Filter by tag</label>
                                 <select
                                     id="tag-filter"
@@ -238,9 +253,16 @@
                                 {{ getStatusText(monitor.uptime_status) }}
                             </span>
 
-                            <!-- Uptime Percentage -->
-                            <div v-if="monitor.today_uptime_percentage" class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                                {{ monitor.today_uptime_percentage }}%
+                            <div class="flex items-center gap-2">
+                                <!-- Page Views -->
+                                <span v-if="monitor.page_views_count > 0" class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" :title="`${monitor.page_views_count.toLocaleString()} views`">
+                                    <Icon name="eye" class="h-3 w-3" />
+                                    {{ monitor.formatted_page_views }}
+                                </span>
+                                <!-- Uptime Percentage -->
+                                <span v-if="monitor.today_uptime_percentage" class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                    {{ monitor.today_uptime_percentage }}%
+                                </span>
                             </div>
                         </div>
 
@@ -310,6 +332,11 @@
 
                                     <span v-if="monitor.today_uptime_percentage" class="text-xs text-gray-500 dark:text-gray-400">
                                         {{ monitor.today_uptime_percentage }}% uptime
+                                    </span>
+
+                                    <span v-if="monitor.page_views_count > 0" class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" :title="`${monitor.page_views_count.toLocaleString()} views`">
+                                        <Icon name="eye" class="h-3 w-3" />
+                                        {{ monitor.formatted_page_views }} views
                                     </span>
                                 </div>
 
@@ -490,6 +517,7 @@ interface Props {
         search: string | null;
         status_filter: string;
         tag_filter: string | null;
+        sort_by: string;
     };
     stats: {
         total: number;
@@ -541,7 +569,18 @@ const toggleTheme = () => {
 const searchQuery = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status_filter);
 const tagFilter = ref(props.filters.tag_filter || '');
+const sortBy = ref(props.filters.sort_by || 'newest');
 const isLoading = ref(false);
+
+// Sorting options
+const sortOptions = [
+    { value: 'popular', label: 'Most Popular', icon: 'trendingUp' },
+    { value: 'uptime', label: 'Best Uptime', icon: 'arrowUp' },
+    { value: 'response_time', label: 'Fastest Response', icon: 'zap' },
+    { value: 'newest', label: 'Newest First', icon: 'clock' },
+    { value: 'name', label: 'Name (A-Z)', icon: 'arrowDownAZ' },
+    { value: 'status', label: 'Status (Down First)', icon: 'alertCircle' },
+];
 
 let searchTimeout: number | null = null;
 
@@ -564,6 +603,9 @@ const applyFilters = () => {
     }
     if (tagFilter.value) {
         params.append('tag_filter', tagFilter.value);
+    }
+    if (sortBy.value !== 'newest') {
+        params.append('sort_by', sortBy.value);
     }
 
     router.visit(`/public-monitors?${params.toString()}`, {
@@ -604,6 +646,9 @@ const loadMore = async () => {
     }
     if (tagFilter.value) {
         params.append('tag_filter', tagFilter.value);
+    }
+    if (sortBy.value !== 'newest') {
+        params.append('sort_by', sortBy.value);
     }
 
     try {
@@ -822,6 +867,7 @@ watch(
         searchQuery.value = newFilters.search || '';
         statusFilter.value = newFilters.status_filter;
         tagFilter.value = newFilters.tag_filter || '';
+        sortBy.value = newFilters.sort_by || 'newest';
 
         // Reset the initial setup flag when filters change so monitors data gets replaced
         isInitialSetup = true;
