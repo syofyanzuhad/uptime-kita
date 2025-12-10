@@ -333,6 +333,61 @@
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <!-- Latest Incidents -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Latest Incidents</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
+                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
+                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No incidents data available yet</p>
+                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
+                                </div>
+                                <div v-else-if="latestIncidents.length > 0" class="space-y-3">
+                                    <div
+                                        v-for="incident in latestIncidents"
+                                        :key="incident.id"
+                                        class="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                    >
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    :class="[
+                                                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                                                        incident.type === 'down'
+                                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                                                    ]"
+                                                >
+                                                    {{ incident.type === 'down' ? 'Downtime' : 'Degraded' }}
+                                                </span>
+                                                <span v-if="incident.status_code" class="text-xs text-gray-500 dark:text-gray-400">
+                                                    HTTP {{ incident.status_code }}
+                                                </span>
+                                            </div>
+                                            <span v-if="incident.duration_minutes" class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ formatDuration(incident.duration_minutes) }}
+                                            </span>
+                                            <span v-else class="text-xs text-red-500">Ongoing</span>
+                                        </div>
+                                        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            {{ formatDate(incident.started_at) }}
+                                            <span v-if="incident.ended_at"> → {{ formatDate(incident.ended_at) }}</span>
+                                        </div>
+                                        <div v-if="incident.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                            {{ incident.reason }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="py-4 text-center">
+                                    <Icon name="checkCircle" class="mx-auto mb-2 h-8 w-8 text-green-500" />
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">No incidents recorded</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500">This monitor has been running smoothly</p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
                     <!-- Right Column - Info -->
@@ -530,39 +585,6 @@
                                 </div>
                             </CardContent>
                         </Card>
-
-                        <!-- Recent Incidents -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Recent Incidents</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
-                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
-                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No incidents data available yet</p>
-                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
-                                </div>
-                                <div v-else-if="recentIncidents.length > 0" class="space-y-3">
-                                    <div
-                                        v-for="incident in recentIncidents"
-                                        :key="incident.id"
-                                        class="border-l-4 py-2 pl-3"
-                                        :class="[incident.uptime_status === 'down' ? 'border-red-500' : 'border-yellow-500']"
-                                    >
-                                        <div class="text-xs font-medium sm:text-sm">
-                                            {{ incident.uptime_status === 'down' ? 'Downtime' : 'Degraded' }}
-                                        </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                                            {{ incident.created_at ? formatDate(incident.created_at) : '' }}
-                                        </div>
-                                        <div v-if="incident.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                                            {{ incident.reason }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="text-sm text-gray-500 dark:text-gray-400">No recent incidents</div>
-                            </CardContent>
-                        </Card>
                     </div>
                 </div>
             </div>
@@ -602,6 +624,24 @@ interface Props {
 
 const props = defineProps<Props>();
 const monitor = computed(() => props.monitor.data);
+
+// Latest incidents from props (MonitorIncident model)
+const latestIncidents = computed(() => props.recentIncidents || []);
+
+// Format duration in human readable format
+const formatDuration = (minutes: number): string => {
+    if (minutes < 60) {
+        return `${minutes}m`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours < 24) {
+        return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+};
 
 // Badge embed functionality
 const badgeUrl = computed(() => {
@@ -733,15 +773,6 @@ const latestHistory = computed(() => {
         .filter((h) => new Date(h.created_at) > oneHundredMinutesAgo)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 100); // Limit to 100 entries
-});
-
-const recentIncidents = computed(() => {
-    // If monitor hasn't been checked yet, return empty array
-    if (monitor.value.uptime_status === 'not yet checked') {
-        return [];
-    }
-
-    return props.histories.filter((h) => h.uptime_status !== 'up').slice(0, 5);
 });
 
 // Calculate response time stats for last 24 hours
