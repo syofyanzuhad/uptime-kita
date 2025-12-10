@@ -830,15 +830,6 @@ const getIncidents24h = (monitor: Monitor): number => {
     return monitor.statistics?.incidents_24h ?? 0;
 };
 
-// Color classes for uptime percentage
-const getUptimeColorClass = (uptime: number | null): string => {
-    if (uptime === null) return 'text-gray-500 dark:text-gray-400';
-    if (uptime >= 99.9) return 'text-green-600 dark:text-green-400';
-    if (uptime >= 99) return 'text-green-500 dark:text-green-400';
-    if (uptime >= 95) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-};
-
 // Color classes for response time
 const getResponseTimeColorClass = (responseTime: number | null): string => {
     if (responseTime === null) return 'text-gray-500 dark:text-gray-400';

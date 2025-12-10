@@ -49,7 +49,7 @@ interface Props {
     recentPings: RecentPing[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Telemetry Dashboard', href: '/admin/telemetry' }];
 

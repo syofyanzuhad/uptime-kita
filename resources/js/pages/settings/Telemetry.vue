@@ -65,7 +65,7 @@ async function sendTestPing() {
         });
         const data = await response.json();
         alert(data.message);
-    } catch (error) {
+    } catch {
         alert('Failed to send test ping');
     } finally {
         sendingPing.value = false;
@@ -88,7 +88,7 @@ async function regenerateId() {
         const data = await response.json();
         alert(data.message);
         router.reload();
-    } catch (error) {
+    } catch {
         alert('Failed to regenerate instance ID');
     } finally {
         regenerating.value = false;
