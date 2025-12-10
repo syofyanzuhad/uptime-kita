@@ -6,6 +6,7 @@ use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BadgeController extends Controller
 {
@@ -65,16 +66,30 @@ class BadgeController extends Controller
         $referrer = $request->header('Referer', '');
 
         dispatch(function () use ($domain, $hostname, $referrer) {
-            Http::timeout(5)->post('https://umami.syofyanzuhad.dev/api/send', [
-                'payload' => [
-                    'hostname' => $hostname,
-                    'url' => "/badge/{$domain}",
+            try {
+                $response = Http::timeout(5)->post('https://umami.syofyanzuhad.dev/api/send', [
+                    'payload' => [
+                        'hostname' => $hostname,
+                        'url' => "/badge/{$domain}",
+                        'referrer' => $referrer,
+                        'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
+                        'name' => 'badge-view',
+                    ],
+                    'type' => 'event',
+                ]);
+
+                Log::info('Umami badge tracking', [
+                    'domain' => $domain,
                     'referrer' => $referrer,
-                    'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
-                    'name' => 'badge-view',
-                ],
-                'type' => 'event',
-            ]);
+                    'status' => $response->status(),
+                    'success' => $response->successful(),
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Umami badge tracking failed', [
+                    'domain' => $domain,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         })->afterResponse();
     }
 
