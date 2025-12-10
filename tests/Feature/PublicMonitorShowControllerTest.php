@@ -43,7 +43,7 @@ describe('PublicMonitorShowController', function () {
             ->has('histories')
             ->has('uptimeStats')
             ->has('responseTimeStats')
-            ->has('recentIncidents')
+            ->has('latestIncidents')
         );
     });
 
@@ -166,7 +166,7 @@ describe('PublicMonitorShowController', function () {
         );
     });
 
-    it('includes recent incidents data', function () {
+    it('includes latest incidents data', function () {
         // Create an incident (down period)
         MonitorHistory::factory()->create([
             'monitor_id' => $this->publicMonitor->id,
@@ -188,7 +188,7 @@ describe('PublicMonitorShowController', function () {
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
-            ->has('recentIncidents')
+            ->has('latestIncidents')
         );
     });
 

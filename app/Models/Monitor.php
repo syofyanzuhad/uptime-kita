@@ -193,12 +193,22 @@ class Monitor extends SpatieMonitor
     }
 
     /**
-     * Get recent incidents for the monitor.
+     * Get recent incidents for the monitor (within last 30 days).
      */
     public function recentIncidents()
     {
         return $this->hasMany(MonitorIncident::class)
             ->recent(30)
+            ->limit(10);
+    }
+
+    /**
+     * Get latest incidents for the monitor (no time filter).
+     */
+    public function latestIncidents()
+    {
+        return $this->hasMany(MonitorIncident::class)
+            ->orderBy('started_at', 'desc')
             ->limit(10);
     }
 

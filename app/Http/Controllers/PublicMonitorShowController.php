@@ -53,11 +53,11 @@ class PublicMonitorShowController extends Controller
             return $this->getLiveResponseTimeStats($monitor, $performanceService);
         });
 
-        // Load uptime daily data and recent incidents (these are still needed)
+        // Load uptime daily data and latest incidents (these are still needed)
         $monitor->load(['uptimesDaily' => function ($query) {
             $query->orderBy('date', 'desc')->limit(90);
-        }, 'recentIncidents' => function ($query) {
-            $query->orderBy('created_at', 'desc')->limit(10);
+        }, 'latestIncidents' => function ($query) {
+            $query->orderBy('started_at', 'desc')->limit(10);
         }]);
 
         return Inertia::render('monitors/PublicShow', [
@@ -65,7 +65,7 @@ class PublicMonitorShowController extends Controller
             'histories' => $histories,
             'uptimeStats' => $uptimeStats,
             'responseTimeStats' => $responseTimeStats,
-            'recentIncidents' => $monitor->recentIncidents,
+            'latestIncidents' => $monitor->latestIncidents,
         ]);
     }
 

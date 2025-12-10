@@ -619,14 +619,14 @@ interface Props {
         min: number;
         max: number;
     };
-    recentIncidents: any[];
+    latestIncidents: any[];
 }
 
 const props = defineProps<Props>();
 const monitor = computed(() => props.monitor.data);
 
 // Latest incidents from props (MonitorIncident model)
-const latestIncidents = computed(() => props.recentIncidents || []);
+const latestIncidents = computed(() => props.latestIncidents || []);
 
 // Format duration in human readable format
 const formatDuration = (minutes: number): string => {
