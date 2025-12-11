@@ -33,6 +33,16 @@
         <title inertia>Uptime Kita</title>
         <meta name="description" content="{{ config('app.description', 'Uptime Kita - Simple Uptime Monitoring (open-source)') }}">
         <meta name="author" content="syofyanzuhad">
+        <meta name="keywords" content="uptime monitoring, status page, website monitoring, server monitoring, open source">
+
+        {{-- Open Graph / Facebook --}}
+        <meta property="og:site_name" content="Uptime Kita">
+        <meta property="og:locale" content="id_ID">
+        <meta property="og:type" content="website">
+
+        {{-- Twitter --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@syofyanzuhad">
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

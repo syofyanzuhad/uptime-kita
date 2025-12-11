@@ -12,6 +12,7 @@
         "php": "^8.2",
         "doctrine/dbal": "^4.3",
         "inertiajs/inertia-laravel": "^2.0",
+        "intervention/image": "^3.11",
         "larabug/larabug": "^3.3",
         "laravel-notification-channels/telegram": "^6.0",
         "laravel-notification-channels/twitter": "^8.3",
@@ -44,6 +45,7 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "nunomaduro/phpinsights": "^2.13",
         "pestphp/pest": "^3.8",
         "pestphp/pest-plugin-laravel": "^3.2",
         "spatie/laravel-cronless-schedule": "^1.2"
@@ -100,6 +102,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }

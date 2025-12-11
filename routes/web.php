@@ -37,6 +37,15 @@ Route::get('/badge/{domain}', [App\Http\Controllers\BadgeController::class, 'sho
     ->where('domain', '[a-zA-Z0-9.-]+')
     ->name('badge.show');
 
+// OG Image routes for social media sharing
+Route::prefix('og')->name('og.')->middleware('throttle:60,1')->group(function () {
+    Route::get('/monitors.png', [\App\Http\Controllers\OgImageController::class, 'monitorsIndex'])->name('monitors');
+    Route::get('/monitor/{domain}.png', [\App\Http\Controllers\OgImageController::class, 'monitor'])
+        ->where('domain', '[a-zA-Z0-9.-]+')
+        ->name('monitor');
+    Route::get('/status/{path}.png', [\App\Http\Controllers\OgImageController::class, 'statusPage'])->name('status-page');
+});
+
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');

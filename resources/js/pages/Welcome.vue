@@ -109,7 +109,26 @@ const page = usePage<SharedData>();
                             </span>
                         </li>
                     </ul>
-                    <ul class="flex gap-3 text-sm leading-normal">
+                    <ul class="flex flex-wrap gap-3 text-sm leading-normal">
+                        <li>
+                            <Link
+                                href="/status/demo"
+                                class="inline-flex items-center gap-2 rounded-sm border border-[#0284c7] bg-[#0284c7] px-5 py-1.5 text-sm leading-normal text-white hover:border-[#0369a1] hover:bg-[#0369a1] dark:border-[#38bdf8] dark:bg-[#38bdf8] dark:text-[#1C1C1A] dark:hover:border-[#7dd3fc] dark:hover:bg-[#7dd3fc]"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                                View Demo
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="/public-monitors"
+                                class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                            >
+                                Public Monitors
+                            </Link>
+                        </li>
                         <li>
                             <a
                                 href="https://cloud.laravel.com"

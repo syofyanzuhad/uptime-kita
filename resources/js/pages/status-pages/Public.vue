@@ -61,6 +61,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// SEO computed properties
+const appUrl = computed(() => window.location.origin);
+const pageTitle = computed(() => `${props.statusPage.title} - Status Page | Uptime Kita`);
+const pageDescription = computed(() =>
+    props.statusPage.description || `Status page for ${props.statusPage.title}. Real-time service status monitoring.`
+);
+
 // --- MONITORS ASYNC LOADING ---
 const monitors = ref<Monitor[]>([]);
 const monitorsLoading = ref(true);
@@ -357,7 +364,17 @@ const { isDark, toggleTheme } = useTheme();
 
 <template>
     <OfflineBanner v-if="!isOnline" />
-    <Head :title="`${statusPage.title} - Status Page`" :description="statusPage.description || 'Status Page'" />
+    <Head :title="pageTitle">
+        <meta name="description" :content="pageDescription" />
+        <meta property="og:title" :content="pageTitle" />
+        <meta property="og:description" :content="pageDescription" />
+        <meta property="og:image" :content="`${appUrl}/og/status/${props.statusPage.path}.png`" />
+        <meta property="og:url" :content="`${appUrl}/status/${props.statusPage.path}`" />
+        <meta name="twitter:title" :content="pageTitle" />
+        <meta name="twitter:description" :content="pageDescription" />
+        <meta name="twitter:image" :content="`${appUrl}/og/status/${props.statusPage.path}.png`" />
+        <link rel="canonical" :href="`${appUrl}/status/${props.statusPage.path}`" />
+    </Head>
 
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <header class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">

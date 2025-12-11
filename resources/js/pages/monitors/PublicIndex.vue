@@ -1,5 +1,15 @@
 <template>
-    <Head title="Public Monitors - Uptime Kita" />
+    <Head :title="pageTitle">
+        <meta name="description" :content="pageDescription" />
+        <meta property="og:title" :content="pageTitle" />
+        <meta property="og:description" :content="pageDescription" />
+        <meta property="og:image" :content="`${appUrl}/og/monitors.png`" />
+        <meta property="og:url" :content="`${appUrl}/public-monitors`" />
+        <meta name="twitter:title" :content="pageTitle" />
+        <meta name="twitter:description" :content="pageDescription" />
+        <meta name="twitter:image" :content="`${appUrl}/og/monitors.png`" />
+        <link rel="canonical" :href="`${appUrl}/public-monitors`" />
+    </Head>
 
     <div class="min-h-full bg-gray-50 dark:bg-gray-900">
         <!-- Header -->
@@ -100,6 +110,26 @@
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Demo Status Page Banner -->
+            <Link
+                href="/status/demo"
+                class="mb-6 flex items-center justify-between rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 transition-all hover:border-blue-300 hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20 dark:hover:border-blue-700"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                        <Icon name="activity" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900 dark:text-white">Try our Demo Status Page</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">See how Uptime Kita status pages work</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                    <span class="hidden text-sm font-medium sm:inline">View Demo</span>
+                    <Icon name="arrowRight" class="h-5 w-5" />
+                </div>
+            </Link>
 
             <!-- Filters -->
             <Card class="mb-6 p-2">
@@ -540,7 +570,7 @@ import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Monitor } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface PaginatorLink {
     url: string | null;
@@ -600,6 +630,13 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// SEO computed properties
+const appUrl = computed(() => window.location.origin);
+const pageTitle = computed(() => `${props.stats.total_public} Public Monitors - Uptime Kita`);
+const pageDescription = computed(() =>
+    `Monitor ${props.stats.total_public} websites in real-time. ${props.stats.up} operational, ${props.stats.down} down. Free open-source uptime monitoring.`
+);
 
 // Reactive data for monitors
 const monitorsData = ref(props.monitors.data || []);

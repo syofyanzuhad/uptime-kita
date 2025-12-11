@@ -1,5 +1,15 @@
 <template>
-    <Head :title="`${monitor.host} - Monitor Status`" />
+    <Head :title="pageTitle">
+        <meta name="description" :content="pageDescription" />
+        <meta property="og:title" :content="pageTitle" />
+        <meta property="og:description" :content="pageDescription" />
+        <meta property="og:image" :content="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`" />
+        <meta property="og:url" :content="`${appUrl}/m/${encodeURIComponent(monitor.host)}`" />
+        <meta name="twitter:title" :content="pageTitle" />
+        <meta name="twitter:description" :content="pageDescription" />
+        <meta name="twitter:image" :content="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`" />
+        <link rel="canonical" :href="`${appUrl}/m/${encodeURIComponent(monitor.host)}`" />
+    </Head>
 
     <TooltipProvider>
         <div class="min-h-full bg-gray-50 dark:bg-gray-900">
@@ -744,6 +754,13 @@ interface Props {
 
 const props = defineProps<Props>();
 const monitor = computed(() => props.monitor.data);
+
+// SEO computed properties
+const appUrl = computed(() => window.location.origin);
+const pageTitle = computed(() => `${monitor.value.host} - ${props.uptimeStats['24h']}% Uptime | Uptime Kita`);
+const pageDescription = computed(() =>
+    `Real-time monitoring for ${monitor.value.host}. Status: ${monitor.value.uptime_status === 'up' ? 'Operational' : 'Down'}. 24h uptime: ${props.uptimeStats['24h']}%, 7d: ${props.uptimeStats['7d']}%. Response time: ${props.responseTimeStats.average}ms.`
+);
 
 // Latest incidents from props (MonitorIncident model)
 const latestIncidents = computed(() => props.latestIncidents || []);
