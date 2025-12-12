@@ -39,10 +39,20 @@
         <meta property="og:site_name" content="Uptime Kita">
         <meta property="og:locale" content="id_ID">
         <meta property="og:type" content="website">
+        <meta property="og:title" content="{{ $ogTitle ?? config('app.name', 'Uptime Kita') }}">
+        <meta property="og:description" content="{{ $ogDescription ?? config('app.description', 'Uptime Kita - Simple Uptime Monitoring (open-source)') }}">
+        <meta property="og:image" content="{{ $ogImage ?? config('app.url').'/og/monitors.png' }}">
+        <meta property="og:url" content="{{ $ogUrl ?? url()->current() }}">
 
         {{-- Twitter --}}
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:site" content="@syofyanzuhad">
+        <meta name="twitter:title" content="{{ $ogTitle ?? config('app.name', 'Uptime Kita') }}">
+        <meta name="twitter:description" content="{{ $ogDescription ?? config('app.description', 'Uptime Kita - Simple Uptime Monitoring (open-source)') }}">
+        <meta name="twitter:image" content="{{ $ogImage ?? config('app.url').'/og/monitors.png' }}">
+
+        {{-- Canonical URL --}}
+        <link rel="canonical" href="{{ $ogUrl ?? url()->current() }}">
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

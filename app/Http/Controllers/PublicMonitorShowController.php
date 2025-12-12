@@ -60,12 +60,22 @@ class PublicMonitorShowController extends Controller
             $query->orderBy('started_at', 'desc')->limit(10);
         }]);
 
+        $appUrl = config('app.url');
+        $monitorName = $monitor->name ?? $domain;
+        $uptimePercent = $uptimeStats['24h'] ?? 0;
+        $statusText = $monitor->uptime_status === 'up' ? 'Operational' : 'Down';
+
         return Inertia::render('monitors/PublicShow', [
             'monitor' => new MonitorResource($monitor),
             'histories' => $histories,
             'uptimeStats' => $uptimeStats,
             'responseTimeStats' => $responseTimeStats,
             'latestIncidents' => $monitor->latestIncidents,
+        ])->withViewData([
+            'ogTitle' => "{$monitorName} Status - Uptime Kita",
+            'ogDescription' => "{$statusText} - {$uptimePercent}% uptime in the last 24 hours. Monitor real-time status and performance.",
+            'ogImage' => "{$appUrl}/og/monitor/{$domain}.png",
+            'ogUrl' => "{$appUrl}/m/{$domain}",
         ]);
     }
 
@@ -184,9 +194,16 @@ class PublicMonitorShowController extends Controller
      */
     private function showNotFound(string $domain): Response
     {
+        $appUrl = config('app.url');
+
         return Inertia::render('monitors/PublicShowNotFound', [
             'domain' => $domain,
             'suggestedUrl' => 'https://'.$domain,
+        ])->withViewData([
+            'ogTitle' => 'Monitor Not Found - Uptime Kita',
+            'ogDescription' => "The monitor for {$domain} was not found or is not public.",
+            'ogImage' => "{$appUrl}/og/monitors.png",
+            'ogUrl' => "{$appUrl}/m/{$domain}",
         ]);
     }
 }

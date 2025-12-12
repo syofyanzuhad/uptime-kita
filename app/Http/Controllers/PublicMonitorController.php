@@ -159,6 +159,10 @@ class PublicMonitorController extends Controller
                 ->get(['id', 'monitor_id', 'type', 'started_at', 'ended_at', 'duration_minutes', 'reason', 'status_code']);
         });
 
+        $appUrl = config('app.url');
+        $upCount = Monitor::public()->where('uptime_status', 'up')->count();
+        $totalPublic = Monitor::public()->count();
+
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
             'filters' => [
@@ -171,12 +175,17 @@ class PublicMonitorController extends Controller
             'latestIncidents' => $latestIncidents,
             'stats' => [
                 'total' => $publicMonitors->total(),
-                'up' => Monitor::public()->where('uptime_status', 'up')->count(),
+                'up' => $upCount,
                 'down' => Monitor::public()->where('uptime_status', 'down')->count(),
-                'total_public' => Monitor::public()->count(),
+                'total_public' => $totalPublic,
                 'daily_checks' => $this->getDailyChecksCount(),
                 'monthly_checks' => $this->getMonthlyChecksCount(),
             ],
+        ])->withViewData([
+            'ogTitle' => 'Public Monitors - Uptime Kita',
+            'ogDescription' => "Monitoring {$totalPublic} public services. {$upCount} services are up and running.",
+            'ogImage' => "{$appUrl}/og/monitors.png",
+            'ogUrl' => "{$appUrl}/public-monitors",
         ]);
     }
 

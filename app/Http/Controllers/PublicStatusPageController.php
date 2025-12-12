@@ -29,10 +29,19 @@ class PublicStatusPageController extends Controller
 
         $statusPageResource = new StatusPageResource($statusPage);
 
+        $appUrl = config('app.url');
+        $title = $statusPage->title ?? 'Status Page';
+        $description = $statusPage->description ?? "View the current status of {$title} services.";
+
         return Inertia::render('status-pages/Public', [
             'statusPage' => $statusPageResource,
             'isAuthenticated' => auth()->check(),
             'isCustomDomain' => $customDomainStatusPage !== null,
+        ])->withViewData([
+            'ogTitle' => "{$title} - Uptime Kita",
+            'ogDescription' => $description,
+            'ogImage' => "{$appUrl}/og/status/{$path}.png",
+            'ogUrl' => "{$appUrl}/status/{$path}",
         ]);
     }
 
