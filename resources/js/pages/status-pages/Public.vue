@@ -373,7 +373,21 @@ const toggleShareDropdown = () => {
 };
 
 const shareUrl = computed(() => `${appUrl.value}/status/${props.statusPage.path}`);
-const shareText = computed(() => `Check out ${props.statusPage.title} status page on Uptime Kita!`);
+const shareText = computed(() => {
+    const title = props.statusPage.title;
+    const status = overallStatus.value.text;
+    const monitorCount = monitors.value.length;
+
+    if (monitorCount === 0) {
+        return `${title} - ${status}`;
+    }
+
+    const upCount = monitors.value.filter(
+        (m) => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'up'
+    ).length;
+
+    return `${title}: ${status} (${upCount}/${monitorCount} services up)`;
+});
 
 const shareToTwitter = () => {
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText.value)}&url=${encodeURIComponent(shareUrl.value)}`;
