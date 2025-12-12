@@ -341,6 +341,7 @@ onMounted(() => {
     document.addEventListener('fullscreenchange', fullscreenChangeHandler);
     document.addEventListener('webkitfullscreenchange', fullscreenChangeHandler);
     document.addEventListener('msfullscreenchange', fullscreenChangeHandler);
+    document.addEventListener('click', handleClickOutside);
     fetchMonitors();
     if (props.isAuthenticated) {
         // Initial fetch for uptimesDaily (all days)
@@ -357,9 +358,66 @@ onUnmounted(() => {
     document.removeEventListener('fullscreenchange', fullscreenChangeHandler);
     document.removeEventListener('webkitfullscreenchange', fullscreenChangeHandler);
     document.removeEventListener('msfullscreenchange', fullscreenChangeHandler);
+    document.removeEventListener('click', handleClickOutside);
 });
 
 const { isDark, toggleTheme } = useTheme();
+
+// Share functionality
+const showShareDropdown = ref(false);
+const linkCopied = ref(false);
+const shareDropdownRef = ref<HTMLElement | null>(null);
+
+const toggleShareDropdown = () => {
+    showShareDropdown.value = !showShareDropdown.value;
+};
+
+const shareUrl = computed(() => `${appUrl.value}/status/${props.statusPage.path}`);
+const shareText = computed(() => `Check out ${props.statusPage.title} status page on Uptime Kita!`);
+
+const shareToTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText.value)}&url=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToLinkedIn = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText.value + ' ' + shareUrl.value)}`;
+    window.open(url, '_blank');
+    showShareDropdown.value = false;
+};
+
+const copyLink = async () => {
+    try {
+        await navigator.clipboard.writeText(shareUrl.value);
+        linkCopied.value = true;
+        setTimeout(() => {
+            linkCopied.value = false;
+            showShareDropdown.value = false;
+        }, 1500);
+    } catch (err) {
+        console.error('Failed to copy link:', err);
+    }
+};
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+    if (shareDropdownRef.value && !shareDropdownRef.value.contains(event.target as Node)) {
+        showShareDropdown.value = false;
+    }
+};
 </script>
 
 <template>
@@ -379,36 +437,95 @@ const { isDark, toggleTheme } = useTheme();
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <header class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between space-x-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
-                            <Icon :name="statusPage.icon" class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div class="flex items-center justify-between gap-4">
+                    <!-- Left: Icon + Title/Description (flexible, can shrink) -->
+                    <div class="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 sm:h-12 sm:w-12 dark:bg-blue-900">
+                            <Icon :name="statusPage.icon" class="h-5 w-5 text-blue-600 sm:h-6 sm:w-6 dark:text-blue-400" />
                         </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statusPage.title }}</h1>
-                            <p class="text-gray-600 dark:text-gray-300">{{ statusPage.description }}</p>
+                        <div class="min-w-0 flex-1">
+                            <h1 class="truncate text-lg font-bold text-gray-900 sm:text-2xl dark:text-gray-100">{{ statusPage.title }}</h1>
+                            <p class="line-clamp-2 text-sm text-gray-600 sm:text-base dark:text-gray-300" :title="statusPage.description">
+                                {{ statusPage.description }}
+                            </p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <!-- Server Stats Badge -->
-                        <ServerStatsBadge />
+                    <!-- Right: Action buttons (fixed, won't shrink) -->
+                    <div class="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+                        <!-- Server Stats Badge (hidden on small screens) -->
+                        <div class="hidden sm:block">
+                            <ServerStatsBadge />
+                        </div>
+                        <!-- Share Button -->
+                        <div class="relative" ref="shareDropdownRef">
+                            <button
+                                @click="toggleShareDropdown"
+                                class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                                title="Share this page"
+                            >
+                                <Icon name="share2" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
+                            </button>
+                            <!-- Share Dropdown -->
+                            <div
+                                v-if="showShareDropdown"
+                                class="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                            >
+                                <button
+                                    @click="shareToTwitter"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="twitter" class="h-4 w-4" />
+                                    Share on X
+                                </button>
+                                <button
+                                    @click="shareToFacebook"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="facebook" class="h-4 w-4" />
+                                    Share on Facebook
+                                </button>
+                                <button
+                                    @click="shareToLinkedIn"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="linkedin" class="h-4 w-4" />
+                                    Share on LinkedIn
+                                </button>
+                                <button
+                                    @click="shareToWhatsApp"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="messageCircle" class="h-4 w-4" />
+                                    Share on WhatsApp
+                                </button>
+                                <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                                <button
+                                    @click="copyLink"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon :name="linkCopied ? 'check' : 'link'" class="h-4 w-4" />
+                                    {{ linkCopied ? 'Copied!' : 'Copy Link' }}
+                                </button>
+                            </div>
+                        </div>
                         <!-- Theme Toggle Button -->
                         <button
                             @click="toggleTheme"
                             class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
                         >
-                            <Icon v-if="isDark" name="sun" class="h-5 w-5 text-yellow-400" />
-                            <Icon v-else name="moon" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+                            <Icon v-if="isDark" name="sun" class="h-4 w-4 text-yellow-400 sm:h-5 sm:w-5" />
+                            <Icon v-else name="moon" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
                         </button>
+                        <!-- Fullscreen Button -->
                         <button
                             @click="toggleFullscreen"
                             class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                             :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
                             :title="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
                         >
-                            <Icon v-if="isFullscreen" name="minimize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
-                            <Icon v-else name="maximize" class="h-5 w-5 text-gray-600 dark:text-gray-200" />
+                            <Icon v-if="isFullscreen" name="minimize" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
+                            <Icon v-else name="maximize" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
                         </button>
                     </div>
                 </div>
