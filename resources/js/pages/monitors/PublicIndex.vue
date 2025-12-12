@@ -31,6 +31,58 @@
                     <!-- Theme Toggle & Server Stats -->
                     <div class="flex items-center justify-center space-x-2 sm:justify-end">
                         <ServerStatsBadge />
+                        <!-- Share Button -->
+                        <div class="relative" ref="shareDropdownRef">
+                            <button
+                                @click="toggleShareDropdown"
+                                class="cursor-pointer rounded-full bg-gray-100 p-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                                title="Share this page"
+                            >
+                                <Icon name="share2" class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                            </button>
+                            <!-- Share Dropdown -->
+                            <div
+                                v-if="showShareDropdown"
+                                class="absolute right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                            >
+                                <button
+                                    @click="shareToTwitter"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="twitter" class="h-4 w-4" />
+                                    Share on X
+                                </button>
+                                <button
+                                    @click="shareToFacebook"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="facebook" class="h-4 w-4" />
+                                    Share on Facebook
+                                </button>
+                                <button
+                                    @click="shareToLinkedIn"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="linkedin" class="h-4 w-4" />
+                                    Share on LinkedIn
+                                </button>
+                                <button
+                                    @click="shareToWhatsApp"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon name="messageCircle" class="h-4 w-4" />
+                                    Share on WhatsApp
+                                </button>
+                                <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                                <button
+                                    @click="copyLink"
+                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Icon :name="linkCopied ? 'check' : 'link'" class="h-4 w-4" />
+                                    {{ linkCopied ? 'Copied!' : 'Copy Link' }}
+                                </button>
+                            </div>
+                        </div>
                         <button
                             @click="toggleTheme"
                             class="cursor-pointer rounded-full bg-gray-100 p-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
@@ -659,6 +711,62 @@ const monitorsLinks = ref(props.monitors.links || []);
 // Theme toggle functionality
 const isDark = ref(false);
 
+// Share functionality
+const showShareDropdown = ref(false);
+const linkCopied = ref(false);
+const shareDropdownRef = ref<HTMLElement | null>(null);
+
+const toggleShareDropdown = () => {
+    showShareDropdown.value = !showShareDropdown.value;
+};
+
+const shareUrl = computed(() => `${appUrl.value}/public-monitors`);
+const shareText = computed(() => `Check out ${props.stats.total_public} public monitors on Uptime Kita! ${props.stats.up} services operational.`);
+
+const shareToTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText.value)}&url=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToLinkedIn = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+    showShareDropdown.value = false;
+};
+
+const shareToWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText.value + ' ' + shareUrl.value)}`;
+    window.open(url, '_blank');
+    showShareDropdown.value = false;
+};
+
+const copyLink = async () => {
+    try {
+        await navigator.clipboard.writeText(shareUrl.value);
+        linkCopied.value = true;
+        setTimeout(() => {
+            linkCopied.value = false;
+            showShareDropdown.value = false;
+        }, 1500);
+    } catch (err) {
+        console.error('Failed to copy link:', err);
+    }
+};
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+    if (shareDropdownRef.value && !shareDropdownRef.value.contains(event.target as Node)) {
+        showShareDropdown.value = false;
+    }
+};
+
 const toggleTheme = () => {
     isDark.value = !isDark.value;
     if (isDark.value) {
@@ -1072,10 +1180,16 @@ onMounted(() => {
 
     // Add scroll event listener for back to top button
     window.addEventListener('scroll', handleScroll);
+
+    // Add click outside listener for share dropdown
+    document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
     // Remove scroll event listener
     window.removeEventListener('scroll', handleScroll);
+
+    // Remove click outside listener
+    document.removeEventListener('click', handleClickOutside);
 });
 </script>
