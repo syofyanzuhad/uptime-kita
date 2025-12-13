@@ -114,7 +114,7 @@ export function useMonitorStatusStream(options: UseMonitorStatusStreamOptions = 
                     scheduleReconnect();
                 }
             };
-        } catch (e) {
+        } catch {
             isConnecting.value = false;
             error.value = 'Failed to establish SSE connection';
             scheduleReconnect();

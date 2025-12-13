@@ -55,6 +55,7 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 - 🔒 Certificate check
 - ✨ Fancy, Reactive, Fast UI/UX
 - 📩 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
+- 🔔 Real-time toast notifications on public pages via Server-Sent Events (SSE)
 - 📊 Multiple status pages
 - 🐳 Docker support for easy deployment
 - 📈 Server resources monitoring (CPU, Memory, Disk, etc.)
@@ -350,6 +351,39 @@ The badge shows:
 - Value: Uptime percentage (e.g., "99.9%")
 - Color: Green (>= 99%), Yellow (>= 95%), Red (< 95%)
 
+## 🔔 Real-time Status Notifications
+
+Public monitor pages display instant toast notifications when a monitor's status changes (up → down or down → up).
+
+### How It Works
+
+The feature uses **Server-Sent Events (SSE)** for efficient real-time updates:
+
+1. When a monitor status changes, the event is broadcast to connected clients
+2. Public pages automatically subscribe to the SSE stream
+3. Toast notifications appear instantly without page refresh
+4. Connections auto-reconnect with exponential backoff if disconnected
+
+### Supported Pages
+
+- **Public Monitor List** (`/monitors/public`) - All public monitors
+- **Public Monitor Detail** (`/monitors/{id}/public`) - Specific monitor
+- **Status Pages** (`/status/{slug}`) - Monitors on that status page
+
+### Toast Appearance
+
+- 🟢 **Green toast**: Service recovered (down → up)
+- 🔴 **Red toast**: Service down (up → down)
+- Auto-dismiss after 8 seconds with progress bar
+- Manual dismiss via close button
+
+### Technical Details
+
+- SSE endpoint: `/api/monitor-status-stream`
+- Heartbeat: Every 30 seconds
+- Max connection duration: 5 minutes (auto-reconnect)
+- Rate limited: 10 requests per minute
+
 ## 🛣️ Roadmap
 
 - [x] Uptime monitoring
@@ -365,6 +399,7 @@ The badge shows:
 - [x] Server resources monitoring
 - [x] Uptime badge for embedding
 - [x] Cronless scheduler for container environments
+- [x] Real-time toast notifications via SSE
 - [ ] Do you have any suggestions?
 
 ## 📸 Screenshots
