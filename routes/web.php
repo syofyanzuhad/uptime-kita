@@ -23,6 +23,11 @@ Route::get('/api/server-stats', \App\Http\Controllers\PublicServerStatsControlle
     ->middleware('throttle:30,1')
     ->name('api.server-stats');
 
+// SSE endpoint for real-time monitor status changes (public, no auth)
+Route::get('/api/monitor-status-stream', \App\Http\Controllers\MonitorStatusStreamController::class)
+    ->middleware('throttle:10,1')
+    ->name('api.monitor-status-stream');
+
 Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

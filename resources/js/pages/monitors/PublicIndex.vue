@@ -611,6 +611,9 @@
 
         <!-- Footer -->
         <PublicFooter />
+
+        <!-- Toast Container for real-time notifications -->
+        <ToastContainer />
     </div>
 </template>
 
@@ -619,7 +622,10 @@ import Icon from '@/components/Icon.vue';
 import MonitorLink from '@/components/MonitorLink.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
+import ToastContainer from '@/components/ToastContainer.vue';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
+import { globalToasts } from '@/composables/useToastNotifications';
 import { Monitor } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -692,6 +698,24 @@ const pageDescription = computed(() =>
 
 // Reactive data for monitors
 const monitorsData = ref(props.monitors.data || []);
+
+// SSE for real-time status updates
+useMonitorStatusStream({
+    enabled: true,
+    onStatusChange: (change) => {
+        // Show toast notification
+        globalToasts.addStatusChangeToast(change);
+
+        // Update local monitor data if the monitor is in our list
+        const monitorIndex = monitorsData.value.findIndex((m) => m.id === change.monitor_id);
+        if (monitorIndex !== -1) {
+            monitorsData.value[monitorIndex] = {
+                ...monitorsData.value[monitorIndex],
+                uptime_status: change.new_status,
+            };
+        }
+    },
+});
 
 // Clean the initial meta data (handle arrays)
 const initialMeta = props.monitors.meta || { current_page: 1, last_page: 1 };
