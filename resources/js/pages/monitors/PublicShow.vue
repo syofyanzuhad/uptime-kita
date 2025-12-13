@@ -720,6 +720,9 @@
             <!-- Footer -->
             <PublicFooter />
         </div>
+
+        <!-- Toast Container for real-time notifications -->
+        <ToastContainer />
     </TooltipProvider>
 </template>
 
@@ -728,9 +731,12 @@ import Icon from '@/components/Icon.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
 import ResponseTimeLineChart from '@/components/ResponseTimeLineChart.vue';
 import ShareButton from '@/components/ShareButton.vue';
+import ToastContainer from '@/components/ToastContainer.vue';
 import UptimeLineChart from '@/components/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
+import { globalToasts } from '@/composables/useToastNotifications';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -754,6 +760,16 @@ interface Props {
 
 const props = defineProps<Props>();
 const monitor = computed(() => props.monitor.data);
+
+// SSE for real-time status updates for this specific monitor
+useMonitorStatusStream({
+    monitorIds: [props.monitor.data.id],
+    enabled: true,
+    onStatusChange: (change) => {
+        globalToasts.addStatusChangeToast(change);
+        // The page will refresh anyway with the existing 60-second interval
+    },
+});
 
 // SEO computed properties
 const appUrl = computed(() => window.location.origin);

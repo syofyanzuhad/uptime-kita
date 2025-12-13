@@ -4,7 +4,10 @@ import Icon from '@/components/Icon.vue';
 import OfflineBanner from '@/components/OfflineBanner.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
+import ToastContainer from '@/components/ToastContainer.vue';
+import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
 import { useTheme } from '@/composables/useTheme';
+import { globalToasts } from '@/composables/useToastNotifications';
 import { Head } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
@@ -82,6 +85,32 @@ const uptimesDailyError = ref<Record<number, string | null>>({});
 const latestHistory = ref<Record<number, MonitorHistory | null>>({});
 const latestHistoryLoading = ref<Record<number, boolean>>({});
 const latestHistoryError = ref<Record<number, string | null>>({});
+
+// SSE for real-time status updates for monitors on this status page
+useMonitorStatusStream({
+    statusPageId: props.statusPage.id,
+    enabled: true,
+    onStatusChange: (change) => {
+        globalToasts.addStatusChangeToast(change);
+
+        // Update local monitor status
+        const monitorIndex = monitors.value.findIndex((m) => m.id === change.monitor_id);
+        if (monitorIndex !== -1) {
+            monitors.value[monitorIndex] = {
+                ...monitors.value[monitorIndex],
+                uptime_status: change.new_status,
+            };
+
+            // Also update latestHistory if needed
+            if (latestHistory.value[change.monitor_id]) {
+                latestHistory.value[change.monitor_id] = {
+                    ...latestHistory.value[change.monitor_id]!,
+                    uptime_status: change.new_status,
+                };
+            }
+        }
+    },
+});
 
 async function fetchMonitors() {
     monitorsLoading.value = true;
@@ -696,5 +725,8 @@ const handleClickOutside = (event: MouseEvent) => {
 
             <PublicFooter powered-by-url="https://uptime.syofyanzuhad.dev" />
         </main>
+
+        <!-- Toast Container for real-time notifications -->
+        <ToastContainer />
     </div>
 </template>

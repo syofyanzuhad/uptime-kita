@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\BroadcastMonitorStatusChange;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
 use App\Listeners\StoreMonitorCheckData;
@@ -74,6 +75,10 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(UptimeCheckSucceeded::class, StoreMonitorCheckData::class);
         Event::listen(UptimeCheckFailed::class, StoreMonitorCheckData::class);
         Event::listen(UptimeCheckRecovered::class, StoreMonitorCheckData::class);
+
+        // Register SSE broadcast listener for public monitor status changes
+        Event::listen(UptimeCheckFailed::class, BroadcastMonitorStatusChange::class);
+        Event::listen(UptimeCheckRecovered::class, BroadcastMonitorStatusChange::class);
 
         Health::checks([
             CacheCheck::new(),
