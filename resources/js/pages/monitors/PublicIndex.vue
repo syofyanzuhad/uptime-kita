@@ -1042,7 +1042,8 @@ const getSparklineData = (uptimesDaily: UptimeDay[]): UptimeDay[] => {
 const getSparklineColor = (uptime: number | null): string => {
     if (uptime === null) return 'bg-gray-300 dark:bg-gray-600';
     if (uptime >= 100) return 'bg-green-500';
-    if (uptime >= 95) return 'bg-yellow-500';
+    if (uptime >= 99) return 'bg-green-300';
+    if (uptime >= 65) return 'bg-yellow-500';
     return 'bg-red-500';
 };
 
