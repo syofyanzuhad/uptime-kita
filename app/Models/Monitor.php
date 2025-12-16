@@ -29,6 +29,8 @@ class Monitor extends SpatieMonitor
         'maintenance_ends_at' => 'datetime',
         'is_in_maintenance' => 'boolean',
         'transient_failures_count' => 'integer',
+        'confirmation_delay_seconds' => 'integer',
+        'confirmation_retries' => 'integer',
     ];
 
     protected $guarded = [];

@@ -3,13 +3,7 @@ import TagInput from '@/components/TagInput.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-
-// Hapus impor komponen yang tidak ada
-// import TextInput from '@/Components/TextInput.vue';
-// import InputLabel from '@/Components/InputLabel.vue';
-// import PrimaryButton from '@/Components/PrimaryButton.vue';
-// import InputError from '@/Components/InputError.vue';
-// import Checkbox from '@/Components/Checkbox.vue';
+import { ref } from 'vue';
 
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
@@ -19,9 +13,16 @@ const userId = page.props.auth?.user?.id;
 
 const props = defineProps<{
     monitor: {
-        data: Monitor;
-    }; // Menerima data monitor yang akan diedit
+        data: Monitor & {
+            sensitivity?: string;
+            confirmation_delay_seconds?: number | null;
+            confirmation_retries?: number | null;
+        };
+    };
 }>();
+
+// State for collapsible advanced settings
+const showAdvanced = ref(false);
 
 // Extract tag names from the monitor data
 const extractTagNames = (tags: any[]): string[] => {
@@ -37,6 +38,9 @@ const initialValues = {
     uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
     is_public: props.monitor.data.is_public ?? false,
     tags: extractTagNames(props.monitor.data.tags || []),
+    sensitivity: props.monitor.data.sensitivity ?? 'medium',
+    confirmation_delay_seconds: props.monitor.data.confirmation_delay_seconds ?? null,
+    confirmation_retries: props.monitor.data.confirmation_retries ?? null,
 };
 
 // Inisialisasi form dengan data monitor yang ada
@@ -44,9 +48,12 @@ const form = useForm({
     url: props.monitor.data.url,
     uptime_check_enabled: props.monitor.data.uptime_check_enabled,
     certificate_check_enabled: props.monitor.data.certificate_check_enabled,
-    uptime_check_interval: props.monitor.data.uptime_check_interval || 5, // Default to 5 minutes if not set
+    uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
     is_public: props.monitor.data.is_public ?? false,
     tags: extractTagNames(props.monitor.data.tags || []),
+    sensitivity: props.monitor.data.sensitivity ?? 'medium',
+    confirmation_delay_seconds: props.monitor.data.confirmation_delay_seconds ?? null,
+    confirmation_retries: props.monitor.data.confirmation_retries ?? null,
 });
 // console.log(form.url);
 
@@ -73,6 +80,9 @@ const isFormDirty = () => {
         form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
         form.uptime_check_interval !== initialValues.uptime_check_interval ||
         form.is_public !== initialValues.is_public ||
+        form.sensitivity !== initialValues.sensitivity ||
+        form.confirmation_delay_seconds !== initialValues.confirmation_delay_seconds ||
+        form.confirmation_retries !== initialValues.confirmation_retries ||
         tagsChanged
     );
 };
@@ -225,6 +235,94 @@ const submit = () => {
                                 </label>
                             </div>
                             <div v-if="form.errors.is_public" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.is_public }}</div>
+                        </div>
+
+                        <!-- Advanced Settings Section - Collapsible -->
+                        <div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+                            <button
+                                @click="showAdvanced = !showAdvanced"
+                                type="button"
+                                class="flex w-full items-center justify-between text-left"
+                            >
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Pengaturan Lanjutan</h3>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        Konfigurasi untuk mengurangi false positive
+                                    </p>
+                                </div>
+                                <svg
+                                    :class="showAdvanced ? 'rotate-180' : ''"
+                                    class="h-5 w-5 text-gray-500 transition-transform duration-200"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </button>
+
+                            <div v-show="showAdvanced" class="mt-4 space-y-4">
+                                <!-- Sensitivity -->
+                                <div>
+                                    <label for="sensitivity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Sensitivitas
+                                    </label>
+                                    <select
+                                        id="sensitivity"
+                                        v-model="form.sensitivity"
+                                        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                                    >
+                                        <option value="low">Rendah (lebih toleran, delay 60s, 5x retry)</option>
+                                        <option value="medium">Sedang (default, delay 30s, 3x retry)</option>
+                                        <option value="high">Tinggi (cepat alert, delay 15s, 2x retry)</option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Sensitivitas rendah cocok untuk jaringan tidak stabil
+                                    </p>
+                                </div>
+
+                                <!-- Custom Confirmation Delay -->
+                                <div>
+                                    <label for="confirmation_delay_seconds" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Delay Konfirmasi (detik)
+                                    </label>
+                                    <input
+                                        id="confirmation_delay_seconds"
+                                        type="number"
+                                        v-model="form.confirmation_delay_seconds"
+                                        min="5"
+                                        max="300"
+                                        placeholder="Gunakan default dari sensitivitas"
+                                        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                                    />
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Waktu tunggu sebelum mengonfirmasi status down (kosongkan untuk gunakan default sensitivitas)
+                                    </p>
+                                </div>
+
+                                <!-- Custom Retries -->
+                                <div>
+                                    <label for="confirmation_retries" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Jumlah Retry
+                                    </label>
+                                    <input
+                                        id="confirmation_retries"
+                                        type="number"
+                                        v-model="form.confirmation_retries"
+                                        min="1"
+                                        max="10"
+                                        placeholder="Gunakan default dari sensitivitas"
+                                        class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                                    />
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Berapa kali percobaan ulang sebelum konfirmasi down
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-4 flex items-center justify-end">

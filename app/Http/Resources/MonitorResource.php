@@ -37,6 +37,10 @@ class MonitorResource extends JsonResource
             'today_uptime_percentage' => $this->getTodayUptimePercentage(),
             'uptime_status_last_change_date' => $this->uptime_status_last_change_date,
             'uptime_check_failure_reason' => $this->uptime_check_failure_reason,
+            'sensitivity' => $this->sensitivity ?? 'medium',
+            'confirmation_delay_seconds' => $this->confirmation_delay_seconds,
+            'confirmation_retries' => $this->confirmation_retries,
+            'transient_failures_count' => $this->transient_failures_count ?? 0,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'tags' => $this->when($this->relationLoaded('tags'), function () {

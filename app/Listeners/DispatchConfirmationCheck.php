@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Jobs\ConfirmMonitorDowntimeJob;
+use App\Services\SmartRetryService;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 
@@ -36,13 +37,15 @@ class DispatchConfirmationCheck
         // Only dispatch confirmation check on first failure of a new incident
         // If already at threshold, the event was already confirmed
         if ($failureCount === 1) {
-            $delay = config('uptime-monitor.confirmation_check.delay_seconds', 30);
+            // Get per-monitor delay or use sensitivity preset
+            $delay = $this->getConfirmationDelay($monitor);
 
             Log::info('DispatchConfirmationCheck: Dispatching confirmation check', [
                 'monitor_id' => $monitor->id,
                 'url' => (string) $monitor->url,
                 'failure_count' => $failureCount,
                 'delay_seconds' => $delay,
+                'sensitivity' => $monitor->sensitivity ?? 'medium',
             ]);
 
             ConfirmMonitorDowntimeJob::dispatch(
@@ -64,5 +67,27 @@ class DispatchConfirmationCheck
 
         // Let other listeners handle the event for subsequent failures
         return true;
+    }
+
+    /**
+     * Get confirmation delay for a monitor.
+     *
+     * Priority:
+     * 1. Per-monitor custom delay (confirmation_delay_seconds)
+     * 2. Sensitivity preset delay
+     * 3. Global config default
+     */
+    protected function getConfirmationDelay($monitor): int
+    {
+        // Check for custom per-monitor delay
+        if ($monitor->confirmation_delay_seconds !== null) {
+            return $monitor->confirmation_delay_seconds;
+        }
+
+        // Use sensitivity preset
+        $sensitivity = $monitor->sensitivity ?? 'medium';
+        $preset = SmartRetryService::getPreset($sensitivity);
+
+        return $preset['confirmation_delay'] ?? config('uptime-monitor.confirmation_check.delay_seconds', 30);
     }
 }

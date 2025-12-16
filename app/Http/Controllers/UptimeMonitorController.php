@@ -273,6 +273,9 @@ class UptimeMonitorController extends Controller
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:255'],
+            'sensitivity' => ['nullable', 'string', 'in:low,medium,high'],
+            'confirmation_delay_seconds' => ['nullable', 'integer', 'min:5', 'max:300'],
+            'confirmation_retries' => ['nullable', 'integer', 'min:1', 'max:10'],
         ]);
 
         try {
@@ -282,6 +285,9 @@ class UptimeMonitorController extends Controller
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
+                'sensitivity' => $request->input('sensitivity', 'medium'),
+                'confirmation_delay_seconds' => $request->input('confirmation_delay_seconds'),
+                'confirmation_retries' => $request->input('confirmation_retries'),
             ]);
 
             // Sync tags

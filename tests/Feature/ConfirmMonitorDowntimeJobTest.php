@@ -3,6 +3,7 @@
 use App\Jobs\ConfirmMonitorDowntimeJob;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Models\Monitor;
+use App\Services\SmartRetryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -12,6 +13,7 @@ use Spatie\UptimeMonitor\Helpers\Period;
 beforeEach(function () {
     // Disable global scopes for testing
     Monitor::withoutGlobalScopes();
+    $this->smartRetryService = new SmartRetryService;
 });
 
 it('dispatches confirmation check job on first failure', function () {
@@ -129,7 +131,7 @@ it('skips confirmation if monitor already recovered', function () {
         1
     );
 
-    $job->handle();
+    $job->handle($this->smartRetryService);
 
     Event::assertNotDispatched(UptimeCheckFailed::class);
 });
@@ -150,7 +152,7 @@ it('skips confirmation if monitor is disabled', function () {
         1
     );
 
-    $job->handle();
+    $job->handle($this->smartRetryService);
 
     Event::assertNotDispatched(UptimeCheckFailed::class);
 });
@@ -164,7 +166,7 @@ it('skips confirmation if monitor not found', function () {
         1
     );
 
-    $job->handle();
+    $job->handle($this->smartRetryService);
 
     Event::assertNotDispatched(UptimeCheckFailed::class);
 });
@@ -186,7 +188,7 @@ it('logs transient failure when already recovered', function () {
         1
     );
 
-    $job->handle();
+    $job->handle($this->smartRetryService);
 
     $monitor->refresh();
 

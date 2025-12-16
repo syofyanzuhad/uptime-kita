@@ -3,9 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\Monitor;
+use App\Services\SmartRetryResult;
+use App\Services\SmartRetryService;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +34,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(SmartRetryService $smartRetry): void
     {
         $monitor = Monitor::withoutGlobalScopes()->find($this->monitorId);
 
@@ -66,128 +66,68 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
             return;
         }
 
-        // Perform confirmation check
-        $isStillDown = $this->performConfirmationCheck($monitor);
+        // Get per-monitor settings or use sensitivity preset
+        $sensitivity = $monitor->sensitivity ?? 'medium';
+        $preset = SmartRetryService::getPreset($sensitivity);
 
-        if ($isStillDown) {
-            Log::info('ConfirmMonitorDowntimeJob: Confirmed DOWN status', [
-                'monitor_id' => $this->monitorId,
-                'url' => (string) $monitor->url,
-                'failure_reason' => $this->failureReason,
-            ]);
+        $options = [
+            'retries' => $monitor->confirmation_retries ?? $preset['retries'],
+            'initial_delay_ms' => $preset['initial_delay_ms'],
+            'backoff_multiplier' => $preset['backoff_multiplier'],
+        ];
 
-            // Fire the UptimeCheckFailed event manually to trigger notifications
-            // The Spatie package will handle the failure counter
-            $downtimePeriod = new Period(
-                $monitor->uptime_status_last_change_date ?? Carbon::now(),
-                Carbon::now()
-            );
-            event(new UptimeCheckFailed($monitor, $downtimePeriod));
-        } else {
+        // Perform smart confirmation check
+        $result = $smartRetry->performSmartCheck($monitor, $options);
+
+        if ($result->isSuccess()) {
             Log::info('ConfirmMonitorDowntimeJob: Confirmation check passed, marking as transient failure', [
                 'monitor_id' => $this->monitorId,
                 'url' => (string) $monitor->url,
+                'attempts' => $result->getAttemptCount(),
             ]);
 
             $this->logTransientFailure($monitor);
-
-            // Reset the failure counter since it was a transient issue
-            $monitor->uptime_check_times_failed_in_a_row = 0;
-            $monitor->uptime_status = 'up';
-            $monitor->uptime_check_failure_reason = null;
-            $monitor->saveQuietly();
+            $this->resetMonitorStatus($monitor);
+        } else {
+            $this->confirmDowntime($monitor, $result);
         }
     }
 
     /**
-     * Perform a confirmation HTTP check.
+     * Reset monitor status after transient failure.
      */
-    protected function performConfirmationCheck(Monitor $monitor): bool
+    protected function resetMonitorStatus(Monitor $monitor): void
     {
-        $timeout = config('uptime-monitor.confirmation_check.timeout_seconds', 5);
+        $monitor->uptime_check_times_failed_in_a_row = 0;
+        $monitor->uptime_status = 'up';
+        $monitor->uptime_check_failure_reason = null;
+        $monitor->saveQuietly();
+    }
 
-        $client = new Client([
-            'timeout' => $timeout,
-            'connect_timeout' => $timeout,
-            'http_errors' => false,
-            'allow_redirects' => [
-                'max' => 5,
-                'strict' => false,
-                'referer' => false,
-                'protocols' => ['http', 'https'],
-            ],
+    /**
+     * Confirm monitor downtime and fire event.
+     */
+    protected function confirmDowntime(Monitor $monitor, SmartRetryResult $result): void
+    {
+        Log::info('ConfirmMonitorDowntimeJob: Confirmed DOWN status', [
+            'monitor_id' => $this->monitorId,
+            'url' => (string) $monitor->url,
+            'failure_reason' => $result->message ?? $this->failureReason,
+            'attempts' => $result->getAttemptCount(),
         ]);
 
-        try {
-            $method = $monitor->uptime_check_method ?? 'GET';
-            $url = (string) $monitor->url;
-
-            $options = [];
-
-            // Add custom headers if configured
-            if ($monitor->uptime_check_additional_headers) {
-                $headers = is_array($monitor->uptime_check_additional_headers)
-                    ? $monitor->uptime_check_additional_headers
-                    : json_decode($monitor->uptime_check_additional_headers, true);
-
-                if ($headers) {
-                    $options['headers'] = $headers;
-                }
-            }
-
-            // Add payload if configured
-            if ($monitor->uptime_check_payload) {
-                $options['body'] = $monitor->uptime_check_payload;
-            }
-
-            $response = $client->request($method, $url, $options);
-            $statusCode = $response->getStatusCode();
-
-            // Check if status code is acceptable
-            $expectedStatusCode = $monitor->expected_status_code ?? 200;
-            $additionalStatusCodes = config('uptime-monitor.uptime_check.additional_status_codes', []);
-
-            $acceptableStatusCodes = array_merge([$expectedStatusCode], $additionalStatusCodes, [200, 201, 204, 301, 302]);
-
-            if (! in_array($statusCode, $acceptableStatusCodes)) {
-                Log::debug('ConfirmMonitorDowntimeJob: Unacceptable status code', [
-                    'monitor_id' => $this->monitorId,
-                    'status_code' => $statusCode,
-                    'expected' => $acceptableStatusCodes,
-                ]);
-
-                return true; // Still down
-            }
-
-            // Check for look_for_string if configured
-            if ($monitor->look_for_string) {
-                $body = (string) $response->getBody();
-                if (stripos($body, $monitor->look_for_string) === false) {
-                    Log::debug('ConfirmMonitorDowntimeJob: String not found in response', [
-                        'monitor_id' => $this->monitorId,
-                        'look_for_string' => $monitor->look_for_string,
-                    ]);
-
-                    return true; // Still down
-                }
-            }
-
-            return false; // Recovered
-        } catch (RequestException $e) {
-            Log::debug('ConfirmMonitorDowntimeJob: Request exception', [
-                'monitor_id' => $this->monitorId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return true; // Still down
-        } catch (\Exception $e) {
-            Log::error('ConfirmMonitorDowntimeJob: Unexpected error', [
-                'monitor_id' => $this->monitorId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return true; // Assume still down on unexpected errors
+        // Update failure reason with smart retry result message
+        if ($result->message) {
+            $monitor->uptime_check_failure_reason = $result->message;
+            $monitor->saveQuietly();
         }
+
+        // Fire the UptimeCheckFailed event manually to trigger notifications
+        $downtimePeriod = new Period(
+            $monitor->uptime_status_last_change_date ?? Carbon::now(),
+            Carbon::now()
+        );
+        event(new UptimeCheckFailed($monitor, $downtimePeriod));
     }
 
     /**
