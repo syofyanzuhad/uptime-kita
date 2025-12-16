@@ -20,8 +20,6 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
 
     public $backoff = [60, 120, 300]; // Exponential backoff: 1 min, 2 min, 5 min
 
-    public $maxExceptions = 1; // Fail after 1 exception
-
     protected ?int $monitorId;
 
     /**

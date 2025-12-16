@@ -215,7 +215,7 @@ return [
             'maxJobs' => 0,
             'memory' => 256,
             'tries' => 3,
-            'timeout' => 300,
+            'timeout' => 660, // Must exceed job timeout (600s) to allow proper completion
             'nice' => 10, // Lower priority for statistics
         ],
     ],
