@@ -6,11 +6,12 @@ use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorStatistic;
 use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-class CalculateMonitorStatisticsJob implements ShouldQueue
+class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -19,6 +20,14 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
     public $tries = 3;
 
     public $backoff = [60, 120, 300]; // Exponential backoff: 1 min, 2 min, 5 min
+
+    /**
+     * The number of seconds after which the job's unique lock will be released.
+     * This should be longer than the timeout + backoff time to prevent duplicates.
+     *
+     * @var int
+     */
+    public $uniqueFor = 900; // 15 minutes - matches the scheduler interval
 
     protected ?int $monitorId;
 
@@ -29,6 +38,15 @@ class CalculateMonitorStatisticsJob implements ShouldQueue
     {
         $this->monitorId = $monitorId;
         $this->onQueue('statistics'); // Use dedicated queue for statistics
+    }
+
+    /**
+     * Get the unique ID for the job.
+     * This ensures only one job per monitor (or one global job when monitorId is null) can exist.
+     */
+    public function uniqueId(): string
+    {
+        return $this->monitorId ? 'monitor-'.$this->monitorId : 'all-monitors';
     }
 
     /**
