@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\TelemetryReceiverController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MonitorImportController;
 use App\Http\Controllers\MonitorListController;
 use App\Http\Controllers\PinnedMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
@@ -72,8 +73,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk private monitor
     Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
 
+    // Monitor import routes (must be before resource route to avoid conflict with monitor/{monitor})
+    Route::prefix('monitor/import')->name('monitor.import.')->group(function () {
+        Route::get('/', [MonitorImportController::class, 'index'])->name('index');
+        Route::post('/preview', [MonitorImportController::class, 'preview'])->name('preview');
+        Route::post('/process', [MonitorImportController::class, 'process'])->name('process');
+        Route::get('/sample/csv', [MonitorImportController::class, 'sampleCsv'])->name('sample.csv');
+        Route::get('/sample/json', [MonitorImportController::class, 'sampleJson'])->name('sample.json');
+    });
+
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);
+
     // Route untuk subscribe monitor
     Route::post('/monitor/{monitorId}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
     // Route untuk unsubscribe monitor

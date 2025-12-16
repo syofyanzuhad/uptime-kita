@@ -156,12 +156,20 @@ function onPerPageChange() {
                     <div class="mb-4 flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Daftar Monitor</h3>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Next refresh in: {{ countdown }}s</div>
-                        <Link
-                            :href="route('monitor.create')"
-                            class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                        >
-                            Tambah Monitor
-                        </Link>
+                        <div class="flex items-center gap-2">
+                            <Link
+                                :href="route('monitor.import.index')"
+                                class="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                                Import
+                            </Link>
+                            <Link
+                                :href="route('monitor.create')"
+                                class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                            >
+                                Tambah Monitor
+                            </Link>
+                        </div>
                     </div>
 
                     <!-- Search Bar & Filter -->
