@@ -109,6 +109,23 @@ class Monitor extends SpatieMonitor
         });
     }
 
+    /**
+     * Get the alert pattern setting for this monitor.
+     */
+    public function getAlertPatternAttribute(): string
+    {
+        return $this->notification_settings['alert_pattern']
+            ?? \App\Services\AlertPatternService::PATTERN_EVERY;
+    }
+
+    /**
+     * Check if this monitor uses Fibonacci alert throttling.
+     */
+    public function usesFibonacciAlerts(): bool
+    {
+        return $this->alert_pattern === \App\Services\AlertPatternService::PATTERN_FIBONACCI;
+    }
+
     // Getter for uptime_last_check_date to return 00 seconds in carbon object
     public function getUptimeLastCheckDateAttribute()
     {

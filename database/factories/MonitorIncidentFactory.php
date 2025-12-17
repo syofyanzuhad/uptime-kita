@@ -30,6 +30,8 @@ class MonitorIncidentFactory extends Factory
             'reason' => $this->faker->optional(0.7)->sentence(),
             'response_time' => $this->faker->optional(0.6)->numberBetween(0, 5000),
             'status_code' => $this->faker->optional(0.8)->randomElement([0, 200, 301, 400, 403, 404, 500, 502, 503, 504]),
+            'down_alert_sent' => $this->faker->boolean(70),
+            'last_alert_at_failure_count' => $this->faker->optional(0.7)->numberBetween(1, 21),
         ];
     }
 
@@ -56,6 +58,28 @@ class MonitorIncidentFactory extends Factory
             'started_at' => $startedAt,
             'ended_at' => $endedAt,
             'duration_minutes' => $startedAt->diffInMinutes($endedAt),
+        ]);
+    }
+
+    /**
+     * Indicate that an alert was sent for this incident.
+     */
+    public function alertSent(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'down_alert_sent' => true,
+            'last_alert_at_failure_count' => $this->faker->numberBetween(1, 13),
+        ]);
+    }
+
+    /**
+     * Indicate that no alert was sent for this incident.
+     */
+    public function noAlertSent(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'down_alert_sent' => false,
+            'last_alert_at_failure_count' => null,
         ]);
     }
 }

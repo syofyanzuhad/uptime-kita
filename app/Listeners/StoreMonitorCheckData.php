@@ -127,6 +127,8 @@ class StoreMonitorCheckData
                     'reason' => $monitor->uptime_check_failure_reason,
                     'response_time' => $responseTime,
                     'status_code' => $statusCode,
+                    'down_alert_sent' => false,
+                    'last_alert_at_failure_count' => null,
                 ]);
             }
         } elseif ($event instanceof UptimeCheckRecovered) {

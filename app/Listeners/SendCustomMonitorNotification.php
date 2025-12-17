@@ -2,19 +2,18 @@
 
 namespace App\Listeners;
 
+use App\Models\MonitorIncident;
 use App\Notifications\MonitorStatusChanged;
+use App\Services\AlertPatternService;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
+use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 
 class SendCustomMonitorNotification
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        protected AlertPatternService $alertPatternService
+    ) {}
 
     /**
      * Handle the event.
@@ -40,6 +39,37 @@ class SendCustomMonitorNotification
             return;
         }
 
+        $isDownEvent = $event instanceof UptimeCheckFailed;
+        $isRecoveryEvent = $event instanceof UptimeCheckRecovered;
+
+        // Check if we should send notification based on alert pattern
+        if ($isDownEvent) {
+            if (! $this->alertPatternService->shouldSendDownAlert($monitor)) {
+                Log::info('SendCustomMonitorNotification: Skipping - not a Fibonacci alert point', [
+                    'monitor_id' => $monitor->id,
+                    'failure_count' => $monitor->uptime_check_times_failed_in_a_row,
+                    'next_alert_at' => $this->alertPatternService->getNextAlertAt(
+                        $monitor->uptime_check_times_failed_in_a_row
+                    ),
+                ]);
+
+                return;
+            }
+        }
+
+        if ($isRecoveryEvent) {
+            $incident = $this->findRecentIncident($monitor);
+
+            if (! $this->alertPatternService->shouldSendRecoveryAlert($monitor, $incident)) {
+                Log::info('SendCustomMonitorNotification: Skipping recovery - no DOWN alert was sent', [
+                    'monitor_id' => $monitor->id,
+                    'incident_id' => $incident?->id,
+                ]);
+
+                return;
+            }
+        }
+
         // Get all users associated with this monitor
         $users = $monitor->users()->where('user_monitor.is_active', true)->get();
 
@@ -58,7 +88,7 @@ class SendCustomMonitorNotification
             return;
         }
 
-        $status = $event instanceof UptimeCheckFailed ? 'DOWN' : 'UP';
+        $status = $isDownEvent ? 'DOWN' : 'UP';
 
         Log::info('SendCustomMonitorNotification: Sending notifications', [
             'monitor_id' => $monitor->id,
@@ -92,10 +122,52 @@ class SendCustomMonitorNotification
             }
         }
 
+        // After successfully sending DOWN notifications, update the incident
+        if ($isDownEvent) {
+            $this->markIncidentAlertSent($monitor);
+        }
+
         Log::info('SendCustomMonitorNotification: Completed processing', [
             'monitor_id' => $monitor->id,
             'status' => $status,
             'total_users_processed' => $users->count(),
         ]);
+    }
+
+    /**
+     * Find the most recent incident for a monitor (ongoing or just ended).
+     */
+    protected function findRecentIncident($monitor): ?MonitorIncident
+    {
+        return MonitorIncident::where('monitor_id', $monitor->id)
+            ->where(function ($query) {
+                $query->whereNull('ended_at')
+                    ->orWhere('ended_at', '>=', now()->subMinutes(5));
+            })
+            ->orderBy('started_at', 'desc')
+            ->first();
+    }
+
+    /**
+     * Mark the current incident as having sent an alert.
+     */
+    protected function markIncidentAlertSent($monitor): void
+    {
+        $incident = MonitorIncident::where('monitor_id', $monitor->id)
+            ->whereNull('ended_at')
+            ->first();
+
+        if ($incident) {
+            $incident->update([
+                'down_alert_sent' => true,
+                'last_alert_at_failure_count' => $monitor->uptime_check_times_failed_in_a_row,
+            ]);
+
+            Log::info('SendCustomMonitorNotification: Marked incident alert sent', [
+                'monitor_id' => $monitor->id,
+                'incident_id' => $incident->id,
+                'failure_count' => $monitor->uptime_check_times_failed_in_a_row,
+            ]);
+        }
     }
 }

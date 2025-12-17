@@ -19,6 +19,8 @@ class MonitorIncident extends Model
         'reason',
         'response_time',
         'status_code',
+        'down_alert_sent',
+        'last_alert_at_failure_count',
     ];
 
     protected $casts = [
@@ -27,6 +29,8 @@ class MonitorIncident extends Model
         'response_time' => 'integer',
         'status_code' => 'integer',
         'duration_minutes' => 'integer',
+        'down_alert_sent' => 'boolean',
+        'last_alert_at_failure_count' => 'integer',
     ];
 
     /**
@@ -62,5 +66,13 @@ class MonitorIncident extends Model
         $this->ended_at = now();
         $this->duration_minutes = $this->started_at->diffInMinutes($this->ended_at);
         $this->save();
+    }
+
+    /**
+     * Check if any DOWN alert was sent during this incident.
+     */
+    public function wasAlertSent(): bool
+    {
+        return $this->down_alert_sent;
     }
 }
