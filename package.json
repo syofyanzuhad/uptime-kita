@@ -1,6 +1,7 @@
 {
     "private": true,
     "type": "module",
+    "version": "0.1.1",
     "scripts": {
         "ziggy:generate": "php artisan ziggy:generate resources/js/ziggy.js",
         "build": "npm run ziggy:generate && vite build",
@@ -9,7 +10,12 @@
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
-        "check-pr": "./scripts/check-pr.sh"
+        "check-pr": "./scripts/check-pr.sh",
+        "release": "standard-version",
+        "release:minor": "standard-version --release-as minor",
+        "release:major": "standard-version --release-as major",
+        "release:patch": "standard-version --release-as patch",
+        "release:first": "standard-version --first-release"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
@@ -22,6 +28,7 @@
         "prettier": "^3.4.2",
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-tailwindcss": "^0.6.11",
+        "standard-version": "^9.5.0",
         "typescript-eslint": "^8.23.0",
         "vue-tsc": "^2.2.4"
     },
