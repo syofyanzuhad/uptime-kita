@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract release notes from CHANGELOG
+        id: changelog
+        run: |
+          # Extract the content between the first and second version headers
+          VERSION="${GITHUB_REF#refs/tags/}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Get changelog content for this version
+          CHANGELOG=$(awk '/^### \['"${VERSION#v}"'\]/,/^### \[/' CHANGELOG.md | head -n -1)
+
+          # If no specific version found, use the first section
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG=$(awk '/^### \[/,/^### \[/' CHANGELOG.md | head -n -1)
+          fi
+
+          # Write to file for multiline support
+          echo "$CHANGELOG" > release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.changelog.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
