@@ -225,17 +225,17 @@ return [
             'supervisor-default' => [
                 'maxProcesses' => 10,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'balanceCooldown' => 2,
             ],
             'supervisor-calculate' => [
                 'maxProcesses' => 15,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'balanceCooldown' => 1,
             ],
             'supervisor-statistic' => [
                 'maxProcesses' => 3,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'balanceCooldown' => 1,
             ],
         ],
 
