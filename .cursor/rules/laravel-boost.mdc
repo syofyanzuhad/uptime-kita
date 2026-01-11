@@ -2,6 +2,58 @@
 alwaysApply: true
 ---
 <laravel-boost-guidelines>
+=== foundation rules ===
+
+# Laravel Boost Guidelines
+
+The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to enhance the user's satisfaction building Laravel applications.
+
+## Foundational Context
+This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
+
+- php - 8.3.29
+- inertiajs/inertia-laravel (INERTIA) - v2
+- laravel/framework (LARAVEL) - v12
+- laravel/horizon (HORIZON) - v5
+- laravel/prompts (PROMPTS) - v0
+- laravel/socialite (SOCIALITE) - v5
+- laravel/telescope (TELESCOPE) - v5
+- laravel/wayfinder (WAYFINDER) - v0
+- tightenco/ziggy (ZIGGY) - v2
+- laravel/mcp (MCP) - v0
+- laravel/pint (PINT) - v1
+- laravel/sail (SAIL) - v1
+- pestphp/pest (PEST) - v3
+- phpunit/phpunit (PHPUNIT) - v11
+- @inertiajs/vue3 (INERTIA) - v2
+- tailwindcss (TAILWINDCSS) - v4
+- vue (VUE) - v3
+- @laravel/vite-plugin-wayfinder (WAYFINDER) - v0
+- eslint (ESLINT) - v9
+- prettier (PRETTIER) - v3
+
+## Conventions
+- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
+- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
+- Check for existing components to reuse before writing a new one.
+
+## Verification Scripts
+- Do not create verification scripts or tinker when tests cover that functionality and prove it works. Unit and feature tests are more important.
+
+## Application Structure & Architecture
+- Stick to existing directory structure - don't create new base folders without approval.
+- Do not change the application's dependencies without approval.
+
+## Frontend Bundling
+- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `vendor/bin/sail npm run build`, `vendor/bin/sail npm run dev`, or `vendor/bin/sail composer run dev`. Ask them.
+
+## Replies
+- Be concise in your explanations - focus on what's important rather than explaining obvious details.
+
+## Documentation Files
+- You must only create documentation files if explicitly requested by the user.
+
+
 === boost rules ===
 
 ## Laravel Boost
@@ -27,15 +79,71 @@ alwaysApply: true
 - You must use this tool to search for Laravel-ecosystem documentation before falling back to other approaches.
 - Search the documentation before making code changes to ensure we are taking the correct approach.
 - Use multiple, broad, simple, topic based queries to start. For example: `['rate limiting', 'routing rate limiting', 'routing']`.
+- Do not add package names to queries - package information is already shared. For example, use `test resource table`, not `filament 4 test resource table`.
 
 ### Available Search Syntax
 - You can and should pass multiple queries at once. The most relevant results will be returned first.
 
 1. Simple Word Searches with auto-stemming - query=authentication - finds 'authenticate' and 'auth'
 2. Multiple Words (AND Logic) - query=rate limit - finds knowledge containing both "rate" AND "limit"
-3. Quoted Phrases (Exact Position) - query="infinite scroll - Words must be adjacent and in that order
+3. Quoted Phrases (Exact Position) - query="infinite scroll" - Words must be adjacent and in that order
 4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit"
 5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms
+
+
+=== php rules ===
+
+## PHP
+
+- Always use curly braces for control structures, even if it has one line.
+
+### Constructors
+- Use PHP 8 constructor property promotion in `__construct()`.
+    - <code-snippet>public function __construct(public GitHub $github) { }</code-snippet>
+- Do not allow empty `__construct()` methods with zero parameters.
+
+### Type Declarations
+- Always use explicit return type declarations for methods and functions.
+- Use appropriate PHP type hints for method parameters.
+
+<code-snippet name="Explicit Return Types and Method Params" lang="php">
+protected function isAccessible(User $user, ?string $path = null): bool
+{
+    ...
+}
+</code-snippet>
+
+## Comments
+- Prefer PHPDoc blocks over comments. Never use comments within the code itself unless there is something _very_ complex going on.
+
+## PHPDoc Blocks
+- Add useful array shape type definitions for arrays when appropriate.
+
+## Enums
+- Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
+
+
+=== sail rules ===
+
+## Laravel Sail
+
+- This project runs inside Laravel Sail's Docker containers. You MUST execute all commands through Sail.
+- Start services using `vendor/bin/sail up -d` and stop them with `vendor/bin/sail stop`.
+- Open the application in the browser by running `vendor/bin/sail open`.
+- Always prefix PHP, Artisan, Composer, and Node commands** with `vendor/bin/sail`. Examples:
+- Run Artisan Commands: `vendor/bin/sail artisan migrate`
+- Install Composer packages: `vendor/bin/sail composer install`
+- Execute node commands: `vendor/bin/sail npm run dev`
+- Execute PHP scripts: `vendor/bin/sail php [script]`
+- View all available Sail commands by running `vendor/bin/sail` without arguments.
+
+
+=== tests rules ===
+
+## Test Enforcement
+
+- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
+- Run the minimum number of tests needed to ensure code quality and speed. Use `vendor/bin/sail artisan test` with a specific filename or filter.
 
 
 === inertia-laravel/core rules ===
@@ -44,6 +152,7 @@ alwaysApply: true
 
 - Inertia.js components should be placed in the `resources/js/Pages` directory unless specified differently in the JS bundler (vite.config.js).
 - Use `Inertia::render()` for server-side routing instead of traditional Blade views.
+- Use `search-docs` for accurate guidance on all things Inertia.
 
 <code-snippet lang="php" name="Inertia::render Example">
 // routes/web.php example
@@ -71,13 +180,16 @@ Route::get('/users', function () {
 ### Deferred Props & Empty States
 - When using deferred props on the frontend, you should add a nice empty state with pulsing / animated skeleton.
 
+### Inertia Form General Guidance
+- Build forms using the `useForm` helper. Use the code examples and `search-docs` tool with a query of `useForm helper` for guidance.
+
 
 === laravel/core rules ===
 
 ## Do Things the Laravel Way
 
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
-- If you're creating a generic PHP class, use `artisan make:class`.
+- Use `vendor/bin/sail artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using the `list-artisan-commands` tool.
+- If you're creating a generic PHP class, use `vendor/bin/sail artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 
 ### Database
@@ -88,7 +200,7 @@ Route::get('/users', function () {
 - Use Laravel's query builder for very complex database operations.
 
 ### Model Creation
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `list-artisan-commands` to check the available options to `php artisan make:model`.
+- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `list-artisan-commands` to check the available options to `vendor/bin/sail artisan make:model`.
 
 ### APIs & Eloquent Resources
 - For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
@@ -112,10 +224,10 @@ Route::get('/users', function () {
 ### Testing
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `php artisan make:test [options] <name>` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
+- When creating tests, make use of `vendor/bin/sail artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
 
 ### Vite Error
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
+- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
 
 
 === laravel/v12 rules ===
@@ -140,23 +252,81 @@ Route::get('/users', function () {
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
 
 
+=== wayfinder/core rules ===
+
+## Laravel Wayfinder
+
+Wayfinder generates TypeScript functions and types for Laravel controllers and routes which you can import into your client side code. It provides type safety and automatic synchronization between backend routes and frontend code.
+
+### Development Guidelines
+- Always use `search-docs` to check wayfinder correct usage before implementing any features.
+- Always Prefer named imports for tree-shaking (e.g., `import { show } from '@/actions/...'`)
+- Avoid default controller imports (prevents tree-shaking)
+- Run `vendor/bin/sail artisan wayfinder:generate` after route changes if Vite plugin isn't installed
+
+### Feature Overview
+- Form Support: Use `.form()` with `--with-form` flag for HTML form attributes — `<form {...store.form()}>` → `action="/posts" method="post"`
+- HTTP Methods: Call `.get()`, `.post()`, `.patch()`, `.put()`, `.delete()` for specific methods — `show.head(1)` → `{ url: "/posts/1", method: "head" }`
+- Invokable Controllers: Import and invoke directly as functions. For example, `import StorePost from '@/actions/.../StorePostController'; StorePost()`
+- Named Routes: Import from `@/routes/` for non-controller routes. For example, `import { show } from '@/routes/post'; show(1)` for route name `post.show`
+- Parameter Binding: Detects route keys (e.g., `{post:slug}`) and accepts matching object properties — `show("my-post")` or `show({ slug: "my-post" })`
+- Query Merging: Use `mergeQuery` to merge with `window.location.search`, set values to `null` to remove — `show(1, { mergeQuery: { page: 2, sort: null } })`
+- Query Parameters: Pass `{ query: {...} }` in options to append params — `show(1, { query: { page: 1 } })` → `"/posts/1?page=1"`
+- Route Objects: Functions return `{ url, method }` shaped objects — `show(1)` → `{ url: "/posts/1", method: "get" }`
+- URL Extraction: Use `.url()` to get URL string — `show.url(1)` → `"/posts/1"`
+
+### Example Usage
+
+<code-snippet name="Wayfinder Basic Usage" lang="typescript">
+    // Import controller methods (tree-shakable)
+    import { show, store, update } from '@/actions/App/Http/Controllers/PostController'
+
+    // Get route object with URL and method...
+    show(1) // { url: "/posts/1", method: "get" }
+
+    // Get just the URL...
+    show.url(1) // "/posts/1"
+
+    // Use specific HTTP methods...
+    show.get(1) // { url: "/posts/1", method: "get" }
+    show.head(1) // { url: "/posts/1", method: "head" }
+
+    // Import named routes...
+    import { show as postShow } from '@/routes/post' // For route name 'post.show'
+    postShow(1) // { url: "/posts/1", method: "get" }
+</code-snippet>
+
+
+### Wayfinder + Inertia
+If your application uses the `useForm` component from Inertia, you can directly submit to the wayfinder generated functions.
+
+<code-snippet name="Wayfinder useForm Example" lang="typescript">
+    import { store } from "@/actions/App/Http/Controllers/ExampleController";
+
+    const form = useForm({
+        name: "My Big Post",
+    });
+
+    form.submit(store());
+</code-snippet>
+
+
 === pint/core rules ===
 
 ## Laravel Pint Code Formatter
 
-- You must run `vendor/bin/pint` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
+- You must run `vendor/bin/sail bin pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
+- Do not run `vendor/bin/sail bin pint --test`, simply run `vendor/bin/sail bin pint` to fix any formatting issues.
 
 
 === pest/core rules ===
 
 ## Pest
-
 ### Testing
 - If you need to verify a feature is working, write or update a Unit / Feature test.
 
 ### Pest Tests
-- All tests must be written using Pest. Use `php artisan make:test --pest <name>`.
+- All tests must be written using Pest. Use `vendor/bin/sail artisan make:test --pest {name}`.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files - these are core to the application.
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - Tests live in the `tests/Feature` and `tests/Unit` directories.
@@ -169,9 +339,9 @@ it('is true', function () {
 
 ### Running Tests
 - Run the minimal number of tests using an appropriate filter before finalizing code edits.
-- To run all tests: `php artisan test`.
-- To run all tests in a file: `php artisan test tests/Feature/ExampleTest.php`.
-- To filter on a particular test name: `php artisan test --filter=testName` (recommended after making a change to a related file).
+- To run all tests: `vendor/bin/sail artisan test`.
+- To run all tests in a file: `vendor/bin/sail artisan test tests/Feature/ExampleTest.php`.
+- To filter on a particular test name: `vendor/bin/sail artisan test --filter=testName` (recommended after making a change to a related file).
 - When the tests relating to your changes are passing, ask the user if they would like to run the entire test suite to ensure everything is still passing.
 
 ### Pest Assertions
@@ -190,7 +360,7 @@ it('returns all', function () {
 - You can also create partial mocks using the same import or self method.
 
 ### Datasets
-- Use datasets in Pest to simplify tests which have a lot of duplicated data. This often the case when testing validation rules, so consider going with this solutionwhen writing tests for validation rules.
+- Use datasets in Pest to simplify tests which have a lot of duplicated data. This is often the case when testing validation rules, so consider going with this solution when writing tests for validation rules.
 
 <code-snippet name="Pest Dataset Example" lang="php">
 it('has emails', function (string $email) {
@@ -209,46 +379,45 @@ it('has emails', function (string $email) {
 - Vue components must have a single root element.
 - Use `router.visit()` or `<Link>` for navigation instead of traditional links.
 
-<code-snippet lang="vue" name="Inertia Client Navigation">
-    import { Link } from '@inertiajs/vue3'
+<code-snippet name="Inertia Client Navigation" lang="vue">
 
+    import { Link } from '@inertiajs/vue3'
     <Link href="/">Home</Link>
+
 </code-snippet>
 
-- For form handling, use `router.post` and related methods. Do not use regular forms.
 
+=== inertia-vue/v2/forms rules ===
 
-<code-snippet lang="vue" name="Inertia Vue Form Example">
-    <script setup>
-    import { reactive } from 'vue'
-    import { router } from '@inertiajs/vue3'
-    import { usePage } from '@inertiajs/vue3'
+## Inertia + Vue Forms
 
-    const page = usePage()
+<code-snippet name="Inertia Vue useForm example" lang="vue">
 
-    const form = reactive({
-      first_name: null,
-      last_name: null,
-      email: null,
+<script setup>
+    import { useForm } from '@inertiajs/vue3'
+
+    const form = useForm({
+        email: null,
+        password: null,
+        remember: false,
     })
+</script>
 
-    function submit() {
-      router.post('/users', form)
-    }
-    </script>
+<template>
+    <form @submit.prevent="form.post('/login')">
+        <!-- email -->
+        <input type="text" v-model="form.email">
+        <div v-if="form.errors.email">{{ form.errors.email }}</div>
+        <!-- password -->
+        <input type="password" v-model="form.password">
+        <div v-if="form.errors.password">{{ form.errors.password }}</div>
+        <!-- remember me -->
+        <input type="checkbox" v-model="form.remember"> Remember Me
+        <!-- submit -->
+        <button type="submit" :disabled="form.processing">Login</button>
+    </form>
+</template>
 
-    <template>
-        <h1>Create {{ page.modelName }}</h1>
-        <form @submit.prevent="submit">
-            <label for="first_name">First name:</label>
-            <input id="first_name" v-model="form.first_name" />
-            <label for="last_name">Last name:</label>
-            <input id="last_name" v-model="form.last_name" />
-            <label for="email">Email:</label>
-            <input id="email" v-model="form.email" />
-            <button type="submit">Submit</button>
-        </form>
-    </template>
 </code-snippet>
 
 
@@ -283,9 +452,16 @@ it('has emails', function (string $email) {
 
 - Always use Tailwind CSS v4 - do not use the deprecated utilities.
 - `corePlugins` is not supported in Tailwind v4.
+- In Tailwind v4, configuration is CSS-first using the `@theme` directive — no separate `tailwind.config.js` file is needed.
+<code-snippet name="Extending Theme in CSS" lang="css">
+@theme {
+  --color-brand: oklch(0.72 0.11 178);
+}
+</code-snippet>
+
 - In Tailwind v4, you import Tailwind using a regular CSS `@import` statement, not using the `@tailwind` directives used in v3:
 
-<code-snippet name="Tailwind v4 Import Tailwind Diff" lang="diff"
+<code-snippet name="Tailwind v4 Import Tailwind Diff" lang="diff">
    - @tailwind base;
    - @tailwind components;
    - @tailwind utilities;
@@ -310,12 +486,4 @@ it('has emails', function (string $email) {
 | overflow-ellipsis | text-ellipsis |
 | decoration-slice | box-decoration-slice |
 | decoration-clone | box-decoration-clone |
-
-
-=== tests rules ===
-
-## Test Enforcement
-
-- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
-- Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test` with a specific filename or filter.
 </laravel-boost-guidelines>

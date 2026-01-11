@@ -1,0 +1,18 @@
+{
+    "agents": [
+        "claude_code",
+        "codex",
+        "copilot",
+        "cursor",
+        "gemini"
+    ],
+    "editors": [
+        "claude_code",
+        "cursor",
+        "gemini",
+        "vscode"
+    ],
+    "guidelines": [],
+    "herd_mcp": true,
+    "sail": true
+}
