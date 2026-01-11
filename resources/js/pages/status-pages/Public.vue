@@ -8,7 +8,7 @@ import ToastContainer from '@/components/ToastContainer.vue';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
 import { useTheme } from '@/composables/useTheme';
 import { globalToasts } from '@/composables/useToastNotifications';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 // --- INTERFACES (Struktur Data Anda) ---
@@ -25,6 +25,7 @@ interface Monitor {
     id: number;
     name: string;
     url: string;
+    host: string;
     uptime_status: string;
     uptime_check_enabled: boolean;
     favicon?: string | null;
@@ -627,7 +628,7 @@ const handleClickOutside = (event: MouseEvent) => {
                     <div v-if="monitorsLoading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-gray-800/70">
                         <span class="text-gray-500 dark:text-gray-400">Refreshing...</span>
                     </div>
-                    <div v-for="monitor in monitors" :key="monitor.id" class="px-4 py-4 sm:px-6">
+                    <div v-for="monitor in monitors" :key="monitor.id" class="relative group px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <div class="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
                             <div class="flex w-full min-w-0 items-center space-x-4">
                                 <img
@@ -655,7 +656,9 @@ const handleClickOutside = (event: MouseEvent) => {
 
                                 <div class="min-w-0 flex-grow">
                                     <h4 class="flex flex-wrap items-center font-medium text-gray-900 dark:text-gray-100">
-                                        {{ monitor.name }}
+                                        <Link :href="'/m/' + monitor.host" class="after:absolute after:inset-0 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            {{ monitor.name }}
+                                        </Link>
                                         <span
                                             v-if="monitor.certificate_check_enabled && monitor.certificate_status"
                                             class="ml-2 flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase"
@@ -682,7 +685,7 @@ const handleClickOutside = (event: MouseEvent) => {
                                         </span>
                                     </h4>
                                     <a
-                                        class="block text-sm break-all text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
+                                        class="relative z-20 block text-sm break-all text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
                                         :href="monitor.url"
                                         target="_blank"
                                         >{{ monitor.url }}</a
