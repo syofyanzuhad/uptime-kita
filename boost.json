@@ -8,11 +8,14 @@
     ],
     "editors": [
         "claude_code",
+        "codex",
         "cursor",
         "gemini",
         "vscode"
     ],
-    "guidelines": [],
-    "herd_mcp": true,
-    "sail": true
+    "guidelines": [
+        "inertiajs/inertia-laravel",
+        "laravel/wayfinder"
+    ],
+    "herd_mcp": true
 }
