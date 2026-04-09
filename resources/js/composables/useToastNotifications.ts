@@ -1,4 +1,5 @@
-import { ref, computed } from 'vue';
+import { useStorage, useWebNotification } from '@vueuse/core';
+import { computed, ref } from 'vue';
 
 export interface ToastNotification {
     id: string;
@@ -13,8 +14,12 @@ export interface ToastNotification {
 const toasts = ref<ToastNotification[]>([]);
 const maxToasts = 5;
 
+// Persistent preference for desktop notifications
+export const desktopNotificationsEnabled = useStorage('uptime_desktop_notifications_enabled', false);
+
 export function useToastNotifications() {
     const visibleToasts = computed(() => toasts.value.slice(0, maxToasts));
+    const { show, isSupported } = useWebNotification();
 
     const addToast = (toast: Omit<ToastNotification, 'id' | 'timestamp'>) => {
         const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -54,11 +59,24 @@ export function useToastNotifications() {
         favicon?: string | null;
     }) => {
         const isRecovered = change.new_status === 'up';
+        const title = isRecovered ? 'Service Recovered' : 'Service Down';
+        const message = `${change.monitor_name} is now ${isRecovered ? 'operational' : 'experiencing issues'}`;
+
+        // Trigger desktop notification if enabled, supported, and tab is hidden
+        if (desktopNotificationsEnabled.value && isSupported.value && document.visibilityState === 'hidden') {
+            show({
+                title,
+                body: message,
+                icon: change.favicon || '/favicon.ico',
+                tag: `monitor_${change.monitor_name}`, // Group notifications for same monitor
+                renotify: true,
+            });
+        }
 
         return addToast({
             type: isRecovered ? 'status-up' : 'status-down',
-            title: isRecovered ? 'Service Recovered' : 'Service Down',
-            message: `${change.monitor_name} is now ${isRecovered ? 'operational' : 'experiencing issues'}`,
+            title,
+            message,
             duration: 8000, // 8 seconds for status changes
             data: {
                 ...change,
