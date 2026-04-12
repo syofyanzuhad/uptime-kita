@@ -20,19 +20,43 @@ class MonitorCompactController extends Controller
             ini_set('memory_limit', '512M');
         }
 
-        $query = Monitor::with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
+        $query = Monitor::query()
+            ->select([
+                'id',
+                'url',
+                'uptime_status',
+                'uptime_check_enabled',
+                'uptime_last_check_date',
+                'certificate_check_enabled',
+                'certificate_status',
+                'certificate_expiration_date',
+                'uptime_check_interval',
+                'is_public',
+                'page_views_count',
+                'uptime_status_last_change_date',
+                'uptime_check_failure_reason',
+                'sensitivity',
+                'confirmation_delay_seconds',
+                'confirmation_retries',
+                'transient_failures_count',
+                'created_at',
+                'updated_at',
+            ])
+            ->with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
 
         // If not logged in, only show public monitors
         if (! auth()->check()) {
-            $query->where('is_public', true);
+            $query->public();
         }
 
         $monitors = $query->orderBy('url')->get();
 
-        $availableTags = Tag::whereIn('id', function ($query) use ($monitors) {
+        $monitorIds = $monitors->pluck('id');
+
+        $availableTags = Tag::whereIn('id', function ($query) use ($monitorIds) {
             $query->select('tag_id')
                 ->from('taggables')
-                ->whereIn('taggable_id', $monitors->pluck('id'))
+                ->whereIn('taggable_id', $monitorIds)
                 ->where('taggable_type', Monitor::class);
         })->get(['id', 'name']);
 
