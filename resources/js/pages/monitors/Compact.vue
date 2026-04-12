@@ -93,7 +93,7 @@ const groups = computed(() => {
             <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
-                        <Link :href="isAuthenticated ? '/dashboard' : '/'" class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700">
+                        <Link :href="isAuthenticated ? route('dashboard') : route('home')" class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700">
                             <Icon name="arrowLeft" size="16" />
                         </Link>
                         <div>
@@ -158,7 +158,7 @@ const groups = computed(() => {
                     
                     <Link
                         v-if="!isAuthenticated"
-                        href="/login"
+                        :href="route('login')"
                         class="h-9 rounded-lg bg-blue-600 px-4 flex items-center text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 transition-colors"
                     >
                         LOGIN
