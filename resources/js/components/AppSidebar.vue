@@ -29,7 +29,7 @@ const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Compact View',
-                href: '/monitor/compact',
+                href: '/monitors',
                 icon: Grid3X3,
             },
             {
