@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
 * @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
+* @route '/monitors'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,13 +11,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/monitor/compact',
+    url: '/monitors',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
 * @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
+* @route '/monitors'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
 * @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
+* @route '/monitors'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
 * @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
+* @route '/monitors'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),

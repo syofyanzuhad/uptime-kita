@@ -158,6 +158,50 @@ latestHistory.head = (args: { monitor: number | { id: number } } | [monitor: num
 })
 
 /**
+* @see \App\Http\Controllers\MonitorCompactController::compact
+* @see app/Http/Controllers/MonitorCompactController.php:16
+* @route '/monitors'
+*/
+export const compact = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: compact.url(options),
+    method: 'get',
+})
+
+compact.definition = {
+    methods: ["get","head"],
+    url: '/monitors',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\MonitorCompactController::compact
+* @see app/Http/Controllers/MonitorCompactController.php:16
+* @route '/monitors'
+*/
+compact.url = (options?: RouteQueryOptions) => {
+    return compact.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\MonitorCompactController::compact
+* @see app/Http/Controllers/MonitorCompactController.php:16
+* @route '/monitors'
+*/
+compact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: compact.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\MonitorCompactController::compact
+* @see app/Http/Controllers/MonitorCompactController.php:16
+* @route '/monitors'
+*/
+compact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: compact.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\PinnedMonitorController::pinned
 * @see app/Http/Controllers/PinnedMonitorController.php:14
 * @route '/pinned-monitors'
@@ -294,50 +338,6 @@ privateMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 privateMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: privateMethod.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
-*/
-export const compact = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: compact.url(options),
-    method: 'get',
-})
-
-compact.definition = {
-    methods: ["get","head"],
-    url: '/monitor/compact',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
-*/
-compact.url = (options?: RouteQueryOptions) => {
-    return compact.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
-*/
-compact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: compact.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
-* @route '/monitor/compact'
-*/
-compact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: compact.url(options),
     method: 'head',
 })
 
@@ -1021,11 +1021,11 @@ const monitor = {
     public: Object.assign(publicMethod, publicMethodC5d39d),
     statistic: Object.assign(statistic, statistic),
     latestHistory: Object.assign(latestHistory, latestHistory),
+    compact: Object.assign(compact, compact),
     pinned: Object.assign(pinned, pinned),
     togglePin: Object.assign(togglePin, togglePin),
     private: Object.assign(privateMethod, privateMethod),
     import: Object.assign(importMethod, importMethod),
-    compact: Object.assign(compact, compact),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

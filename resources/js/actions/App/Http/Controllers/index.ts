@@ -8,11 +8,11 @@ import BadgeController from './BadgeController'
 import OgImageController from './OgImageController'
 import PublicStatusPageController from './PublicStatusPageController'
 import LatestHistoryController from './LatestHistoryController'
+import MonitorCompactController from './MonitorCompactController'
 import PinnedMonitorController from './PinnedMonitorController'
 import MonitorListController from './MonitorListController'
 import PrivateMonitorController from './PrivateMonitorController'
 import MonitorImportController from './MonitorImportController'
-import MonitorCompactController from './MonitorCompactController'
 import UptimeMonitorController from './UptimeMonitorController'
 import SubscribeMonitorController from './SubscribeMonitorController'
 import UnsubscribeMonitorController from './UnsubscribeMonitorController'
@@ -47,11 +47,11 @@ const Controllers = {
     OgImageController: Object.assign(OgImageController, OgImageController),
     PublicStatusPageController: Object.assign(PublicStatusPageController, PublicStatusPageController),
     LatestHistoryController: Object.assign(LatestHistoryController, LatestHistoryController),
+    MonitorCompactController: Object.assign(MonitorCompactController, MonitorCompactController),
     PinnedMonitorController: Object.assign(PinnedMonitorController, PinnedMonitorController),
     MonitorListController: Object.assign(MonitorListController, MonitorListController),
     PrivateMonitorController: Object.assign(PrivateMonitorController, PrivateMonitorController),
     MonitorImportController: Object.assign(MonitorImportController, MonitorImportController),
-    MonitorCompactController: Object.assign(MonitorCompactController, MonitorCompactController),
     UptimeMonitorController: Object.assign(UptimeMonitorController, UptimeMonitorController),
     SubscribeMonitorController: Object.assign(SubscribeMonitorController, SubscribeMonitorController),
     UnsubscribeMonitorController: Object.assign(UnsubscribeMonitorController, UnsubscribeMonitorController),
