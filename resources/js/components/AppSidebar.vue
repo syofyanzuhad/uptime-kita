@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, CheckCircle, Coffee, Github, LayoutGrid, LucideMonitorSmartphone, Pin, Shield, SquareActivity, User } from 'lucide-vue-next';
+import { BookOpen, CheckCircle, Coffee, Github, Grid3X3, LayoutGrid, LucideMonitorSmartphone, Pin, Shield, SquareActivity, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -26,6 +26,11 @@ const mainNavItems: NavItem[] = [
                 title: 'All Monitors',
                 href: '/monitor',
                 icon: CheckCircle,
+            },
+            {
+                title: 'Compact View',
+                href: '/monitor/compact',
+                icon: Grid3X3,
             },
             {
                 title: 'Pinned',
