@@ -15,7 +15,12 @@ class MonitorCompactController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Monitor::with(['tags', 'uptimeDaily']);
+        // Increase memory limit for this request to handle wallboard data
+        if (config('app.env') !== 'local') {
+            ini_set('memory_limit', '512M');
+        }
+
+        $query = Monitor::with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
 
         // If not logged in, only show public monitors
         if (! auth()->check()) {
