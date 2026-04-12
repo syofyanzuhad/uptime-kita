@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\MonitorResource;
+use App\Http\Resources\SimpleMonitorResource;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,18 +27,6 @@ class MonitorCompactController extends Controller
                 'uptime_status',
                 'uptime_check_enabled',
                 'uptime_last_check_date',
-                'certificate_check_enabled',
-                'certificate_status',
-                'certificate_expiration_date',
-                'uptime_check_interval',
-                'is_public',
-                'page_views_count',
-                'uptime_status_last_change_date',
-                'uptime_check_failure_reason',
-                'sensitivity',
-                'confirmation_delay_seconds',
-                'confirmation_retries',
-                'transient_failures_count',
                 'created_at',
                 'updated_at',
             ])
@@ -61,7 +49,7 @@ class MonitorCompactController extends Controller
         })->get(['id', 'name']);
 
         return Inertia::render('monitors/Compact', [
-            'monitors' => MonitorResource::collection($monitors),
+            'monitors' => SimpleMonitorResource::collection($monitors),
             'availableTags' => $availableTags,
         ]);
     }
