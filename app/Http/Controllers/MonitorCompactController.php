@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\SimpleMonitorResource;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\Tags\Tag;
 
@@ -15,75 +16,67 @@ class MonitorCompactController extends Controller
      */
     public function index(Request $request)
     {
-        // Increase memory limit for this request to handle wallboard data
+        // Ultimate safety net for huge datasets
         if (config('app.env') !== 'local') {
-            ini_set('memory_limit', '1024M');
+            ini_set('memory_limit', '1536M');
         }
 
-        // Search filter applied to count query too
         $search = $request->search;
-        
-        $countQuery = Monitor::query();
-        if ($search) {
-            $countQuery->search($search);
-        }
-        
-        if (! auth()->check()) {
-            $countQuery->public();
-        }
+        $isGuest = ! auth()->check();
 
-        $totalMonitors = $countQuery->count();
+        // 1. Get total count using raw query to avoid Eloquent overhead entirely
+        $totalCount = DB::table('monitors')
+            ->where('uptime_check_enabled', 1)
+            ->when($isGuest, fn($q) => $q->where('is_public', 1))
+            ->when($search, function($q) use ($search) {
+                $q->where(fn($sq) => $sq->where('url', 'like', "%$search%")->orWhere('name', 'like', "%$search%"));
+            })
+            ->count();
 
-        $query = Monitor::query()
-            ->select([
-                'id',
-                'url',
-                'uptime_status',
-                'uptime_check_enabled',
-                'uptime_last_check_date',
-                'created_at',
-                'updated_at',
-            ])
-            ->with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
+        // 2. Fetch ONLY the IDs for the current page (Very memory efficient)
+        $paginator = Monitor::query()
+            ->select('id')
+            ->when($isGuest, fn($q) => $q->public())
+            ->when($search, fn($q) => $q->search($search))
+            ->orderBy('url')
+            ->simplePaginate(100) // Reduced page size for guaranteed stability
+            ->withQueryString();
 
-        if ($search) {
-            $query->search($search);
-        }
+        $ids = collect($paginator->items())->pluck('id');
 
-        if (! auth()->check()) {
-            $query->public();
-        }
+        // 3. Explicitly load full models and relations ONLY for these 100 IDs
+        // This completely bypasses the "54k IDs in eager load" problem
+        $monitors = Monitor::query()
+            ->whereIn('id', $ids)
+            ->with(['tags', 'uptimeDaily', 'statistics', 'latestHistory'])
+            ->get()
+            ->sortBy(function($m) use ($ids) {
+                // Maintain the URL order from the paginator
+                return $ids->indexOf($m->id);
+            })
+            ->values();
 
-        // Use simplePaginate to avoid the heavy count(*) query on every page
-        $monitors = $query->orderBy('url')->simplePaginate(500)->withQueryString();
-
-        // Prevent expensive appends during transformation
-        $monitors->getCollection()->each(function ($monitor) {
-            $monitor->setAppends([]);
-        });
-
-        $monitorIds = collect($monitors->items())->pluck('id');
-
-        $availableTags = Tag::whereIn('id', function ($query) use ($monitorIds) {
+        // 4. Fetch available tags ONLY for the monitors on this page
+        $availableTags = Tag::whereIn('id', function ($query) use ($ids) {
             $query->select('tag_id')
                 ->from('taggables')
-                ->whereIn('taggable_id', $monitorIds)
+                ->whereIn('taggable_id', $ids)
                 ->where('taggable_type', Monitor::class);
         })->get(['id', 'name']);
 
         return Inertia::render('monitors/Compact', [
             'monitors' => SimpleMonitorResource::collection($monitors),
             'pagination' => [
-                'current_page' => $monitors->currentPage(),
-                'prev_page_url' => $monitors->previousPageUrl(),
-                'next_page_url' => $monitors->nextPageUrl(),
-                'per_page' => $monitors->perPage(),
-                'total' => $totalMonitors,
-                'from' => $monitors->firstItem(),
-                'to' => $monitors->lastItem(),
+                'current_page' => $paginator->currentPage(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'per_page' => $paginator->perPage(),
+                'total' => $totalCount,
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
             ],
             'availableTags' => $availableTags,
-            'totalCount' => $totalMonitors,
+            'totalCount' => $totalCount,
         ]);
     }
 }
