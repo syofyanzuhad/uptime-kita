@@ -41,7 +41,8 @@ class MonitorCompactController extends Controller
             ->where('monitors.uptime_check_enabled', 1)
             ->when($isGuest, fn($q) => $q->where('monitors.is_public', 1))
             ->when($search, function($q) use ($search) {
-                $q->where(fn($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.name', 'like', "%$search%"));
+                // Fixed: Use display_name instead of name (based on DB schema)
+                $q->where(fn($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.display_name', 'like', "%$search%"));
             });
 
         // 2. Handle Sorting
