@@ -23,23 +23,50 @@ class MonitorCompactController extends Controller
 
         $search = $request->search;
         $isGuest = ! auth()->check();
+        
+        // Sorting parameters
+        $sortBy = $request->input('sort', 'url');
+        $direction = $request->input('direction', 'asc');
+        
+        // Ensure direction is safe
+        $direction = in_array(strtolower($direction), ['asc', 'desc']) ? $direction : 'asc';
 
         // 1. Fetch RAW data from DB (No Eloquent models = massive memory savings)
-        $monitors = DB::table('monitors')
+        $query = DB::table('monitors')
             ->select([
-                'id',
-                'url',
-                'uptime_status',
-                'uptime_check_enabled',
-                'uptime_last_check_date',
+                'monitors.id',
+                'monitors.url',
+                'monitors.uptime_status',
+                'monitors.uptime_check_enabled',
+                'monitors.uptime_last_check_date',
             ])
-            ->where('uptime_check_enabled', 1)
-            ->when($isGuest, fn($q) => $q->where('is_public', 1))
+            ->where('monitors.uptime_check_enabled', 1)
+            ->when($isGuest, fn($q) => $q->where('monitors.is_public', 1))
             ->when($search, function($q) use ($search) {
-                $q->where(fn($sq) => $sq->where('url', 'like', "%$search%")->orWhere('name', 'like', "%$search%"));
-            })
-            ->orderBy('url')
-            ->get();
+                $q->where(fn($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.name', 'like', "%$search%"));
+            });
+
+        // 2. Handle Sorting (Using Joins only when necessary for performance)
+        $today = now()->toDateString();
+        
+        if ($sortBy === 'uptime_24h') {
+            $query->leftJoin('monitor_uptime_dailies', function($join) use ($today) {
+                $join->on('monitors.id', '=', 'monitor_uptime_dailies.monitor_id')
+                     ->where('monitor_uptime_dailies.date', '=', $today);
+            })->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
+        } elseif ($sortBy === 'avg_response_time_24h') {
+            $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                  ->orderBy('monitor_statistics.avg_response_time_24h', $direction);
+        } elseif ($sortBy === 'uptime_status') {
+            // Sort Down first: down is 'down', up is 'up'. Sorting desc puts 'up' first, asc puts 'down' first.
+            $query->orderBy('monitors.uptime_status', $direction);
+        } elseif ($sortBy === 'last_checked') {
+            $query->orderBy('monitors.uptime_last_check_date', $direction);
+        } else {
+            $query->orderBy('monitors.url', $direction);
+        }
+
+        $monitors = $query->get();
 
         if ($monitors->isEmpty()) {
             return Inertia::render('monitors/Compact', [
@@ -50,11 +77,9 @@ class MonitorCompactController extends Controller
 
         $ids = $monitors->pluck('id')->toArray();
 
-        // 2. Fetch Related Data in bulk
+        // 3. Fetch Related Data in bulk
         
-        // Today's Uptime (Optimized simple date match)
-        // Fixed: Use simple string date matching which is more reliable for SQLite DATE columns
-        $today = now()->toDateString();
+        // Today's Uptime
         $uptimes = DB::table('monitor_uptime_dailies')
             ->whereIn('monitor_id', $ids)
             ->where('date', $today)
@@ -68,7 +93,7 @@ class MonitorCompactController extends Controller
             ->get()
             ->keyBy('monitor_id');
 
-        // Tags (Direct many-to-many raw fetch)
+        // Tags
         $allTags = DB::table('tags')
             ->join('taggables', 'tags.id', '=', 'taggables.tag_id')
             ->whereIn('taggables.taggable_id', $ids)
@@ -77,12 +102,11 @@ class MonitorCompactController extends Controller
             ->get()
             ->groupBy('taggable_id');
 
-        // Available tags for the sidebar/filter
         $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function($t) {
             return ['id' => $t->id, 'name' => $t->name, 'color' => null];
         });
 
-        // 3. Assemble the JSON payload manually (Bypassing API resources)
+        // 4. Assemble Payload
         $data = $monitors->map(function ($m) use ($uptimes, $stats, $allTags) {
             $host = parse_url($m->url, PHP_URL_HOST) ?? $m->url;
             $host = str_replace('www.', '', $host);
@@ -114,6 +138,8 @@ class MonitorCompactController extends Controller
         return Inertia::render('monitors/Compact', [
             'monitors' => ['data' => $data],
             'availableTags' => $availableTags,
+            'currentSort' => $sortBy,
+            'currentDirection' => $direction,
         ]);
     }
 }

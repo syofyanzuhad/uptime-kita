@@ -11,10 +11,18 @@ import CompactTable from './partials/CompactTable.vue';
 import CompactBars from './partials/CompactBars.vue';
 import CompactCards from './partials/CompactCards.vue';
 import { debounce } from 'lodash';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const props = defineProps<{
     monitors: { data: Monitor[] };
     availableTags: Tag[];
+    currentSort: string;
+    currentDirection: string;
 }>();
 
 const page = usePage();
@@ -28,6 +36,38 @@ const searchQuery = ref(new URLSearchParams(window.location.search).get('search'
 watch(viewType, (val) => localStorage.setItem('compact_view_type', val));
 watch(groupBy, (val) => localStorage.setItem('compact_group_by', val));
 
+// Sort logic
+const sortBy = ref(props.currentSort);
+const direction = ref(props.currentDirection);
+
+const handleSort = (key: string) => {
+    if (sortBy.value === key) {
+        direction.value = direction.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortBy.value = key;
+        direction.value = 'asc';
+    }
+    
+    updateData();
+};
+
+const toggleDirection = () => {
+    direction.value = direction.value === 'asc' ? 'desc' : 'asc';
+    updateData();
+};
+
+const updateData = () => {
+    router.get(route('monitor.compact'), { 
+        search: searchQuery.value,
+        sort: sortBy.value,
+        direction: direction.value
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['monitors', 'availableTags', 'currentSort', 'currentDirection'],
+    });
+};
+
 // Refresh logic
 const countdown = ref(60);
 let timer: number | null = null;
@@ -36,7 +76,14 @@ const startTimer = () => {
     timer = window.setInterval(() => {
         countdown.value--;
         if (countdown.value <= 0) {
-            router.reload({ only: ['monitors', 'availableTags'] });
+            router.reload({ 
+                only: ['monitors', 'availableTags'],
+                data: {
+                    search: searchQuery.value,
+                    sort: sortBy.value,
+                    direction: direction.value
+                }
+            });
             countdown.value = 60;
         }
     }, 1000);
@@ -45,13 +92,9 @@ const startTimer = () => {
 onMounted(() => startTimer());
 onUnmounted(() => timer && clearInterval(timer));
 
-// Server-side searching (Crucial for 54k records)
+// Server-side searching
 const handleSearch = debounce(() => {
-    router.get(route('monitor.compact'), { search: searchQuery.value }, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['monitors', 'availableTags'],
-    });
+    updateData();
 }, 500);
 
 watch(searchQuery, () => {
@@ -85,6 +128,14 @@ const groups = computed(() => {
     
     return [{ name: 'All Monitors', monitors: data, color: 'text-gray-900 dark:text-gray-100' }];
 });
+
+const sortLabels = {
+    'url': 'URL/Name',
+    'uptime_status': 'Status',
+    'uptime_24h': 'Uptime 24h',
+    'avg_response_time_24h': 'Avg Response',
+    'last_checked': 'Last Checked'
+};
 </script>
 
 <template>
@@ -93,7 +144,7 @@ const groups = computed(() => {
 
         <div class="mx-auto max-w-[1920px]">
             <!-- Wallboard Controls -->
-            <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <Link :href="isAuthenticated ? route('dashboard') : route('home')" class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700">
@@ -113,15 +164,42 @@ const groups = computed(() => {
                     </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2">
                     <!-- Search -->
-                    <div class="relative w-full md:w-64">
+                    <div class="relative w-full md:w-48 lg:w-64">
                         <Input
                             v-model="searchQuery"
                             placeholder="FILTER..."
                             class="h-9 rounded-lg bg-white/50 px-8 text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm dark:bg-gray-950/50"
                         />
                         <Icon name="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size="14" />
+                    </div>
+
+                    <!-- Sort Controls -->
+                    <div class="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-900">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button variant="ghost" class="h-7 gap-2 px-2 text-[10px] font-bold uppercase tracking-widest hover:bg-white dark:hover:bg-gray-800">
+                                    <Icon name="sortAsc" size="12" />
+                                    <span class="hidden sm:inline">SORT:</span> {{ sortLabels[sortBy] }}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-48">
+                                <DropdownMenuItem v-for="(label, key) in sortLabels" :key="key" @click="handleSort(key)" class="text-[10px] font-bold uppercase tracking-widest">
+                                    {{ label }}
+                                    <Icon v-if="sortBy === key" name="check" class="ml-auto" size="12" />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            class="h-7 w-7 hover:bg-white dark:hover:bg-gray-800"
+                            @click="toggleDirection"
+                        >
+                            <Icon :name="direction === 'asc' ? 'arrowUp' : 'arrowDown'" size="14" />
+                        </Button>
                     </div>
 
                     <!-- View Switcher -->
