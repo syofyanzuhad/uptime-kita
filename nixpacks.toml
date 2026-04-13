@@ -86,16 +86,17 @@ stderr_logfile=/var/log/worker-laravel.log
 '''
 
 "worker-nightwatch.conf" = '''
-[program:nightwatch-agent]
-process_name=%(program_name)s
-command=bash -c 'exec php artisan nightwatch:agent'
+[program:worker-nightwatch]
+process_name=%(program_name)s_%(process_num)02d
+command=bash -c 'exec php /app/artisan nightwatch:agent'
 autostart=true
 autorestart=true
-user=www-data
+stopasgroup=true
+killasgroup=true
 numprocs=1
-redirect_stderr=true
-stdout_logfile=/var/log/nightwatch-agent.log
-stderr_logfile=/var/log/nightwatch-agent.log
+startsecs=0
+stdout_logfile=/app/storage/logs/worker-nightwatch.log
+stderr_logfile=/app/storage/logs/worker-nightwatch.log
 '''
 
 "php-fpm.conf" = '''
