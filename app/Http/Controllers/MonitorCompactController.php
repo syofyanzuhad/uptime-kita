@@ -41,24 +41,29 @@ class MonitorCompactController extends Controller
             ->where('monitors.uptime_check_enabled', 1)
             ->when($isGuest, fn($q) => $q->where('monitors.is_public', 1))
             ->when($search, function($q) use ($search) {
-                // Fixed: Use display_name instead of name (based on DB schema)
                 $q->where(fn($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.display_name', 'like', "%$search%"));
             });
 
-        // 2. Handle Sorting
+        // 2. Handle Sorting (Refined to push NULLs to the bottom)
         $today = now()->toDateString();
+        
         if ($sortBy === 'uptime_24h') {
             $query->leftJoin('monitor_uptime_dailies', function($join) use ($today) {
                 $join->on('monitors.id', '=', 'monitor_uptime_dailies.monitor_id')
                      ->where('monitor_uptime_dailies.date', '=', $today);
-            })->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
+            })
+            // SQLite trick: order by (column is null) asc puts nulls last
+            ->orderByRaw('monitor_uptime_dailies.uptime_percentage IS NULL ASC')
+            ->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
         } elseif ($sortBy === 'avg_response_time_24h') {
             $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                  ->orderByRaw('monitor_statistics.avg_response_time_24h IS NULL ASC')
                   ->orderBy('monitor_statistics.avg_response_time_24h', $direction);
         } elseif ($sortBy === 'uptime_status') {
             $query->orderBy('monitors.uptime_status', $direction);
         } elseif ($sortBy === 'last_checked') {
-            $query->orderBy('monitors.uptime_last_check_date', $direction);
+            $query->orderByRaw('monitors.uptime_last_check_date IS NULL ASC')
+                  ->orderBy('monitors.uptime_last_check_date', $direction);
         } else {
             $query->orderBy('monitors.url', $direction);
         }
@@ -95,7 +100,6 @@ class MonitorCompactController extends Controller
             ->get()
             ->groupBy('taggable_id');
 
-        // Helper to parse translatable tag names
         $parseTagName = function($jsonName) {
             try {
                 $data = json_decode($jsonName, true);
@@ -105,7 +109,6 @@ class MonitorCompactController extends Controller
             }
         };
 
-        // Available tags for the sidebar
         $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function($t) use ($parseTagName) {
             return ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null];
         });
