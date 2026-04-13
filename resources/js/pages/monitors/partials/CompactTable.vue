@@ -74,7 +74,7 @@ const getDomainFromUrl = (url: string) => {
                     </TableCell>
                     <TableCell class="py-1.5 text-right">
                         <span
-                            v-if="monitor.statistics?.uptime_24h !== undefined"
+                            v-if="monitor.statistics?.uptime_24h !== null && monitor.statistics?.uptime_24h !== undefined"
                             :class="{
                                 'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
                                 'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
@@ -84,6 +84,7 @@ const getDomainFromUrl = (url: string) => {
                         >
                             {{ monitor.statistics.uptime_24h }}%
                         </span>
+                        <span v-else class="text-xs text-gray-400">-</span>
                     </TableCell>
                     <TableCell class="py-1.5 text-right text-xs font-mono text-gray-600 dark:text-gray-400">
                         {{ monitor.statistics?.avg_response_time_24h ? monitor.statistics.avg_response_time_24h + 'ms' : '-' }}

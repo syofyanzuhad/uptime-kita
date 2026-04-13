@@ -52,7 +52,7 @@ const getDomainFromUrl = (url: string) => {
                 <div class="flex items-center justify-between gap-2">
                     <span class="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{{ getDomainFromUrl(monitor.url) }}</span>
                     <span
-                        v-if="monitor.statistics?.uptime_24h !== undefined"
+                        v-if="monitor.statistics?.uptime_24h !== null && monitor.statistics?.uptime_24h !== undefined"
                         :class="{
                             'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
                             'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
@@ -62,6 +62,7 @@ const getDomainFromUrl = (url: string) => {
                     >
                         {{ monitor.statistics.uptime_24h }}%
                     </span>
+                    <span v-else class="text-[10px] font-bold text-gray-400">-</span>
                 </div>
                 <div class="flex items-center gap-3 mt-0.5 text-[9px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
                     <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>

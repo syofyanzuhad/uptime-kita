@@ -67,7 +67,7 @@ const getDomainFromUrl = (url: string) => {
                 </p>
                 <div class="mt-1 space-y-0.5">
                     <p
-                        v-if="monitor.statistics?.uptime_24h !== undefined"
+                        v-if="monitor.statistics?.uptime_24h !== null && monitor.statistics?.uptime_24h !== undefined"
                         :class="{
                             'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
                             'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
@@ -77,6 +77,7 @@ const getDomainFromUrl = (url: string) => {
                     >
                         {{ monitor.statistics.uptime_24h }}%
                     </p>
+                    <p v-else class="text-[10px] font-semibold text-gray-400">-</p>
                     <div class="flex items-center justify-center gap-2 text-[8px] uppercase tracking-tighter font-bold text-gray-400 dark:text-gray-500">
                         <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
                         <span v-if="monitor.statistics?.incidents_24h > 0" class="text-red-400">{{ monitor.statistics.incidents_24h }}i</span>
