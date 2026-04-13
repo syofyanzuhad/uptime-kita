@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import WallboardLayout from '@/layouts/WallboardLayout.vue';
-import type { Monitor, Tag } from '@/types/monitor';
+import type { Monitor, Tag, Paginator } from '@/types/monitor';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '@/components/Icon.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
+import Pagination from '@/components/Pagination.vue';
 import CompactDots from './partials/CompactDots.vue';
 import CompactTable from './partials/CompactTable.vue';
 import CompactBars from './partials/CompactBars.vue';
 import CompactCards from './partials/CompactCards.vue';
+import { debounce } from 'lodash';
 
 const props = defineProps<{
-    monitors: { data: Monitor[] };
+    monitors: Paginator<Monitor>;
     availableTags: Tag[];
 }>();
 
@@ -22,7 +24,7 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 // View State
 const viewType = ref(localStorage.getItem('compact_view_type') || 'dots');
 const groupBy = ref(localStorage.getItem('compact_group_by') || 'status');
-const searchQuery = ref('');
+const searchQuery = ref(new URLSearchParams(window.location.search).get('search') || '');
 
 watch(viewType, (val) => localStorage.setItem('compact_view_type', val));
 watch(groupBy, (val) => localStorage.setItem('compact_group_by', val));
@@ -44,15 +46,25 @@ const startTimer = () => {
 onMounted(() => startTimer());
 onUnmounted(() => timer && clearInterval(timer));
 
-// Filtering
+// Server-side searching
+const handleSearch = debounce(() => {
+    router.get(route('monitor.compact'), { search: searchQuery.value }, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['monitors', 'availableTags'],
+    });
+}, 300);
+
+watch(searchQuery, () => {
+    handleSearch();
+});
+
+// Filtering (Local filtering on paginated data)
 const filteredMonitors = computed(() => {
-    if (!searchQuery.value) return props.monitors.data;
-    const query = searchQuery.value.toLowerCase();
-    return props.monitors.data.filter(m => 
-        m.url.toLowerCase().includes(query) || 
-        m.name.toLowerCase().includes(query) ||
-        m.tags?.some(t => t.name.toLowerCase().includes(query))
-    );
+    // If we have a searchQuery, the server already filtered the paginated results,
+    // but we can still do local filtering for fine-tuning on the current page if needed.
+    // For now, we rely on server-side search.
+    return props.monitors.data;
 });
 
 // Grouping
@@ -99,7 +111,7 @@ const groups = computed(() => {
                         <div>
                             <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Status Wallboard</h1>
                             <div class="flex items-center gap-3 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
-                                <span>{{ filteredMonitors.length }} Monitors</span>
+                                <span>{{ monitors.meta.total }} Monitors</span>
                                 <span class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
                                 <span class="flex items-center gap-1">
                                     <Icon name="clock" size="10" />
@@ -183,7 +195,7 @@ const groups = computed(() => {
                     />
                 </div>
                 
-                <div v-if="filteredMonitors.length === 0" class="flex flex-col items-center justify-center py-32 text-center">
+                <div v-if="monitors.data.length === 0" class="flex flex-col items-center justify-center py-32 text-center">
                     <Icon name="searchX" size="64" class="mb-4 text-gray-200 dark:text-gray-800" />
                     <h3 class="text-xs font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-600">No matching monitors found</h3>
                     <Button variant="outline" class="mt-6 border-gray-200 text-[10px] font-bold uppercase tracking-widest dark:border-gray-800" @click="searchQuery = ''">
@@ -191,6 +203,11 @@ const groups = computed(() => {
                     </Button>
                 </div>
             </div>
+
+            <!-- Pagination -->
+            <div class="mt-12 flex items-center justify-center border-t border-gray-100 py-8 dark:border-gray-900/50">
+                <Pagination :meta="monitors.meta" />
+            </div>
         </div>
-    </WallboardLayout>
+    </div>
 </template>

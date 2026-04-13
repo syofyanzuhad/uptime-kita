@@ -32,14 +32,20 @@ class MonitorCompactController extends Controller
             ])
             ->with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
 
+        // Search filter
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
         // If not logged in, only show public monitors
         if (! auth()->check()) {
             $query->public();
         }
 
-        $monitors = $query->orderBy('url')->get();
+        // Use pagination to prevent OOM with 54k+ monitors
+        $monitors = $query->orderBy('url')->paginate(500)->withQueryString();
 
-        $monitorIds = $monitors->pluck('id');
+        $monitorIds = collect($monitors->items())->pluck('id');
 
         $availableTags = Tag::whereIn('id', function ($query) use ($monitorIds) {
             $query->select('tag_id')
