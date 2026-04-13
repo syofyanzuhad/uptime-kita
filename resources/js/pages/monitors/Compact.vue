@@ -208,5 +208,5 @@ const groups = computed(() => {
                 <Pagination :data="{ meta: pagination }" />
             </div>
         </div>
-    </div>
+    </WallboardLayout>
 </template>
