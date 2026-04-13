@@ -92,7 +92,7 @@ class MonitorCompactController extends Controller
         }
 
         // Maintain order from paginator
-        $monitors = $monitors->sortBy(fn($m) => $ids->indexOf($m->id))->values();
+        $monitors = $monitors->sortBy(fn($m) => $ids->search($m->id))->values();
 
         // 4. Fetch available tags for this page
         $availableTags = Tag::whereIn('id', function ($query) use ($ids) {
