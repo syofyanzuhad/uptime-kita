@@ -61,6 +61,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        if (class_exists(\Laravel\Nightwatch\Facades\Nightwatch::class)) {
+            \Laravel\Nightwatch\Facades\Nightwatch::rejectQueries(fn () => true);
+            \Laravel\Nightwatch\Facades\Nightwatch::rejectCacheEvents(fn () => true);
+        }
+
         LogViewer::auth(fn ($request) => auth()->id() === 1);
 
         // Register confirmation check listener FIRST to intercept initial failures
