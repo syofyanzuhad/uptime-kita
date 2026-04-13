@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import WallboardLayout from '@/layouts/WallboardLayout.vue';
-import type { Monitor, Tag, Paginator } from '@/types/monitor';
+import type { Monitor, Tag } from '@/types/monitor';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '@/components/Icon.vue';
@@ -14,8 +14,10 @@ import CompactCards from './partials/CompactCards.vue';
 import { debounce } from 'lodash';
 
 const props = defineProps<{
-    monitors: Paginator<Monitor>;
+    monitors: { data: Monitor[] };
+    pagination: any;
     availableTags: Tag[];
+    totalCount: number;
 }>();
 
 const page = usePage();
@@ -37,7 +39,7 @@ const startTimer = () => {
     timer = window.setInterval(() => {
         countdown.value--;
         if (countdown.value <= 0) {
-            router.reload({ only: ['monitors'] });
+            router.reload({ only: ['monitors', 'pagination', 'availableTags', 'totalCount'] });
             countdown.value = 60;
         }
     }, 1000);
@@ -51,7 +53,7 @@ const handleSearch = debounce(() => {
     router.get(route('monitor.compact'), { search: searchQuery.value }, {
         preserveState: true,
         preserveScroll: true,
-        only: ['monitors', 'availableTags'],
+        only: ['monitors', 'pagination', 'availableTags', 'totalCount'],
     });
 }, 300);
 
@@ -61,9 +63,6 @@ watch(searchQuery, () => {
 
 // Filtering (Local filtering on paginated data)
 const filteredMonitors = computed(() => {
-    // If we have a searchQuery, the server already filtered the paginated results,
-    // but we can still do local filtering for fine-tuning on the current page if needed.
-    // For now, we rely on server-side search.
     return props.monitors.data;
 });
 
@@ -111,7 +110,7 @@ const groups = computed(() => {
                         <div>
                             <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Status Wallboard</h1>
                             <div class="flex items-center gap-3 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
-                                <span>{{ monitors.meta.total }} Monitors</span>
+                                <span>{{ totalCount }} Monitors</span>
                                 <span class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
                                 <span class="flex items-center gap-1">
                                     <Icon name="clock" size="10" />
@@ -205,8 +204,8 @@ const groups = computed(() => {
             </div>
 
             <!-- Pagination -->
-            <div class="mt-12 flex items-center justify-center border-t border-gray-100 py-8 dark:border-gray-900/50">
-                <Pagination :meta="monitors.meta" />
+            <div v-if="pagination.total > pagination.per_page" class="mt-12 flex items-center justify-center border-t border-gray-100 py-8 dark:border-gray-900/50">
+                <Pagination :data="{ meta: pagination }" />
             </div>
         </div>
     </div>

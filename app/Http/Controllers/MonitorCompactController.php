@@ -17,8 +17,22 @@ class MonitorCompactController extends Controller
     {
         // Increase memory limit for this request to handle wallboard data
         if (config('app.env') !== 'local') {
-            ini_set('memory_limit', '512M');
+            ini_set('memory_limit', '1024M');
         }
+
+        // Search filter applied to count query too
+        $search = $request->search;
+        
+        $countQuery = Monitor::query();
+        if ($search) {
+            $countQuery->search($search);
+        }
+        
+        if (! auth()->check()) {
+            $countQuery->public();
+        }
+
+        $totalMonitors = $countQuery->count();
 
         $query = Monitor::query()
             ->select([
@@ -32,18 +46,21 @@ class MonitorCompactController extends Controller
             ])
             ->with(['tags', 'uptimeDaily', 'statistics', 'latestHistory']);
 
-        // Search filter
-        if ($request->filled('search')) {
-            $query->search($request->search);
+        if ($search) {
+            $query->search($search);
         }
 
-        // If not logged in, only show public monitors
         if (! auth()->check()) {
             $query->public();
         }
 
-        // Use pagination to prevent OOM with 54k+ monitors
-        $monitors = $query->orderBy('url')->paginate(500)->withQueryString();
+        // Use simplePaginate to avoid the heavy count(*) query on every page
+        $monitors = $query->orderBy('url')->simplePaginate(500)->withQueryString();
+
+        // Prevent expensive appends during transformation
+        $monitors->getCollection()->each(function ($monitor) {
+            $monitor->setAppends([]);
+        });
 
         $monitorIds = collect($monitors->items())->pluck('id');
 
@@ -56,7 +73,17 @@ class MonitorCompactController extends Controller
 
         return Inertia::render('monitors/Compact', [
             'monitors' => SimpleMonitorResource::collection($monitors),
+            'pagination' => [
+                'current_page' => $monitors->currentPage(),
+                'prev_page_url' => $monitors->previousPageUrl(),
+                'next_page_url' => $monitors->nextPageUrl(),
+                'per_page' => $monitors->perPage(),
+                'total' => $totalMonitors,
+                'from' => $monitors->firstItem(),
+                'to' => $monitors->lastItem(),
+            ],
             'availableTags' => $availableTags,
+            'totalCount' => $totalMonitors,
         ]);
     }
 }

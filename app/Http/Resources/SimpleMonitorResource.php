@@ -14,14 +14,21 @@ class SimpleMonitorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Use the raw string URL from attributes to avoid creating expensive Spatie\Url objects
+        $rawUrl = $this->getRawOriginal('url');
+        
+        // Simple host extraction to avoid Spatie\Url object creation
+        $host = parse_url($rawUrl, PHP_URL_HOST);
+        $host = str_replace('www.', '', $host ?? $rawUrl);
+
         return [
             'id' => $this->id,
-            'name' => $this->raw_url,
-            'url' => $this->raw_url,
-            'host' => $this->host,
+            'name' => $rawUrl,
+            'url' => $rawUrl,
+            'host' => $host,
             'uptime_status' => $this->uptime_status,
             'uptime_check_enabled' => (bool) $this->uptime_check_enabled,
-            'favicon' => $this->favicon,
+            'favicon' => $host ? "https://s2.googleusercontent.com/s2/favicons?domain={$host}&sz=32" : null,
             'last_check_date' => $this->uptime_last_check_date,
             'last_check_date_human' => $this->uptime_last_check_date ? $this->uptime_last_check_date->diffForHumans() : null,
             'today_uptime_percentage' => $this->getTodayUptimePercentage(),
