@@ -43,11 +43,27 @@ const getDomainFromUrl = (url: string) => {
                     />
                 </TooltipTrigger>
                 <TooltipContent>
-                    <div class="text-xs">
-                        <div class="font-bold">{{ getDomainFromUrl(monitor.url) }}</div>
-                        <div>Status: {{ monitor.uptime_status }}</div>
-                        <div v-if="monitor.today_uptime_percentage !== undefined">
-                            Uptime: {{ monitor.today_uptime_percentage }}%
+                    <div class="text-xs space-y-1">
+                        <div class="font-bold border-b border-white/20 pb-1 mb-1">{{ getDomainFromUrl(monitor.url) }}</div>
+                        <div class="flex justify-between gap-4">
+                            <span class="opacity-70">Status:</span>
+                            <span class="font-semibold capitalize">{{ monitor.uptime_status }}</span>
+                        </div>
+                        <div v-if="monitor.statistics?.uptime_24h !== undefined" class="flex justify-between gap-4">
+                            <span class="opacity-70">Uptime 24h:</span>
+                            <span :class="monitor.statistics.uptime_24h < 99 ? 'text-red-400' : 'text-green-400'">
+                                {{ monitor.statistics.uptime_24h }}%
+                            </span>
+                        </div>
+                        <div v-if="monitor.statistics?.avg_response_time_24h" class="flex justify-between gap-4">
+                            <span class="opacity-70">Avg Resp:</span>
+                            <span>{{ monitor.statistics.avg_response_time_24h }}ms</span>
+                        </div>
+                        <div v-if="monitor.statistics?.incidents_24h !== undefined" class="flex justify-between gap-4">
+                            <span class="opacity-70">Incidents:</span>
+                            <span :class="monitor.statistics.incidents_24h > 0 ? 'text-red-400' : ''">
+                                {{ monitor.statistics.incidents_24h }}
+                            </span>
                         </div>
                     </div>
                 </TooltipContent>

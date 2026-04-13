@@ -48,19 +48,25 @@ const getDomainFromUrl = (url: string) => {
                 class="h-4 w-4 shrink-0 rounded-full"
             />
             
-            <div class="min-w-0 flex-1 flex items-center justify-between gap-2 pr-2">
-                <span class="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{{ getDomainFromUrl(monitor.url) }}</span>
-                <span
-                    v-if="monitor.today_uptime_percentage !== undefined"
-                    :class="{
-                        'text-green-600 dark:text-green-400': monitor.today_uptime_percentage >= 99.5,
-                        'text-yellow-600 dark:text-yellow-400': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
-                        'text-red-600 dark:text-red-400': monitor.today_uptime_percentage < 95,
-                    }"
-                    class="text-[10px] font-bold"
-                >
-                    {{ monitor.today_uptime_percentage }}%
-                </span>
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{{ getDomainFromUrl(monitor.url) }}</span>
+                    <span
+                        v-if="monitor.statistics?.uptime_24h !== undefined"
+                        :class="{
+                            'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
+                            'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
+                            'text-red-600 dark:text-red-400': monitor.statistics.uptime_24h < 95,
+                        }"
+                        class="text-[10px] font-bold"
+                    >
+                        {{ monitor.statistics.uptime_24h }}%
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 mt-0.5 text-[9px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
+                    <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
+                    <span v-if="monitor.statistics?.incidents_24h > 0" class="text-red-400">{{ monitor.statistics.incidents_24h }} incidents</span>
+                </div>
             </div>
         </Link>
     </div>
