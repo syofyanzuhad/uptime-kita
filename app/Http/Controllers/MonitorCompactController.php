@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\SimpleMonitorResource;
 use App\Models\Monitor;
-use App\Models\MonitorHistory;
-use App\Models\MonitorUptimeDaily;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Spatie\Tags\Tag;
 
 class MonitorCompactController extends Controller
 {
@@ -18,108 +14,103 @@ class MonitorCompactController extends Controller
      */
     public function index(Request $request)
     {
-        // Safety net for large datasets
+        // Ultimate safety net for huge datasets - 2GB for 54k records
         if (config('app.env') !== 'local') {
-            ini_set('memory_limit', '1024M');
+            ini_set('memory_limit', '2048M');
         }
 
         $search = $request->search;
         $isGuest = ! auth()->check();
 
-        // 1. Get total count - Use highly optimized raw query for the 'no search' case
-        if (! $search) {
-            $totalCount = DB::table('monitors')
-                ->where('uptime_check_enabled', 1)
-                ->when($isGuest, fn($q) => $q->where('is_public', 1))
-                ->count();
-        } else {
-            $totalCount = Monitor::query()
-                ->when($isGuest, fn($q) => $q->public())
-                ->search($search)
-                ->count();
-        }
-
-        // 2. Fetch ONLY IDs for the current page (Very fast)
-        $paginator = Monitor::query()
-            ->select('id')
-            ->when($isGuest, fn($q) => $q->public())
-            ->when($search, fn($q) => $q->search($search))
+        // 1. Fetch RAW data from DB (No Eloquent models = massive memory savings)
+        $monitors = DB::table('monitors')
+            ->select([
+                'id',
+                'url',
+                'uptime_status',
+                'uptime_check_enabled',
+                'uptime_last_check_date',
+            ])
+            ->where('uptime_check_enabled', 1)
+            ->when($isGuest, fn($q) => $q->where('is_public', 1))
+            ->when($search, function($q) use ($search) {
+                $q->where(fn($sq) => $sq->where('url', 'like', "%$search%")->orWhere('name', 'like', "%$search%"));
+            })
             ->orderBy('url')
-            ->simplePaginate(100)
-            ->withQueryString();
+            ->get();
 
-        $ids = collect($paginator->items())->pluck('id');
-
-        if ($ids->isEmpty()) {
+        if ($monitors->isEmpty()) {
             return Inertia::render('monitors/Compact', [
                 'monitors' => ['data' => []],
-                'pagination' => $this->getPaginationData($paginator, $totalCount),
                 'availableTags' => [],
-                'totalCount' => $totalCount,
             ]);
         }
 
-        // 3. Optimized Data Fetching (Avoid N+1 and slow SQLite strftime)
-        $monitors = Monitor::query()
-            ->whereIn('id', $ids)
-            ->with(['tags', 'statistics']) // Fast relations
-            ->get();
+        $ids = $monitors->pluck('id')->toArray();
 
-        // Fetch Today's Uptime manually using indexed range query instead of whereDate/strftime
+        // 2. Fetch Related Data in bulk
+        
+        // Today's Uptime (Optimized range query)
         $today = now()->toDateString();
-        $uptimes = MonitorUptimeDaily::whereIn('monitor_id', $ids)
+        $uptimes = DB::table('monitor_uptime_dailies')
+            ->whereIn('monitor_id', $ids)
             ->whereBetween('date', [$today . ' 00:00:00', $today . ' 23:59:59'])
             ->get()
             ->keyBy('monitor_id');
 
-        // Fetch Latest History manually using a more efficient query pattern
-        // We fetch the latest history ID for each monitor first
-        $latestHistoryIds = MonitorHistory::whereIn('monitor_id', $ids)
-            ->select(DB::raw('max(id) as id'))
-            ->groupBy('monitor_id')
-            ->pluck('id');
-            
-        $histories = MonitorHistory::whereIn('id', $latestHistoryIds)
+        // Latest Statistics (Only 24h)
+        $stats = DB::table('monitor_statistics')
+            ->whereIn('monitor_id', $ids)
+            ->select(['monitor_id', 'uptime_24h', 'avg_response_time_24h', 'incidents_24h'])
             ->get()
             ->keyBy('monitor_id');
 
-        // Map the manual data back to the monitors
-        foreach ($monitors as $monitor) {
-            $monitor->setRelation('uptimeDaily', $uptimes->get($monitor->id));
-            $monitor->setRelation('latestHistory', $histories->get($monitor->id));
-            // Ensure no expensive appends are triggered
-            $monitor->setAppends([]);
-        }
+        // Tags (Direct many-to-many raw fetch)
+        $allTags = DB::table('tags')
+            ->join('taggables', 'tags.id', '=', 'taggables.tag_id')
+            ->whereIn('taggables.taggable_id', $ids)
+            ->where('taggables.taggable_type', Monitor::class)
+            ->select(['tags.id', 'tags.name', 'tags.color', 'taggables.taggable_id'])
+            ->get()
+            ->groupBy('taggable_id');
 
-        // Maintain order from paginator
-        $monitors = $monitors->sortBy(fn($m) => $ids->search($m->id))->values();
+        // Available tags for the sidebar/filter
+        $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function($t) {
+            return ['id' => $t->id, 'name' => $t->name, 'color' => $t->color];
+        });
 
-        // 4. Fetch available tags for this page
-        $availableTags = Tag::whereIn('id', function ($query) use ($ids) {
-            $query->select('tag_id')
-                ->from('taggables')
-                ->whereIn('taggable_id', $ids)
-                ->where('taggable_type', Monitor::class);
-        })->get(['id', 'name']);
+        // 3. Assemble the JSON payload manually (Bypassing API resources)
+        $data = $monitors->map(function ($m) use ($uptimes, $stats, $allTags) {
+            $host = parse_url($m->url, PHP_URL_HOST) ?? $m->url;
+            $host = str_replace('www.', '', $host);
+            
+            $monitorUptime = $uptimes->get($m->id);
+            $monitorStats = $stats->get($m->id);
+            $monitorTags = $allTags->get($m->id) ?? collect();
+
+            return [
+                'id' => $m->id,
+                'name' => $m->url,
+                'url' => $m->url,
+                'host' => $host,
+                'uptime_status' => $m->uptime_status,
+                'uptime_check_enabled' => (bool) $m->uptime_check_enabled,
+                'favicon' => "https://s2.googleusercontent.com/s2/favicons?domain={$host}&sz=32",
+                'last_check_date' => $m->uptime_last_check_date,
+                'last_check_date_human' => $m->uptime_last_check_date ? \Illuminate\Support\Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
+                'today_uptime_percentage' => $monitorUptime->uptime_percentage ?? 0,
+                'tags' => $monitorTags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]),
+                'statistics' => [
+                    'uptime_24h' => $monitorStats->uptime_24h ?? null,
+                    'avg_response_time_24h' => $monitorStats->avg_response_time_24h ?? null,
+                    'incidents_24h' => $monitorStats->incidents_24h ?? 0,
+                ],
+            ];
+        });
 
         return Inertia::render('monitors/Compact', [
-            'monitors' => SimpleMonitorResource::collection($monitors),
-            'pagination' => $this->getPaginationData($paginator, $totalCount),
+            'monitors' => ['data' => $data],
             'availableTags' => $availableTags,
-            'totalCount' => $totalCount,
         ]);
-    }
-
-    private function getPaginationData($paginator, $total)
-    {
-        return [
-            'current_page' => $paginator->currentPage(),
-            'prev_page_url' => $paginator->previousPageUrl(),
-            'next_page_url' => $paginator->nextPageUrl(),
-            'per_page' => $paginator->perPage(),
-            'total' => $total,
-            'from' => $paginator->firstItem(),
-            'to' => $paginator->lastItem(),
-        ];
     }
 }

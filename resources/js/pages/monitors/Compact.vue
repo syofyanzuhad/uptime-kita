@@ -6,7 +6,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from '@/components/Icon.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
-import Pagination from '@/components/Pagination.vue';
 import CompactDots from './partials/CompactDots.vue';
 import CompactTable from './partials/CompactTable.vue';
 import CompactBars from './partials/CompactBars.vue';
@@ -15,9 +14,7 @@ import { debounce } from 'lodash';
 
 const props = defineProps<{
     monitors: { data: Monitor[] };
-    pagination: any;
     availableTags: Tag[];
-    totalCount: number;
 }>();
 
 const page = usePage();
@@ -39,7 +36,7 @@ const startTimer = () => {
     timer = window.setInterval(() => {
         countdown.value--;
         if (countdown.value <= 0) {
-            router.reload({ only: ['monitors', 'pagination', 'availableTags', 'totalCount'] });
+            router.reload({ only: ['monitors', 'availableTags'] });
             countdown.value = 60;
         }
     }, 1000);
@@ -48,27 +45,22 @@ const startTimer = () => {
 onMounted(() => startTimer());
 onUnmounted(() => timer && clearInterval(timer));
 
-// Server-side searching
+// Server-side searching (Crucial for 54k records)
 const handleSearch = debounce(() => {
     router.get(route('monitor.compact'), { search: searchQuery.value }, {
         preserveState: true,
         preserveScroll: true,
-        only: ['monitors', 'pagination', 'availableTags', 'totalCount'],
+        only: ['monitors', 'availableTags'],
     });
-}, 300);
+}, 500);
 
 watch(searchQuery, () => {
     handleSearch();
 });
 
-// Filtering (Local filtering on paginated data)
-const filteredMonitors = computed(() => {
-    return props.monitors.data;
-});
-
 // Grouping
 const groups = computed(() => {
-    const data = filteredMonitors.value;
+    const data = props.monitors.data;
     if (groupBy.value === 'status') {
         return [
             { name: 'Down', monitors: data.filter(m => m.uptime_status === 'down'), color: 'text-red-500' },
@@ -110,7 +102,7 @@ const groups = computed(() => {
                         <div>
                             <h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Status Wallboard</h1>
                             <div class="flex items-center gap-3 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
-                                <span>{{ totalCount }} Monitors</span>
+                                <span>{{ monitors.data.length }} Monitors</span>
                                 <span class="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
                                 <span class="flex items-center gap-1">
                                     <Icon name="clock" size="10" />
@@ -201,11 +193,6 @@ const groups = computed(() => {
                         RESET FILTER
                     </Button>
                 </div>
-            </div>
-
-            <!-- Pagination -->
-            <div v-if="pagination.total > pagination.per_page" class="mt-12 flex items-center justify-center border-t border-gray-100 py-8 dark:border-gray-900/50">
-                <Pagination :data="{ meta: pagination }" />
             </div>
         </div>
     </WallboardLayout>
