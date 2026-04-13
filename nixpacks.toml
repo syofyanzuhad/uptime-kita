@@ -7,6 +7,7 @@ cmds = [
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
+    "touch /var/log/nightwatch-agent.log && chown www-data:www-data /var/log/nightwatch-agent.log",
     "...",
 ]
 
@@ -87,8 +88,7 @@ stderr_logfile=/var/log/worker-laravel.log
 "worker-nightwatch.conf" = '''
 [program:nightwatch-agent]
 process_name=%(program_name)s
-command=bash -c 'exec php /app/artisan nightwatch:agent'
-directory=/app
+command=bash -c 'exec php artisan nightwatch:agent'
 autostart=true
 autorestart=true
 user=www-data
