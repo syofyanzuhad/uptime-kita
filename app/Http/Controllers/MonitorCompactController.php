@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
+use App\Models\MonitorHistory;
+use App\Models\MonitorUptimeDaily;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -50,11 +52,12 @@ class MonitorCompactController extends Controller
 
         // 2. Fetch Related Data in bulk
         
-        // Today's Uptime (Optimized range query)
+        // Today's Uptime (Optimized simple date match)
+        // Fixed: Use simple string date matching which is more reliable for SQLite DATE columns
         $today = now()->toDateString();
         $uptimes = DB::table('monitor_uptime_dailies')
             ->whereIn('monitor_id', $ids)
-            ->whereBetween('date', [$today . ' 00:00:00', $today . ' 23:59:59'])
+            ->where('date', $today)
             ->get()
             ->keyBy('monitor_id');
 
@@ -66,7 +69,6 @@ class MonitorCompactController extends Controller
             ->keyBy('monitor_id');
 
         // Tags (Direct many-to-many raw fetch)
-        // Fixed: Removed tags.color as it doesn't exist in the DB schema
         $allTags = DB::table('tags')
             ->join('taggables', 'tags.id', '=', 'taggables.tag_id')
             ->whereIn('taggables.taggable_id', $ids)
@@ -99,7 +101,7 @@ class MonitorCompactController extends Controller
                 'favicon' => "https://s2.googleusercontent.com/s2/favicons?domain={$host}&sz=32",
                 'last_check_date' => $m->uptime_last_check_date,
                 'last_check_date_human' => $m->uptime_last_check_date ? \Illuminate\Support\Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
-                'today_uptime_percentage' => $monitorUptime->uptime_percentage ?? 0,
+                'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : 0,
                 'tags' => $monitorTags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => null]),
                 'statistics' => [
                     'uptime_24h' => $monitorStats->uptime_24h ?? null,
