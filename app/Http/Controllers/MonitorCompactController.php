@@ -66,17 +66,18 @@ class MonitorCompactController extends Controller
             ->keyBy('monitor_id');
 
         // Tags (Direct many-to-many raw fetch)
+        // Fixed: Removed tags.color as it doesn't exist in the DB schema
         $allTags = DB::table('tags')
             ->join('taggables', 'tags.id', '=', 'taggables.tag_id')
             ->whereIn('taggables.taggable_id', $ids)
             ->where('taggables.taggable_type', Monitor::class)
-            ->select(['tags.id', 'tags.name', 'tags.color', 'taggables.taggable_id'])
+            ->select(['tags.id', 'tags.name', 'taggables.taggable_id'])
             ->get()
             ->groupBy('taggable_id');
 
         // Available tags for the sidebar/filter
         $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function($t) {
-            return ['id' => $t->id, 'name' => $t->name, 'color' => $t->color];
+            return ['id' => $t->id, 'name' => $t->name, 'color' => null];
         });
 
         // 3. Assemble the JSON payload manually (Bypassing API resources)
@@ -99,7 +100,7 @@ class MonitorCompactController extends Controller
                 'last_check_date' => $m->uptime_last_check_date,
                 'last_check_date_human' => $m->uptime_last_check_date ? \Illuminate\Support\Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
                 'today_uptime_percentage' => $monitorUptime->uptime_percentage ?? 0,
-                'tags' => $monitorTags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]),
+                'tags' => $monitorTags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => null]),
                 'statistics' => [
                     'uptime_24h' => $monitorStats->uptime_24h ?? null,
                     'avg_response_time_24h' => $monitorStats->avg_response_time_24h ?? null,
