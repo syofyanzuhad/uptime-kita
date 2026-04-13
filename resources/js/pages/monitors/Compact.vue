@@ -132,7 +132,7 @@ const groups = computed(() => {
 const sortLabels = {
     'url': 'URL/Name',
     'uptime_status': 'Status',
-    'uptime_24h': 'Uptime 24h',
+    'today_uptime_percentage': 'Today Uptime',
     'avg_response_time_24h': 'Avg Response',
     'last_checked': 'Last Checked'
 };

@@ -36,7 +36,7 @@ const getDomainFromUrl = (url: string) => {
                 <TableRow class="hover:bg-transparent">
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Monitor</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Status</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Uptime 24h</TableHead>
+                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Today Uptime</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Avg Resp</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Incidents</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Last Checked</TableHead>
@@ -74,15 +74,15 @@ const getDomainFromUrl = (url: string) => {
                     </TableCell>
                     <TableCell class="py-1.5 text-right">
                         <span
-                            v-if="monitor.statistics?.uptime_24h !== null && monitor.statistics?.uptime_24h !== undefined"
+                            v-if="monitor.today_uptime_percentage !== null && monitor.today_uptime_percentage !== undefined"
                             :class="{
-                                'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
-                                'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
-                                'text-red-600 dark:text-red-400': monitor.statistics.uptime_24h < 95,
+                                'text-green-600 dark:text-green-400': monitor.today_uptime_percentage >= 99.5,
+                                'text-yellow-600 dark:text-yellow-400': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
+                                'text-red-600 dark:text-red-400': monitor.today_uptime_percentage < 95,
                             }"
                             class="text-xs font-semibold"
                         >
-                            {{ monitor.statistics.uptime_24h }}%
+                            {{ monitor.today_uptime_percentage }}%
                         </span>
                         <span v-else class="text-xs text-gray-400">-</span>
                     </TableCell>

@@ -47,7 +47,7 @@ class MonitorCompactController extends Controller
         // 2. Handle Sorting (Refined to push NULLs to the bottom)
         $today = now()->toDateString();
         
-        if ($sortBy === 'uptime_24h') {
+        if ($sortBy === 'today_uptime_percentage') {
             $query->leftJoin('monitor_uptime_dailies', function($join) use ($today) {
                 $join->on('monitors.id', '=', 'monitor_uptime_dailies.monitor_id')
                      ->where('monitor_uptime_dailies.date', '=', $today);

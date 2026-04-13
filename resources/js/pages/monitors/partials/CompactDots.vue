@@ -49,10 +49,10 @@ const getDomainFromUrl = (url: string) => {
                             <span class="opacity-70">Status:</span>
                             <span class="font-semibold capitalize">{{ monitor.uptime_status }}</span>
                         </div>
-                        <div v-if="monitor.statistics?.uptime_24h !== undefined" class="flex justify-between gap-4">
-                            <span class="opacity-70">Uptime 24h:</span>
-                            <span :class="monitor.statistics.uptime_24h < 99 ? 'text-red-400' : 'text-green-400'">
-                                {{ monitor.statistics.uptime_24h }}%
+                        <div v-if="monitor.today_uptime_percentage !== undefined" class="flex justify-between gap-4">
+                            <span class="text-gray-400">Today Uptime:</span>
+                            <span :class="monitor.today_uptime_percentage < 99 ? 'text-red-400' : 'text-green-400'">
+                                {{ monitor.today_uptime_percentage }}%
                             </span>
                         </div>
                         <div v-if="monitor.statistics?.avg_response_time_24h" class="flex justify-between gap-4">

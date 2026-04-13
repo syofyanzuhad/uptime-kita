@@ -66,17 +66,17 @@ const getDomainFromUrl = (url: string) => {
                     {{ getDomainFromUrl(monitor.url) }}
                 </p>
                 <div class="mt-1 space-y-0.5">
-                    <p
-                        v-if="monitor.statistics?.uptime_24h !== null && monitor.statistics?.uptime_24h !== undefined"
+                    <div
+                        v-if="monitor.today_uptime_percentage !== null && monitor.today_uptime_percentage !== undefined"
                         :class="{
-                            'text-green-600 dark:text-green-400': monitor.statistics.uptime_24h >= 99.5,
-                            'text-yellow-600 dark:text-yellow-400': monitor.statistics.uptime_24h >= 95 && monitor.statistics.uptime_24h < 99.5,
-                            'text-red-600 dark:text-red-400': monitor.statistics.uptime_24h < 95,
+                            'text-green-600 dark:text-green-400': monitor.today_uptime_percentage >= 99.5,
+                            'text-yellow-600 dark:text-yellow-400': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
+                            'text-red-600 dark:text-red-400': monitor.today_uptime_percentage < 95,
                         }"
-                        class="text-[10px] font-semibold"
+                        class="text-xs font-bold whitespace-nowrap"
                     >
-                        {{ monitor.statistics.uptime_24h }}%
-                    </p>
+                        {{ monitor.today_uptime_percentage }}%
+                    </div>
                     <p v-else class="text-[10px] font-semibold text-gray-400">-</p>
                     <div class="flex items-center justify-center gap-2 text-[8px] uppercase tracking-tighter font-bold text-gray-400 dark:text-gray-500">
                         <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
