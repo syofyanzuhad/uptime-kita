@@ -14,15 +14,15 @@ return [
         'requests' => env('NIGHTWATCH_REQUEST_SAMPLE_RATE', 1.0),
         'commands' => env('NIGHTWATCH_COMMAND_SAMPLE_RATE', 1.0),
         'exceptions' => env('NIGHTWATCH_EXCEPTION_SAMPLE_RATE', 1.0),
-        'scheduled_tasks' => env('NIGHTWATCH_SCHEDULED_TASK_SAMPLE_RATE', 1.0),
+        'scheduled_tasks' => env('NIGHTWATCH_SCHEDULED_TASK_SAMPLE_RATE', 0.1),
     ],
 
     'filtering' => [
-        'ignore_cache_events' => env('NIGHTWATCH_IGNORE_CACHE_EVENTS', false),
+        'ignore_cache_events' => env('NIGHTWATCH_IGNORE_CACHE_EVENTS', true),
         'ignore_mail' => env('NIGHTWATCH_IGNORE_MAIL', false),
-        'ignore_notifications' => env('NIGHTWATCH_IGNORE_NOTIFICATIONS', false),
-        'ignore_outgoing_requests' => env('NIGHTWATCH_IGNORE_OUTGOING_REQUESTS', false),
-        'ignore_queries' => env('NIGHTWATCH_IGNORE_QUERIES', false),
+        'ignore_notifications' => env('NIGHTWATCH_IGNORE_NOTIFICATIONS', true),
+        'ignore_outgoing_requests' => env('NIGHTWATCH_IGNORE_OUTGOING_REQUESTS', true),
+        'ignore_queries' => env('NIGHTWATCH_IGNORE_QUERIES', true),
         'log_level' => env('NIGHTWATCH_LOG_LEVEL', env('LOG_LEVEL', 'debug')),
     ],
 
