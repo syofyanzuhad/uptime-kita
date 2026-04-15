@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, ref } from 'vue';
 
@@ -40,7 +40,7 @@ const uploadError = ref<string>('');
 const previewResult = ref<ImportPreviewResult | null>(null);
 
 // Import form
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const importForm = useForm<any>({
     rows: [] as ImportRow[],
     duplicate_action: 'skip' as DuplicateAction,

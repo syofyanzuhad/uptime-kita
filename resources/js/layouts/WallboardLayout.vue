@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import FlashMessage from '@/components/FlashMessage.vue';
-import { usePage } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import { initializeTheme } from '@/composables/useAppearance';
-
-const page = usePage();
 
 onMounted(() => {
     initializeTheme();

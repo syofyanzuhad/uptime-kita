@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { Monitor } from '@/types/monitor';
-import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
-const props = defineProps<{
+defineProps<{
     monitors: Monitor[];
     canEdit?: boolean;
 }>();

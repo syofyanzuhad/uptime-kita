@@ -11,7 +11,7 @@ import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
-const props = defineProps<{
+defineProps<{
     open: boolean;
 }>();
 
