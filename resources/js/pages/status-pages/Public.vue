@@ -124,7 +124,18 @@ async function fetchMonitors() {
         if (!res.ok) throw new Error('Failed to load monitors');
         const data = await res.json();
         // If data is wrapped in {data: [...]}, unwrap
-        monitors.value = Array.isArray(data) ? data : data.data || [];
+        const rawMonitors = Array.isArray(data) ? data : data.data || [];
+        monitors.value = rawMonitors;
+
+        // Populate latestHistory and uptimesDaily from the response to avoid extra fetch calls
+        rawMonitors.forEach((monitor: any) => {
+            if (monitor.latest_history) {
+                latestHistory.value[monitor.id] = monitor.latest_history;
+            }
+            if (monitor.uptimes_daily) {
+                uptimesDaily.value[monitor.id] = monitor.uptimes_daily;
+            }
+        });
     } catch (e: any) {
         monitorsError.value = e.message || 'Unknown error';
     } finally {

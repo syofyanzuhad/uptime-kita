@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
+use Spatie\Tags\Tag;
 
 class UptimeMonitorController extends Controller
 {
@@ -41,7 +42,9 @@ class UptimeMonitorController extends Controller
             $cacheKey .= '_tag_'.md5($tagFilter);
         }
         $monitors = cache()->remember($cacheKey, 60, function () use ($search, $statusFilter, $visibilityFilter, $tagFilter, $perPage) {
-            $query = Monitor::with(['uptimeDaily', 'tags'])->search($search);
+            $query = Monitor::with(['uptimeDaily', 'tags', 'users' => function ($query) {
+                $query->where('users.id', auth()->id());
+            }])->search($search);
             if ($statusFilter === 'up' || $statusFilter === 'down') {
                 $query->where('uptime_status', $statusFilter);
             }
@@ -62,7 +65,7 @@ class UptimeMonitorController extends Controller
         $flash = session('flash');
 
         // Get all unique tags used in monitors
-        $availableTags = \Spatie\Tags\Tag::whereIn('id', function ($query) {
+        $availableTags = Tag::whereIn('id', function ($query) {
             $query->select('tag_id')
                 ->from('taggables')
                 ->where('taggable_type', 'App\Models\Monitor');

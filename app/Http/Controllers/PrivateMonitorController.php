@@ -32,7 +32,7 @@ class PrivateMonitorController extends Controller
                 ->whereHas('users', function ($query) {
                     $query->where('user_monitor.is_pinned', false);
                 })
-                ->with(['users:id', 'uptimeDaily']);
+                ->with(['users:id', 'uptimeDaily', 'tags', 'statistics']);
 
             if ($statusFilter === 'disabled') {
                 // User-specific disabled: monitors where user has is_active = false

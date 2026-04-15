@@ -81,7 +81,7 @@ class MonitorListController extends Controller
         }
 
         // Add common relationships
-        $query->with(['users:id', 'uptimeDaily']);
+        $query->with(['users:id', 'uptimeDaily', 'tags', 'statistics']);
 
         // Apply status filter
         if ($statusFilter === 'disabled') {

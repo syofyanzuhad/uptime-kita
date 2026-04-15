@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MonitorResource;
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
@@ -51,7 +52,18 @@ class PublicStatusPageController extends Controller
     public function monitors(string $path)
     {
         $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () {
-            return StatusPageMonitor::with(['monitor'])
+            return StatusPageMonitor::with(['monitor' => function ($query) {
+                $query->with([
+                    'uptimeDaily',
+                    'tags',
+                    'statistics',
+                    'uptimesDaily' => function ($query) {
+                        $query->where('date', '>=', now()->subDays(7)->toDateString())
+                            ->orderBy('date', 'asc');
+                    },
+                    'latestHistory',
+                ]);
+            }])
                 ->whereHas('statusPage', function ($query) {
                     $query->where('path', request()->route('path'));
                 })
@@ -73,7 +85,7 @@ class PublicStatusPageController extends Controller
         }
 
         return response()->json(
-            \App\Http\Resources\MonitorResource::collection($monitors)
+            MonitorResource::collection($monitors)
         );
     }
 }
