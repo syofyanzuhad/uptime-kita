@@ -6,6 +6,12 @@ import Icon from '@/components/Icon.vue';
 
 const props = defineProps<{
     monitors: Monitor[];
+    canEdit?: boolean;
+}>();
+
+const emit = defineEmits<{
+    (e: 'view', monitor: Monitor): void;
+    (e: 'edit', monitor: Monitor): void;
 }>();
 
 const getStatusIcon = (status: string) => {
@@ -31,12 +37,21 @@ const getDomainFromUrl = (url: string) => {
 
 <template>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-        <Link
+        <div
             v-for="monitor in monitors"
             :key="monitor.id"
-            :href="route('monitor.show', monitor.id)"
-            class="group flex flex-col items-center gap-1 rounded-xl border border-gray-200 bg-white p-3 text-center transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
+            @click="emit('view', monitor)"
+            class="group relative flex flex-col items-center gap-1 rounded-xl border border-gray-200 bg-white p-3 text-center transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 cursor-pointer"
         >
+            <button
+                v-if="canEdit"
+                @click.stop="emit('edit', monitor)"
+                class="absolute right-1 top-1 h-5 w-5 rounded-full bg-gray-100 text-blue-600 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700 dark:text-blue-400"
+                title="EDIT"
+            >
+                <Icon name="edit" size="10" />
+            </button>
+            
             <div class="relative mb-1">
                 <img
                     v-if="monitor.favicon"
@@ -84,6 +99,6 @@ const getDomainFromUrl = (url: string) => {
                     </div>
                 </div>
             </div>
-        </Link>
+        </div>
     </div>
 </template>

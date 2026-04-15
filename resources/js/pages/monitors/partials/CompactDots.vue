@@ -8,6 +8,10 @@ const props = defineProps<{
     monitors: Monitor[];
 }>();
 
+const emit = defineEmits<{
+    (e: 'view', monitor: Monitor): void;
+}>();
+
 const getStatusColor = (status: string) => {
     switch (status) {
         case 'up':
@@ -34,10 +38,10 @@ const getDomainFromUrl = (url: string) => {
         <TooltipProvider v-for="monitor in monitors" :key="monitor.id" :delay-duration="0">
             <Tooltip>
                 <TooltipTrigger as-child>
-                    <Link
-                        :href="route('monitor.show', monitor.id)"
+                    <button
+                        @click="emit('view', monitor)"
                         :class="[
-                            'h-6 w-6 rounded-md transition-colors sm:h-8 sm:w-8',
+                            'h-6 w-6 rounded-md transition-colors sm:h-8 sm:w-8 cursor-pointer',
                             getStatusColor(monitor.uptime_status)
                         ]"
                     />

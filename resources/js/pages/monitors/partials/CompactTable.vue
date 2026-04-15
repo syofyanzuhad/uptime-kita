@@ -6,6 +6,12 @@ import Icon from '@/components/Icon.vue';
 
 const props = defineProps<{
     monitors: Monitor[];
+    canEdit?: boolean;
+}>();
+
+const emit = defineEmits<{
+    (e: 'view', monitor: Monitor): void;
+    (e: 'edit', monitor: Monitor): void;
 }>();
 
 const getStatusIcon = (status: string) => {
@@ -40,14 +46,15 @@ const getDomainFromUrl = (url: string) => {
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Avg Resp</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Incidents</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Last Checked</TableHead>
+                    <TableHead v-if="canEdit" class="h-8 py-1 text-xs uppercase tracking-wider text-right">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 <TableRow v-for="monitor in monitors" :key="monitor.id" class="group transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <TableCell class="py-1.5 min-w-[200px]">
-                        <Link
-                            :href="route('monitor.show', monitor.id)"
-                            class="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                        <button
+                            @click="emit('view', monitor)"
+                            class="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
                         >
                             <img
                                 v-if="monitor.favicon"
@@ -56,7 +63,7 @@ const getDomainFromUrl = (url: string) => {
                                 class="h-4 w-4 rounded-full"
                             />
                             {{ getDomainFromUrl(monitor.url) }}
-                        </Link>
+                        </button>
                     </TableCell>
                     <TableCell class="py-1.5">
                         <div class="flex items-center gap-1.5">
@@ -96,6 +103,14 @@ const getDomainFromUrl = (url: string) => {
                     </TableCell>
                     <TableCell class="py-1.5 text-right text-xs text-gray-500 dark:text-gray-400">
                         {{ monitor.last_check_date_human }}
+                    </TableCell>
+                    <TableCell v-if="canEdit" class="py-1.5 text-right">
+                        <button
+                            @click="emit('edit', monitor)"
+                            class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold uppercase cursor-pointer"
+                        >
+                            Edit
+                        </button>
                     </TableCell>
                 </TableRow>
             </TableBody>

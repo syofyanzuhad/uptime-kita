@@ -11,12 +11,9 @@ import CompactTable from './partials/CompactTable.vue';
 import CompactBars from './partials/CompactBars.vue';
 import CompactCards from './partials/CompactCards.vue';
 import { debounce } from 'lodash';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import CreateMonitorModal from '../uptime/partials/CreateMonitorModal.vue';
+import EditMonitorModal from '../uptime/partials/EditMonitorModal.vue';
+import DetailMonitorModal from '../uptime/partials/DetailMonitorModal.vue';
 
 const props = defineProps<{
     monitors: { data: Monitor[] };
@@ -27,6 +24,24 @@ const props = defineProps<{
 
 const page = usePage();
 const isAuthenticated = computed(() => !!page.props.auth?.user);
+
+// Modal state
+const isCreateModalOpen = ref(false);
+const isEditModalOpen = ref(false);
+const isDetailModalOpen = ref(false);
+
+const monitorToEdit = ref<Monitor | null>(null);
+const monitorToView = ref<Monitor | null>(null);
+
+const openEditModal = (monitor: Monitor) => {
+    monitorToEdit.value = monitor;
+    isEditModalOpen.value = true;
+};
+
+const openDetailModal = (monitor: Monitor) => {
+    monitorToView.value = monitor;
+    isDetailModalOpen.value = true;
+};
 
 // View State
 const viewType = ref(localStorage.getItem('compact_view_type') || 'dots');
@@ -244,6 +259,14 @@ const sortLabels = {
                     >
                         LOGIN
                     </Link>
+
+                    <Button
+                        v-if="isAuthenticated"
+                        @click="isCreateModalOpen = true"
+                        class="h-9 rounded-lg bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 transition-colors"
+                    >
+                        ADD MONITOR
+                    </Button>
                 </div>
             </div>
 
@@ -261,6 +284,9 @@ const sortLabels = {
                     <component
                         :is="viewType === 'dots' ? CompactDots : viewType === 'table' ? CompactTable : viewType === 'bars' ? CompactBars : CompactCards"
                         :monitors="group.monitors"
+                        :can-edit="isAuthenticated"
+                        @view="openDetailModal"
+                        @edit="openEditModal"
                     />
                 </div>
                 
@@ -273,5 +299,10 @@ const sortLabels = {
                 </div>
             </div>
         </div>
+
+        <!-- Modals -->
+        <CreateMonitorModal v-model:open="isCreateModalOpen" />
+        <EditMonitorModal v-model:open="isEditModalOpen" :monitor="monitorToEdit" />
+        <DetailMonitorModal v-model:open="isDetailModalOpen" :monitor="monitorToView" @edit="openEditModal" />
     </WallboardLayout>
 </template>

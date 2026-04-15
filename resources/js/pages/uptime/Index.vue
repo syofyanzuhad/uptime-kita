@@ -17,6 +17,9 @@ import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import CreateMonitorModal from './partials/CreateMonitorModal.vue';
+import EditMonitorModal from './partials/EditMonitorModal.vue';
+import DetailMonitorModal from './partials/DetailMonitorModal.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
@@ -83,11 +86,27 @@ onUnmounted(() => {
 // Fungsi untuk menghapus monitor
 // Modal state
 const isDeleteModalOpen = ref(false);
+const isCreateModalOpen = ref(false);
+const isEditModalOpen = ref(false);
+const isDetailModalOpen = ref(false);
+
 const monitorToDelete = ref<Monitor | null>(null);
+const monitorToEdit = ref<Monitor | null>(null);
+const monitorToView = ref<Monitor | null>(null);
 
 const openDeleteModal = (monitor: Monitor) => {
     monitorToDelete.value = monitor;
     isDeleteModalOpen.value = true;
+};
+
+const openEditModal = (monitor: Monitor) => {
+    monitorToEdit.value = monitor;
+    isEditModalOpen.value = true;
+};
+
+const openDetailModal = (monitor: Monitor) => {
+    monitorToView.value = monitor;
+    isDetailModalOpen.value = true;
 };
 
 const closeDeleteModal = () => {
@@ -163,12 +182,9 @@ function onPerPageChange() {
                             >
                                 Import
                             </Link>
-                            <Link
-                                :href="route('monitor.create')"
-                                class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                            >
+                            <Button @click="isCreateModalOpen = true" class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 Tambah Monitor
-                            </Link>
+                            </Button>
                         </div>
                     </div>
 
@@ -302,16 +318,18 @@ function onPerPageChange() {
                                         <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span>
                                     </TableCell>
                                     <TableCell class="text-right">
-                                        <Link
-                                            :href="route('monitor.show', monitor.id)"
-                                            class="mr-3 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            >View</Link
+                                        <button
+                                            @click="openDetailModal(monitor)"
+                                            class="mr-3 cursor-pointer text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                         >
-                                        <Link
-                                            :href="route('monitor.edit', monitor.id)"
-                                            class="mr-3 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            >Edit</Link
+                                            View
+                                        </button>
+                                        <button
+                                            @click="openEditModal(monitor)"
+                                            class="mr-3 cursor-pointer text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                         >
+                                            Edit
+                                        </button>
                                         <button
                                             @click="openDeleteModal(monitor)"
                                             class="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
@@ -340,7 +358,7 @@ function onPerPageChange() {
                     <DialogDescription>
                         Apakah Anda yakin ingin menghapus monitor ini? Tindakan ini tidak dapat dibatalkan.<br />
                         <span v-if="monitorToDelete" class="mt-2 block text-sm text-gray-700 dark:text-gray-300">
-                            <Icon name="alert-triangle" class="mr-1 inline text-red-500" />
+                            <Icon name="alertTriangle" class="mr-1 inline text-red-500" />
                             <b>{{ monitorToDelete.url }}</b>
                         </span>
                     </DialogDescription>
@@ -351,5 +369,14 @@ function onPerPageChange() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Create Monitor Modal -->
+        <CreateMonitorModal v-model:open="isCreateModalOpen" />
+
+        <!-- Edit Monitor Modal -->
+        <EditMonitorModal v-model:open="isEditModalOpen" :monitor="monitorToEdit" />
+
+        <!-- Detail Monitor Modal -->
+        <DetailMonitorModal v-model:open="isDetailModalOpen" :monitor="monitorToView" @edit="openEditModal" />
     </AppLayout>
 </template>
