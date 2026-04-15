@@ -19,7 +19,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 
     public $tries = 3;
 
-    public $backoff = [60, 120, 300]; // Exponential backoff: 1 min, 2 min, 5 min
+    public $backoff = [60, 300, 900]; // key change: avoid rapid retry storms
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -27,7 +27,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
      *
      * @var int
      */
-    public $uniqueFor = 900; // 15 minutes - matches the scheduler interval
+    public $uniqueFor = 1800; // Increased to 30 minutes to cover backoffs
 
     protected ?int $monitorId;
 
@@ -54,58 +54,64 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
      */
     public function handle(): void
     {
-        if ($this->monitorId) {
-            $monitors = Monitor::where('id', $this->monitorId)
-                ->where('is_public', true)
-                ->get();
-        } else {
-            // Process in batches to avoid memory issues
-            $monitors = Monitor::where('is_public', true)
-                ->where('uptime_check_enabled', true)
-                ->chunk(10, function ($chunk) {
-                    foreach ($chunk as $monitor) {
-                        try {
-                            $this->calculateStatistics($monitor);
-                        } catch (\Exception $e) {
-                            Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
-                                'monitor_id' => $monitor->id,
-                                'monitor_url' => $monitor->url,
-                                'error' => $e->getMessage(),
-                            ]);
+        try {
+            if ($this->monitorId) {
+                $monitors = Monitor::where('id', $this->monitorId)
+                    ->where('is_public', true)
+                    ->get();
+            } else {
+                // Process in batches to avoid memory issues
+                Monitor::where('is_public', true)
+                    ->where('uptime_check_enabled', true)
+                    ->chunk(10, function ($chunk) {
+                        foreach ($chunk as $monitor) {
+                            try {
+                                $this->calculateStatistics($monitor);
+                            } catch (\Throwable $e) {
+                                Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
+                                    'monitor_id' => $monitor->id,
+                                    'monitor_url' => $monitor->url,
+                                    'error' => $e->getMessage(),
+                                ]);
 
-                            continue;
+                                // We continue for individual monitor failures in bulk jobs
+                                continue;
+                            }
                         }
-                    }
-                });
+                    });
+
+                Log::info('Monitor statistics calculation completed successfully!');
+
+                return;
+            }
+
+            if ($monitors->isEmpty()) {
+                Log::info('No public monitors found for statistics calculation.');
+
+                return;
+            }
+
+            Log::info("Calculating statistics for {$monitors->count()} monitor(s)...");
+
+            foreach ($monitors as $monitor) {
+                try {
+                    $this->calculateStatistics($monitor);
+                } catch (\Throwable $e) {
+                    Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
+                        'monitor_id' => $monitor->id,
+                        'monitor_url' => $monitor->url,
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    continue;
+                }
+            }
 
             Log::info('Monitor statistics calculation completed successfully!');
-
-            return;
+        } catch (\Throwable $e) {
+            report($e); // Ensure the original exception is visible in logs/Horizon
+            throw $e;   // Rethrow to allow Laravel to handle retries/failure properly
         }
-
-        if ($monitors->isEmpty()) {
-            Log::info('No public monitors found for statistics calculation.');
-
-            return;
-        }
-
-        Log::info("Calculating statistics for {$monitors->count()} monitor(s)...");
-
-        foreach ($monitors as $monitor) {
-            try {
-                $this->calculateStatistics($monitor);
-            } catch (\Exception $e) {
-                Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
-                    'monitor_id' => $monitor->id,
-                    'monitor_url' => $monitor->url,
-                    'error' => $e->getMessage(),
-                ]);
-
-                continue;
-            }
-        }
-
-        Log::info('Monitor statistics calculation completed successfully!');
     }
 
     private function calculateStatistics(Monitor $monitor): void
