@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Schedule;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
 use Spatie\UptimeMonitor\Commands\CheckUptime;
 
-Schedule::command(CheckUptime::class)->everyMinute()
+Schedule::command('monitor:check-uptime')->everyMinute()
+    ->withoutOverlapping(10)
+    ->runInBackground()
     ->onSuccess(function () {
         info('UPTIME-CHECK: SUCCESS');
     })
@@ -17,8 +19,6 @@ Schedule::command(CheckUptime::class)->everyMinute()
         info('UPTIME-CHECK: FAILED');
     })
     ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
-// ->withoutOverlapping()
-// ->runInBackground();
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
