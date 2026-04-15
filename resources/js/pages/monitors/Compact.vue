@@ -11,6 +11,12 @@ import CompactTable from './partials/CompactTable.vue';
 import CompactBars from './partials/CompactBars.vue';
 import CompactCards from './partials/CompactCards.vue';
 import { debounce } from 'lodash';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import CreateMonitorModal from '../uptime/partials/CreateMonitorModal.vue';
 import EditMonitorModal from '../uptime/partials/EditMonitorModal.vue';
 import DetailMonitorModal from '../uptime/partials/DetailMonitorModal.vue';

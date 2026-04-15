@@ -72,7 +72,15 @@ function formatDate(dateString: string | null) {
             <DialogHeader>
                 <DialogTitle class="flex items-center gap-2">
                     <img v-if="monitor?.favicon" :src="monitor.favicon" class="h-5 w-5 rounded" />
-                    Detail Monitor: {{ monitor?.url }}
+                    Detail Monitor: 
+                    <a 
+                        v-if="monitor" 
+                        :href="monitor.url" 
+                        target="_blank" 
+                        class="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                        {{ monitor.url }}
+                    </a>
                 </DialogTitle>
             </DialogHeader>
 
