@@ -124,10 +124,10 @@ describe('MonitorListController', function () {
             $response->assertNotFound();
         });
 
-        it('returns 404 for empty type', function () {
+        it('returns 200 for empty type because it matches compact view', function () {
             $response = $this->get('/monitors/');
 
-            $response->assertNotFound();
+            $response->assertOk();
         });
     });
 
