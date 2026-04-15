@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d81f1d356d08a76c63f66413ddaf88aa",
+    "content-hash": "35b7fe5ad6043971751a653a63174378",
     "packages": [
         {
             "name": "abraham/twitteroauth",
@@ -218,6 +218,68 @@
                 "source": "https://github.com/aws/aws-sdk-php/tree/3.374.2"
             },
             "time": "2026-03-27T18:05:55+00:00"
+        },
+        {
+            "name": "binarybuilds/laritor-client",
+            "version": "v3.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/binarybuilds/laritor-client.git",
+                "reference": "e11fc653497ac6f018084e8aa14b5c024362ae3a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/binarybuilds/laritor-client/zipball/e11fc653497ac6f018084e8aa14b5c024362ae3a",
+                "reference": "e11fc653497ac6f018084e8aa14b5c024362ae3a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^7.2",
+                "jaybizzle/crawler-detect": "^1.3",
+                "laravel/framework": "^9.0.0|^10.0.0|^11.0.0|^12.0.0|^13.0.0",
+                "php": "^7.4|^8.0|^8.1|^8.2|^8.3|^8.4|^8.5"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "phpstan/phpstan": "^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "BinaryBuilds\\LaritorClient\\LaritorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "BinaryBuilds\\LaritorClient\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Laritor",
+                    "email": "support@laritor.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Laritor is a application performance monitoring and observability tool for applications built using laravel php framework",
+            "homepage": "https://github.com/binarybuilds/laritor-client",
+            "keywords": [
+                "laritor",
+                "observability for laravel",
+                "performance monitoring for laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/binarybuilds/laritor-client/issues",
+                "source": "https://github.com/binarybuilds/laritor-client/tree/v3.0.5"
+            },
+            "time": "2026-04-15T04:04:05+00:00"
         },
         {
             "name": "brick/math",
@@ -1834,6 +1896,58 @@
                 }
             ],
             "time": "2026-02-19T13:11:17+00:00"
+        },
+        {
+            "name": "jaybizzle/crawler-detect",
+            "version": "v1.3.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JayBizzle/Crawler-Detect.git",
+                "reference": "5edf2e43d9f42e5baa6f844826213257c247b309"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JayBizzle/Crawler-Detect/zipball/5edf2e43d9f42e5baa6f844826213257c247b309",
+                "reference": "5edf2e43d9f42e5baa6f844826213257c247b309",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8|^5.5|^6.5|^7.5|^8.5.52|^9.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jaybizzle\\CrawlerDetect\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Beech",
+                    "email": "m@rkbee.ch",
+                    "role": "Developer"
+                }
+            ],
+            "description": "CrawlerDetect is a PHP class for detecting bots/crawlers/spiders via the user agent",
+            "homepage": "https://github.com/JayBizzle/Crawler-Detect/",
+            "keywords": [
+                "crawler",
+                "crawler detect",
+                "crawler detector",
+                "crawlerdetect",
+                "php crawler detect"
+            ],
+            "support": {
+                "issues": "https://github.com/JayBizzle/Crawler-Detect/issues",
+                "source": "https://github.com/JayBizzle/Crawler-Detect/tree/v1.3.9"
+            },
+            "time": "2026-04-14T19:32:41+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
