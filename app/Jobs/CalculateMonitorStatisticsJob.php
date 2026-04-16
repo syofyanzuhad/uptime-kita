@@ -5,15 +5,17 @@ namespace App\Jobs;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorStatistic;
-use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Queueable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 600; // 10 minutes timeout
 
@@ -56,58 +58,32 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
     {
         try {
             if ($this->monitorId) {
-                $monitors = Monitor::where('id', $this->monitorId)
+                $monitor = Monitor::where('id', $this->monitorId)
                     ->where('is_public', true)
-                    ->get();
-            } else {
-                // Process in batches to avoid memory issues
-                Monitor::where('is_public', true)
-                    ->where('uptime_check_enabled', true)
-                    ->chunk(10, function ($chunk) {
-                        foreach ($chunk as $monitor) {
-                            try {
-                                $this->calculateStatistics($monitor);
-                            } catch (\Throwable $e) {
-                                Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
-                                    'monitor_id' => $monitor->id,
-                                    'monitor_url' => $monitor->url,
-                                    'error' => $e->getMessage(),
-                                ]);
+                    ->first();
 
-                                // We continue for individual monitor failures in bulk jobs
-                                continue;
-                            }
-                        }
-                    });
-
-                Log::info('Monitor statistics calculation completed successfully!');
-
-                return;
-            }
-
-            if ($monitors->isEmpty()) {
-                Log::info('No public monitors found for statistics calculation.');
-
-                return;
-            }
-
-            Log::info("Calculating statistics for {$monitors->count()} monitor(s)...");
-
-            foreach ($monitors as $monitor) {
-                try {
-                    $this->calculateStatistics($monitor);
-                } catch (\Throwable $e) {
-                    Log::error("Failed to calculate statistics for monitor {$monitor->id}", [
-                        'monitor_id' => $monitor->id,
-                        'monitor_url' => $monitor->url,
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    continue;
+                if (! $monitor) {
+                    return;
                 }
+
+                $this->calculateStatistics($monitor);
+
+                return;
             }
 
-            Log::info('Monitor statistics calculation completed successfully!');
+            // Global dispatch path: fan out to individual jobs to avoid timeouts
+            $monitorCount = 0;
+            Monitor::where('is_public', true)
+                ->where('uptime_check_enabled', true)
+                ->select(['id'])
+                ->chunk(100, function ($monitors) use (&$monitorCount) {
+                    foreach ($monitors as $monitor) {
+                        self::dispatch($monitor->id);
+                        $monitorCount++;
+                    }
+                });
+
+            Log::info("Dispatched statistics calculation jobs for {$monitorCount} monitor(s).");
         } catch (\Throwable $e) {
             report($e); // Ensure the original exception is visible in logs/Horizon
             throw $e;   // Rethrow to allow Laravel to handle retries/failure properly
@@ -153,11 +129,11 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
                 $periods['24h'],
                 $periods['7d'],
                 $periods['30d'],
-                $periods['24h'], $periods['24h'], $periods['24h']
+                $periods['24h'], $periods['24h'], $periods['24h'],
             ])
             ->first();
 
-        $calculateUptime = function($up, $total) {
+        $calculateUptime = function ($up, $total) {
             return ($total > 0) ? round(($up / $total) * 100, 2) : 100.0;
         };
 

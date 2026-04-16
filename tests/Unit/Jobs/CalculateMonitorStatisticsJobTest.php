@@ -6,37 +6,31 @@ use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class CalculateMonitorStatisticsJobTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_calculates_statistics_for_all_public_monitors()
+    public function test_it_dispatches_individual_jobs_for_all_public_monitors()
     {
+        Queue::fake();
+
         // Create a public monitor
         $monitor = Monitor::factory()->create([
             'is_public' => true,
             'uptime_check_enabled' => true,
         ]);
 
-        // Create some history
-        MonitorHistory::factory()->count(10)->create([
-            'monitor_id' => $monitor->id,
-            'uptime_status' => 'up',
-            'response_time' => 100,
-        ]);
-
         // Run the job
         $job = new CalculateMonitorStatisticsJob;
         $job->handle();
 
-        // Check if statistics were created
-        $this->assertDatabaseHas('monitor_statistics', [
-            'monitor_id' => $monitor->id,
-            'uptime_24h' => 100.0,
-            'avg_response_time_24h' => 100,
-        ]);
+        // Check if individual job was dispatched
+        Queue::assertPushed(CalculateMonitorStatisticsJob::class, function ($job) use ($monitor) {
+            return $job->uniqueId() === 'monitor-'.$monitor->id;
+        });
     }
 
     public function test_it_calculates_statistics_for_a_single_monitor()
@@ -51,14 +45,11 @@ class CalculateMonitorStatisticsJobTest extends TestCase
             'uptime_check_enabled' => true,
         ]);
 
-        // Create history for both
+        // Create history for monitor1
         MonitorHistory::factory()->create([
             'monitor_id' => $monitor1->id,
             'uptime_status' => 'up',
-        ]);
-        MonitorHistory::factory()->create([
-            'monitor_id' => $monitor2->id,
-            'uptime_status' => 'up',
+            'created_at' => now(),
         ]);
 
         // Run the job for only monitor1
