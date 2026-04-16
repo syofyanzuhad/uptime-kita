@@ -33,6 +33,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="LOG_CHANNEL" value="null"/>
+        <env name="TRACE_REPLAY_ENABLED" value="false"/>
         <env name="BROADCAST_DRIVER" value="log"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="FILESYSTEM_DISK" value="local"/>
