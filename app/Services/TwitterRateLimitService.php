@@ -15,8 +15,26 @@ class TwitterRateLimitService
 
     private const CACHE_TTL_HOURS = 24;
 
+    private const BACKOFF_MULTIPLIER = 2;
+
+    private const MAX_BACKOFF_MINUTES = 60;
+
     public function shouldSendNotification(User $user, ?NotificationChannel $channel = null): bool
     {
+        $backoffKey = $this->getBackoffCacheKey($user, $channel);
+        $backoffData = Cache::get($backoffKey, []);
+
+        // Check if we're in a backoff period
+        if (isset($backoffData['backoff_until']) && now()->timestamp < $backoffData['backoff_until']) {
+            Log::info('Twitter notification blocked due to backoff period', [
+                'user_id' => $user->id,
+                'channel_id' => $channel?->id ?? 'system',
+                'backoff_until' => $backoffData['backoff_until'],
+            ]);
+
+            return false;
+        }
+
         $hourlyKey = $this->getHourlyCacheKey($user, $channel);
         $dailyKey = $this->getDailyCacheKey($user, $channel);
 
@@ -61,6 +79,42 @@ class TwitterRateLimitService
         if (! Cache::has($dailyKey)) {
             Cache::put($dailyKey, 1, now()->addDay());
         }
+
+        // Reset backoff on successful notification
+        $backoffKey = $this->getBackoffCacheKey($user, $channel);
+        Cache::forget($backoffKey);
+    }
+
+    /**
+     * Track a failed notification (429 error)
+     */
+    public function trackFailedNotification(User $user, ?NotificationChannel $channel = null): void
+    {
+        $backoffKey = $this->getBackoffCacheKey($user, $channel);
+        $backoffData = Cache::get($backoffKey, [
+            'backoff_count' => 0,
+        ]);
+
+        $currentTime = now()->timestamp;
+        $backoffCount = ($backoffData['backoff_count'] ?? 0) + 1;
+
+        // Cap backoff count to prevent overflow (2^6 = 64, which is > MAX_BACKOFF_MINUTES)
+        $cappedCount = min($backoffCount, 6);
+        $backoffMinutes = min(self::BACKOFF_MULTIPLIER ** $cappedCount, self::MAX_BACKOFF_MINUTES);
+
+        $backoffData['backoff_until'] = $currentTime + ($backoffMinutes * 60);
+        $backoffData['backoff_count'] = $backoffCount;
+
+        // Store backoff data for 24 hours (or at least MAX_BACKOFF_MINUTES)
+        Cache::put($backoffKey, $backoffData, now()->addHours(self::CACHE_TTL_HOURS));
+
+        Log::warning('Twitter notification failed - backoff period set', [
+            'user_id' => $user->id,
+            'channel_id' => $channel?->id ?? 'system',
+            'backoff_count' => $backoffCount,
+            'backoff_minutes' => $backoffMinutes,
+            'backoff_until' => $backoffData['backoff_until'],
+        ]);
     }
 
     public function getRemainingTweets(User $user, ?NotificationChannel $channel = null): array
@@ -89,5 +143,12 @@ class TwitterRateLimitService
         $channelId = $channel?->id ?? 'system';
 
         return sprintf('twitter_rate_limit:daily:%d:%s', $user->id, $channelId);
+    }
+
+    private function getBackoffCacheKey(User $user, ?NotificationChannel $channel = null): string
+    {
+        $channelId = $channel?->id ?? 'system';
+
+        return sprintf('twitter_rate_limit:backoff:%d:%s', $user->id, $channelId);
     }
 }

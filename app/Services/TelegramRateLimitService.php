@@ -13,7 +13,7 @@ class TelegramRateLimitService
 
     private const MAX_MESSAGES_PER_HOUR = 100;
 
-    private const CACHE_TTL = 120; // 2 minutes
+    private const CACHE_TTL = 86400; // 24 hours
 
     private const BACKOFF_MULTIPLIER = 2;
 
@@ -150,7 +150,7 @@ class TelegramRateLimitService
     public function resetRateLimit(User $user, NotificationChannel $telegramChannel): void
     {
         $rateLimitKey = $this->getRateLimitKey($user, $telegramChannel);
-        \Illuminate\Support\Facades\Cache::forget($rateLimitKey);
+        Cache::forget($rateLimitKey);
     }
 
     /**

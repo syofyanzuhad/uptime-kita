@@ -19,6 +19,20 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     use Queueable;
 
     /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 60;
+
+    /**
      * Create a new notification instance.
      */
     public function __construct(public $data)
@@ -204,21 +218,25 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             if (str_contains($e->getMessage(), '429') || str_contains($e->getMessage(), 'Too Many Requests')) {
                 $rateLimitService->trackFailedNotification($notifiable, $telegramChannel);
 
-                Log::error('Telegram notification failed with 429 error', [
+                Log::error('Telegram notification failed with 429 error - setting backoff', [
                     'user_id' => $notifiable->id,
                     'telegram_destination' => $telegramChannel->destination,
                     'error' => $e->getMessage(),
                 ]);
+
+                // We don't re-throw for 429 errors because we handle them with our own rate limiting/backoff.
+                // This prevents "attempted too many times" errors in the queue.
+                return null;
             } else {
                 Log::error('Telegram notification failed', [
                     'user_id' => $notifiable->id,
                     'telegram_destination' => $telegramChannel->destination,
                     'error' => $e->getMessage(),
                 ]);
-            }
 
-            // Re-throw the exception so Laravel can handle it
-            throw $e;
+                // Re-throw for other exceptions so we can retry or investigate
+                throw $e;
+            }
         }
     }
 
@@ -279,6 +297,21 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
             return new TwitterStatusUpdate($tweetContent);
         } catch (\Exception $e) {
+            // If we get a 429 error, track it for backoff
+            if (str_contains($e->getMessage(), '429') || str_contains($e->getMessage(), 'Too Many Requests')) {
+                $rateLimitService = app(TwitterRateLimitService::class);
+                $rateLimitService->trackFailedNotification($notifiable, null);
+
+                Log::error('Twitter notification failed with 429 error - setting backoff', [
+                    'user_id' => $notifiable->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                // We don't re-throw for 429 errors because we handle them with our own rate limiting/backoff.
+                // This prevents "attempted too many times" errors in the queue.
+                return new TwitterStatusUpdate('');
+            }
+
             Log::error('Twitter notification failed', [
                 'user_id' => $notifiable->id,
                 'error' => $e->getMessage(),

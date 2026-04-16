@@ -194,49 +194,49 @@ it('increases backoff duration with consecutive failures', function () {
     // Advance time by 3 minutes to clear backoff period
     Carbon::setTestNow(now()->addMinutes(3));
 
-    // Second failure - backoff count resets to 1
+    // Second failure - backoff count increases to 2
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats2 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats2['backoff_count'])->toBe(1);
+    expect($stats2['backoff_count'])->toBe(2);
 
     // Advance time by 5 minutes to clear backoff period
     Carbon::setTestNow(now()->addMinutes(5));
 
-    // Third failure - backoff count resets to 1
+    // Third failure - backoff count increases to 3
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats3 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats3['backoff_count'])->toBe(1);
+    expect($stats3['backoff_count'])->toBe(3);
 
     // Advance time by 10 minutes to clear backoff period
     Carbon::setTestNow(now()->addMinutes(10));
 
-    // Fourth failure - backoff count resets to 1
+    // Fourth failure - backoff count increases to 4
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats4 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats4['backoff_count'])->toBe(1);
+    expect($stats4['backoff_count'])->toBe(4);
 
     // Advance time by 20 minutes to clear backoff period
     Carbon::setTestNow(now()->addMinutes(20));
 
-    // Fifth failure - backoff count resets to 1
+    // Fifth failure - backoff count increases to 5
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats5 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats5['backoff_count'])->toBe(1);
+    expect($stats5['backoff_count'])->toBe(5);
 
-    // Advance time by 35 minutes to clear backoff period
-    Carbon::setTestNow(now()->addMinutes(35));
+    // Advance time by 40 minutes to clear backoff period (2^5 = 32 mins)
+    Carbon::setTestNow(now()->addMinutes(40));
 
-    // Sixth failure - backoff count resets to 1
+    // Sixth failure - backoff count increases to 6
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats6 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats6['backoff_count'])->toBe(1);
+    expect($stats6['backoff_count'])->toBe(6);
 
-    // Advance time by 65 minutes to clear backoff period
+    // Advance time by 65 minutes to clear backoff period (2^6 = 64 mins, but capped at 60)
     Carbon::setTestNow(now()->addMinutes(65));
 
     $rateLimitService->trackFailedNotification($user, $telegramChannel);
     $stats7 = $rateLimitService->getRateLimitStats($user, $telegramChannel);
-    expect($stats7['backoff_count'])->toBe(1);
+    expect($stats7['backoff_count'])->toBe(7);
 });
 
 it('resets backoff after successful notification', function () {
