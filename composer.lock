@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "35b7fe5ad6043971751a653a63174378",
+    "content-hash": "5d95a397c064a5f055ffb778920ddca9",
     "packages": [
         {
             "name": "abraham/twitteroauth",
@@ -1682,6 +1682,83 @@
                 }
             ],
             "time": "2025-08-22T14:27:06+00:00"
+        },
+        {
+            "name": "iazaran/trace-replay",
+            "version": "1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/iazaran/trace-replay.git",
+                "reference": "9cc42113bc67e1658243785cc980be0688768602"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/iazaran/trace-replay/zipball/9cc42113bc67e1658243785cc980be0688768602",
+                "reference": "9cc42113bc67e1658243785cc980be0688768602",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^7.0",
+                "laravel/pint": "^1.29",
+                "orchestra/pest-plugin-testbench": "^2.2|^3.0|^4.0",
+                "orchestra/testbench": "^8.37|^9.16|^10.9|^11.0",
+                "pestphp/pest": "^2.36|^3.0|^4.0",
+                "pestphp/pest-plugin-laravel": "^2.3|^3.0|^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "TraceReplay": "TraceReplay\\Facades\\TraceReplay"
+                    },
+                    "providers": [
+                        "TraceReplay\\TraceReplayServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "TraceReplay\\": "src/",
+                    "TraceReplay\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ismael",
+                    "email": "hi@iazaran.com"
+                }
+            ],
+            "description": "Enterprise-ready process tracking, replay, and AI-assisted debugging for Laravel applications.",
+            "homepage": "https://iazaran.github.io/trace-replay/",
+            "keywords": [
+                "ai",
+                "debugging",
+                "distributed-tracing",
+                "laravel",
+                "laravel-package",
+                "monitoring",
+                "observability",
+                "replay",
+                "tracing"
+            ],
+            "support": {
+                "issues": "https://github.com/iazaran/trace-replay/issues",
+                "source": "https://github.com/iazaran/trace-replay/tree/1.2.1"
+            },
+            "time": "2026-04-10T18:34:08+00:00"
         },
         {
             "name": "inertiajs/inertia-laravel",

@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+	$middleware->append(\TraceReplay\Http\Middleware\TraceMiddleware::class);
         $middleware->web(prepend: [
             CustomDomainMiddleware::class,
         ], append: [
