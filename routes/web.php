@@ -104,6 +104,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sample/json', [MonitorImportController::class, 'sampleJson'])->name('sample.json');
     });
 
+    // Monitor export routes
+    Route::prefix('monitor/export')->name('monitor.export.')->group(function () {
+        Route::get('/csv', [\App\Http\Controllers\MonitorExportController::class, 'csv'])->name('csv');
+        Route::get('/json', [\App\Http\Controllers\MonitorExportController::class, 'json'])->name('json');
+    });
+
 
 
     // Resource route untuk CRUD monitor

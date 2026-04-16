@@ -327,7 +327,7 @@ class MonitorImportService
             $monitor->update($updateData);
         }
 
-        if ($tags !== null && ! empty($tags)) {
+        if ($tags !== null) {
             $monitor->syncTags($tags);
         }
 
@@ -345,6 +345,64 @@ class MonitorImportService
     private function cleanRowData(array $row): array
     {
         return array_filter($row, fn ($key) => ! str_starts_with($key, '_'), ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * Export monitors to CSV
+     */
+    public function exportCsv(): string
+    {
+        $monitors = Monitor::all(); // Should respect global scope
+        $headers = ['url', 'display_name', 'uptime_check_enabled', 'certificate_check_enabled', 'uptime_check_interval', 'is_public', 'sensitivity', 'expected_status_code', 'tags'];
+
+        $handle = fopen('php://temp', 'r+');
+        fputcsv($handle, $headers);
+
+        foreach ($monitors as $monitor) {
+            fputcsv($handle, [
+                (string) $monitor->url,
+                $monitor->display_name,
+                $monitor->uptime_check_enabled ? 'true' : 'false',
+                $monitor->certificate_check_enabled ? 'true' : 'false',
+                $monitor->uptime_check_interval_in_minutes,
+                $monitor->is_public ? 'true' : 'false',
+                $monitor->sensitivity,
+                $monitor->expected_status_code,
+                implode(',', $monitor->tags->pluck('name')->toArray()),
+            ]);
+        }
+
+        rewind($handle);
+        $output = stream_get_contents($handle);
+        fclose($handle);
+
+        return $output;
+    }
+
+    /**
+     * Export monitors to JSON
+     */
+    public function exportJson(): string
+    {
+        $monitors = Monitor::all(); // Should respect global scope
+
+        $data = [
+            'monitors' => $monitors->map(function ($monitor) {
+                return [
+                    'url' => (string) $monitor->url,
+                    'display_name' => $monitor->display_name,
+                    'uptime_check_enabled' => (bool) $monitor->uptime_check_enabled,
+                    'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                    'uptime_check_interval' => (int) $monitor->uptime_check_interval_in_minutes,
+                    'is_public' => (bool) $monitor->is_public,
+                    'sensitivity' => $monitor->sensitivity,
+                    'expected_status_code' => (int) $monitor->expected_status_code,
+                    'tags' => $monitor->tags->pluck('name')->toArray(),
+                ];
+            })->toArray(),
+        ];
+
+        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 
     /**

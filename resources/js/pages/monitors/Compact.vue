@@ -20,6 +20,7 @@ import {
 import CreateMonitorModal from '../uptime/partials/CreateMonitorModal.vue';
 import EditMonitorModal from '../uptime/partials/EditMonitorModal.vue';
 import DetailMonitorModal from '../uptime/partials/DetailMonitorModal.vue';
+import ImportMonitorModal from '../uptime/partials/ImportMonitorModal.vue';
 
 const props = defineProps<{
     monitors: { data: Monitor[] };
@@ -35,6 +36,7 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 const isDetailModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 
 const monitorToEdit = ref<Monitor | null>(null);
 const monitorToView = ref<Monitor | null>(null);
@@ -266,13 +268,41 @@ const sortLabels = {
                         LOGIN
                     </Link>
 
-                    <Button
-                        v-if="isAuthenticated"
-                        @click="isCreateModalOpen = true"
-                        class="h-9 rounded-lg bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 transition-colors"
-                    >
-                        ADD MONITOR
-                    </Button>
+                    <template v-if="isAuthenticated">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button
+                                    variant="outline"
+                                    class="h-9 rounded-lg px-4 text-[10px] font-bold uppercase tracking-widest border-gray-200 dark:border-gray-800"
+                                >
+                                    <Icon name="download" class="mr-2" size="14" /> EXPORT
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-40">
+                                <DropdownMenuItem as="a" :href="route('monitor.export.csv')" class="text-[10px] font-bold uppercase tracking-widest">
+                                    <Icon name="fileText" class="mr-2" size="12" /> CSV
+                                </DropdownMenuItem>
+                                <DropdownMenuItem as="a" :href="route('monitor.export.json')" class="text-[10px] font-bold uppercase tracking-widest">
+                                    <Icon name="fileJson" class="mr-2" size="12" /> JSON
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button
+                            variant="outline"
+                            @click="isImportModalOpen = true"
+                            class="h-9 rounded-lg px-4 text-[10px] font-bold uppercase tracking-widest border-gray-200 dark:border-gray-800"
+                        >
+                            <Icon name="upload" class="mr-2" size="14" /> IMPORT
+                        </Button>
+
+                        <Button
+                            @click="isCreateModalOpen = true"
+                            class="h-9 rounded-lg bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 transition-colors"
+                        >
+                            ADD MONITOR
+                        </Button>
+                    </template>
                 </div>
             </div>
 
@@ -310,5 +340,6 @@ const sortLabels = {
         <CreateMonitorModal v-model:open="isCreateModalOpen" />
         <EditMonitorModal v-model:open="isEditModalOpen" :monitor="monitorToEdit" />
         <DetailMonitorModal v-model:open="isDetailModalOpen" :monitor="monitorToView" @edit="openEditModal" />
+        <ImportMonitorModal v-model:open="isImportModalOpen" />
     </WallboardLayout>
 </template>
