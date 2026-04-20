@@ -58,41 +58,51 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        // Ambil semua channel yang aktif dari database
+        // Get all active channels from database
         $channels = $notifiable->notificationChannels()
             ->where('is_enabled', true)
-            ->pluck('type')
-            ->toArray();
+            ->get();
 
-        // Map user-enabled channels
-        $userChannels = collect($channels)->map(function ($channel) use ($notifiable) {
-            // Check email rate limit before adding mail channel
-            if ($channel === 'email') {
+        $allChannels = collect();
+
+        foreach ($channels as $channel) {
+            if ($channel->type === 'email') {
                 $emailRateLimitService = app(EmailRateLimitService::class);
-                if (! $emailRateLimitService->canSendEmail($notifiable, 'monitor_status_changed')) {
-                    return null; // Skip email channel if rate limited
+                if ($emailRateLimitService->canSendEmail($notifiable, 'monitor_status_changed')) {
+                    $allChannels->push('mail');
                 }
+
+                continue;
             }
 
-            return match ($channel) {
-                'telegram' => $notifiable->notificationChannels()->where('type', 'telegram')->where('is_enabled', true)->exists()
-                    ? 'telegram' : null,
-                'email' => 'mail',
+            if ($channel->type === 'telegram') {
+                $telegramRateLimitService = app(TelegramRateLimitService::class);
+                if ($telegramRateLimitService->shouldSendNotification($notifiable, $channel)) {
+                    $allChannels->push('telegram');
+                }
+
+                continue;
+            }
+
+            $mappedChannel = match ($channel->type) {
                 'slack' => 'slack',
                 'sms' => 'nexmo',
                 default => null,
             };
-        })->filter();
+
+            if ($mappedChannel) {
+                $allChannels->push($mappedChannel);
+            }
+        }
 
         // Add Twitter as system notification only for DOWN events if configured and not rate limited
-        $allChannels = $userChannels;
         if ($this->data['status'] === 'DOWN') {
             if (! $this->isTwitterConfigured()) {
                 Log::debug('Twitter channel skipped: credentials not configured');
             } else {
                 $twitterRateLimitService = app(TwitterRateLimitService::class);
                 if ($twitterRateLimitService->shouldSendNotification($notifiable, null)) {
-                    $allChannels = $userChannels->push(TwitterChannel::class);
+                    $allChannels = $allChannels->push(TwitterChannel::class);
                 } else {
                     Log::info('Twitter channel excluded due to rate limit', [
                         'user_id' => $notifiable->id,
@@ -110,35 +120,17 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        // Check email rate limit
-        $emailRateLimitService = app(EmailRateLimitService::class);
-
-        if (! $emailRateLimitService->canSendEmail($notifiable, 'monitor_status_changed')) {
-            Log::warning('Email notification rate limited', [
-                'user_id' => $notifiable->id,
-                'email' => $notifiable->email,
-                'notification_type' => 'monitor_status_changed',
-                'monitor_id' => $this->data['id'] ?? null,
-                'status' => $this->data['status'] ?? null,
-                'remaining_emails' => $emailRateLimitService->getRemainingEmailCount($notifiable),
-            ]);
-
-            // Return null to skip sending the email
-            return null;
-        }
-
         // Extract hostname from URL
         $parsedUrl = parse_url($this->data['url']);
         $host = $parsedUrl['host'] ?? $this->data['url'];
 
-        // Log the email being sent
+        $emailRateLimitService = app(EmailRateLimitService::class);
         $emailRateLimitService->logEmailSent($notifiable, 'monitor_status_changed', [
             'monitor_id' => $this->data['id'] ?? null,
             'url' => $host,
             'status' => $this->data['status'] ?? null,
         ]);
 
-        // Check if user is approaching limit and add a warning
         $message = (new MailMessage)
             ->subject("Website Status: {$this->data['status']}")
             ->greeting("Halo, {$notifiable->name}")
@@ -146,7 +138,6 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             ->line("🔗 URL: {$host}")
             ->line("⚠️ Status: {$this->data['status']}");
 
-        // Add warning if approaching daily limit
         if ($emailRateLimitService->isApproachingLimit($notifiable)) {
             $remaining = $emailRateLimitService->getRemainingEmailCount($notifiable);
             $message->line('')
@@ -160,84 +151,38 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         return $message;
     }
 
-    public function toTelegram($notifiable)
+    public function toTelegram(object $notifiable): TelegramMessage
     {
-        // Ambil channel Telegram user
         $telegramChannel = $notifiable->notificationChannels()
             ->where('type', 'telegram')
             ->where('is_enabled', true)
-            ->first();
+            ->firstOrFail();
 
-        if (! $telegramChannel) {
-            return;
-        }
-
-        // Use the rate limiting service
         $rateLimitService = app(TelegramRateLimitService::class);
 
-        // Check if we should send the notification
-        if (! $rateLimitService->shouldSendNotification($notifiable, $telegramChannel)) {
-            Log::info('Telegram notification rate limited', [
-                'user_id' => $notifiable->id,
-                'telegram_destination' => $telegramChannel->destination,
-                'monitor_id' => $this->data['id'] ?? null,
-                'status' => $this->data['status'] ?? null,
-            ]);
+        $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
+        $statusText = $this->data['status'] === 'DOWN' ? 'Website DOWN' : 'Website UP';
 
-            return;
+        // Extract hostname from URL
+        $parsedUrl = parse_url($this->data['url']);
+        $host = $parsedUrl['host'] ?? $this->data['url'];
+
+        if (@$this->data['is_public']) {
+            $monitorUrl = config('app.url').'/m/'.$host;
+        } else {
+            $monitorUrl = config('app.url').'/monitor/'.$this->data['id'];
         }
 
-        try {
-            $statusEmoji = $this->data['status'] === 'DOWN' ? '🔴' : '🟢';
-            $statusText = $this->data['status'] === 'DOWN' ? 'Website DOWN' : 'Website UP';
+        $message = TelegramMessage::create()
+            ->to($telegramChannel->destination)
+            ->content("{$statusEmoji} *{$statusText}*\n\nURL: `{$host}`\nStatus: *{$this->data['status']}*")
+            ->options(['parse_mode' => 'Markdown'])
+            ->button('View Monitor', $monitorUrl)
+            ->button('Open Website', $this->data['url']);
 
-            // Extract hostname from URL
-            $parsedUrl = parse_url($this->data['url']);
-            $host = $parsedUrl['host'] ?? $this->data['url'];
+        $rateLimitService->trackSuccessfulNotification($notifiable, $telegramChannel);
 
-            // if monitor is public, use public url
-            if (@$this->data['is_public']) {
-                $monitorUrl = config('app.url').'/m/'.$host;
-            } else {
-                $monitorUrl = config('app.url').'/monitor/'.$this->data['id'];
-            }
-
-            $message = TelegramMessage::create()
-                ->to($telegramChannel->destination)
-                ->content("{$statusEmoji} *{$statusText}*\n\nURL: `{$host}`\nStatus: *{$this->data['status']}*")
-                ->options(['parse_mode' => 'Markdown'])
-                ->button('View Monitor', $monitorUrl)
-                ->button('Open Website', $this->data['url']);
-
-            // Track successful notification
-            $rateLimitService->trackSuccessfulNotification($notifiable, $telegramChannel);
-
-            return $message;
-        } catch (\Exception $e) {
-            // If we get a 429 error, track it for backoff
-            if (str_contains($e->getMessage(), '429') || str_contains($e->getMessage(), 'Too Many Requests')) {
-                $rateLimitService->trackFailedNotification($notifiable, $telegramChannel);
-
-                Log::error('Telegram notification failed with 429 error - setting backoff', [
-                    'user_id' => $notifiable->id,
-                    'telegram_destination' => $telegramChannel->destination,
-                    'error' => $e->getMessage(),
-                ]);
-
-                // We don't re-throw for 429 errors because we handle them with our own rate limiting/backoff.
-                // This prevents "attempted too many times" errors in the queue.
-                return null;
-            } else {
-                Log::error('Telegram notification failed', [
-                    'user_id' => $notifiable->id,
-                    'telegram_destination' => $telegramChannel->destination,
-                    'error' => $e->getMessage(),
-                ]);
-
-                // Re-throw for other exceptions so we can retry or investigate
-                throw $e;
-            }
-        }
+        return $message;
     }
 
     public function toTwitter($notifiable)
@@ -319,6 +264,17 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('Monitor notification failed permanently', [
+            'monitor_id' => $this->data['id'] ?? null,
+            'exception' => $exception->getMessage(),
+        ]);
     }
 
     /**

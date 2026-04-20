@@ -4,6 +4,7 @@ use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
 use App\Services\TelegramRateLimitService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Notifications\Messages\MailMessage;
 use NotificationChannels\Telegram\TelegramMessage;
 
@@ -42,18 +43,41 @@ describe('MonitorStatusChanged', function () {
                 'is_enabled' => true,
             ]);
 
-            NotificationChannel::factory()->create([
+            $telegramChannel = NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'telegram',
                 'is_enabled' => true,
                 'destination' => '123456789',
             ]);
 
+            // Mock telegram rate limit service to allow sending
+            $rateLimitService = mock(TelegramRateLimitService::class);
+            $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(true);
+            $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
+
             $channels = $this->notification->via($this->user);
 
             expect($channels)->toContain('mail');
             expect($channels)->toContain('telegram');
             expect($channels)->toContain('NotificationChannels\Twitter\TwitterChannel');
+        });
+
+        it('excludes telegram when rate limited', function () {
+            $telegramChannel = NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => '123456789',
+            ]);
+
+            // Mock telegram rate limit service to deny sending
+            $rateLimitService = mock(TelegramRateLimitService::class);
+            $rateLimitService->shouldReceive('shouldSendNotification')->andReturn(false);
+            $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
+
+            $channels = $this->notification->via($this->user);
+
+            expect($channels)->not->toContain('telegram');
         });
 
         it('only returns enabled channels plus Twitter', function () {
@@ -192,13 +216,12 @@ describe('MonitorStatusChanged', function () {
     });
 
     describe('toTelegram', function () {
-        it('returns null when no telegram channel exists', function () {
-            $result = $this->notification->toTelegram($this->user);
-
-            expect($result)->toBeNull();
+        it('throws exception when no telegram channel exists', function () {
+            expect(fn () => $this->notification->toTelegram($this->user))
+                ->toThrow(ModelNotFoundException::class);
         });
 
-        it('returns null when telegram channel is disabled', function () {
+        it('throws exception when telegram channel is disabled', function () {
             NotificationChannel::factory()->create([
                 'user_id' => $this->user->id,
                 'type' => 'telegram',
@@ -206,32 +229,8 @@ describe('MonitorStatusChanged', function () {
                 'destination' => '123456789',
             ]);
 
-            $result = $this->notification->toTelegram($this->user);
-
-            expect($result)->toBeNull();
-        });
-
-        it('returns null when rate limited', function () {
-            $telegramChannel = NotificationChannel::factory()->create([
-                'user_id' => $this->user->id,
-                'type' => 'telegram',
-                'is_enabled' => true,
-                'destination' => '123456789',
-            ]);
-
-            // Mock rate limit service to deny sending
-            $rateLimitService = mock(TelegramRateLimitService::class);
-            $rateLimitService->shouldReceive('shouldSendNotification')
-                ->withArgs(function ($user, $channel) use ($telegramChannel) {
-                    return $user->id === $this->user->id && $channel->id === $telegramChannel->id;
-                })
-                ->andReturn(false);
-
-            $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
-
-            $result = $this->notification->toTelegram($this->user);
-
-            expect($result)->toBeNull();
+            expect(fn () => $this->notification->toTelegram($this->user))
+                ->toThrow(ModelNotFoundException::class);
         });
 
         it('creates telegram message when conditions are met', function () {
@@ -242,17 +241,9 @@ describe('MonitorStatusChanged', function () {
                 'destination' => '123456789',
             ]);
 
-            // Mock rate limit service to allow sending
+            // Mock rate limit service
             $rateLimitService = mock(TelegramRateLimitService::class);
-            $rateLimitService->shouldReceive('shouldSendNotification')
-                ->withArgs(function ($user, $channel) use ($telegramChannel) {
-                    return $user->id === $this->user->id && $channel->id === $telegramChannel->id;
-                })
-                ->andReturn(true);
             $rateLimitService->shouldReceive('trackSuccessfulNotification')
-                ->withArgs(function ($user, $channel) use ($telegramChannel) {
-                    return $user->id === $this->user->id && $channel->id === $telegramChannel->id;
-                })
                 ->once();
 
             $this->app->instance(TelegramRateLimitService::class, $rateLimitService);
