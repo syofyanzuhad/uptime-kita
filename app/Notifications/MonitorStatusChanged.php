@@ -33,6 +33,13 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
     public $backoff = 60;
 
     /**
+     * The notifiable instance.
+     *
+     * @var object|null
+     */
+    public ?object $notifiable = null;
+
+    /**
      * Create a new notification instance.
      */
     public function __construct(public $data)
@@ -58,6 +65,8 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
+        $this->notifiable = $notifiable;
+
         // Get all active channels from database
         $channels = $notifiable->notificationChannels()
             ->where('is_enabled', true)
@@ -76,6 +85,17 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             }
 
             if ($channel->type === 'telegram') {
+                // Short-circuit if destination is clearly invalid
+                if (blank($channel->destination) || ! preg_match('/^-?\d+$/', (string) $channel->destination)) {
+                    Log::warning('MonitorStatusChanged: Skipping Telegram channel with invalid destination', [
+                        'user_id' => $notifiable->id,
+                        'channel_id' => $channel->id,
+                        'destination' => $channel->destination,
+                    ]);
+
+                    continue;
+                }
+
                 $telegramRateLimitService = app(TelegramRateLimitService::class);
                 if ($telegramRateLimitService->shouldSendNotification($notifiable, $channel)) {
                     $allChannels->push('telegram');
@@ -275,6 +295,20 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
             'monitor_id' => $this->data['id'] ?? null,
             'exception' => $exception->getMessage(),
         ]);
+
+        if (str_contains($exception->getMessage(), 'chat not found') && $this->notifiable) {
+            if (method_exists($this->notifiable, 'notificationChannels')) {
+                $this->notifiable->notificationChannels()
+                    ->where('type', 'telegram')
+                    ->where('is_enabled', true)
+                    ->update(['is_enabled' => false]);
+
+                Log::warning('Disabled Telegram channels for notifiable due to permanent delivery failure (chat not found)', [
+                    'notifiable_id' => $this->notifiable->id ?? null,
+                    'monitor_id' => $this->data['id'] ?? null,
+                ]);
+            }
+        }
     }
 
     /**

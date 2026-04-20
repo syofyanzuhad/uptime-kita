@@ -190,6 +190,51 @@ describe('MonitorStatusChanged', function () {
 
             expect($channels)->not->toContain('NotificationChannels\Twitter\TwitterChannel');
         });
+
+        it('skips telegram channel with invalid destination', function () {
+            NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => 'not-a-number',
+            ]);
+
+            $channels = $this->notification->via($this->user);
+
+            expect($channels)->not->toContain('telegram');
+        });
+
+        it('skips telegram channel with empty destination', function () {
+            NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => '',
+            ]);
+
+            $channels = $this->notification->via($this->user);
+
+            expect($channels)->not->toContain('telegram');
+        });
+    });
+
+    describe('failed', function () {
+        it('disables telegram channel on chat not found failure', function () {
+            $channel = NotificationChannel::factory()->create([
+                'user_id' => $this->user->id,
+                'type' => 'telegram',
+                'is_enabled' => true,
+                'destination' => '123456789',
+            ]);
+
+            $this->notification->notifiable = $this->user;
+            $exception = new \Exception('400 Bad Request: chat not found');
+
+            $this->notification->failed($exception);
+
+            $channel->refresh();
+            expect($channel->is_enabled)->toBeFalse();
+        });
     });
 
     describe('toMail', function () {
