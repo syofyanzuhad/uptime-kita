@@ -182,69 +182,67 @@ return [
     'defaults' => [
         'supervisor-default' => [
             'connection' => 'redis',
-            'queue' => ['default', 'uptime-calculations', 'statistics'],
+            'queue' => ['default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
             'maxTime' => 3600,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 60,
             'nice' => 0,
         ],
         'supervisor-calculate' => [
             'connection' => 'redis',
-            'queue' => ['uptime-calculations', 'default', 'statistics'],
+            'queue' => ['uptime-calculations'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
             'maxTime' => 3600,
             'maxJobs' => 0,
             'memory' => 256,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 300,
             'nice' => 0,
         ],
         'supervisor-statistic' => [
             'connection' => 'redis',
-            'queue' => ['statistics', 'default', 'uptime-calculations'],
+            'queue' => ['statistics'],
             'balance' => 'simple',
             'maxProcesses' => 1,
             'maxTime' => 3600,
             'maxJobs' => 0,
-            'memory' => 256,
+            'memory' => 512, // Statistics aggregations can be memory intensive
             'tries' => 3,
-            'timeout' => 660, // Must exceed job timeout (600s) to allow proper completion
-            'nice' => 10, // Lower priority for statistics
+            'timeout' => 900, // Increased to 15 mins to be safe for large aggregations
+            'nice' => 10,
         ],
     ],
 
     'environments' => [
         'production' => [
             'supervisor-default' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 12,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 2,
+                'balanceCooldown' => 3,
             ],
             'supervisor-calculate' => [
-                'maxProcesses' => 15,
+                'maxProcesses' => 6,
                 'balanceMaxShift' => 1,
-                'balanceCooldown' => 1,
+                'balanceCooldown' => 3,
             ],
             'supervisor-statistic' => [
-                'maxProcesses' => 3,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 1,
+                'maxProcesses' => 12, // Dedicated capacity for long-running stats
             ],
         ],
 
         'local' => [
             'supervisor-default' => [
-                'maxProcesses' => 2,
+                'maxProcesses' => 3,
             ],
             'supervisor-calculate' => [
-                'maxProcesses' => 5,
+                'maxProcesses' => 3,
             ],
             'supervisor-statistic' => [
                 'maxProcesses' => 1,
