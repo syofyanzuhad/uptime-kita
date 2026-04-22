@@ -2,6 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorIncident;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 describe('MonitorIncident Model', function () {
     describe('fillable attributes', function () {
@@ -36,7 +38,7 @@ describe('MonitorIncident Model', function () {
                 'started_at' => '2024-01-01 12:00:00',
             ]);
 
-            expect($incident->started_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($incident->started_at)->toBeInstanceOf(Carbon::class);
             expect($incident->started_at->format('Y-m-d H:i:s'))->toBe('2024-01-01 12:00:00');
         });
 
@@ -45,7 +47,7 @@ describe('MonitorIncident Model', function () {
                 'ended_at' => '2024-01-01 13:00:00',
             ]);
 
-            expect($incident->ended_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($incident->ended_at)->toBeInstanceOf(Carbon::class);
             expect($incident->ended_at->format('Y-m-d H:i:s'))->toBe('2024-01-01 13:00:00');
         });
 
@@ -181,12 +183,12 @@ describe('MonitorIncident Model', function () {
             ]);
 
             // Mock now() to ensure consistent duration
-            \Carbon\Carbon::setTestNow(now());
+            Carbon::setTestNow(now());
 
             $incident->endIncident();
 
             expect($incident->ended_at)->not->toBeNull();
-            expect($incident->ended_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($incident->ended_at)->toBeInstanceOf(Carbon::class);
             expect($incident->duration_minutes)->toBeInt();
             expect($incident->duration_minutes)->toBe(45);
 
@@ -195,7 +197,7 @@ describe('MonitorIncident Model', function () {
             expect($incident->ended_at)->not->toBeNull();
             expect($incident->duration_minutes)->toBe(45);
 
-            \Carbon\Carbon::setTestNow(); // Reset
+            Carbon::setTestNow(); // Reset
         });
 
         it('calculates correct duration for various time periods', function () {
@@ -226,14 +228,14 @@ describe('MonitorIncident Model', function () {
         });
 
         it('uses factory trait', function () {
-            expect(class_uses(MonitorIncident::class))->toContain(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+            expect(class_uses(MonitorIncident::class))->toContain(HasFactory::class);
         });
 
         it('handles timestamps', function () {
             $incident = MonitorIncident::factory()->create();
 
-            expect($incident->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($incident->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($incident->created_at)->toBeInstanceOf(Carbon::class);
+            expect($incident->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
@@ -71,7 +72,7 @@ class BroadcastMonitorStatusChange implements ShouldQueue
         // Keep only changes within last 5 minutes and max 100 entries
         $fiveMinutesAgo = now()->subMinutes(5);
         $changes = collect($changes)
-            ->filter(fn ($c) => \Carbon\Carbon::parse($c['changed_at'])->isAfter($fiveMinutesAgo))
+            ->filter(fn ($c) => Carbon::parse($c['changed_at'])->isAfter($fiveMinutesAgo))
             ->take(100)
             ->values()
             ->toArray();

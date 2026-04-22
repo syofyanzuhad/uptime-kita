@@ -4,6 +4,8 @@ use App\Http\Controllers\ToggleMonitorPinController;
 use App\Models\Monitor;
 use App\Models\User;
 use App\Models\UserMonitor;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 describe('ToggleMonitorPinController', function () {
@@ -30,7 +32,7 @@ describe('ToggleMonitorPinController', function () {
         $response = $controller->__invoke($request, $monitor->id);
 
         // Assert redirect response
-        expect($response)->toBeInstanceOf(\Illuminate\Http\RedirectResponse::class);
+        expect($response)->toBeInstanceOf(RedirectResponse::class);
         expect($response->getSession()->get('flash.type'))->toBe('success');
         expect($response->getSession()->get('flash.message'))->toBe('Monitor pinned successfully.');
 
@@ -60,7 +62,7 @@ describe('ToggleMonitorPinController', function () {
         $controller = new ToggleMonitorPinController;
         $response = $controller->__invoke($request, $monitor->id);
 
-        expect($response)->toBeInstanceOf(\Illuminate\Http\RedirectResponse::class);
+        expect($response)->toBeInstanceOf(RedirectResponse::class);
         expect($response->getSession()->get('flash.type'))->toBe('success');
         expect($response->getSession()->get('flash.message'))->toBe('Monitor unpinned successfully.');
 
@@ -84,7 +86,7 @@ describe('ToggleMonitorPinController', function () {
         $controller = new ToggleMonitorPinController;
         $response = $controller->__invoke($request, $monitor->id);
 
-        expect($response)->toBeInstanceOf(\Illuminate\Http\RedirectResponse::class);
+        expect($response)->toBeInstanceOf(RedirectResponse::class);
         expect($response->getSession()->get('flash.type'))->toBe('error');
         expect($response->getSession()->get('flash.message'))->toBe('You must be subscribed to this monitor to pin it.');
     });
@@ -123,12 +125,12 @@ describe('ToggleMonitorPinController', function () {
         try {
             $response = $controller->__invoke($request, 999999);
             // If we get here, the controller handled it with a redirect
-            expect($response)->toBeInstanceOf(\Illuminate\Http\RedirectResponse::class);
+            expect($response)->toBeInstanceOf(RedirectResponse::class);
             expect($response->getSession()->get('flash.type'))->toBe('error');
             expect($response->getSession()->get('flash.message'))->toContain('Failed to update pin status');
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             // Expected exception
-            expect($e)->toBeInstanceOf(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+            expect($e)->toBeInstanceOf(ModelNotFoundException::class);
         }
     });
 
@@ -195,7 +197,7 @@ describe('ToggleMonitorPinController', function () {
         $controller = new ToggleMonitorPinController;
         $response = $controller->__invoke($request, $monitor->id);
 
-        expect($response)->toBeInstanceOf(\Illuminate\Http\RedirectResponse::class);
+        expect($response)->toBeInstanceOf(RedirectResponse::class);
         expect($response->getSession()->get('flash.type'))->toBe('success');
         expect($response->getSession()->get('flash.message'))->toBe('Monitor pinned successfully.');
     });

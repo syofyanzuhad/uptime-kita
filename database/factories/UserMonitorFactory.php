@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\Monitor;
 use App\Models\User;
+use App\Models\UserMonitor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserMonitor>
+ * @extends Factory<UserMonitor>
  */
 class UserMonitorFactory extends Factory
 {

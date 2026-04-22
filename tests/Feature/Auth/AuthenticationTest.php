@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 
 test('login screen can be rendered', function () {
@@ -96,7 +97,7 @@ test('remember me functionality works', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
-    $response->assertCookie(\Illuminate\Support\Facades\Auth::guard()->getRecallerName());
+    $response->assertCookie(Auth::guard()->getRecallerName());
 });
 
 test('user can login without remember me', function () {
@@ -110,7 +111,7 @@ test('user can login without remember me', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
-    $response->assertCookieMissing(\Illuminate\Support\Facades\Auth::guard()->getRecallerName());
+    $response->assertCookieMissing(Auth::guard()->getRecallerName());
 });
 
 test('login attempts are rate limited', function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class SubscribeMonitorController extends Controller
@@ -75,7 +76,7 @@ class SubscribeMonitorController extends Controller
                 'type' => 'success',
                 'message' => 'Berhasil berlangganan monitor: '.$monitor?->url,
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Monitor not found'], 404);
             }

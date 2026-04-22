@@ -2,6 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorUptimeDaily;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 describe('MonitorUptimeDaily Model', function () {
     describe('fillable attributes', function () {
@@ -38,7 +40,7 @@ describe('MonitorUptimeDaily Model', function () {
                 'date' => '2024-01-15',
             ]);
 
-            expect($uptimeDaily->date)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($uptimeDaily->date)->toBeInstanceOf(Carbon::class);
             expect($uptimeDaily->date->format('Y-m-d'))->toBe('2024-01-15');
         });
 
@@ -98,14 +100,14 @@ describe('MonitorUptimeDaily Model', function () {
         });
 
         it('uses factory trait', function () {
-            expect(MonitorUptimeDaily::class)->toUse(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+            expect(MonitorUptimeDaily::class)->toUse(HasFactory::class);
         });
 
         it('handles timestamps', function () {
             $uptimeDaily = MonitorUptimeDaily::factory()->create();
 
-            expect($uptimeDaily->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($uptimeDaily->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($uptimeDaily->created_at)->toBeInstanceOf(Carbon::class);
+            expect($uptimeDaily->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

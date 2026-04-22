@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -73,7 +74,7 @@ class MonitorHistory extends Model
         return static::whereIn('id', $ids)->orderBy($orderBy, $orderDirection);
     }
 
-    public function prunable(): \Illuminate\Database\Eloquent\Builder
+    public function prunable(): Builder
     {
         return static::where('created_at', '<', now()->subDays(30));
     }

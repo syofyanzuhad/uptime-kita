@@ -41,6 +41,8 @@ const getDomainFromUrl = (url: string) => {
                 <TableRow class="hover:bg-transparent">
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Monitor</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Status</TableHead>
+                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Interval</TableHead>
+                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-center">SSL</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Today Uptime</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Avg Resp</TableHead>
                     <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Incidents</TableHead>
@@ -77,6 +79,17 @@ const getDomainFromUrl = (url: string) => {
                             />
                             <span class="text-xs font-medium capitalize">{{ monitor.uptime_status }}</span>
                         </div>
+                    </TableCell>
+                    <TableCell class="py-1.5 text-right text-xs font-medium text-gray-500">
+                        {{ monitor.uptime_check_interval }}m
+                    </TableCell>
+                    <TableCell class="py-1.5 text-center">
+                        <Icon
+                            :name="monitor.certificate_check_enabled ? 'shieldCheck' : 'shieldOff'"
+                            :class="monitor.certificate_check_enabled ? 'text-blue-500' : 'text-gray-300'"
+                            size="14"
+                            class="inline-block"
+                        />
                     </TableCell>
                     <TableCell class="py-1.5 text-right">
                         <span

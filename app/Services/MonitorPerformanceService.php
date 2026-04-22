@@ -37,14 +37,14 @@ class MonitorPerformanceService
         if ($responseTime !== null && $isSuccess) {
             $currentAvg = $performance->avg_response_time ?? 0;
             $count = $performance->success_count;
-            
+
             if ($count === 1) {
                 $performance->avg_response_time = $responseTime;
             } else {
                 // Running average formula: ((previous_avg * (n-1)) + new_value) / n
                 $performance->avg_response_time = (($currentAvg * ($count - 1)) + $responseTime) / $count;
             }
-            
+
             // Note: P95 and P99 are removed from real-time path as they require O(N log N) sorting
             // They can be calculated by a separate background process if needed.
         }
@@ -54,6 +54,7 @@ class MonitorPerformanceService
 
     /**
      * Update response time metrics for the hourly performance record.
+     *
      * @deprecated Expensive - moved to running average in updateHourlyMetrics
      */
     protected function updateResponseTimeMetrics(MonitorPerformanceHourly $performance, int $responseTime): void

@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\SocialAccount;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SocialAccount>
+ * @extends Factory<SocialAccount>
  */
 class SocialAccountFactory extends Factory
 {
@@ -19,7 +21,7 @@ class SocialAccountFactory extends Factory
         $provider = $this->faker->randomElement(['github', 'google', 'facebook', 'twitter']);
 
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'provider_id' => $this->faker->unique()->numerify('##########'),
             'provider_name' => $provider,
         ];

@@ -142,7 +142,7 @@ class SmartRetryService
             if ($additionalOptions) {
                 // Filter out special keys that are Guzzle options, not headers
                 $specialKeys = ['proxy', 'verify', 'timeout', 'connect_timeout', 'auth'];
-                
+
                 $headers = [];
                 foreach ($additionalOptions as $key => $value) {
                     if (in_array(strtolower($key), $specialKeys)) {
@@ -152,14 +152,14 @@ class SmartRetryService
                     }
                 }
 
-                if (!empty($headers)) {
+                if (! empty($headers)) {
                     $options['headers'] = $headers;
                 }
             }
         }
 
         // Add global proxy if configured
-        if (!isset($options['proxy']) && config('uptime-monitor.uptime_check.guzzle_options.proxy')) {
+        if (! isset($options['proxy']) && config('uptime-monitor.uptime_check.guzzle_options.proxy')) {
             $options['proxy'] = config('uptime-monitor.uptime_check.guzzle_options.proxy');
         }
 

@@ -2,6 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorStatistic;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 describe('MonitorStatistic Model', function () {
     describe('fillable attributes', function () {
@@ -90,7 +92,7 @@ describe('MonitorStatistic Model', function () {
                 'calculated_at' => '2024-01-01 12:00:00',
             ]);
 
-            expect($statistic->calculated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($statistic->calculated_at)->toBeInstanceOf(Carbon::class);
             expect($statistic->calculated_at->format('Y-m-d H:i:s'))->toBe('2024-01-01 12:00:00');
         });
     });
@@ -188,14 +190,14 @@ describe('MonitorStatistic Model', function () {
         });
 
         it('uses factory trait', function () {
-            expect(MonitorStatistic::class)->toUse(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+            expect(MonitorStatistic::class)->toUse(HasFactory::class);
         });
 
         it('handles timestamps', function () {
             $statistic = MonitorStatistic::factory()->create();
 
-            expect($statistic->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($statistic->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($statistic->created_at)->toBeInstanceOf(Carbon::class);
+            expect($statistic->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

@@ -102,7 +102,7 @@ describe('MonitorPerformanceService', function () {
 
             expect($metrics['total_checks'])->toBe(3);
             expect($metrics['failed_checks'])->toBe(1);
-            expect((float)$metrics['avg_response_time'])->toBe(200.0); // (150 + 250) / 2
+            expect((float) $metrics['avg_response_time'])->toBe(200.0); // (150 + 250) / 2
             expect($metrics['min_response_time'])->toBe(150);
             expect($metrics['max_response_time'])->toBe(250);
         });
@@ -130,7 +130,7 @@ describe('MonitorPerformanceService', function () {
 
             $stats = $this->service->getResponseTimeStats($this->monitor->id, $startDate, $endDate);
 
-            expect((float)$stats['avg'])->toBe(200.0); // (100 + 300) / 2
+            expect((float) $stats['avg'])->toBe(200.0); // (100 + 300) / 2
             expect($stats['min'])->toBe(100);
             expect($stats['max'])->toBe(300);
         });

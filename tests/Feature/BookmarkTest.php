@@ -59,7 +59,7 @@ it('can unpin a monitor', function () {
         ]);
 
     // Debug: Let's check what's actually in the database
-    $pivotRecord = \DB::table('user_monitor')
+    $pivotRecord = DB::table('user_monitor')
         ->where('user_id', $user->id)
         ->where('monitor_id', $monitor->id)
         ->first();

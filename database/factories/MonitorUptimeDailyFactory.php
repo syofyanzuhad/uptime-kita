@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Monitor;
+use App\Models\MonitorUptimeDaily;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MonitorUptimeDaily>
+ * @extends Factory<MonitorUptimeDaily>
  */
 class MonitorUptimeDailyFactory extends Factory
 {
@@ -17,7 +19,7 @@ class MonitorUptimeDailyFactory extends Factory
     public function definition(): array
     {
         return [
-            'monitor_id' => \App\Models\Monitor::factory(),
+            'monitor_id' => Monitor::factory(),
             'date' => $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
             'uptime_percentage' => $this->faker->randomFloat(2, 85, 100),
             'avg_response_time' => $this->faker->randomFloat(2, 100, 1000),

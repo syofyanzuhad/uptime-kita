@@ -228,7 +228,7 @@ describe('MonitorStatusChanged', function () {
             ]);
 
             $this->notification->notifiable = $this->user;
-            $exception = new \Exception('400 Bad Request: chat not found');
+            $exception = new Exception('400 Bad Request: chat not found');
 
             $this->notification->failed($exception);
 

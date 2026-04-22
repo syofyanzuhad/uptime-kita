@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Sentry\Laravel\Integration;
+use TraceReplay\Http\Middleware\TraceMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-	$middleware->append(\TraceReplay\Http\Middleware\TraceMiddleware::class);
+        $middleware->append(TraceMiddleware::class);
         $middleware->web(prepend: [
             CustomDomainMiddleware::class,
         ], append: [

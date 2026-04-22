@@ -1,13 +1,18 @@
 <?php
 
+use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Jobs\CalculateMonitorUptimeDailyJob;
+use App\Jobs\SendTelemetryPingJob;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Spatie\Health\Commands\DispatchQueueCheckJobsCommand;
+use Spatie\Health\Commands\RunHealthChecksCommand;
+use Spatie\Health\Commands\ScheduleCheckHeartbeatCommand;
+use Spatie\Health\Models\HealthCheckResultHistoryItem;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
-use Spatie\UptimeMonitor\Commands\CheckUptime;
 
 Schedule::command('monitor:check-uptime')->everyMinute()
     ->withoutOverlapping(10)
@@ -31,12 +36,12 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
-Schedule::command('model:prune', ['--model' => [\Spatie\Health\Models\HealthCheckResultHistoryItem::class]])->daily();
+Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
 
 Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
-Schedule::job(new \App\Jobs\CalculateMonitorStatisticsJob)
+Schedule::job(new CalculateMonitorStatisticsJob)
     ->everyThirtyMinutes()
     ->withoutOverlapping();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
@@ -44,11 +49,11 @@ Schedule::job(new \App\Jobs\CalculateMonitorStatisticsJob)
 // Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
 
-Schedule::command(\Spatie\Health\Commands\RunHealthChecksCommand::class)->everyMinute()
+Schedule::command(RunHealthChecksCommand::class)->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
-Schedule::command(\Spatie\Health\Commands\ScheduleCheckHeartbeatCommand::class)->everyMinute();
-Schedule::command(\Spatie\Health\Commands\DispatchQueueCheckJobsCommand::class)->everyMinute();
+Schedule::command(ScheduleCheckHeartbeatCommand::class)->everyMinute();
+Schedule::command(DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
 Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
@@ -58,7 +63,7 @@ Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
 if (config('telemetry.enabled')) {
     $frequency = config('telemetry.frequency', 'daily');
 
-    $telemetrySchedule = Schedule::job(new \App\Jobs\SendTelemetryPingJob);
+    $telemetrySchedule = Schedule::job(new SendTelemetryPingJob);
 
     match ($frequency) {
         'hourly' => $telemetrySchedule->hourly(),

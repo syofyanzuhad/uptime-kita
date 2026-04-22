@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\Monitor;
 use App\Models\StatusPage;
+use App\Models\StatusPageMonitor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StatusPageMonitor>
+ * @extends Factory<StatusPageMonitor>
  */
 class StatusPageMonitorFactory extends Factory
 {

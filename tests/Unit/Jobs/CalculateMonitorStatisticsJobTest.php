@@ -30,7 +30,7 @@ class CalculateMonitorStatisticsJobTest extends TestCase
             'uptime_status' => 'up',
             'created_at' => now(),
         ]);
-        
+
         MonitorUptimeDaily::updateOrInsert(
             ['monitor_id' => $monitor->id, 'date' => now()->toDateString()],
             ['uptime_percentage' => 100, 'total_checks' => 1, 'failed_checks' => 0]
@@ -42,7 +42,7 @@ class CalculateMonitorStatisticsJobTest extends TestCase
 
         // Verify statistics were created directly (not via a pushed job)
         $this->assertDatabaseHas('monitor_statistics', ['monitor_id' => $monitor->id]);
-        
+
         // Ensure NO child jobs were pushed to the queue
         Queue::assertNothingPushed();
     }
@@ -65,7 +65,7 @@ class CalculateMonitorStatisticsJobTest extends TestCase
             'uptime_status' => 'up',
             'created_at' => now(),
         ]);
-        
+
         MonitorUptimeDaily::updateOrInsert(
             ['monitor_id' => $monitor1->id, 'date' => now()->toDateString()],
             ['uptime_percentage' => 100, 'total_checks' => 1, 'failed_checks' => 0]

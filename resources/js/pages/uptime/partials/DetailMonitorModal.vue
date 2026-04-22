@@ -100,7 +100,7 @@ function formatDate(dateString: string | null) {
                     </div>
                     <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Interval</span>
-                        <div class="font-bold text-sm">{{ monitor.uptime_check_interval || '-' }} min</div>
+                        <div class="font-bold text-sm">{{ monitor.uptime_check_interval ? monitor.uptime_check_interval + ' min' : '-' }}</div>
                     </div>
                     <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">SSL</span>

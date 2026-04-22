@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\NotificationChannel;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\NotificationChannel>
+ * @extends Factory<NotificationChannel>
  */
 class NotificationChannelFactory extends Factory
 {
@@ -26,7 +28,7 @@ class NotificationChannelFactory extends Factory
         };
 
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'type' => $type,
             'destination' => $destination,
             'is_enabled' => $this->faker->boolean(80),

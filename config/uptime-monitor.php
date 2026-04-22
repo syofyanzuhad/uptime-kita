@@ -1,5 +1,15 @@
 <?php
 
+use App\Models\Monitor;
+use Spatie\UptimeMonitor\Helpers\UptimeResponseCheckers\LookForStringChecker;
+use Spatie\UptimeMonitor\Notifications\Notifiable;
+use Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckFailed;
+use Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckSucceeded;
+use Spatie\UptimeMonitor\Notifications\Notifications\CertificateExpiresSoon;
+use Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckFailed;
+use Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckRecovered;
+use Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckSucceeded;
+
 return [
 
     /*
@@ -9,13 +19,13 @@ return [
     'notifications' => [
 
         'notifications' => [
-            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckFailed::class => [],
-            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckRecovered::class => [],
-            \Spatie\UptimeMonitor\Notifications\Notifications\UptimeCheckSucceeded::class => [],
+            UptimeCheckFailed::class => [],
+            UptimeCheckRecovered::class => [],
+            UptimeCheckSucceeded::class => [],
 
-            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckFailed::class => [],
-            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateExpiresSoon::class => [],
-            \Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckSucceeded::class => [],
+            CertificateCheckFailed::class => [],
+            CertificateExpiresSoon::class => [],
+            CertificateCheckSucceeded::class => [],
         ],
 
         /*
@@ -42,7 +52,7 @@ return [
          * Here you can specify the notifiable to which the notifications should be sent. The default
          * notifiable will use the variables specified in this config file.
          */
-        'notifiable' => \Spatie\UptimeMonitor\Notifications\Notifiable::class,
+        'notifiable' => Notifiable::class,
 
         /*
          * The date format used in notifications.
@@ -58,7 +68,7 @@ return [
          *
          * You can use any implementation of Spatie\UptimeMonitor\Helpers\UptimeResponseCheckers\UptimeResponseChecker here.
          */
-        'response_checker' => Spatie\UptimeMonitor\Helpers\UptimeResponseCheckers\LookForStringChecker::class,
+        'response_checker' => LookForStringChecker::class,
 
         /*
          * An uptime check will be performed if the last check was performed more than the
@@ -171,5 +181,5 @@ return [
      * own model here. The only requirement is that it should extend
      * `Spatie\UptimeMonitor\Models\Monitor`.
      */
-    'monitor_model' => App\Models\Monitor::class,
+    'monitor_model' => Monitor::class,
 ];

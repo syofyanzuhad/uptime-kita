@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DebugStatsController;
 use App\Http\Controllers\LatestHistoryController;
 use App\Http\Controllers\MonitorCompactController;
+use App\Http\Controllers\MonitorExportController;
 use App\Http\Controllers\MonitorImportController;
 use App\Http\Controllers\MonitorListController;
 use App\Http\Controllers\MonitorStatusStreamController;
@@ -106,11 +107,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Monitor export routes
     Route::prefix('monitor/export')->name('monitor.export.')->group(function () {
-        Route::get('/csv', [\App\Http\Controllers\MonitorExportController::class, 'csv'])->name('csv');
-        Route::get('/json', [\App\Http\Controllers\MonitorExportController::class, 'json'])->name('json');
+        Route::get('/csv', [MonitorExportController::class, 'csv'])->name('csv');
+        Route::get('/json', [MonitorExportController::class, 'json'])->name('json');
     });
-
-
 
     // Resource route untuk CRUD monitor
     Route::resource('monitor', UptimeMonitorController::class);

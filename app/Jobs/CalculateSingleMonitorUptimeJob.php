@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -230,7 +231,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
                 'uptime_percentage' => $roundedPercentage,
             ]);
 
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             Log::error('Database error in uptime record operation', [
                 'monitor_id' => $this->monitorId,
                 'date' => $dateOnly,

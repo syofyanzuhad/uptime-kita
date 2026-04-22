@@ -3,6 +3,8 @@
 use App\Models\Monitor;
 use App\Models\User;
 use App\Models\UserMonitor;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 describe('UserMonitor Model', function () {
     describe('fillable attributes', function () {
@@ -81,14 +83,14 @@ describe('UserMonitor Model', function () {
         });
 
         it('extends Pivot class', function () {
-            expect(UserMonitor::class)->toExtend(\Illuminate\Database\Eloquent\Relations\Pivot::class);
+            expect(UserMonitor::class)->toExtend(Pivot::class);
         });
 
         it('handles timestamps', function () {
             $userMonitor = UserMonitor::factory()->create();
 
-            expect($userMonitor->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($userMonitor->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($userMonitor->created_at)->toBeInstanceOf(Carbon::class);
+            expect($userMonitor->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

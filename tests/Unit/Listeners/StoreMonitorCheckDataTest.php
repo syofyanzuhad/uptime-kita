@@ -34,7 +34,7 @@ describe('StoreMonitorCheckData', function () {
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
                 ->once()
-                ->with($this->monitor->id, \Mockery::type('int'), true);
+                ->with($this->monitor->id, Mockery::type('int'), true);
 
             $this->listener->handle($event);
 
@@ -54,7 +54,7 @@ describe('StoreMonitorCheckData', function () {
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
                 ->once()
-                ->with($this->monitor->id, \Mockery::type('int'), false);
+                ->with($this->monitor->id, Mockery::type('int'), false);
 
             $this->listener->handle($event);
 
@@ -73,7 +73,7 @@ describe('StoreMonitorCheckData', function () {
             $this->performanceService
                 ->shouldReceive('updateHourlyMetrics')
                 ->once()
-                ->with($this->monitor->id, \Mockery::type('int'), true);
+                ->with($this->monitor->id, Mockery::type('int'), true);
 
             $this->listener->handle($event);
 

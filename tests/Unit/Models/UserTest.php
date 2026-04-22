@@ -5,6 +5,8 @@ use App\Models\NotificationChannel;
 use App\Models\SocialAccount;
 use App\Models\StatusPage;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Support\Facades\Hash;
 
 describe('User Model', function () {
@@ -38,7 +40,7 @@ describe('User Model', function () {
                     'password' => 'password',
                     'is_admin' => true, // This should not be mass assignable
                 ]);
-            })->toThrow(\Illuminate\Database\Eloquent\MassAssignmentException::class);
+            })->toThrow(MassAssignmentException::class);
         });
     });
 
@@ -65,7 +67,7 @@ describe('User Model', function () {
                 'email_verified_at' => '2024-01-01 12:00:00',
             ]);
 
-            expect($user->email_verified_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($user->email_verified_at)->toBeInstanceOf(Carbon::class);
         });
 
         it('casts password to hashed', function () {
@@ -184,7 +186,7 @@ describe('User Model', function () {
 
     describe('authentication features', function () {
         it('extends laravel authenticatable', function () {
-            expect($this->user)->toBeInstanceOf(\Illuminate\Foundation\Auth\User::class);
+            expect($this->user)->toBeInstanceOf(Illuminate\Foundation\Auth\User::class);
         });
 
         it('uses notifiable trait', function () {

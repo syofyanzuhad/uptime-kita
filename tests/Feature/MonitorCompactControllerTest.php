@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Monitor;
 use App\Models\User;
+
 use function Pest\Laravel\actingAs;
 
 test('compact monitor view is accessible to guests', function () {
@@ -14,7 +14,7 @@ test('compact monitor view is accessible to guests', function () {
 
 test('compact monitor view is accessible to authenticated users', function () {
     $user = User::factory()->create();
-    
+
     actingAs($user)
         ->get(route('monitor.compact'))
         ->assertStatus(200)

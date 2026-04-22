@@ -63,7 +63,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
 
                 // Dispatch jobs individually instead of using batches
                 foreach ($monitorChunk as $monitorId) {
-                    $job = new \App\Jobs\CalculateSingleMonitorUptimeJob($monitorId);
+                    $job = new CalculateSingleMonitorUptimeJob($monitorId);
                     dispatch($job);
                     $totalJobs++;
                 }

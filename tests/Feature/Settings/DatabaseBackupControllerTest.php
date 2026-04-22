@@ -2,11 +2,12 @@
 
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Laravel\Telescope\Telescope;
 
 beforeEach(function () {
     // Ensure Telescope doesn't interfere with tests
-    if (class_exists(\Laravel\Telescope\Telescope::class)) {
-        \Laravel\Telescope\Telescope::stopRecording();
+    if (class_exists(Telescope::class)) {
+        Telescope::stopRecording();
     }
 });
 

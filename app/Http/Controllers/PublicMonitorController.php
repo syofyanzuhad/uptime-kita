@@ -9,6 +9,7 @@ use App\Models\MonitorIncident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Spatie\Tags\Tag;
 
 class PublicMonitorController extends Controller
 {
@@ -137,7 +138,7 @@ class PublicMonitorController extends Controller
         }
 
         // Get all unique tags used in public monitors
-        $availableTags = \Spatie\Tags\Tag::whereIn('id', function ($query) {
+        $availableTags = Tag::whereIn('id', function ($query) {
             $query->select('tag_id')
                 ->from('taggables')
                 ->where('taggable_type', 'App\Models\Monitor')

@@ -2,9 +2,11 @@
 
 use App\Listeners\SendCustomMonitorNotification;
 use App\Models\Monitor;
+use App\Models\NotificationChannel;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
@@ -22,21 +24,21 @@ beforeEach(function () {
     $this->listener = new SendCustomMonitorNotification;
 
     Notification::fake();
-    \Illuminate\Support\Facades\Queue::fake();
+    Queue::fake();
 });
 
 describe('SendCustomMonitorNotification', function () {
     describe('handle', function () {
         it('sends notifications to active users for failed check', function () {
             // Create notification channels for users
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
 
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
                 'destination' => 'user2@example.com',
@@ -59,14 +61,14 @@ describe('SendCustomMonitorNotification', function () {
 
         it('sends notifications to active users for recovered check', function () {
             // Create notification channels for users
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
 
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
                 'destination' => 'user2@example.com',
@@ -92,7 +94,7 @@ describe('SendCustomMonitorNotification', function () {
 
         it('sends notifications to active users for successful check', function () {
             // Create notification channel for user
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
@@ -128,7 +130,7 @@ describe('SendCustomMonitorNotification', function () {
 
         it('only sends notifications to users associated with the monitor', function () {
             // Create notification channel for user1 only
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
@@ -160,14 +162,14 @@ describe('SendCustomMonitorNotification', function () {
 
         it('continues sending to other users if one fails', function () {
             // Create notification channels for users
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
                 'is_enabled' => true,
             ]);
 
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user2->id,
                 'type' => 'email',
                 'destination' => 'user2@example.com',
@@ -180,7 +182,7 @@ describe('SendCustomMonitorNotification', function () {
             // Mock user1's notify method to throw exception
             Notification::shouldReceive('send')
                 ->withArgs(function ($notifiables, $notification) {
-                    return $notifiables instanceof \App\Models\User &&
+                    return $notifiables instanceof User &&
                            $notifiables->id === $this->user1->id &&
                            $notification instanceof MonitorStatusChanged;
                 })
@@ -190,7 +192,7 @@ describe('SendCustomMonitorNotification', function () {
             // Allow other notifications to be sent normally
             Notification::shouldReceive('send')
                 ->withArgs(function ($notifiables, $notification) {
-                    return $notifiables instanceof \App\Models\User &&
+                    return $notifiables instanceof User &&
                            $notifiables->id === $this->user2->id &&
                            $notification instanceof MonitorStatusChanged;
                 })
@@ -210,7 +212,7 @@ describe('SendCustomMonitorNotification', function () {
 
         it('determines correct status for failed event type', function () {
             // Create notification channel
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
@@ -231,7 +233,7 @@ describe('SendCustomMonitorNotification', function () {
 
         it('determines correct status for recovered event type', function () {
             // Create notification channel
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',
@@ -252,7 +254,7 @@ describe('SendCustomMonitorNotification', function () {
 
         it('includes correct monitor information in notification', function () {
             // Create notification channel
-            \App\Models\NotificationChannel::factory()->create([
+            NotificationChannel::factory()->create([
                 'user_id' => $this->user1->id,
                 'type' => 'email',
                 'destination' => 'user1@example.com',

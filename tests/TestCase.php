@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
@@ -14,6 +15,6 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         // Disable CSRF verification for tests
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
     }
 }

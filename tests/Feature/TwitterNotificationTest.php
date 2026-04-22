@@ -8,6 +8,7 @@ use App\Services\TwitterRateLimitService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use NotificationChannels\Twitter\TwitterChannel;
+use NotificationChannels\Twitter\TwitterStatusUpdate;
 
 beforeEach(function () {
     // Clear cache before each test
@@ -283,6 +284,6 @@ it('returns empty TwitterStatusUpdate from toTwitter when rate limited', functio
     $notification = new MonitorStatusChanged($notificationData);
     $twitterUpdate = $notification->toTwitter($user);
 
-    expect($twitterUpdate)->toBeInstanceOf(\NotificationChannels\Twitter\TwitterStatusUpdate::class);
+    expect($twitterUpdate)->toBeInstanceOf(TwitterStatusUpdate::class);
     expect($twitterUpdate->getContent())->toBe('');
 });

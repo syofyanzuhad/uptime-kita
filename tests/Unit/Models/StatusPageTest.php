@@ -3,6 +3,7 @@
 use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 describe('StatusPage Model', function () {
@@ -54,7 +55,7 @@ describe('StatusPage Model', function () {
                 'custom_domain_verified_at' => '2024-01-01 12:00:00',
             ]);
 
-            expect($statusPage->custom_domain_verified_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($statusPage->custom_domain_verified_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\FileViewFinder;
+use Laravel\Nightwatch\Facades\Nightwatch;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
 use Spatie\Health\Checks\Checks\CacheCheck;
@@ -41,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
             // Rebind the testing view finder with correct paths
             $this->app->bind('inertia.testing.view-finder', function ($app) {
-                return new \Illuminate\View\FileViewFinder(
+                return new FileViewFinder(
                     $app['files'],
                     [resource_path('js/pages')],
                     ['js', 'jsx', 'svelte', 'ts', 'tsx', 'vue']
@@ -61,9 +63,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        if (class_exists(\Laravel\Nightwatch\Facades\Nightwatch::class)) {
-            \Laravel\Nightwatch\Facades\Nightwatch::rejectQueries(fn () => true);
-            \Laravel\Nightwatch\Facades\Nightwatch::rejectCacheEvents(fn () => true);
+        if (class_exists(Nightwatch::class)) {
+            Nightwatch::rejectQueries(fn () => true);
+            Nightwatch::rejectCacheEvents(fn () => true);
         }
 
         LogViewer::auth(fn ($request) => auth()->id() === 1);

@@ -2,6 +2,8 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorPerformanceHourly;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 describe('MonitorPerformanceHourly Model', function () {
     describe('fillable attributes', function () {
@@ -36,7 +38,7 @@ describe('MonitorPerformanceHourly Model', function () {
                 'hour' => '2024-01-01 15:00:00',
             ]);
 
-            expect($performance->hour)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($performance->hour)->toBeInstanceOf(Carbon::class);
             expect($performance->hour->format('Y-m-d H:i:s'))->toBe('2024-01-01 15:00:00');
         });
 
@@ -137,14 +139,14 @@ describe('MonitorPerformanceHourly Model', function () {
         });
 
         it('uses factory trait', function () {
-            expect(class_uses(MonitorPerformanceHourly::class))->toContain(\Illuminate\Database\Eloquent\Factories\HasFactory::class);
+            expect(class_uses(MonitorPerformanceHourly::class))->toContain(HasFactory::class);
         });
 
         it('handles timestamps', function () {
             $performance = MonitorPerformanceHourly::factory()->create();
 
-            expect($performance->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($performance->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($performance->created_at)->toBeInstanceOf(Carbon::class);
+            expect($performance->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

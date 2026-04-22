@@ -34,8 +34,6 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
 
     /**
      * The notifiable instance.
-     *
-     * @var object|null
      */
     public ?object $notifiable = null;
 

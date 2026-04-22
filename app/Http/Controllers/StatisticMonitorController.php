@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -67,7 +68,7 @@ class StatisticMonitorController extends Controller
                 'globally_disabled_monitors' => $globallyDisabledMonitors,
             ];
             if ($user && $user->id === 1) {
-                $data['user_count'] = \App\Models\User::count();
+                $data['user_count'] = User::count();
             }
 
             return $data;

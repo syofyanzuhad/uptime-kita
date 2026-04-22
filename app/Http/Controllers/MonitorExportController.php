@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\MonitorImportService;
-use Illuminate\Http\Request;
 
 class MonitorExportController extends Controller
 {
@@ -18,7 +17,7 @@ class MonitorExportController extends Controller
     {
         return response()->streamDownload(function () {
             echo $this->importService->exportCsv();
-        }, 'monitors-export-' . now()->format('Y-m-d') . '.csv', [
+        }, 'monitors-export-'.now()->format('Y-m-d').'.csv', [
             'Content-Type' => 'text/csv',
         ]);
     }
@@ -30,7 +29,7 @@ class MonitorExportController extends Controller
     {
         return response()->streamDownload(function () {
             echo $this->importService->exportJson();
-        }, 'monitors-export-' . now()->format('Y-m-d') . '.json', [
+        }, 'monitors-export-'.now()->format('Y-m-d').'.json', [
             'Content-Type' => 'application/json',
         ]);
     }

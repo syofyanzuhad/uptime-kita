@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\SocialiteController;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
@@ -145,7 +146,7 @@ describe('SocialiteController', function () {
             $socialiteUser = mock(SocialiteUser::class);
             $socialiteUser->shouldReceive('getId')->andReturn('12345');
 
-            $controller = new \App\Http\Controllers\Auth\SocialiteController;
+            $controller = new SocialiteController;
             $result = $controller->findOrCreateUser($socialiteUser, 'github');
 
             expect($result->id)->toBe($user->id);
@@ -157,7 +158,7 @@ describe('SocialiteController', function () {
             $socialiteUser->shouldReceive('getEmail')->andReturn('john@example.com');
             $socialiteUser->shouldReceive('getName')->andReturn('John Doe');
 
-            $controller = new \App\Http\Controllers\Auth\SocialiteController;
+            $controller = new SocialiteController;
             $result = $controller->findOrCreateUser($socialiteUser, 'github');
 
             expect($result->email)->toBe('john@example.com');

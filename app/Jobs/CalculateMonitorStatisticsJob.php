@@ -121,7 +121,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
         $dailyStats = DB::table('monitor_uptime_dailies')
             ->where('monitor_id', $monitor->id)
             ->where('date', '>=', $periods['90d']->toDateString())
-            ->selectRaw("
+            ->selectRaw('
                 SUM(CASE WHEN date >= ? THEN total_checks ELSE 0 END) as total_7d,
                 SUM(CASE WHEN date >= ? THEN (total_checks - failed_checks) ELSE 0 END) as up_7d,
                 SUM(CASE WHEN date >= ? THEN failed_checks ELSE 0 END) as incidents_7d,
@@ -130,14 +130,14 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
                 SUM(CASE WHEN date >= ? THEN failed_checks ELSE 0 END) as incidents_30d,
                 SUM(total_checks) as total_90d,
                 SUM(total_checks - failed_checks) as up_90d
-            ", [
+            ', [
                 $periods['7d']->toDateString(), $periods['7d']->toDateString(), $periods['7d']->toDateString(),
-                $periods['30d']->toDateString(), $periods['30d']->toDateString(), $periods['30d']->toDateString()
+                $periods['30d']->toDateString(), $periods['30d']->toDateString(), $periods['30d']->toDateString(),
             ])
             ->first();
 
         $calculateUptime = function ($up, $total) {
-            return ($total > 0) ? round(((float)$up / (float)$total) * 100, 2) : 100.0;
+            return ($total > 0) ? round(((float) $up / (float) $total) * 100, 2) : 100.0;
         };
 
         // Get recent history for last 100 minutes

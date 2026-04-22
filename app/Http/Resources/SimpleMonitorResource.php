@@ -16,7 +16,7 @@ class SimpleMonitorResource extends JsonResource
     {
         // Use the raw string URL from attributes to avoid creating expensive Spatie\Url objects
         $rawUrl = $this->getRawOriginal('url');
-        
+
         // Simple host extraction to avoid Spatie\Url object creation
         $host = parse_url($rawUrl, PHP_URL_HOST);
         $host = str_replace('www.', '', $host ?? $rawUrl);

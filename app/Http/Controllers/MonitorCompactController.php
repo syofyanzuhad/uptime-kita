@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monitor;
-use App\Models\MonitorHistory;
-use App\Models\MonitorUptimeDaily;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -23,7 +22,7 @@ class MonitorCompactController extends Controller
 
         $search = $request->search;
         $isGuest = ! auth()->check();
-        
+
         // Sorting parameters
         $sortBy = $request->input('sort', 'url');
         $direction = $request->input('direction', 'asc');
@@ -37,33 +36,35 @@ class MonitorCompactController extends Controller
                 'monitors.uptime_status',
                 'monitors.uptime_check_enabled',
                 'monitors.uptime_last_check_date',
+                'monitors.uptime_check_interval_in_minutes',
+                'monitors.certificate_check_enabled',
             ])
             ->where('monitors.uptime_check_enabled', 1)
-            ->when($isGuest, fn($q) => $q->where('monitors.is_public', 1))
-            ->when($search, function($q) use ($search) {
-                $q->where(fn($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.display_name', 'like', "%$search%"));
+            ->when($isGuest, fn ($q) => $q->where('monitors.is_public', 1))
+            ->when($search, function ($q) use ($search) {
+                $q->where(fn ($sq) => $sq->where('monitors.url', 'like', "%$search%")->orWhere('monitors.display_name', 'like', "%$search%"));
             });
 
         // 2. Handle Sorting (Refined to push NULLs to the bottom)
         $today = now()->toDateString();
-        
+
         if ($sortBy === 'today_uptime_percentage') {
-            $query->leftJoin('monitor_uptime_dailies', function($join) use ($today) {
+            $query->leftJoin('monitor_uptime_dailies', function ($join) use ($today) {
                 $join->on('monitors.id', '=', 'monitor_uptime_dailies.monitor_id')
-                     ->where('monitor_uptime_dailies.date', '=', $today);
+                    ->where('monitor_uptime_dailies.date', '=', $today);
             })
             // SQLite trick: order by (column is null) asc puts nulls last
-            ->orderByRaw('monitor_uptime_dailies.uptime_percentage IS NULL ASC')
-            ->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
+                ->orderByRaw('monitor_uptime_dailies.uptime_percentage IS NULL ASC')
+                ->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
         } elseif ($sortBy === 'avg_response_time_24h') {
             $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
-                  ->orderByRaw('monitor_statistics.avg_response_time_24h IS NULL ASC')
-                  ->orderBy('monitor_statistics.avg_response_time_24h', $direction);
+                ->orderByRaw('monitor_statistics.avg_response_time_24h IS NULL ASC')
+                ->orderBy('monitor_statistics.avg_response_time_24h', $direction);
         } elseif ($sortBy === 'uptime_status') {
             $query->orderBy('monitors.uptime_status', $direction);
         } elseif ($sortBy === 'last_checked') {
             $query->orderByRaw('monitors.uptime_last_check_date IS NULL ASC')
-                  ->orderBy('monitors.uptime_last_check_date', $direction);
+                ->orderBy('monitors.uptime_last_check_date', $direction);
         } else {
             $query->orderBy('monitors.url', $direction);
         }
@@ -100,16 +101,17 @@ class MonitorCompactController extends Controller
             ->get()
             ->groupBy('taggable_id');
 
-        $parseTagName = function($jsonName) {
+        $parseTagName = function ($jsonName) {
             try {
                 $data = json_decode($jsonName, true);
+
                 return $data['en'] ?? array_values($data)[0] ?? $jsonName;
             } catch (\Exception $e) {
                 return $jsonName;
             }
         };
 
-        $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function($t) use ($parseTagName) {
+        $availableTags = $allTags->flatten(1)->unique('id')->values()->map(function ($t) use ($parseTagName) {
             return ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null];
         });
 
@@ -117,7 +119,7 @@ class MonitorCompactController extends Controller
         $data = $monitors->map(function ($m) use ($uptimes, $stats, $allTags, $parseTagName) {
             $host = parse_url($m->url, PHP_URL_HOST) ?? $m->url;
             $host = str_replace('www.', '', $host);
-            
+
             $monitorUptime = $uptimes->get($m->id);
             $monitorStats = $stats->get($m->id);
             $monitorTags = $allTags->get($m->id) ?? collect();
@@ -131,9 +133,11 @@ class MonitorCompactController extends Controller
                 'uptime_check_enabled' => (bool) $m->uptime_check_enabled,
                 'favicon' => "https://s2.googleusercontent.com/s2/favicons?domain={$host}&sz=32",
                 'last_check_date' => $m->uptime_last_check_date,
-                'last_check_date_human' => $m->uptime_last_check_date ? \Illuminate\Support\Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
+                'last_check_date_human' => $m->uptime_last_check_date ? Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
+                'uptime_check_interval' => (int) $m->uptime_check_interval_in_minutes,
+                'certificate_check_enabled' => (bool) $m->certificate_check_enabled,
                 'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : 0,
-                'tags' => $monitorTags->map(fn($t) => ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null]),
+                'tags' => $monitorTags->map(fn ($t) => ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null]),
                 'statistics' => [
                     'uptime_24h' => $monitorStats->uptime_24h ?? null,
                     'avg_response_time_24h' => $monitorStats->avg_response_time_24h ?? null,

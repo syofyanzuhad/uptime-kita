@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\StatusPage;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\StatusPage>
+ * @extends Factory<StatusPage>
  */
 class StatusPageFactory extends Factory
 {
@@ -19,11 +22,11 @@ class StatusPageFactory extends Factory
         $title = $this->faker->company();
 
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'title' => $title,
             'description' => $this->faker->sentence(),
             'icon' => 'default-icon.svg',
-            'path' => \Illuminate\Support\Str::slug($title).'-'.$this->faker->randomNumber(4),
+            'path' => Str::slug($title).'-'.$this->faker->randomNumber(4),
             'custom_domain' => null,
             'custom_domain_verified' => false,
             'custom_domain_verification_token' => null,

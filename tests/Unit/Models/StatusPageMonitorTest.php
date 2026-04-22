@@ -3,6 +3,7 @@
 use App\Models\Monitor;
 use App\Models\StatusPage;
 use App\Models\StatusPageMonitor;
+use Carbon\Carbon;
 
 describe('StatusPageMonitor Model', function () {
     describe('fillable attributes', function () {
@@ -57,8 +58,8 @@ describe('StatusPageMonitor Model', function () {
         it('handles timestamps', function () {
             $statusPageMonitor = StatusPageMonitor::factory()->create();
 
-            expect($statusPageMonitor->created_at)->toBeInstanceOf(\Carbon\Carbon::class);
-            expect($statusPageMonitor->updated_at)->toBeInstanceOf(\Carbon\Carbon::class);
+            expect($statusPageMonitor->created_at)->toBeInstanceOf(Carbon::class);
+            expect($statusPageMonitor->updated_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

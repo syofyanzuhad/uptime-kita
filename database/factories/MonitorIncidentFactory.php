@@ -3,10 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Monitor;
+use App\Models\MonitorIncident;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MonitorIncident>
+ * @extends Factory<MonitorIncident>
  */
 class MonitorIncidentFactory extends Factory
 {
@@ -17,8 +19,8 @@ class MonitorIncidentFactory extends Factory
      */
     public function definition(): array
     {
-        $startedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'));
-        $endedAt = $this->faker->optional(0.8)->passthrough(\Carbon\Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now')));
+        $startedAt = Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'));
+        $endedAt = $this->faker->optional(0.8)->passthrough(Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now')));
         $durationMinutes = $endedAt ? $startedAt->diffInMinutes($endedAt) : null;
 
         return [
@@ -49,8 +51,8 @@ class MonitorIncidentFactory extends Factory
      */
     public function ended(): static
     {
-        $startedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', '-1 hour'));
-        $endedAt = \Carbon\Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now'));
+        $startedAt = Carbon::instance($this->faker->dateTimeBetween('-1 week', '-1 hour'));
+        $endedAt = Carbon::instance($this->faker->dateTimeBetween($startedAt, 'now'));
 
         return $this->state(fn (array $attributes) => [
             'started_at' => $startedAt,

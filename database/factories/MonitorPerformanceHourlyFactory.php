@@ -3,10 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Monitor;
+use App\Models\MonitorPerformanceHourly;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MonitorPerformanceHourly>
+ * @extends Factory<MonitorPerformanceHourly>
  */
 class MonitorPerformanceHourlyFactory extends Factory
 {
@@ -22,7 +24,7 @@ class MonitorPerformanceHourlyFactory extends Factory
 
         return [
             'monitor_id' => Monitor::factory(),
-            'hour' => \Carbon\Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'))->startOfHour(),
+            'hour' => Carbon::instance($this->faker->dateTimeBetween('-1 week', 'now'))->startOfHour(),
             'avg_response_time' => $this->faker->randomFloat(2, 50, 1000),
             'p95_response_time' => $this->faker->randomFloat(2, 200, 2000),
             'p99_response_time' => $this->faker->randomFloat(2, 500, 5000),
