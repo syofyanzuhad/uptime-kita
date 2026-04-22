@@ -2,6 +2,113 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/syofyanzuhad/uptime-kita/compare/v0.1.2...v0.2.0) (2026-04-22)
+
+
+### Features
+
+* add browser notifications setting UI ([8bc4c17](https://github.com/syofyanzuhad/uptime-kita/commit/8bc4c1731943c3cf3480fc2211c5a3efb499ec3d))
+* add clickable link to monitor URL in detail modal and import dropdown components for compact view ([cf7e197](https://github.com/syofyanzuhad/uptime-kita/commit/cf7e19758320ad7c72eda70486164bbc9bcadd66))
+* add export and import functionality for monitors ([c51569c](https://github.com/syofyanzuhad/uptime-kita/commit/c51569ca353feb496819e88554e4096d715606cb))
+* add interval and ssl check status to monitors index and detail view ([af339cc](https://github.com/syofyanzuhad/uptime-kita/commit/af339cc5a688c315c99458d4a4302ef46a03d3cc))
+* add support for per-monitor and global proxies in SmartRetryService ([1dcfe75](https://github.com/syofyanzuhad/uptime-kita/commit/1dcfe757c42eebd4b617147328fcc1efeb12e075))
+* **compact:** display 24h statistics across all wallboard views ([d6af2a7](https://github.com/syofyanzuhad/uptime-kita/commit/d6af2a7369fc6396dd9f6714b73f670fbc6e6e0c))
+* **compact:** implement server-side sorting for massive monitor datasets ([2542313](https://github.com/syofyanzuhad/uptime-kita/commit/2542313e6f21a885345c5fc8793dff4c8708f7e5))
+* **compact:** use today_uptime_percentage instead of uptime_24h and enable nightwatch:agent ([373b4ce](https://github.com/syofyanzuhad/uptime-kita/commit/373b4ced553fadd3bc6799b831369f080f9a6507))
+* implement desktop notification logic ([30598bd](https://github.com/syofyanzuhad/uptime-kita/commit/30598bd0026782a5053b3722ee7dcc7252c2d5c7))
+* **monitor:** implement detail, edit and create features using modals ([792549e](https://github.com/syofyanzuhad/uptime-kita/commit/792549e588d072f9f0626c75ad5c0b9d87957383))
+* **monitor:** implement public Status Wallboard with compact view switcher ([48465b2](https://github.com/syofyanzuhad/uptime-kita/commit/48465b23570a129b69adbb9ea0bad7f7065c74e0))
+* **nav:** add Compact View link to main sidebar ([ba2fa74](https://github.com/syofyanzuhad/uptime-kita/commit/ba2fa742dc1e7729b83a98877059bbd0a707515b))
+* re-install laravel/nightwatch and restore agent configuration ([031231a](https://github.com/syofyanzuhad/uptime-kita/commit/031231a33a1da04109baad5b611987aa95ce334c))
+* **ui:** add compact view partials (dots, table, bars, cards) ([a99f070](https://github.com/syofyanzuhad/uptime-kita/commit/a99f0700ded6645bcce73a758f6de6cb592d332e))
+* **ui:** add WallboardLayout for full-screen NOC/TV views ([4561218](https://github.com/syofyanzuhad/uptime-kita/commit/4561218de2d7bf17cbc2adcf682360f9c459ff3e))
+
+
+### Bug Fixes
+
+* **compact:** fix invalid end tag in Compact.vue template ([d858c94](https://github.com/syofyanzuhad/uptime-kita/commit/d858c947fb74c3d3b2e5c30dc50f65dfbe22b968))
+* **compact:** handle null statistics gracefully in wallboard views ([82ad42e](https://github.com/syofyanzuhad/uptime-kita/commit/82ad42e74b7cf59c6d55058313a649fcb04c68a3))
+* **compact:** implement pagination and server-side search to handle 54k+ monitors ([a58ad47](https://github.com/syofyanzuhad/uptime-kita/commit/a58ad477e2683b09067af9ba95edd097a172a9d9))
+* **compact:** manually parse translatable tag names in raw engine ([7aa533a](https://github.com/syofyanzuhad/uptime-kita/commit/7aa533ad32318874b9f3c234134b370006aad518))
+* **compact:** remove non-existent tags.color column from raw query ([535089f](https://github.com/syofyanzuhad/uptime-kita/commit/535089f01df13ba52c9fcc956a32edeeb49a52c7))
+* **compact:** resolve 0% uptime bug by simplifying raw date query ([d9beee2](https://github.com/syofyanzuhad/uptime-kita/commit/d9beee292238e77c81413182cc8fc452470943e2))
+* **compact:** resolve syntax error and duplicate code in MonitorCompactController ([f55f20a](https://github.com/syofyanzuhad/uptime-kita/commit/f55f20a61d054fa1d27c7d771015a18f456dc4ca))
+* **compact:** use correct Collection search method for sorting ([83e4b37](https://github.com/syofyanzuhad/uptime-kita/commit/83e4b374b6e17ceba32ece447693c08830dc462c))
+* **compact:** use correct display_name column for search query ([96eedc4](https://github.com/syofyanzuhad/uptime-kita/commit/96eedc4f330ad9a9761f05602aac230476803ef2))
+* improve DetailMonitorModal robustness for SSL and Interval values ([28168f0](https://github.com/syofyanzuhad/uptime-kita/commit/28168f0aa3e04c2dc59799a2e77edad41f38f06d))
+* improve notification rate limiting and error handling ([1ba21b2](https://github.com/syofyanzuhad/uptime-kita/commit/1ba21b2d5a160134352e34c004a8f3f31dcfc859))
+* **nixpacks:** ensure nightwatch-agent log permissions and fix command path ([a373984](https://github.com/syofyanzuhad/uptime-kita/commit/a373984891311f63956e0c5c50c52672a90432f4))
+* refactor CalculateMonitorStatisticsJob to use fan-out pattern to prevent timeouts ([c91089c](https://github.com/syofyanzuhad/uptime-kita/commit/c91089c5b6d22939f369e8ac72731d2d353928fe))
+* refactor MonitorStatusChanged notification for robustness and reliability ([f248c41](https://github.com/syofyanzuhad/uptime-kita/commit/f248c4173d4e7139c6f59eae74ee8617f2756e8e))
+* resolve MaxAttemptsExceededException in CalculateMonitorStatisticsJob ([7de473f](https://github.com/syofyanzuhad/uptime-kita/commit/7de473f4911b28bbf928817fe4a8decdf1d8992c))
+* resolve scheduler failures and add error handling for uptime checks ([8593393](https://github.com/syofyanzuhad/uptime-kita/commit/8593393e24e773ab998b0736d7c3c3f07dc85efe))
+* validate Telegram routes and disable on permanent failure ([88b5266](https://github.com/syofyanzuhad/uptime-kita/commit/88b5266f1f2eb64bca88a9f8313f547386c23c8a))
+
+
+### Refactoring
+
+* **route:** move compact view to /monitors public route ([c1a619a](https://github.com/syofyanzuhad/uptime-kita/commit/c1a619a5fa17f018aba8c06f89d29395b7ac0260))
+
+
+### Styling
+
+* **compact:** use idiomatic route() helper for navigation links ([141bea0](https://github.com/syofyanzuhad/uptime-kita/commit/141bea0636c6bd6b6bfe9f0bfcee6fc9e26080e4))
+* fix linting issues in Vue components ([181a7c0](https://github.com/syofyanzuhad/uptime-kita/commit/181a7c04764d57ac86681942b059b0ab657c8a9d))
+
+
+### Documentation
+
+* add investigation log for 500 errors during monitor imports ([259e024](https://github.com/syofyanzuhad/uptime-kita/commit/259e024529165af89ae88a88d0fade06bae58084))
+* Add version badge to README ([32aff69](https://github.com/syofyanzuhad/uptime-kita/commit/32aff69765be40abba69f4c17f30d82b504a84da))
+
+
+### Performance
+
+* **compact:** aggressive memory optimization for massive monitor datasets ([84e24de](https://github.com/syofyanzuhad/uptime-kita/commit/84e24dea2a2ca2ef18cba4f041d7758c12b3551e))
+* **compact:** implement raw DB engine to load all 54k+ monitors without pagination ([2559315](https://github.com/syofyanzuhad/uptime-kita/commit/2559315d934020712803fcceedbe67752df80730))
+* **compact:** implement Two-Step Fetch to prevent OOM on 54k+ monitors ([1e90cf3](https://github.com/syofyanzuhad/uptime-kita/commit/1e90cf39be965851cd20c92ffab2ada1cb22dbf6))
+* **compact:** optimize monitor query to prevent OOM on large datasets ([e5e25cb](https://github.com/syofyanzuhad/uptime-kita/commit/e5e25cb9bf0672efe077cd8f177235568def27a9))
+* **compact:** optimize SQLite query patterns to prevent 504 timeouts ([5752838](https://github.com/syofyanzuhad/uptime-kita/commit/57528381319d7042165670df051247b7b1efe8c6))
+* **compact:** push monitors with null statistics to the bottom of sorted lists ([5493eba](https://github.com/syofyanzuhad/uptime-kita/commit/5493eba50630c9c04673ecdf53b2dc34d6c45eb5))
+* **compact:** use SimpleMonitorResource and lean query for wallboard ([03b4bbc](https://github.com/syofyanzuhad/uptime-kita/commit/03b4bbcd149237fae9e6c0bd2f92251aee67922e))
+* enable auto-balancing for statistics queue to save idle resources ([0b72338](https://github.com/syofyanzuhad/uptime-kita/commit/0b7233847e096ab86326cdb77f058bf7e50b7014))
+* fix N+1 query issues in monitor listings and status pages ([0877c67](https://github.com/syofyanzuhad/uptime-kita/commit/0877c6798196bc65b047f7a0ee8294f622e225b6))
+* implement monitor list caching and notification batching ([8a56fd5](https://github.com/syofyanzuhad/uptime-kita/commit/8a56fd50fe972b96d59ce9e7343fbcd6ecb88ccb))
+* **nightwatch:** hardcode rejection for queries and cache events ([c54cb13](https://github.com/syofyanzuhad/uptime-kita/commit/c54cb13afda9b82e44903093747765a5e9e6b210))
+* **nightwatch:** only report exceptions and error logs to reduce usage ([12c810f](https://github.com/syofyanzuhad/uptime-kita/commit/12c810f7a2fee9414a5a1639a465935298bb5908))
+* **nightwatch:** optimize default filtering and sampling to reduce event volume ([33b7e5c](https://github.com/syofyanzuhad/uptime-kita/commit/33b7e5c55387d386989f153350ab1231de467384))
+* offload database writes to queue and optimize real-time performance metrics ([74e0b58](https://github.com/syofyanzuhad/uptime-kita/commit/74e0b58df7cfacaaa710fe66a72d01c129db6b10))
+* optimize CalculateMonitorStatisticsJob and add supporting indexes ([89ea5dd](https://github.com/syofyanzuhad/uptime-kita/commit/89ea5dd39dd87fea682d2cb468e0a4f5162b8400))
+* optimize Horizon configuration for statistics and uptime calculations ([4da22c6](https://github.com/syofyanzuhad/uptime-kita/commit/4da22c614905930b22ac9fddfdbdd142106ae9a3))
+* optimize monitor statistics job to eliminate fan-out and use daily rollups for 7d+ stats ([26c51a0](https://github.com/syofyanzuhad/uptime-kita/commit/26c51a0b4cf33e7f2e5be93dab1e96a4a61ecb97))
+* reduce calculation frequency to resolve queue backlog ([abb8352](https://github.com/syofyanzuhad/uptime-kita/commit/abb83520467b71064df55e8d446ed12d64ada5a4))
+* update default user-agent to browser string to bypass CDN blocks ([b36ddfd](https://github.com/syofyanzuhad/uptime-kita/commit/b36ddfd7abb82582f63c68f49907044a13c74d1a))
+
+
+### Tests
+
+* add coverage for MonitorCheckUptime command ([1804a36](https://github.com/syofyanzuhad/uptime-kita/commit/1804a36e42a9f24e005aafb19f29cec66825c40b))
+* add tests for notification batching and wallboard caching ([e124c06](https://github.com/syofyanzuhad/uptime-kita/commit/e124c06a96a054851b2c94fd0e61c106593643f9))
+* disable TraceReplay in testing environment to prevent 500 errors during file uploads ([7ac612f](https://github.com/syofyanzuhad/uptime-kita/commit/7ac612fab16577883adfc6ffa34d12a813bceb3f))
+* fix failing test case in MonitorListControllerTest ([d34f24a](https://github.com/syofyanzuhad/uptime-kita/commit/d34f24adbd23a087056b47039e8082d922d13aca))
+* update CalculateMonitorStatisticsJobTest to reflect sequential processing ([2158227](https://github.com/syofyanzuhad/uptime-kita/commit/21582276c3ff17b5def2dd568a4988935710b38b))
+* update performance service tests to verify running average logic ([e672e8f](https://github.com/syofyanzuhad/uptime-kita/commit/e672e8f50bf298c14ae643d65cfdc45fa8f1ea55))
+
+
+### Chores
+
+* ai-docs ([016928a](https://github.com/syofyanzuhad/uptime-kita/commit/016928a0aeb4900beeca09880484f10e776e3128))
+* include production logging in SendBatchedNotificationsJob ([80fbf89](https://github.com/syofyanzuhad/uptime-kita/commit/80fbf893f2043c50d93a7718c0301074c4eb9bc0))
+* install laritor monitoring ([14ba110](https://github.com/syofyanzuhad/uptime-kita/commit/14ba110dac321eef5c509f4ff3d7a043fde849e5))
+* install trace-replay ([aae0e99](https://github.com/syofyanzuhad/uptime-kita/commit/aae0e99cb07dce55da8c2f5919055ec1210eec54))
+* **nixpacks:** remove non-existent nightwatch-agent worker ([f74ba61](https://github.com/syofyanzuhad/uptime-kita/commit/f74ba61e25f8312bf8d2945bbf0074ff6cc1ee78))
+* **nixpacks:** resolve conflict by removing non-existent nightwatch-agent ([71528e3](https://github.com/syofyanzuhad/uptime-kita/commit/71528e3658adda6edd79060dbd6867c6860beb11))
+* publish insight config ([e1a0195](https://github.com/syofyanzuhad/uptime-kita/commit/e1a01956cc88f3f8d5eeca02f6f09f404df02529))
+* update dependencies including Laravel framework and Pest ([08fd4d3](https://github.com/syofyanzuhad/uptime-kita/commit/08fd4d3a4d66ad26d2152c87e75067780f91afec))
+* update project configuration and dependencies ([77cda42](https://github.com/syofyanzuhad/uptime-kita/commit/77cda4240bf4320fe4b465b943deab574815a679))
+* **wayfinder:** regenerate JS routes and actions ([02437d3](https://github.com/syofyanzuhad/uptime-kita/commit/02437d30b3542cdf666089cdae8f8e2064214cd7))
+* **wayfinder:** sync JS routes after renaming compact route ([e7e30a3](https://github.com/syofyanzuhad/uptime-kita/commit/e7e30a3cdaa9c0d6275fd8ec384f74f6652fe0d3))
+
 ### [0.1.2](https://github.com/syofyanzuhad/uptime-kita/compare/v0.1.1...v0.1.2) (2025-12-26)
 
 ### [0.1.1](https://github.com/syofyanzuhad/uptime-kita/compare/v0.1.0...v0.1.1) (2025-12-26)
