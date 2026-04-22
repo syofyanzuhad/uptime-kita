@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\User;
+use App\Notifications\BatchedMonitorStatusChanged;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+
+class SendBatchedNotificationsJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        $cacheKey = 'pending_monitor_notifications';
+
+        // Atomically pull and clear the pending notifications
+        $pendingEvents = Cache::pull($cacheKey, []);
+
+        if (empty($pendingEvents)) {
+            return;
+        }
+
+        Log::info('Processing batched notifications', ['count' => count($pendingEvents)]);
+
+        // Group events by user_id
+        $userEvents = [];
+        foreach ($pendingEvents as $event) {
+            foreach ($event['user_ids'] as $userId) {
+                $userEvents[$userId][] = [
+                    'monitor_id' => $event['monitor_id'],
+                    'url' => $event['url'],
+                    'status' => $event['status'],
+                ];
+            }
+        }
+
+        // Send batched notifications to each user
+        foreach ($userEvents as $userId => $events) {
+            $user = User::find($userId);
+            if ($user) {
+                try {
+                    $user->notify(new BatchedMonitorStatusChanged($events));
+                    Log::debug("Sent batched notification to user {$userId}", ['event_count' => count($events)]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to send batched notification to user {$userId}", ['error' => $e->getMessage()]);
+                }
+            }
+        }
+    }
+}

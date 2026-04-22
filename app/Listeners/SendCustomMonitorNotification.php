@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 
-use App\Notifications\MonitorStatusChanged;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -71,42 +70,29 @@ class SendCustomMonitorNotification implements ShouldQueue
 
         $status = $event instanceof UptimeCheckFailed ? 'DOWN' : 'UP';
 
-        Log::info('SendCustomMonitorNotification: Sending notifications', [
+        // Buffer notification data in cache for batching
+        $cacheKey = 'pending_monitor_notifications';
+        $lockKey = 'lock_monitor_notifications';
+
+        // Use cache locking to safely update the shared list
+        cache()->lock($lockKey, 10)->block(5, function () use ($cacheKey, $monitor, $status, $users) {
+            $pending = cache()->get($cacheKey, []);
+
+            $pending[] = [
+                'monitor_id' => $monitor->id,
+                'url' => (string) $monitor->url,
+                'status' => $status,
+                'user_ids' => $users->pluck('id')->toArray(),
+                'timestamp' => now()->timestamp,
+            ];
+
+            cache()->put($cacheKey, $pending, now()->addMinutes(10));
+        });
+
+        Log::info('SendCustomMonitorNotification: Event buffered for batching', [
             'monitor_id' => $monitor->id,
             'status' => $status,
             'user_count' => $users->count(),
-        ]);
-
-        // Send notification to all active users of this monitor
-        foreach ($users as $user) {
-            try {
-                $user->notify(new MonitorStatusChanged([
-                    'id' => $monitor->id,
-                    'url' => (string) $monitor->url,
-                    'status' => $status,
-                    'message' => "Website {$monitor->url} is {$status}",
-                    'is_public' => $monitor->is_public,
-                ]));
-
-                Log::info('SendCustomMonitorNotification: Notification sent successfully', [
-                    'monitor_id' => $monitor->id,
-                    'user_id' => $user->id,
-                    'status' => $status,
-                ]);
-            } catch (\Exception $e) {
-                Log::error('SendCustomMonitorNotification: Failed to send notification', [
-                    'monitor_id' => $monitor->id,
-                    'user_id' => $user->id,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-            }
-        }
-
-        Log::info('SendCustomMonitorNotification: Completed processing', [
-            'monitor_id' => $monitor->id,
-            'status' => $status,
-            'total_users_processed' => $users->count(),
         ]);
     }
 }

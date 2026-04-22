@@ -2,6 +2,7 @@
 
 use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Jobs\CalculateMonitorUptimeDailyJob;
+use App\Jobs\SendBatchedNotificationsJob;
 use App\Jobs\SendTelemetryPingJob;
 use App\Models\User;
 use App\Notifications\MonitorStatusChanged;
@@ -37,6 +38,9 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
+
+// Schedule the notification batching job to run every minute
+Schedule::job(new SendBatchedNotificationsJob)->everyMinute();
 
 Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
