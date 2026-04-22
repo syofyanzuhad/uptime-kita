@@ -61,9 +61,12 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
                     'monitors_in_chunk' => $monitorChunk,
                 ]);
 
+                // Calculate for yesterday to ensure we have a full day's data
+                $yesterday = now()->subDay()->toDateString();
+
                 // Dispatch jobs individually instead of using batches
                 foreach ($monitorChunk as $monitorId) {
-                    $job = new CalculateSingleMonitorUptimeJob($monitorId);
+                    $job = new CalculateSingleMonitorUptimeJob($monitorId, $yesterday);
                     dispatch($job);
                     $totalJobs++;
                 }
