@@ -44,7 +44,7 @@ class StoreMonitorCheckData implements ShouldQueue
         $failureReason = $event instanceof UptimeCheckFailed ? $event->monitor->uptime_check_failure_reason : null;
 
         // Store in monitor_histories with new fields
-        // Use updateOrCreate to avoid duplicates if the model boot method already created a record for this minute
+        // Round created_at to the minute to ensure uniqueness via updateOrCreate
         MonitorHistory::updateOrCreate(
             [
                 'monitor_id' => $monitor->id,

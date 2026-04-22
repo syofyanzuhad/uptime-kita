@@ -78,4 +78,24 @@ class MonitorHistory extends Model
     {
         return static::where('created_at', '<', now()->subDays(30));
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Round created_at on creation to ensure uniqueness index matches during updateOrCreate
+        static::creating(function ($history) {
+            if (! $history->created_at) {
+                $history->created_at = now();
+            }
+            $history->created_at = $history->created_at->copy()->setSeconds(0)->setMicroseconds(0);
+        });
+
+        static::saving(function ($history) {
+            // Force minute rounding on every save for safety
+            if ($history->created_at) {
+                $history->created_at = $history->created_at->copy()->setSeconds(0)->setMicroseconds(0);
+            }
+        });
+    }
 }

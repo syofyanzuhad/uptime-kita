@@ -340,7 +340,6 @@ class Monitor extends SpatieMonitor
         return $this->histories()->updateOrCreate(
             [
                 'monitor_id' => $this->id,
-                // Use a minute-rounded timestamp for uniqueness
                 'created_at' => $minuteStart,
             ],
             [
@@ -384,19 +383,6 @@ class Monitor extends SpatieMonitor
             // remove cache
             cache()->forget('private_monitors_page_'.auth()->id().'_1');
             cache()->forget('public_monitors_authenticated_'.auth()->id().'_1');
-        });
-
-        static::updating(function ($monitor) {
-            // history log
-            if ($monitor->isDirty('uptime_last_check_date') || $monitor->isDirty('uptime_status')) {
-                $monitor->createOrUpdateHistory([
-                    'uptime_status' => $monitor->uptime_status,
-                    'message' => $monitor->uptime_check_failure_reason,
-                    'response_time' => null, // Response time should be passed when available, not retrieved from model
-                    'status_code' => null, // Status code should be passed when available, not retrieved from model
-                    'checked_at' => $monitor->uptime_last_check_date,
-                ]);
-            }
         });
 
         static::deleting(function ($monitor) {
