@@ -51,7 +51,7 @@ class PublicStatusPageController extends Controller
      */
     public function monitors(string $path)
     {
-        $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () {
+        $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () use ($path) {
             return StatusPageMonitor::with(['monitor' => function ($query) {
                 $query->with([
                     'uptimeDaily',
@@ -64,13 +64,13 @@ class PublicStatusPageController extends Controller
                     'latestHistory',
                 ]);
             }])
-                ->whereHas('statusPage', function ($query) {
-                    $query->where('path', request()->route('path'));
+                ->whereHas('statusPage', function ($query) use ($path) {
+                    $query->where('path', $path);
                 })
                 ->orderBy('order')
                 ->get()
-                ->map(function ($statusPageMonitor) {
-                    return $statusPageMonitor->monitor;
+                ->map(function ($spm) {
+                    return $spm->monitor;
                 })
                 ->filter(function ($monitor) {
                     // only return if monitor is not null
