@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
@@ -21,7 +22,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 
     public $tries = 3;
 
-    public $backoff = [60, 300, 900]; // key change: avoid rapid retry storms
+    public $backoff = [60, 300, 900];
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -29,7 +30,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
      *
      * @var int
      */
-    public $uniqueFor = 1800; // Increased to 30 minutes to cover backoffs
+    public $uniqueFor = 1800; // 30 minutes
 
     protected ?int $monitorId;
 
@@ -44,7 +45,6 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Get the unique ID for the job.
-     * This ensures only one job per monitor (or one global job when monitorId is null) can exist.
      */
     public function uniqueId(): string
     {
@@ -71,22 +71,23 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
                 return;
             }
 
-            // Global dispatch path: fan out to individual jobs to avoid timeouts
+            // Global execution path: process all monitors sequentially within this single job
+            // This eliminates the overhead of dispatching and processing hundreds of individual jobs
             $monitorCount = 0;
             Monitor::where('is_public', true)
                 ->where('uptime_check_enabled', true)
-                ->select(['id'])
-                ->chunk(100, function ($monitors) use (&$monitorCount) {
+                ->select(['id', 'url']) // Only select what's needed for the chunk
+                ->chunkById(100, function ($monitors) use (&$monitorCount) {
                     foreach ($monitors as $monitor) {
-                        self::dispatch($monitor->id);
+                        $this->calculateStatistics($monitor);
                         $monitorCount++;
                     }
                 });
 
-            Log::info("Dispatched statistics calculation jobs for {$monitorCount} monitor(s).");
+            Log::info("Calculated statistics for {$monitorCount} monitor(s) within a single job.");
         } catch (\Throwable $e) {
-            report($e); // Ensure the original exception is visible in logs/Horizon
-            throw $e;   // Rethrow to allow Laravel to handle retries/failure properly
+            report($e);
+            throw $e;
         }
     }
 
@@ -101,40 +102,42 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
             '90d' => $now->copy()->subDays(90),
         ];
 
-        // Single aggregation query for all periods
-        $stats = MonitorHistory::where('monitor_id', $monitor->id)
-            ->where('created_at', '>=', $periods['90d'])
+        // 1. Calculate 1h and 24h stats using the raw history table (fast, max 1440 rows per monitor)
+        $stats24h = MonitorHistory::where('monitor_id', $monitor->id)
+            ->where('created_at', '>=', $periods['24h'])
             ->selectRaw("
-                COUNT(*) as total_90d,
-                SUM(CASE WHEN uptime_status = 'up' THEN 1 ELSE 0 END) as up_90d,
-                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_30d,
-                SUM(CASE WHEN created_at >= ? AND uptime_status = 'up' THEN 1 ELSE 0 END) as up_30d,
-                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_7d,
-                SUM(CASE WHEN created_at >= ? AND uptime_status = 'up' THEN 1 ELSE 0 END) as up_7d,
-                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_24h,
-                SUM(CASE WHEN created_at >= ? AND uptime_status = 'up' THEN 1 ELSE 0 END) as up_24h,
+                COUNT(*) as total_24h,
+                SUM(CASE WHEN uptime_status = 'up' THEN 1 ELSE 0 END) as up_24h,
                 SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_1h,
                 SUM(CASE WHEN created_at >= ? AND uptime_status = 'up' THEN 1 ELSE 0 END) as up_1h,
-                SUM(CASE WHEN created_at >= ? AND uptime_status != 'up' THEN 1 ELSE 0 END) as incidents_24h,
-                SUM(CASE WHEN created_at >= ? AND uptime_status != 'up' THEN 1 ELSE 0 END) as incidents_7d,
-                SUM(CASE WHEN created_at >= ? AND uptime_status != 'up' THEN 1 ELSE 0 END) as incidents_30d,
-                AVG(CASE WHEN created_at >= ? AND response_time IS NOT NULL THEN response_time END) as avg_resp_24h,
-                MIN(CASE WHEN created_at >= ? AND response_time IS NOT NULL THEN response_time END) as min_resp_24h,
-                MAX(CASE WHEN created_at >= ? AND response_time IS NOT NULL THEN response_time END) as max_resp_24h
+                SUM(CASE WHEN uptime_status != 'up' THEN 1 ELSE 0 END) as incidents_24h,
+                AVG(CASE WHEN response_time IS NOT NULL THEN response_time END) as avg_resp_24h,
+                MIN(CASE WHEN response_time IS NOT NULL THEN response_time END) as min_resp_24h,
+                MAX(CASE WHEN response_time IS NOT NULL THEN response_time END) as max_resp_24h
+            ", [$periods['1h'], $periods['1h']])
+            ->first();
+
+        // 2. Calculate 7d, 30d, 90d stats using the daily rollups table (extremely fast, max 90 rows per monitor)
+        $dailyStats = DB::table('monitor_uptime_dailies')
+            ->where('monitor_id', $monitor->id)
+            ->where('date', '>=', $periods['90d']->toDateString())
+            ->selectRaw("
+                SUM(CASE WHEN date >= ? THEN total_checks ELSE 0 END) as total_7d,
+                SUM(CASE WHEN date >= ? THEN (total_checks - failed_checks) ELSE 0 END) as up_7d,
+                SUM(CASE WHEN date >= ? THEN failed_checks ELSE 0 END) as incidents_7d,
+                SUM(CASE WHEN date >= ? THEN total_checks ELSE 0 END) as total_30d,
+                SUM(CASE WHEN date >= ? THEN (total_checks - failed_checks) ELSE 0 END) as up_30d,
+                SUM(CASE WHEN date >= ? THEN failed_checks ELSE 0 END) as incidents_30d,
+                SUM(total_checks) as total_90d,
+                SUM(total_checks - failed_checks) as up_90d
             ", [
-                $periods['30d'], $periods['30d'],
-                $periods['7d'], $periods['7d'],
-                $periods['24h'], $periods['24h'],
-                $periods['1h'], $periods['1h'],
-                $periods['24h'],
-                $periods['7d'],
-                $periods['30d'],
-                $periods['24h'], $periods['24h'], $periods['24h'],
+                $periods['7d']->toDateString(), $periods['7d']->toDateString(), $periods['7d']->toDateString(),
+                $periods['30d']->toDateString(), $periods['30d']->toDateString(), $periods['30d']->toDateString()
             ])
             ->first();
 
         $calculateUptime = function ($up, $total) {
-            return ($total > 0) ? round(($up / $total) * 100, 2) : 100.0;
+            return ($total > 0) ? round(((float)$up / (float)$total) * 100, 2) : 100.0;
         };
 
         // Get recent history for last 100 minutes
@@ -144,20 +147,20 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
         MonitorStatistic::updateOrCreate(
             ['monitor_id' => $monitor->id],
             [
-                'uptime_1h' => $calculateUptime($stats->up_1h, $stats->total_1h),
-                'uptime_24h' => $calculateUptime($stats->up_24h, $stats->total_24h),
-                'uptime_7d' => $calculateUptime($stats->up_7d, $stats->total_7d),
-                'uptime_30d' => $calculateUptime($stats->up_30d, $stats->total_30d),
-                'uptime_90d' => $calculateUptime($stats->up_90d, $stats->total_90d),
-                'avg_response_time_24h' => $stats->avg_resp_24h ? (int) round($stats->avg_resp_24h) : null,
-                'min_response_time_24h' => $stats->min_resp_24h ? (int) $stats->min_resp_24h : null,
-                'max_response_time_24h' => $stats->max_resp_24h ? (int) $stats->max_resp_24h : null,
-                'incidents_24h' => (int) $stats->incidents_24h,
-                'incidents_7d' => (int) $stats->incidents_7d,
-                'incidents_30d' => (int) $stats->incidents_30d,
-                'total_checks_24h' => (int) $stats->total_24h,
-                'total_checks_7d' => (int) $stats->total_7d,
-                'total_checks_30d' => (int) $stats->total_30d,
+                'uptime_1h' => $calculateUptime($stats24h->up_1h, $stats24h->total_1h),
+                'uptime_24h' => $calculateUptime($stats24h->up_24h, $stats24h->total_24h),
+                'uptime_7d' => $calculateUptime($dailyStats->up_7d, $dailyStats->total_7d),
+                'uptime_30d' => $calculateUptime($dailyStats->up_30d, $dailyStats->total_30d),
+                'uptime_90d' => $calculateUptime($dailyStats->up_90d, $dailyStats->total_90d),
+                'avg_response_time_24h' => $stats24h->avg_resp_24h ? (int) round($stats24h->avg_resp_24h) : null,
+                'min_response_time_24h' => $stats24h->min_resp_24h ? (int) $stats24h->min_resp_24h : null,
+                'max_response_time_24h' => $stats24h->max_resp_24h ? (int) $stats24h->max_resp_24h : null,
+                'incidents_24h' => (int) $stats24h->incidents_24h,
+                'incidents_7d' => (int) $dailyStats->incidents_7d,
+                'incidents_30d' => (int) $dailyStats->incidents_30d,
+                'total_checks_24h' => (int) $stats24h->total_24h,
+                'total_checks_7d' => (int) $dailyStats->total_7d,
+                'total_checks_30d' => (int) $dailyStats->total_30d,
                 'recent_history_100m' => $recentHistory,
                 'calculated_at' => $now,
             ]
