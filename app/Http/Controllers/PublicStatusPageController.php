@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\MonitorResource;
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
-use App\Models\StatusPageMonitor;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,30 +51,28 @@ class PublicStatusPageController extends Controller
     public function monitors(string $path)
     {
         $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () use ($path) {
-            return StatusPageMonitor::with(['monitor' => function ($query) {
-                $query->with([
+            // Find the status page first
+            $statusPage = StatusPage::where('path', $path)->first();
+
+            if (! $statusPage) {
+                return collect();
+            }
+
+            return $statusPage->monitors()
+                ->where('uptime_check_enabled', true)
+                ->with([
                     'uptimeDaily',
                     'tags',
                     'statistics',
+                    // Optimization: We don't need full uptimesDaily here if we use pre-calculated stats
+                    // But if the frontend needs the sparkline, we keep the last 7 days
                     'uptimesDaily' => function ($query) {
                         $query->where('date', '>=', now()->subDays(7)->toDateString())
                             ->orderBy('date', 'asc');
                     },
-                    'latestHistory',
-                ]);
-            }])
-                ->whereHas('statusPage', function ($query) use ($path) {
-                    $query->where('path', $path);
-                })
-                ->orderBy('order')
-                ->get()
-                ->map(function ($spm) {
-                    return $spm->monitor;
-                })
-                ->filter(function ($monitor) {
-                    // only return if monitor is not null
-                    return $monitor !== null;
-                });
+                ])
+                ->orderBy('status_page_monitor.order')
+                ->get();
         });
         // info($monitors);
         if ($monitors->isEmpty()) {
