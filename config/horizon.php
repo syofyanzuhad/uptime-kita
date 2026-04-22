@@ -209,8 +209,10 @@ return [
         'supervisor-statistic' => [
             'connection' => 'redis',
             'queue' => ['statistics'],
-            'balance' => 'simple',
-            'maxProcesses' => 1,
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'maxProcesses' => 6,
             'maxTime' => 3600,
             'maxJobs' => 0,
             'memory' => 512, // Statistics aggregations can be memory intensive
@@ -231,9 +233,6 @@ return [
                 'maxProcesses' => 6,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
-            ],
-            'supervisor-statistic' => [
-                'maxProcesses' => 12, // Dedicated capacity for long-running stats
             ],
         ],
 
