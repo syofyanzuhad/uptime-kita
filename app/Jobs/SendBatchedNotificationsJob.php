@@ -23,7 +23,7 @@ class SendBatchedNotificationsJob implements ShouldQueue
     public function handle(): void
     {
         $cacheKey = 'pending_monitor_notifications';
-        
+
         // Atomically pull and clear the pending notifications
         $pendingEvents = Cache::pull($cacheKey, []);
 
@@ -56,7 +56,7 @@ class SendBatchedNotificationsJob implements ShouldQueue
                     Log::error("Failed to send batched notification to user {$userId}", ['error' => $e->getMessage()]);
                 }
             } else {
-                Log::warning("SendBatchedNotificationsJob: User not found", ['user_id' => $userId]);
+                Log::warning('SendBatchedNotificationsJob: User not found', ['user_id' => $userId]);
             }
         }
     }

@@ -28,5 +28,9 @@ onMounted(() => {
             <FlashMessage />
             <slot />
         </main>
+
+        <footer class="flex items-center justify-center p-8">
+            <div id="wcb" class="carbonbadge dark:wcb-d"></div>
+        </footer>
     </div>
 </template>

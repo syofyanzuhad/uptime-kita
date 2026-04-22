@@ -37,10 +37,10 @@ class MonitorCompactControllerCacheTest extends TestCase
     {
         $user = User::factory()->create();
         Cache::spy();
-        
+
         // Request 1
         $this->actingAs($user)->get('/monitors?search=site1');
-        
+
         // Request 2 with different search
         $this->actingAs($user)->get('/monitors?search=site2');
 

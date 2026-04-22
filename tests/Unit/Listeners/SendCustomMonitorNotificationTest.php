@@ -16,7 +16,7 @@ class SendCustomMonitorNotificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->monitor = Monitor::factory()->create([
             'url' => 'https://example.com',
             'uptime_check_enabled' => true,
@@ -52,7 +52,7 @@ class SendCustomMonitorNotificationTest extends TestCase
                     'type' => 'one_time',
                     'start' => now()->subHour()->toIso8601String(),
                     'end' => now()->addHour()->toIso8601String(),
-                ]
+                ],
             ],
             'is_in_maintenance' => true,
             'maintenance_ends_at' => now()->addHour(),

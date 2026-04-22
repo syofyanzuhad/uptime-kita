@@ -26,6 +26,9 @@
                 <div class="text-xs text-gray-500 dark:text-gray-400">
                     {{ tagline }}
                 </div>
+                <div class="mt-4 sm:mt-0">
+                    <div id="wcb" class="carbonbadge dark:wcb-d"></div>
+                </div>
             </div>
         </div>
     </div>
