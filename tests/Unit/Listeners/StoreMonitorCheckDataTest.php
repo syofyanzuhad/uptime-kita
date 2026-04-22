@@ -163,6 +163,34 @@ describe('StoreMonitorCheckData', function () {
             $history = MonitorHistory::where('monitor_id', $this->monitor->id)->first();
             expect($history->status_code)->toBe(404);
         });
+
+        it('uses updateOrCreate to prevent duplicates within the same minute', function () {
+            // Pre-create a history record for the current minute
+            MonitorHistory::create([
+                'monitor_id' => $this->monitor->id,
+                'uptime_status' => 'down',
+                'message' => 'Initial failure',
+                'created_at' => now()->copy()->setSeconds(0)->setMicroseconds(0),
+                'checked_at' => now()->subSeconds(30),
+            ]);
+
+            $event = new UptimeCheckSucceeded($this->monitor);
+
+            $this->performanceService
+                ->shouldReceive('updateHourlyMetrics')
+                ->once();
+
+            $this->listener->handle($event);
+
+            // Should still have only 1 record
+            $count = MonitorHistory::where('monitor_id', $this->monitor->id)->count();
+            expect($count)->toBe(1);
+
+            // Record should be updated
+            $history = MonitorHistory::where('monitor_id', $this->monitor->id)->first();
+            expect($history->uptime_status)->toBe('up');
+            expect($history->message)->toBeNull();
+        });
     });
 
     describe('extractResponseTime', function () {
