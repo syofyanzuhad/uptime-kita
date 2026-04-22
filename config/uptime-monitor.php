@@ -130,7 +130,7 @@ return [
         /*
          * When reaching out to sites this user agent will be used.
          */
-        'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'user_agent' => null,
 
         /*
          * When reaching out to the sites these headers will be added.
