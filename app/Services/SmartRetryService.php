@@ -133,15 +133,34 @@ class SmartRetryService
             },
         ];
 
-        // Add custom headers if configured
+        // Add custom headers and options if configured
         if ($monitor->uptime_check_additional_headers) {
-            $headers = is_array($monitor->uptime_check_additional_headers)
+            $additionalOptions = is_array($monitor->uptime_check_additional_headers)
                 ? $monitor->uptime_check_additional_headers
                 : json_decode($monitor->uptime_check_additional_headers, true);
 
-            if ($headers) {
-                $options['headers'] = $headers;
+            if ($additionalOptions) {
+                // Filter out special keys that are Guzzle options, not headers
+                $specialKeys = ['proxy', 'verify', 'timeout', 'connect_timeout', 'auth'];
+                
+                $headers = [];
+                foreach ($additionalOptions as $key => $value) {
+                    if (in_array(strtolower($key), $specialKeys)) {
+                        $options[strtolower($key)] = $value;
+                    } else {
+                        $headers[$key] = $value;
+                    }
+                }
+
+                if (!empty($headers)) {
+                    $options['headers'] = $headers;
+                }
             }
+        }
+
+        // Add global proxy if configured
+        if (!isset($options['proxy']) && config('uptime-monitor.uptime_check.guzzle_options.proxy')) {
+            $options['proxy'] = config('uptime-monitor.uptime_check.guzzle_options.proxy');
         }
 
         // Add payload if configured (only for non-HEAD requests)
