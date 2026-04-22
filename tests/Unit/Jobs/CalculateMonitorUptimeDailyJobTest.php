@@ -23,10 +23,11 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             // Should dispatch 3 CalculateSingleMonitorUptimeJob instances
             Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 3);
 
-            // Verify each monitor gets a job
+            // Verify each monitor gets a job with yesterday's date
+            $yesterday = now()->subDay()->toDateString();
             foreach ($monitors as $monitor) {
-                Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitor) {
-                    return $job->monitorId === $monitor->id;
+                Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitor, $yesterday) {
+                    return $job->monitorId === $monitor->id && $job->date === $yesterday;
                 });
             }
         });
