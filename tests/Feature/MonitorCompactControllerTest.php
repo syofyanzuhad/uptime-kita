@@ -14,6 +14,7 @@ test('compact monitor view is accessible to guests', function () {
 
 test('compact monitor view is accessible to authenticated users', function () {
     $user = User::factory()->create();
+    \App\Models\Monitor::factory()->create(['uptime_check_enabled' => true]);
 
     actingAs($user)
         ->get(route('monitor.compact'))
@@ -22,5 +23,10 @@ test('compact monitor view is accessible to authenticated users', function () {
             ->component('monitors/Compact')
             ->has('monitors.data')
             ->has('availableTags')
+            ->has('monitors.data.0', fn ($page) => $page
+                ->has('certificate_status')
+                ->has('certificate_expiration_date')
+                ->etc()
+            )
         );
 });

@@ -109,7 +109,11 @@ function formatDate(dateString: string | null) {
                         </div>
                         <div v-else class="text-sm font-bold text-gray-400">Disabled</div>
                     </div>
-                    <div class="space-y-1 col-span-2">
+                    <div class="space-y-1">
+                        <span class="text-xs text-gray-500 uppercase font-semibold">SSL Expired</span>
+                        <div class="text-sm font-bold">{{ formatDate(monitor.certificate_expiration_date) }}</div>
+                    </div>
+                    <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Terakhir Dicek</span>
                         <div class="text-sm font-medium">{{ formatDate(monitor.last_check_date) }}</div>
                     </div>
@@ -134,7 +138,7 @@ function formatDate(dateString: string | null) {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                                <tr v-for="history in histories.slice(0, 10)" :key="history.id">
+                                <tr v-for="history in histories" :key="history.id">
                                     <td class="px-3 py-2 whitespace-nowrap">{{ formatDate(history.created_at) }}</td>
                                     <td class="px-3 py-2">
                                         <span :class="history.uptime_status === 'up' ? 'text-green-600' : 'text-red-600'" class="font-bold uppercase">

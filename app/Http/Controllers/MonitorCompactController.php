@@ -44,6 +44,8 @@ class MonitorCompactController extends Controller
                     'monitors.uptime_last_check_date',
                     'monitors.uptime_check_interval_in_minutes',
                     'monitors.certificate_check_enabled',
+                    'monitors.certificate_status',
+                    'monitors.certificate_expiration_date',
                 ])
                 ->where('monitors.uptime_check_enabled', 1)
                 ->when($isGuest, fn ($q) => $q->where('monitors.is_public', 1))
@@ -132,6 +134,8 @@ class MonitorCompactController extends Controller
                     'last_check_date_human' => $m->uptime_last_check_date ? Carbon::parse($m->uptime_last_check_date)->diffForHumans() : null,
                     'uptime_check_interval' => (int) $m->uptime_check_interval_in_minutes,
                     'certificate_check_enabled' => (bool) $m->certificate_check_enabled,
+                    'certificate_status' => $m->certificate_status,
+                    'certificate_expiration_date' => $m->certificate_expiration_date,
                     'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : 0,
                     'tags' => $monitorTags->map(fn ($t) => ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null]),
                     'statistics' => [
