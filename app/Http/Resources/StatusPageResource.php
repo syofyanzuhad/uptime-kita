@@ -20,7 +20,7 @@ class StatusPageResource extends JsonResource
      * @param  Request  $request
      * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
@@ -31,6 +31,7 @@ class StatusPageResource extends JsonResource
             'custom_domain' => $this->custom_domain,
             'custom_domain_verified' => $this->custom_domain_verified,
             'force_https' => $this->force_https,
+            'monitors_count' => $this->whenCounted('monitors'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'monitors' => MonitorResource::collection($this->whenLoaded('monitors')),

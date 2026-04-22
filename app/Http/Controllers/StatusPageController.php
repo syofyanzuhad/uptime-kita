@@ -20,7 +20,10 @@ class StatusPageController extends Controller
      */
     public function index(Request $request): Response
     {
-        $statusPages = auth()->user()->statusPages()->latest()->paginate(9);
+        $statusPages = auth()->user()->statusPages()
+            ->withCount('monitors')
+            ->latest()
+            ->paginate(9);
 
         return Inertia::render('status-pages/Index', [
             'statusPages' => new StatusPageCollection($statusPages),

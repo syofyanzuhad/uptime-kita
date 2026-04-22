@@ -23,6 +23,7 @@ interface StatusPage {
     description: string;
     icon: string;
     path: string;
+    monitors_count?: number;
     created_at: string;
     updated_at: string;
 }
@@ -98,7 +99,14 @@ const goToPage = (page: number) => {
                                     </div>
                                     <div>
                                         <CardTitle class="text-lg">{{ statusPage.title }}</CardTitle>
-                                        <p class="text-sm text-gray-500">{{ statusPage.path }}</p>
+                                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                                            <span>{{ statusPage.path }}</span>
+                                            <span>•</span>
+                                            <span class="flex items-center gap-1">
+                                                <Icon name="activity" class="h-3 w-3" />
+                                                {{ statusPage.monitors_count ?? 0 }} monitors
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <DropdownMenu>

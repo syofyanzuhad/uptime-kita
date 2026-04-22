@@ -29,6 +29,10 @@ describe('StatusPage CRUD Operations', function () {
             $response->assertInertia(fn ($page) => $page
                 ->component('status-pages/Index')
                 ->has('statusPages.data', 2)
+                ->has('statusPages.data.0', fn ($page) => $page
+                    ->has('monitors_count')
+                    ->etc()
+                )
             );
         });
 
