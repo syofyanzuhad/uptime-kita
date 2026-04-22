@@ -48,9 +48,10 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "nunomaduro/pao": "^1.0",
         "nunomaduro/phpinsights": "^2.13",
-        "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2",
+        "pestphp/pest": "^4.6.3",
+        "pestphp/pest-plugin-laravel": "^4.0",
         "spatie/laravel-cronless-schedule": "^1.2"
     },
     "autoload": {
