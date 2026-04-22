@@ -96,17 +96,18 @@ function formatDate(dateString: string | null) {
                     </div>
                     <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Uptime Hari Ini</span>
-                        <div class="font-bold text-sm">{{ monitor.today_uptime_percentage }}%</div>
+                        <div class="font-bold text-sm">{{ monitor.today_uptime_percentage ?? 0 }}%</div>
                     </div>
                     <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Interval</span>
-                        <div class="font-bold text-sm">{{ monitor.uptime_check_interval }} min</div>
+                        <div class="font-bold text-sm">{{ monitor.uptime_check_interval || '-' }} min</div>
                     </div>
                     <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">SSL</span>
-                        <div class="text-sm font-bold" :class="monitor.certificate_status === 'valid' ? 'text-green-600' : 'text-red-600'">
-                            {{ monitor.certificate_status }}
+                        <div v-if="monitor.certificate_check_enabled" class="text-sm font-bold" :class="monitor.certificate_status === 'valid' ? 'text-green-600' : 'text-red-600'">
+                            {{ monitor.certificate_status || 'Checking...' }}
                         </div>
+                        <div v-else class="text-sm font-bold text-gray-400">Disabled</div>
                     </div>
                     <div class="space-y-1 col-span-2">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Terakhir Dicek</span>
