@@ -35,27 +35,33 @@ describe('CleanupDuplicateMonitorHistories', function () {
         it('identifies and removes duplicate records', function () {
             $now = now();
 
-            // Create duplicate records within the same minute
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(10),
-                'uptime_status' => 'up',
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30), // Same minute, later
-                'uptime_status' => 'down',
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(50), // Same minute, latest
-                'uptime_status' => 'up',
-            ]);
-
-            // Create a unique record in a different minute
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->subMinutes(1),
+            // Create duplicate records within the same minute using raw DB to bypass Eloquent hooks
+            // (Hooks now round created_at to 00 seconds, which prevents testing the cleanup of legacy duplicates)
+            DB::table('monitor_histories')->insert([
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(10)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'down',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(50)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->subMinutes(1)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
             ]);
 
             expect(MonitorHistory::count())->toBe(4);
@@ -80,14 +86,20 @@ describe('CleanupDuplicateMonitorHistories', function () {
         it('handles dry-run mode correctly', function () {
             $now = now();
 
-            // Create duplicate records
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(10),
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30),
+            // Create duplicate records using raw DB
+            DB::table('monitor_histories')->insert([
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(10)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
             ]);
 
             expect(MonitorHistory::count())->toBe(2);
@@ -107,24 +119,32 @@ describe('CleanupDuplicateMonitorHistories', function () {
             $monitor2 = Monitor::factory()->create();
             $now = now();
 
-            // Create duplicates for first monitor
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(10),
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30),
-            ]);
-
-            // Create duplicates for second monitor in different minute
-            MonitorHistory::factory()->create([
-                'monitor_id' => $monitor2->id,
-                'created_at' => $now->copy()->subMinutes(1)->setSeconds(15),
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $monitor2->id,
-                'created_at' => $now->copy()->subMinutes(1)->setSeconds(45),
+            // Create duplicates using raw DB
+            DB::table('monitor_histories')->insert([
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(10)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $monitor2->id,
+                    'created_at' => $now->copy()->subMinutes(1)->setSeconds(15)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $monitor2->id,
+                    'created_at' => $now->copy()->subMinutes(1)->setSeconds(45)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
             ]);
 
             expect(MonitorHistory::count())->toBe(4);
@@ -145,18 +165,24 @@ describe('CleanupDuplicateMonitorHistories', function () {
         it('keeps the latest record by created_at and id when multiple records exist', function () {
             $now = now();
 
-            // Create records with same created_at but different IDs
-            $record1 = MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30),
-                'uptime_status' => 'down',
+            // Create records with same created_at but different IDs using raw DB
+            DB::table('monitor_histories')->insert([
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'down',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
             ]);
 
-            $record2 = MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30), // Same timestamp
-                'uptime_status' => 'up',
-            ]);
+            $record1 = MonitorHistory::orderBy('id', 'asc')->first();
+            $record2 = MonitorHistory::orderBy('id', 'desc')->first();
 
             // The second record should have a higher ID
             expect($record2->id)->toBeGreaterThan($record1->id);
@@ -176,13 +202,19 @@ describe('CleanupDuplicateMonitorHistories', function () {
             // We'll create a situation and then mock the remaining duplicates check
             $now = now();
 
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(10),
-            ]);
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30),
+            DB::table('monitor_histories')->insert([
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(10)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
+                [
+                    'monitor_id' => $this->monitor->id,
+                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'updated_at' => $now->toDateTimeString(),
+                    'uptime_status' => 'up',
+                ],
             ]);
 
             // Mock the duplicate check query to return that duplicates remain
