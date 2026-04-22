@@ -40,18 +40,36 @@ class PublicMonitorShowController extends Controller
         // Dispatch job to increment page view count (non-blocking)
         IncrementMonitorPageViewJob::dispatch($monitor->id, $request->ip());
 
-        // Use real-time data with short cache like private monitor show
-        $histories = cache()->remember("public_monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            return $this->getLiveHistory($monitor);
-        });
+        // Use pre-calculated statistics from the database if available
+        $stats = $monitor->statistics;
 
-        $uptimeStats = cache()->remember("public_monitor_{$monitor->id}_uptime_stats", 60, function () use ($monitor) {
-            return $this->calculateUptimeStats($monitor);
-        });
+        if ($stats) {
+            $histories = $stats->recent_history_100m ?? [];
+            $uptimeStats = [
+                '24h' => (float) $stats->uptime_24h,
+                '7d' => (float) $stats->uptime_7d,
+                '30d' => (float) $stats->uptime_30d,
+                '90d' => (float) $stats->uptime_90d,
+            ];
+            $responseTimeStats = [
+                'average' => $stats->avg_response_time_24h,
+                'min' => $stats->min_response_time_24h,
+                'max' => $stats->max_response_time_24h,
+            ];
+        } else {
+            // Fallback for monitors without statistics record
+            $histories = cache()->remember("public_monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
+                return $this->getLiveHistory($monitor);
+            });
 
-        $responseTimeStats = cache()->remember("public_monitor_{$monitor->id}_response_stats", 60, function () use ($monitor, $performanceService) {
-            return $this->getLiveResponseTimeStats($monitor, $performanceService);
-        });
+            $uptimeStats = cache()->remember("public_monitor_{$monitor->id}_uptime_stats", 60, function () use ($monitor) {
+                return $this->calculateUptimeStats($monitor);
+            });
+
+            $responseTimeStats = cache()->remember("public_monitor_{$monitor->id}_response_stats", 60, function () use ($monitor, $performanceService) {
+                return $this->getLiveResponseTimeStats($monitor, $performanceService);
+            });
+        }
 
         // Load uptime daily data and latest incidents (these are still needed)
         $monitor->load(['uptimesDaily' => function ($query) {

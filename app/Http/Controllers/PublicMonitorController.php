@@ -335,7 +335,7 @@ class PublicMonitorController extends Controller
                     ->from('monitors')
                     ->where('is_public', true);
             })
-                ->whereDate('checked_at', today())
+                ->where('checked_at', '>=', today())
                 ->count();
         });
     }
@@ -363,8 +363,7 @@ class PublicMonitorController extends Controller
                     ->from('monitors')
                     ->where('is_public', true);
             })
-                ->whereMonth('checked_at', now()->month)
-                ->whereYear('checked_at', now()->year)
+                ->where('checked_at', '>=', now()->startOfMonth())
                 ->count();
         });
     }
