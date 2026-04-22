@@ -45,11 +45,19 @@ class SendBatchedNotificationsJob implements ShouldQueue
             }
         }
 
+        // Fetch all users in one query with their enabled channels to avoid N+1
+        $userIds = array_keys($userEvents);
+        $users = User::with(['notificationChannels' => function ($query) {
+            $query->where('is_enabled', true);
+        }])->whereIn('id', $userIds)->get()->keyBy('id');
+
         // Send batched notifications to each user
         foreach ($userEvents as $userId => $events) {
-            $user = User::find($userId);
+            $user = $users->get($userId);
             if ($user) {
                 try {
+                    // Note: BatchedMonitorStatusChanged uses $notifiable->notificationChannels()
+                    // which is now eager-loaded.
                     Notification::send($user, new BatchedMonitorStatusChanged($events));
                     Log::debug("Sent batched notification to user {$userId}", ['event_count' => count($events)]);
                 } catch (\Exception $e) {

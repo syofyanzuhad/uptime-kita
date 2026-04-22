@@ -29,7 +29,11 @@ class BatchedMonitorStatusChanged extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        $channels = $notifiable->notificationChannels()->where('is_enabled', true)->get();
+        // Use eager-loaded channels if available to prevent N+1
+        $channels = $notifiable->relationLoaded('notificationChannels')
+            ? $notifiable->notificationChannels->where('is_enabled', true)
+            : $notifiable->notificationChannels()->where('is_enabled', true)->get();
+
         $via = [];
 
         foreach ($channels as $channel) {
