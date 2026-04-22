@@ -121,7 +121,7 @@ class PublicMonitorShowController extends Controller
         $sql = "
             SELECT id FROM (
                 SELECT id, created_at, ROW_NUMBER() OVER (
-                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at)
                     ORDER BY created_at DESC, id DESC
                 ) as rn
                 FROM monitor_histories
@@ -158,7 +158,7 @@ class PublicMonitorShowController extends Controller
         $sql = "
             SELECT id FROM (
                 SELECT id, created_at, ROW_NUMBER() OVER (
-                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at)
                     ORDER BY created_at DESC, id DESC
                 ) as rn
                 FROM monitor_histories
