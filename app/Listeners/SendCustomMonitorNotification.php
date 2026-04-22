@@ -3,11 +3,22 @@
 namespace App\Listeners;
 
 use App\Notifications\MonitorStatusChanged;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 
-class SendCustomMonitorNotification
+class SendCustomMonitorNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $queue = 'default';
+
     /**
      * Create the event listener.
      */

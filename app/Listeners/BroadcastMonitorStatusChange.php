@@ -2,13 +2,24 @@
 
 namespace App\Listeners;
 
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 
-class BroadcastMonitorStatusChange
+class BroadcastMonitorStatusChange implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $queue = 'default';
+
     /**
      * Handle the event.
      *

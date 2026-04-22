@@ -10,6 +10,7 @@ class MonitorPerformanceService
 {
     /**
      * Update hourly performance metrics for a monitor.
+     * Optimized to avoid expensive database scans on every ping.
      */
     public function updateHourlyMetrics(int $monitorId, ?int $responseTime, bool $isSuccess): void
     {
@@ -21,16 +22,31 @@ class MonitorPerformanceService
             'hour' => $hour,
         ]);
 
+        // Initialize counts if new
+        $performance->success_count = $performance->success_count ?? 0;
+        $performance->failure_count = $performance->failure_count ?? 0;
+
         // Update counts
         if ($isSuccess) {
-            $performance->success_count = ($performance->success_count ?? 0) + 1;
+            $performance->success_count++;
         } else {
-            $performance->failure_count = ($performance->failure_count ?? 0) + 1;
+            $performance->failure_count++;
         }
 
-        // Update response time metrics if available
+        // Update response time metrics using a running average (O(1) operation)
         if ($responseTime !== null && $isSuccess) {
-            $this->updateResponseTimeMetrics($performance, $responseTime);
+            $currentAvg = $performance->avg_response_time ?? 0;
+            $count = $performance->success_count;
+            
+            if ($count === 1) {
+                $performance->avg_response_time = $responseTime;
+            } else {
+                // Running average formula: ((previous_avg * (n-1)) + new_value) / n
+                $performance->avg_response_time = (($currentAvg * ($count - 1)) + $responseTime) / $count;
+            }
+            
+            // Note: P95 and P99 are removed from real-time path as they require O(N log N) sorting
+            // They can be calculated by a separate background process if needed.
         }
 
         $performance->save();
@@ -38,36 +54,11 @@ class MonitorPerformanceService
 
     /**
      * Update response time metrics for the hourly performance record.
+     * @deprecated Expensive - moved to running average in updateHourlyMetrics
      */
     protected function updateResponseTimeMetrics(MonitorPerformanceHourly $performance, int $responseTime): void
     {
-        // Use efficient range query instead of individual comparisons
-        $startHour = $performance->hour;
-        $endHour = $performance->hour->copy()->addHour();
-
-        // Get all response times for this hour using created_at for consistency
-        $responseTimes = MonitorHistory::where('monitor_id', $performance->monitor_id)
-            ->whereBetween('created_at', [$startHour, $endHour])
-            ->whereNotNull('response_time')
-            ->where('uptime_status', 'up')
-            ->pluck('response_time')
-            ->toArray();
-
-        if (empty($responseTimes)) {
-            $performance->avg_response_time = $responseTime;
-            $performance->p95_response_time = $responseTime;
-            $performance->p99_response_time = $responseTime;
-
-            return;
-        }
-
-        // Calculate average
-        $performance->avg_response_time = array_sum($responseTimes) / count($responseTimes);
-
-        // Calculate percentiles
-        sort($responseTimes);
-        $performance->p95_response_time = $this->calculatePercentile($responseTimes, 95);
-        $performance->p99_response_time = $this->calculatePercentile($responseTimes, 99);
+        // Deprecated to save CPU resources
     }
 
     /**

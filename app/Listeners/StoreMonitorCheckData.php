@@ -5,13 +5,24 @@ namespace App\Listeners;
 use App\Models\MonitorHistory;
 use App\Models\MonitorIncident;
 use App\Services\MonitorPerformanceService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 
-class StoreMonitorCheckData
+class StoreMonitorCheckData implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $queue = 'default';
+
     protected MonitorPerformanceService $performanceService;
 
     public function __construct(MonitorPerformanceService $performanceService)
