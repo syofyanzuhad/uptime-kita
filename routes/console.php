@@ -33,12 +33,11 @@ Schedule::command('telescope:prune --hours=48')->everyOddHour();
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [\Spatie\Health\Models\HealthCheckResultHistoryItem::class]])->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyFifteenMinutes()
+Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
-// Calculate monitor statistics for public monitors every 15 minutes using a job
 Schedule::job(new \App\Jobs\CalculateMonitorStatisticsJob)
-    ->everyFifteenMinutes()
+    ->everyThirtyMinutes()
     ->withoutOverlapping();
 // Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
 // Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
