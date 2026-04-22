@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class SendBatchedNotificationsJob implements ShouldQueue
 {
@@ -22,7 +23,7 @@ class SendBatchedNotificationsJob implements ShouldQueue
     public function handle(): void
     {
         $cacheKey = 'pending_monitor_notifications';
-
+        
         // Atomically pull and clear the pending notifications
         $pendingEvents = Cache::pull($cacheKey, []);
 
@@ -49,11 +50,13 @@ class SendBatchedNotificationsJob implements ShouldQueue
             $user = User::find($userId);
             if ($user) {
                 try {
-                    $user->notify(new BatchedMonitorStatusChanged($events));
+                    Notification::send($user, new BatchedMonitorStatusChanged($events));
                     Log::debug("Sent batched notification to user {$userId}", ['event_count' => count($events)]);
                 } catch (\Exception $e) {
                     Log::error("Failed to send batched notification to user {$userId}", ['error' => $e->getMessage()]);
                 }
+            } else {
+                Log::warning("SendBatchedNotificationsJob: User not found", ['user_id' => $userId]);
             }
         }
     }
