@@ -27,13 +27,31 @@ class UptimesDailyController extends Controller
             }
         }
 
-        $uptimes = cache()->remember("monitor_{$monitor->id}_uptimes_daily", 60, function () use ($monitor) {
-            return $monitor->uptimesDaily()->get()->map(function ($uptime) {
-                return [
-                    'date' => $uptime->date->toDateString(),
-                    'uptime_percentage' => $uptime->uptime_percentage,
-                ];
-            });
+        $limit = $request->query('limit');
+        $limit = (is_numeric($limit) && (int) $limit > 0) ? (int) $limit : 90;
+
+        // Don't allow more than 90 days for consistency
+        if ($limit > 90) {
+            $limit = 90;
+        }
+
+        $cacheKey = ($limit === 90)
+            ? "monitor_{$monitor->id}_uptimes_daily"
+            : "monitor_{$monitor->id}_uptimes_daily_limit_{$limit}";
+
+        $uptimes = cache()->remember($cacheKey, 60, function () use ($monitor, $limit) {
+            return $monitor->uptimesDaily()
+                ->reorder('date', 'desc')
+                ->take($limit)
+                ->get()
+                ->reverse()
+                ->values()
+                ->map(function ($uptime) {
+                    return [
+                        'date' => $uptime->date->toDateString(),
+                        'uptime_percentage' => $uptime->uptime_percentage,
+                    ];
+                });
         });
 
         return response()->json(['uptimes_daily' => $uptimes]);

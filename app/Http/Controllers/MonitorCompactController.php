@@ -59,8 +59,9 @@ class MonitorCompactController extends Controller
                     $join->on('monitors.id', '=', 'monitor_uptime_dailies.monitor_id')
                         ->where('monitor_uptime_dailies.date', '=', $today);
                 })
-                    ->orderByRaw('monitor_uptime_dailies.uptime_percentage IS NULL ASC')
-                    ->orderBy('monitor_uptime_dailies.uptime_percentage', $direction);
+                    ->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                    ->orderByRaw('COALESCE(monitor_uptime_dailies.uptime_percentage, monitor_statistics.uptime_24h) IS NULL ASC')
+                    ->orderByRaw('COALESCE(monitor_uptime_dailies.uptime_percentage, monitor_statistics.uptime_24h) '.$direction);
             } elseif ($sortBy === 'avg_response_time_24h') {
                 $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
                     ->orderByRaw('monitor_statistics.avg_response_time_24h IS NULL ASC')
@@ -136,7 +137,7 @@ class MonitorCompactController extends Controller
                     'certificate_check_enabled' => (bool) $m->certificate_check_enabled,
                     'certificate_status' => $m->certificate_status,
                     'certificate_expiration_date' => $m->certificate_expiration_date,
-                    'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : 0,
+                    'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : ($monitorStats->uptime_24h ?? 0),
                     'tags' => $monitorTags->map(fn ($t) => ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null]),
                     'statistics' => [
                         'uptime_24h' => $monitorStats->uptime_24h ?? null,

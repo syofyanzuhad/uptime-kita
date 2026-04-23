@@ -60,8 +60,14 @@ class SimpleMonitorResource extends JsonResource
      */
     protected function getTodayUptimePercentage(): float
     {
-        if ($this->relationLoaded('uptimeDaily')) {
-            return $this->uptimeDaily?->uptime_percentage ?? 0;
+        // If uptimeDaily is loaded, use it
+        if ($this->relationLoaded('uptimeDaily') && $this->uptimeDaily) {
+            return $this->uptimeDaily->uptime_percentage ?? 0;
+        }
+
+        // Fallback to statistics.uptime_24h if available
+        if ($this->relationLoaded('statistics') && $this->statistics && $this->statistics->uptime_24h !== null) {
+            return (float) $this->statistics->uptime_24h;
         }
 
         return 0;

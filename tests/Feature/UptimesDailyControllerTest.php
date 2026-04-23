@@ -66,9 +66,9 @@ describe('UptimesDailyController', function () {
         expect(count($uptimes))->toBeGreaterThan(0);
     });
 
-    it('limits results to 30 days by default', function () {
-        // Create more than 30 days of data
-        for ($i = 30; $i < 60; $i++) {
+    it('limits results to 90 days by default', function () {
+        // Create 100 days of data
+        for ($i = 30; $i < 100; $i++) {
             MonitorUptimeDaily::factory()->create([
                 'monitor_id' => $this->publicMonitor->id,
                 'date' => now()->subDays($i)->toDateString(),
@@ -80,7 +80,9 @@ describe('UptimesDailyController', function () {
 
         $response->assertOk();
         $data = $response->json();
-        expect(count($data['uptimes_daily']))->toBeGreaterThan(0);
+        // Since the relationship is restricted to 90 days in the model, 
+        // it should never exceed 90 records regardless of the data in DB.
+        expect(count($data['uptimes_daily']))->toBe(90);
     });
 
     it('allows custom limit parameter', function () {
@@ -89,6 +91,25 @@ describe('UptimesDailyController', function () {
         $response->assertOk();
         $data = $response->json();
         expect(count($data['uptimes_daily']))->toBeGreaterThan(0);
+    });
+
+    it('strictly excludes data older than 90 days', function () {
+        // Create a record for 91 days ago
+        MonitorUptimeDaily::factory()->create([
+            'monitor_id' => $this->publicMonitor->id,
+            'date' => now()->subDays(91)->toDateString(),
+            'uptime_percentage' => 100.0,
+        ]);
+
+        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+
+        $response->assertOk();
+        $data = $response->json();
+        
+        // Ensure no record in the response is older than 90 days
+        foreach ($data['uptimes_daily'] as $record) {
+            expect(Carbon\Carbon::parse($record['date'])->isAfter(now()->subDays(91)))->toBeTrue();
+        }
     });
 
     it('returns daily uptimes for private monitor to owner', function () {
@@ -219,7 +240,7 @@ describe('UptimesDailyController', function () {
         expect(count($data['uptimes_daily']))->toBeGreaterThan(0); // Should use default limit
     });
 
-    it('caps limit to reasonable maximum', function () {
+    it('caps limit to 90 days maximum', function () {
         // Create 100 days of data
         for ($i = 30; $i < 100; $i++) {
             MonitorUptimeDaily::factory()->create([
@@ -233,8 +254,8 @@ describe('UptimesDailyController', function () {
 
         $response->assertOk();
 
-        $count = count($response->json());
-        expect($count)->toBeLessThanOrEqual(365); // Should cap at 1 year max
+        $data = $response->json();
+        expect(count($data['uptimes_daily']))->toBe(90); // Should cap at 90 days
     });
 
     describe('date query parameter functionality', function () {

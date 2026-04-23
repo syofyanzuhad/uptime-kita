@@ -172,7 +172,7 @@ class Monitor extends SpatieMonitor
     public function uptimesDaily()
     {
         return $this->hasMany(MonitorUptimeDaily::class)
-            ->where('date', '>=', now()->subYear()->toDateString())
+            ->where('date', '>=', now()->subDays(90)->toDateString())
             ->orderBy('date', 'asc');
     }
 
