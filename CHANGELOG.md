@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/syofyanzuhad/uptime-kita/compare/v0.2.0...v0.3.0) (2026-04-23)
+
+
+### Features
+
+* add cloudflare web analytics script ([3f07018](https://github.com/syofyanzuhad/uptime-kita/commit/3f07018b70c2ba6c30c924c9ebca998373721154))
+* add website carbon badge to public pages ([d04c948](https://github.com/syofyanzuhad/uptime-kita/commit/d04c948e519a5e25cfacca5a834298b02d55f52d))
+* limit uptime history to 90 days and add visual fallback for today's uptime ([82fe0ef](https://github.com/syofyanzuhad/uptime-kita/commit/82fe0efe3bf0c6e0da4fc0fc2018036049e4d9f9))
+
+
+### Bug Fixes
+
+* ensure daily uptime calculations use full previous day ([7c8259f](https://github.com/syofyanzuhad/uptime-kita/commit/7c8259fde32a44b7e254be8d45f7178ea62b7834))
+* prevent redundant monitor history records ([32e6954](https://github.com/syofyanzuhad/uptime-kita/commit/32e69546b97c3f074f5a0d0aeb36cc5bcba863ec))
+* reset default user agent to bypass strict WAFs like Akamai ([b58e840](https://github.com/syofyanzuhad/uptime-kita/commit/b58e8404cfb036dc3378ddb133af71309cae2ec6))
+* resolve 500 error in public status page monitors API ([bcaaa6f](https://github.com/syofyanzuhad/uptime-kita/commit/bcaaa6f4d31da197750d886304f9dbb78b177154))
+* resolve duplicate history records in public view ([7e323ef](https://github.com/syofyanzuhad/uptime-kita/commit/7e323ef8ccccb4d1847e04616d80f94b8095bb11))
+* show correct SSL status in monitor compact modal ([6950753](https://github.com/syofyanzuhad/uptime-kita/commit/695075301e9ddc4f9667969747566d86878c6bcb))
+
+
+### Performance
+
+* ensure unique monitor history records per minute ([5c83d00](https://github.com/syofyanzuhad/uptime-kita/commit/5c83d00c218cc97640726886fe420eb98246f3ca))
+* fix N+1 queries in batched notification system ([420ef91](https://github.com/syofyanzuhad/uptime-kita/commit/420ef914d1e1deeb99dc7a028df02ec83ea42ff2))
+* optimize public monitor pages and counts to prevent timeouts ([1ef1783](https://github.com/syofyanzuhad/uptime-kita/commit/1ef1783d608b210e06cb04a4e3c160177e22b679))
+* optimize public status page monitors API ([eccb21d](https://github.com/syofyanzuhad/uptime-kita/commit/eccb21dabcc1972c071572b58d4f665ab2aad79f))
+* optimize status page listing with monitor counts ([d437968](https://github.com/syofyanzuhad/uptime-kita/commit/d43796875f3ac48db5d8466c2586c82bb5e68a1d))
+
+
+### Tests
+
+* add history api and limit verification tests ([5808d79](https://github.com/syofyanzuhad/uptime-kita/commit/5808d79ef86ba8655a6c6c61d02949e02bc2d56b))
+* add verification for daily uptime calculation and backfill ([86a7c90](https://github.com/syofyanzuhad/uptime-kita/commit/86a7c90a9df0ae7f460a55a53542e4b013d096d6))
+* fix cleanup command tests to handle new model hooks ([54fd7ea](https://github.com/syofyanzuhad/uptime-kita/commit/54fd7eaed1a8806db6a6d738cfa3f1f1b278b07f))
+
 ## [0.2.0](https://github.com/syofyanzuhad/uptime-kita/compare/v0.1.2...v0.2.0) (2026-04-22)
 
 
