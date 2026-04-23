@@ -12,15 +12,15 @@
   <a target="_blank" href="https://github.com/syofyanzuhad/uptime-kita">
     <img src="https://img.shields.io/github/last-commit/syofyanzuhad/uptime-kita" />
   </a>
-	<a href="https://github.com/syofyanzuhad/uptime-kita/issues">
+  <a href="https://github.com/syofyanzuhad/uptime-kita/issues">
     <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/syofyanzuhad/uptime-kita">
   </a>
-	<a href="https://github.com/syofyanzuhad/uptime-kita/pulls">
-		<img src="https://img.shields.io/github/issues-pr/syofyanzuhad/uptime-kita" alt="Pull Requests Badge"/>
-	</a>
+  <a href="https://github.com/syofyanzuhad/uptime-kita/pulls">
+	<img src="https://img.shields.io/github/issues-pr/syofyanzuhad/uptime-kita" alt="Pull Requests Badge"/>
+  </a>
   <a href="https://github.com/syofyanzuhad/uptime-kita/graphs/contributors">
-		<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/syofyanzuhad/uptime-kita?color=2b9348">
-	</a>
+	<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/syofyanzuhad/uptime-kita?color=2b9348">
+  </a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
     <img src="https://github.com/syofyanzuhad/uptime-kita/actions/workflows/tests.yml/badge.svg" />
   </a>
@@ -28,16 +28,22 @@
     <img src="https://github.com/syofyanzuhad/uptime-kita/actions/workflows/pr-checks.yml/badge.svg" />
   </a>
   <a href="https://codecov.io/github/syofyanzuhad/uptime-kita" > 
- <img src="https://codecov.io/github/syofyanzuhad/uptime-kita/graph/badge.svg?token=K2BTV0DR25"/> 
- </a>
+    <img src="https://codecov.io/github/syofyanzuhad/uptime-kita/graph/badge.svg?token=K2BTV0DR25"/> 
+  </a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
-		<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
-	</a>
+	<img src='https://img.shields.io/github/forks/syofyanzuhad/uptime-kita'>
+  </a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
-		<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
-	</a>
+	<img src='https://img.shields.io/github/stars/syofyanzuhad/uptime-kita'>
+  </a>
   <a href='https://github.com/syofyanzuhad/uptime-kita'>
     <img src="https://visitor-badge.laobi.icu/badge?page_id=syofyanzuhad.uptime-kita" />
+  </a>
+  <a href="https://madewithlaravel.com/p/uptime-kita/shield-link">
+    <img src="https://madewithlaravel.com/storage/repo-shields/6285-shield.svg" alt="MadeWithLaravel.com shield">
+  </a>
+  <a href="https://madewithvuejs.com/p/uptime-kita/shield-link">
+    <img src="https://madewithvuejs.com/storage/repo-shields/5900-shield.svg" alt="MadeWithVuejs.com shield">
   </a>
     <img src="https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev" alt="Uptime" />
 </p>
