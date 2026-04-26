@@ -81,6 +81,12 @@ return [
         'run_interval_in_minutes' => 5,
 
         /*
+         * Enforce a minimum interval for uptime checks.
+         * Any monitor with an interval lower than this will use this value instead.
+         */
+        'minimum_run_interval_in_minutes' => env('UPTIME_MINIMUM_CHECK_INTERVAL', 0),
+
+        /*
          * To speed up the uptime checking process the package can perform the uptime check of several
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.

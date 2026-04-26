@@ -109,6 +109,13 @@ class Monitor extends SpatieMonitor
         });
     }
 
+    public function getUptimeCheckIntervalInMinutesAttribute($value)
+    {
+        $min = config('uptime-monitor.uptime_check.minimum_run_interval_in_minutes', 0);
+
+        return max((int) $value, (int) $min);
+    }
+
     // Getter for uptime_last_check_date to return 00 seconds in carbon object
     public function getUptimeLastCheckDateAttribute()
     {
