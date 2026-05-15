@@ -25,3 +25,19 @@ yarn-error.log
 /.zed
 /storage/coverage
 /resources/js/ziggy.js
+
+# AI / Agent specific files
+.mcp.json
+.claude/
+.cursor/mcp.json
+.gemini/
+.serena/
+
+# System and backup files
+.DS_Store
+**/.DS_Store
+*.sql
+*.sql.gz
+--cache-result/
+storage/debugbar/
+storage/pail/
