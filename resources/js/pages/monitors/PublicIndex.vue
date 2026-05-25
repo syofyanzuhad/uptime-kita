@@ -30,6 +30,15 @@
 
                     <!-- Theme Toggle & Server Stats -->
                     <div class="flex items-center justify-center space-x-2 sm:justify-end">
+                        <a
+                            href="https://smollaunch.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center"
+                            title="Featured on SmolLaunch"
+                        >
+                            <img src="https://smollaunch.com/badges/featured.svg" alt="Featured on SmolLaunch" class="h-6" />
+                        </a>
                         <ServerStatsBadge />
                         <!-- Share Button -->
                         <div class="relative" ref="shareDropdownRef">
