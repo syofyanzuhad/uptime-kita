@@ -129,6 +129,9 @@ return [
     // Show server stats on public pages (CPU, Memory, Uptime)
     'show_public_server_stats' => env('SHOW_PUBLIC_SERVER_STATS', true),
 
+    // Show Smol Launch badge on homepage
+    'show_smol_launch_badge' => env('SHOW_SMOL_LAUNCH_BADGE', false),
+
     // Admin credentials
     'admin_credentials' => [
         'email' => env('ADMIN_EMAIL', 'mail@syofyanzuhad.dev'),

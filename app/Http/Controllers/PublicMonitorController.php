@@ -182,6 +182,7 @@ class PublicMonitorController extends Controller
                 'daily_checks' => $this->getDailyChecksCount(),
                 'monthly_checks' => $this->getMonthlyChecksCount(),
             ],
+            'showSmolLaunchBadge' => config('app.show_smol_launch_badge'),
         ])->withViewData([
             'ogTitle' => 'Public Monitors - Uptime Kita',
             'ogDescription' => "Monitoring {$totalPublic} public services. {$upCount} services are up and running.",
