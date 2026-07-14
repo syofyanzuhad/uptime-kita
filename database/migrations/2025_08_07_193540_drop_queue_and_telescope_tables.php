@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('sqlite')->dropIfExists('telescope_entries');
-        Schema::connection('sqlite')->dropIfExists('telescope_entries_tags');
-        Schema::connection('sqlite')->dropIfExists('telescope_monitoring');
+        Schema::disableForeignKeyConstraints();
 
-        // Drop Queue tables from the 'sqlite' connection
-        Schema::connection('sqlite')->dropIfExists('jobs');
-        Schema::connection('sqlite')->dropIfExists('failed_jobs');
-        Schema::connection('sqlite')->dropIfExists('job_batches');
+        Schema::dropIfExists('telescope_entries_tags');
+        Schema::dropIfExists('telescope_entries');
+        Schema::dropIfExists('telescope_monitoring');
+
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('job_batches');
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
