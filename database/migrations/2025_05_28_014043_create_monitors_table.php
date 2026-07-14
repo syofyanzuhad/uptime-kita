@@ -15,7 +15,7 @@ class CreateMonitorsTable extends Migration
     public function up()
     {
         Schema::create('monitors', function (Blueprint $table) {
-            $table->increments('id');
+            $table->id();
             $table->string('url')->unique();
             $table->boolean('is_public')->default(true);
 
