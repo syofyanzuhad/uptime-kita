@@ -14,16 +14,13 @@ return new class extends Migration
         // First, remove duplicate records, keeping the latest one for each monitor-minute combination
         $this->removeDuplicateHistories();
 
-        // Add unique constraint for monitor_id + created_at (rounded to minute)
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('CREATE UNIQUE INDEX monitor_histories_unique_minute ON monitor_histories (monitor_id, datetime(created_at, "start of minute"))');
-        } else {
-            Schema::table('monitor_histories', function ($table) {
-                $table->string('created_at_minute', 19)
-                    ->virtualAs("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00')");
-                $table->unique(['monitor_id', 'created_at_minute'], 'monitor_histories_unique_minute');
-            });
-        }
+        // Normalize all created_at timestamps to start of minute (seconds = 00)
+        $this->normalizeCreatedAtToMinute();
+
+        // Add standard unique index on (monitor_id, created_at)
+        Schema::table('monitor_histories', function ($table) {
+            $table->unique(['monitor_id', 'created_at'], 'monitor_histories_unique_minute');
+        });
     }
 
     /**
@@ -32,12 +29,20 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('monitor_histories', function ($table) {
-            $table->dropIndex('monitor_histories_unique_minute');
-
-            if (DB::getDriverName() !== 'sqlite' && Schema::hasColumn('monitor_histories', 'created_at_minute')) {
-                $table->dropColumn('created_at_minute');
-            }
+            $table->dropUnique('monitor_histories_unique_minute');
         });
+    }
+
+    /**
+     * Normalize created_at timestamps to have 00 seconds.
+     */
+    private function normalizeCreatedAtToMinute(): void
+    {
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('UPDATE monitor_histories SET created_at = strftime("%Y-%m-%d %H:%M:00", created_at)');
+        } else {
+            DB::statement("UPDATE monitor_histories SET created_at = DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00')");
+        }
     }
 
     /**
