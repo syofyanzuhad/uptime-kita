@@ -18,7 +18,11 @@ return new class extends Migration
         if (DB::getDriverName() === 'sqlite') {
             DB::statement('CREATE UNIQUE INDEX monitor_histories_unique_minute ON monitor_histories (monitor_id, datetime(created_at, "start of minute"))');
         } else {
-            DB::statement('CREATE UNIQUE INDEX monitor_histories_unique_minute ON monitor_histories (monitor_id, (DATE_FORMAT(created_at, \'%Y-%m-%d %H:%i:00\')))');
+            Schema::table('monitor_histories', function ($table) {
+                $table->string('created_at_minute', 19)
+                    ->virtualAs("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00')");
+                $table->unique(['monitor_id', 'created_at_minute'], 'monitor_histories_unique_minute');
+            });
         }
     }
 
@@ -29,6 +33,10 @@ return new class extends Migration
     {
         Schema::table('monitor_histories', function ($table) {
             $table->dropIndex('monitor_histories_unique_minute');
+
+            if (DB::getDriverName() !== 'sqlite' && Schema::hasColumn('monitor_histories', 'created_at_minute')) {
+                $table->dropColumn('created_at_minute');
+            }
         });
     }
 
