@@ -360,6 +360,15 @@ The badge shows:
 - Value: Uptime percentage (e.g., "99.9%")
 - Color: Green (>= 99%), Yellow (>= 95%), Red (< 95%)
 
+## 🖼️ Dynamic Open Graph (OG) Images
+
+Uptime Kita automatically generates dynamic and beautiful Open Graph (OG) images for your public monitors and status pages. When you share a monitor link on social media platforms (Twitter/X, Discord, Slack, etc.), it displays a custom image containing real-time information about your service.
+
+### Features
+- **Monitor Specific**: Automatically generates unique OG images using the monitor's URL (e.g., `https://uptime-instance.com/og/monitor/example.com.png`).
+- **Status Pages**: Creates tailored OG images for your aggregated status pages.
+- **Real-time Data**: Reflects the actual status of the monitor when shared.
+
 ## 🔔 Real-time Status Notifications
 
 Public monitor pages display instant toast notifications when a monitor's status changes (up → down or down → up).
