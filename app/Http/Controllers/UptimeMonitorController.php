@@ -90,11 +90,12 @@ class UptimeMonitorController extends Controller
     {
         // implements cache for monitor data with histories included
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
+            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
             // Get unique history IDs using raw SQL to ensure only one record per minute
             $sql = "
                 SELECT id FROM (
                     SELECT id, created_at, ROW_NUMBER() OVER (
-                        PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                        PARTITION BY monitor_id, {$dateFormatter} 
                         ORDER BY created_at DESC, id DESC
                     ) as rn
                     FROM monitor_histories
@@ -126,11 +127,12 @@ class UptimeMonitorController extends Controller
     public function getHistory(Monitor $monitor)
     {
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
+            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
             // Get unique history IDs using raw SQL to ensure only one record per minute
             $sql = "
                 SELECT id FROM (
                     SELECT id, created_at, ROW_NUMBER() OVER (
-                        PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                        PARTITION BY monitor_id, {$dateFormatter} 
                         ORDER BY created_at DESC, id DESC
                     ) as rn
                     FROM monitor_histories

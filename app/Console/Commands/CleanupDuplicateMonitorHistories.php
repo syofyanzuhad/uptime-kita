@@ -39,16 +39,17 @@ class CleanupDuplicateMonitorHistories extends Command
         $this->info("Total records before cleanup: {$totalBefore}");
 
         // Find all duplicate groups
-        $duplicates = DB::select('
+        $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+        $duplicates = DB::select("
             SELECT 
                 monitor_id, 
-                strftime("%Y-%m-%d %H:%M", created_at) as minute_key,
+                {$dateFormatter} as minute_key,
                 COUNT(*) as count
             FROM monitor_histories 
-            GROUP BY monitor_id, strftime("%Y-%m-%d %H:%M", created_at)
+            GROUP BY monitor_id, {$dateFormatter}
             HAVING count > 1
             ORDER BY count DESC
-        ');
+        ");
 
         $this->info('Found '.count($duplicates).' minute periods with duplicate records');
 
@@ -63,13 +64,13 @@ class CleanupDuplicateMonitorHistories extends Command
 
         foreach ($duplicates as $duplicate) {
             // Get IDs of records to keep (latest) and delete (others)
-            $records = DB::select('
+            $records = DB::select("
                 SELECT id, created_at
                 FROM monitor_histories 
                 WHERE monitor_id = ? 
-                AND strftime("%Y-%m-%d %H:%M", created_at) = ?
+                AND {$dateFormatter} = ?
                 ORDER BY created_at DESC, id DESC
-            ', [$duplicate->monitor_id, $duplicate->minute_key]);
+            ", [$duplicate->monitor_id, $duplicate->minute_key]);
 
             // Keep the first (latest) record, delete the rest
             $keepId = $records[0]->id;
@@ -100,15 +101,15 @@ class CleanupDuplicateMonitorHistories extends Command
         }
 
         // Check if there are still duplicates
-        $remainingDuplicates = DB::select('
+        $remainingDuplicates = DB::select("
             SELECT COUNT(*) as count
             FROM (
-                SELECT monitor_id, strftime("%Y-%m-%d %H:%M", created_at) as minute_key, COUNT(*) as cnt
+                SELECT monitor_id, {$dateFormatter} as minute_key, COUNT(*) as cnt
                 FROM monitor_histories 
-                GROUP BY monitor_id, strftime("%Y-%m-%d %H:%M", created_at)
+                GROUP BY monitor_id, {$dateFormatter}
                 HAVING cnt > 1
             ) duplicates
-        ')[0]->count;
+        ")[0]->count;
 
         if ($remainingDuplicates > 0) {
             $this->warn("Warning: {$remainingDuplicates} duplicate groups still remain");

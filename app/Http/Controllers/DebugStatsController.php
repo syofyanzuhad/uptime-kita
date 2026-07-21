@@ -58,24 +58,21 @@ class DebugStatsController extends Controller
             'latest_check' => MonitorHistory::latest('checked_at')->first(['checked_at'])?->checked_at,
         ];
 
-        // Raw SQL queries for verification
+        // Raw SQL queries for verification (using Query Builder for DB compatibility)
         $results['raw_queries'] = [
-            'daily_direct' => DB::select("
-                SELECT COUNT(*) as count
-                FROM monitor_histories
-                WHERE monitor_id IN (
-                    SELECT id FROM monitors WHERE is_public = 1
-                )
-                AND DATE(checked_at) = DATE('now', 'localtime')
-            ")[0]->count ?? 0,
-            'monthly_direct' => DB::select("
-                SELECT COUNT(*) as count
-                FROM monitor_histories
-                WHERE monitor_id IN (
-                    SELECT id FROM monitors WHERE is_public = 1
-                )
-                AND strftime('%Y-%m', checked_at) = strftime('%Y-%m', 'now', 'localtime')
-            ")[0]->count ?? 0,
+            'daily_direct' => DB::table('monitor_histories')
+                ->whereIn('monitor_id', function ($query) {
+                    $query->select('id')->from('monitors')->where('is_public', true);
+                })
+                ->whereDate('checked_at', today())
+                ->count(),
+            'monthly_direct' => DB::table('monitor_histories')
+                ->whereIn('monitor_id', function ($query) {
+                    $query->select('id')->from('monitors')->where('is_public', true);
+                })
+                ->whereMonth('checked_at', now()->month)
+                ->whereYear('checked_at', now()->year)
+                ->count(),
         ];
 
         // Clear cache if requested

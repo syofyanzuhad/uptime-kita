@@ -50,18 +50,19 @@ class FastCleanupDuplicateHistories extends Command
             $this->info('Creating temporary table with deduplicated records...');
             DB::statement('DROP TABLE IF EXISTS temp_unique_histories');
 
-            DB::statement('
+            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            DB::statement("
                 CREATE TEMPORARY TABLE temp_unique_histories AS 
                 SELECT * FROM (
                     SELECT *,
                            ROW_NUMBER() OVER (
-                               PARTITION BY monitor_id, strftime("%Y-%m-%d %H:%M", created_at) 
+                               PARTITION BY monitor_id, {$dateFormatter} 
                                ORDER BY created_at DESC, id DESC
                            ) as rn
                     FROM monitor_histories
                 ) ranked
                 WHERE rn = 1
-            ');
+            ");
 
             // Step 3: Replace original table contents
             $this->info('Replacing original table with unique records...');
@@ -91,25 +92,26 @@ class FastCleanupDuplicateHistories extends Command
 
         } else {
             // Just count duplicates for dry run
-            $duplicates = DB::select('
+            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            $duplicates = DB::select("
                 SELECT COUNT(*) as duplicate_count
                 FROM (
-                    SELECT monitor_id, strftime("%Y-%m-%d %H:%M", created_at) as minute_key, COUNT(*) - 1 as extras
+                    SELECT monitor_id, {$dateFormatter} as minute_key, COUNT(*) - 1 as extras
                     FROM monitor_histories 
-                    GROUP BY monitor_id, strftime("%Y-%m-%d %H:%M", created_at)
+                    GROUP BY monitor_id, {$dateFormatter}
                     HAVING COUNT(*) > 1
                 ) dups
-            ')[0];
+            ")[0];
 
-            $wouldDelete = DB::select('
+            $wouldDelete = DB::select("
                 SELECT SUM(cnt - 1) as total_duplicates
                 FROM (
                     SELECT COUNT(*) as cnt
                     FROM monitor_histories 
-                    GROUP BY monitor_id, strftime("%Y-%m-%d %H:%M", created_at)
+                    GROUP BY monitor_id, {$dateFormatter}
                     HAVING COUNT(*) > 1
                 ) grouped
-            ')[0];
+            ")[0];
 
             $this->info('DRY RUN Results:');
             $this->info("- Total records: {$beforeCount}");

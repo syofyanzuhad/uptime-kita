@@ -45,16 +45,29 @@ class MonitorHistory extends Model
             ->latest();
     }
 
+    public static function getDateFormatterSql(): string
+    {
+        $driver = \DB::connection()->getDriverName();
+
+        return match ($driver) {
+            'sqlite' => "strftime('%Y-%m-%d %H:%M', created_at)",
+            'pgsql' => "to_char(created_at, 'YYYY-MM-DD HH24:MI')",
+            default => "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i')",
+        };
+    }
+
     /**
      * Get unique history records per minute for a specific monitor
      * Returns only one record per monitor per minute (the latest one)
      */
     public static function getUniquePerMinute($monitorId, $limit = null, $orderBy = 'created_at', $orderDirection = 'desc')
     {
+        $dateFormatter = self::getDateFormatterSql();
+
         $sql = "
             SELECT id FROM (
                 SELECT id, created_at, ROW_NUMBER() OVER (
-                    PARTITION BY monitor_id, strftime('%Y-%m-%d %H:%M', created_at) 
+                    PARTITION BY monitor_id, {$dateFormatter} 
                     ORDER BY created_at DESC, id DESC
                 ) as rn
                 FROM monitor_histories
