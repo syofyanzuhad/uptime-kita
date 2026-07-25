@@ -28,12 +28,16 @@ Schedule::command('monitor:check-uptime')->everyMinute()
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
-Schedule::command('horizon:snapshot')->everyFiveMinutes();
-Schedule::command('horizon:forget --all')->daily();
+if (config('queue.default') === 'redis') {
+    Schedule::command('horizon:snapshot')->everyFiveMinutes();
+    Schedule::command('horizon:forget --all')->daily();
+}
 Schedule::command('queue:prune-batches')->daily();
 
-// === LARAVEL TELOSCOPE ===
-Schedule::command('telescope:prune --hours=48')->everyOddHour();
+// === LARAVEL TELESCOPE ===
+if (config('telescope.enabled')) {
+    Schedule::command('telescope:prune --hours=48')->everyOddHour();
+}
 
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
