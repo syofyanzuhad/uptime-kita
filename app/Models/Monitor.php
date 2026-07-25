@@ -295,7 +295,7 @@ class Monitor extends SpatieMonitor
 
         return $query->where(function ($q) use ($search) {
             $q->where('url', 'like', "%$search%")
-                ->orWhere('name', 'like', "%$search%")
+                ->orWhere('display_name', 'like', "%$search%")
                 ->orWhereRaw('REPLACE(REPLACE(url, "https://", ""), "http://", "") LIKE ?', ["%$search%"]);
         });
     }
