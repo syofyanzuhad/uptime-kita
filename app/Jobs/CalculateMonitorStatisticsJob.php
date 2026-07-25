@@ -40,7 +40,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
     public function __construct(?int $monitorId = null)
     {
         $this->monitorId = $monitorId;
-        $this->onQueue('statistics'); // Use dedicated queue for statistics
+        $this->onQueue('default'); // Use dedicated queue for statistics
     }
 
     /**

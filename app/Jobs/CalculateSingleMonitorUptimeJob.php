@@ -57,7 +57,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
         $this->date = $date ?? Carbon::today()->toDateString();
 
         // Set the queue for this job
-        $this->onQueue('uptime-calculations');
+        $this->onQueue('default');
     }
 
     /**
