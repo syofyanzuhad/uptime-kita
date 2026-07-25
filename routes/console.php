@@ -60,7 +60,9 @@ Schedule::command(ScheduleCheckHeartbeatCommand::class)->everyMinute();
 Schedule::command(DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
-Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
+if (config('database.default') === 'sqlite') {
+    Schedule::command('sqlite:optimize')->weeklyOn(0, '2:00');
+}
 
 // === ANONYMOUS TELEMETRY ===
 // Only runs if telemetry is enabled in config (opt-in)
