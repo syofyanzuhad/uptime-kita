@@ -22,17 +22,17 @@ class OgImageController extends Controller
     {
         $cacheKey = 'og_image_monitors_index';
 
-        $image = Cache::remember($cacheKey, 300, function () {
+        $imageBase64 = Cache::remember($cacheKey, 300, function () {
             $stats = [
                 'total' => Monitor::query()->where('is_public', true)->count(),
                 'up' => Monitor::query()->where('is_public', true)->where('uptime_status', 'up')->count(),
                 'down' => Monitor::query()->where('is_public', true)->where('uptime_status', 'down')->count(),
             ];
 
-            return $this->ogImageService->generateMonitorsIndex($stats);
+            return base64_encode($this->ogImageService->generateMonitorsIndex($stats));
         });
 
-        return $this->pngResponse($image);
+        return $this->pngResponse(base64_decode($imageBase64));
     }
 
     /**
@@ -55,11 +55,11 @@ class OgImageController extends Controller
 
         $cacheKey = "og_image_monitor_{$monitor->id}";
 
-        $image = Cache::remember($cacheKey, 300, function () use ($monitor) {
-            return $this->ogImageService->generateMonitor($monitor);
+        $imageBase64 = Cache::remember($cacheKey, 300, function () use ($monitor) {
+            return base64_encode($this->ogImageService->generateMonitor($monitor));
         });
 
-        return $this->pngResponse($image);
+        return $this->pngResponse(base64_decode($imageBase64));
     }
 
     /**
@@ -81,11 +81,11 @@ class OgImageController extends Controller
 
         $cacheKey = "og_image_status_page_{$statusPage->id}";
 
-        $image = Cache::remember($cacheKey, 300, function () use ($statusPage) {
-            return $this->ogImageService->generateStatusPage($statusPage);
+        $imageBase64 = Cache::remember($cacheKey, 300, function () use ($statusPage) {
+            return base64_encode($this->ogImageService->generateStatusPage($statusPage));
         });
 
-        return $this->pngResponse($image);
+        return $this->pngResponse(base64_decode($imageBase64));
     }
 
     /**
