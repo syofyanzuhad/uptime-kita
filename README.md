@@ -342,6 +342,10 @@ Available periods: `1h`, `24h`, `7d`, `30d`, `90d`
 
 ### Examples
 
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d)
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d)
+
 ```markdown
 <!-- Default 24h uptime -->
 ![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
