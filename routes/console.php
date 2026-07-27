@@ -87,13 +87,8 @@ if (config('telemetry.enabled')) {
     };
 }
 
-// Update maintenance status for monitors every minute
-Schedule::command('monitor:update-maintenance-status')->everyMinute();
-
 // Cleanup expired one-time maintenance windows daily
 Schedule::command('monitor:update-maintenance-status --cleanup')->daily();
-
-Schedule::command('laritor:send-metrics')->everyMinute();
 
 // === BACKUP DB ===
 // Schedule::command('backup:clean')->daily()->at('01:00');
