@@ -15,16 +15,34 @@ use Spatie\Health\Commands\ScheduleCheckHeartbeatCommand;
 use Spatie\Health\Models\HealthCheckResultHistoryItem;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
 
-Schedule::command('monitor:check-uptime')->everyMinute()
-    ->withoutOverlapping(10)
-    ->runInBackground()
-    ->onSuccess(function () {
-        info('UPTIME-CHECK: SUCCESS');
-    })
-    ->onFailure(function () {
-        info('UPTIME-CHECK: FAILED');
-    })
-    ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+$scheduleFrequency = env('SCHEDULE_FREQUENCY', 'everyMinute');
+
+if ($scheduleFrequency !== 'none') {
+    Schedule::command('monitor:check-uptime')->$scheduleFrequency()
+        ->withoutOverlapping(10)
+        ->runInBackground()
+        ->onSuccess(function () {
+            info('UPTIME-CHECK: SUCCESS');
+        })
+        ->onFailure(function () {
+            info('UPTIME-CHECK: FAILED');
+        })
+        ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+    
+    // Schedule the notification batching job
+    Schedule::job(new SendBatchedNotificationsJob)->$scheduleFrequency();
+
+    Schedule::command(RunHealthChecksCommand::class)->$scheduleFrequency()
+        ->withoutOverlapping()
+        ->runInBackground();
+    Schedule::command(ScheduleCheckHeartbeatCommand::class)->$scheduleFrequency();
+    Schedule::command(DispatchQueueCheckJobsCommand::class)->$scheduleFrequency();
+    
+    // Update maintenance status for monitors
+    Schedule::command('monitor:update-maintenance-status')->$scheduleFrequency();
+    Schedule::command('laritor:send-metrics')->$scheduleFrequency();
+}
+
 Schedule::command(CheckCertificates::class)->daily();
 
 // === LARAVEL HORIZON ===
@@ -43,25 +61,12 @@ if (config('telescope.enabled')) {
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
 
-// Schedule the notification batching job to run every minute
-Schedule::job(new SendBatchedNotificationsJob)->everyMinute();
-
 Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
 Schedule::job(new CalculateMonitorStatisticsJob)
     ->everyThirtyMinutes()
     ->withoutOverlapping();
-// Schedule::job(new CalculateMonitorUptimeJob('WEEKLY'))->hourly();
-// Schedule::job(new CalculateMonitorUptimeJob('MONTHLY'))->hourly();
-// Schedule::job(new CalculateMonitorUptimeJob('YEARLY'))->hourly();
-// Schedule::job(new CalculateMonitorUptimeJob('ALL'))->hourly();
-
-Schedule::command(RunHealthChecksCommand::class)->everyMinute()
-    ->withoutOverlapping()
-    ->runInBackground();
-Schedule::command(ScheduleCheckHeartbeatCommand::class)->everyMinute();
-Schedule::command(DispatchQueueCheckJobsCommand::class)->everyMinute();
 Schedule::command('sitemap:generate')->daily();
 
 if (config('database.default') === 'sqlite') {
