@@ -342,6 +342,10 @@ Available periods: `1h`, `24h`, `7d`, `30d`, `90d`
 
 ### Examples
 
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d)
+![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d)
+
 ```markdown
 <!-- Default 24h uptime -->
 ![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
@@ -440,10 +444,17 @@ The feature uses **Server-Sent Events (SSE)** for efficient real-time updates:
 
 <img width="2048" height="1844" alt="uptime syofyanzuhad public_status_syofyan-zuhad" src="https://github.com/user-attachments/assets/3059f9f1-c98d-4c8b-a6e2-3e405021523f" />
 
+### Dynamic OG Image
+<img width="500" height="402" alt="image" src="https://github.com/user-attachments/assets/252bde13-55e4-4ae4-b4d5-8aa7216ca1fd" />
+
+<img width="500" height="372" alt="image" src="https://github.com/user-attachments/assets/c3fc4c44-9c0c-483a-a40a-c282c26ea33c" />
+
 ### Notification
 <img width="2048" height="1844" alt="uptime syofyanzuhad dev_status-pages_1" src="https://github.com/user-attachments/assets/f1ebd743-3003-46e0-aba2-5bb6713084cf" />
 
-<img width="583" height="893" alt="Screenshot 2025-07-22 at 09 18 08" src="https://github.com/user-attachments/assets/ddfb62da-bacb-4a5e-ba8f-c0005114bd08" />
+<img width="500" height="893" alt="Screenshot 2025-07-22 at 09 18 08" src="https://github.com/user-attachments/assets/ddfb62da-bacb-4a5e-ba8f-c0005114bd08" />
+
+<img width="500" height="800" alt="image" src="https://github.com/user-attachments/assets/8f99a8ec-0462-44e2-8989-94eac140ea2c" />
 
 ## 📊 Activity
 ![Alt](https://repobeats.axiom.co/api/embed/3eda9cccaaf42702c26eea2632ce37357c315dc7.svg "Repobeats analytics image")
