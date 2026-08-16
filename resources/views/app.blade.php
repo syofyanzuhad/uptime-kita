@@ -65,6 +65,7 @@
             <script defer src="https://cloud.umami.is/script.js" data-website-id="27ccc29a-1870-4f9f-9d22-9fd9f91e9b12"></script>
             <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bcba406328054989b8d6bbf513b4197f"}'></script><!-- End Cloudflare Web Analytics -->
             <script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+            <script defer data-domain="uptime.syofyanzuhad.dev" src="https://uselumina.laravel.cloud/js/script.js"></script>
         @endif
         @routes
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
