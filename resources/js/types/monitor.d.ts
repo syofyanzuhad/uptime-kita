@@ -30,6 +30,7 @@ export interface Monitor {
     domain_expiration_check_enabled: boolean;
     domain_expiration_date?: string | null;
     domain_expiration_lookup_error?: string | null;
+    days_left?: number | null;
     down_for_events_count: number;
     uptime_check_interval: number;
     is_subscribed?: boolean;

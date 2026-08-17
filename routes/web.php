@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DebugStatsController;
 use App\Http\Controllers\LatestHistoryController;
 use App\Http\Controllers\MonitorCompactController;
+use App\Http\Controllers\MonitorExpirationController;
 use App\Http\Controllers\MonitorExportController;
 use App\Http\Controllers\MonitorImportController;
 use App\Http\Controllers\MonitorListController;
@@ -87,6 +88,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Domain expiration monitoring page (must be before /monitors/{type})
+    Route::get('/monitors/expiration', [MonitorExpirationController::class, 'index'])->name('monitors.expiration');
+
     // Dynamic monitor listing route (for pinned, private, public)
     Route::get('/monitors/{type}', [MonitorListController::class, 'index'])
         ->where('type', 'pinned|private|public')
