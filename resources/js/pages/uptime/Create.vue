@@ -20,6 +20,7 @@ const form = useForm({
     url: '',
     uptime_check_enabled: true,
     certificate_check_enabled: true,
+    domain_expiration_check_enabled: false,
     uptime_check_interval: 5,
     is_public: false,
     tags: [] as string[],
@@ -292,6 +293,18 @@ const submit = () => {
                                     class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
                                 />
                                 <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Sertifikat SSL</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    name="domain_expiration_check_enabled"
+                                    v-model="form.domain_expiration_check_enabled"
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
+                                />
+                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Kedaluwarsa Domain</span>
                             </label>
                         </div>
 

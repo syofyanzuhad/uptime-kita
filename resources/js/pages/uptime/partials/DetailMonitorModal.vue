@@ -114,6 +114,13 @@ function formatDate(dateString: string | null) {
                         <div class="text-sm font-bold">{{ formatDate(monitor.certificate_expiration_date) }}</div>
                     </div>
                     <div class="space-y-1">
+                        <span class="text-xs text-gray-500 uppercase font-semibold">Domain Expired</span>
+                        <div v-if="monitor.domain_expiration_check_enabled" class="text-sm font-bold">
+                            {{ formatDate(monitor.domain_expiration_date) }}
+                        </div>
+                        <div v-else class="text-sm font-bold text-gray-400">Disabled</div>
+                    </div>
+                    <div class="space-y-1">
                         <span class="text-xs text-gray-500 uppercase font-semibold">Terakhir Dicek</span>
                         <div class="text-sm font-medium">{{ formatDate(monitor.last_check_date) }}</div>
                     </div>

@@ -27,6 +27,9 @@ export interface Monitor {
     certificate_check_enabled: boolean;
     certificate_status: 'valid' | 'invalid' | 'not applicable' | 'not yet checked' | null;
     certificate_expiration_date: string | null;
+    domain_expiration_check_enabled: boolean;
+    domain_expiration_date?: string | null;
+    domain_expiration_lookup_error?: string | null;
     down_for_events_count: number;
     uptime_check_interval: number;
     is_subscribed?: boolean;

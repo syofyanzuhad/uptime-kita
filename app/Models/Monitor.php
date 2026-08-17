@@ -20,6 +20,8 @@ class Monitor extends SpatieMonitor
         'uptime_status_last_change_date' => 'datetime',
         'uptime_check_failed_event_fired_on_date' => 'datetime',
         'certificate_expiration_date' => 'datetime',
+        'domain_expiration_check_enabled' => 'boolean',
+        'domain_expiration_date' => 'datetime',
         'expected_status_code' => 'integer',
         'max_response_time' => 'integer',
         'check_locations' => 'array',
@@ -164,6 +166,11 @@ class Monitor extends SpatieMonitor
     public function histories()
     {
         return $this->hasMany(MonitorHistory::class);
+    }
+
+    public function domainExpirationReminders()
+    {
+        return $this->hasMany(MonitorDomainExpirationReminder::class);
     }
 
     public function latestHistory()
@@ -332,6 +339,33 @@ class Monitor extends SpatieMonitor
     public function getNextMaintenanceWindow(): ?array
     {
         return app(MaintenanceWindowService::class)->getNextMaintenanceWindow($this);
+    }
+
+    /**
+     * Check if a domain expiration reminder has already been sent for the given key.
+     */
+    public function hasDomainExpirationReminderSent(string $key): bool
+    {
+        return $this->domainExpirationReminders()->where('reminder_key', $key)->exists();
+    }
+
+    /**
+     * Record that a domain expiration reminder was sent for the given key.
+     */
+    public function markDomainExpirationReminderSent(string $key): void
+    {
+        $this->domainExpirationReminders()->create([
+            'reminder_key' => $key,
+            'sent_at' => now(),
+        ]);
+    }
+
+    /**
+     * Remove all previously sent domain expiration reminders (e.g. after a renewal).
+     */
+    public function clearDomainExpirationReminders(): void
+    {
+        $this->domainExpirationReminders()->delete();
     }
 
     /**

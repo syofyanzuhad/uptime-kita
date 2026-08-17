@@ -90,7 +90,7 @@ class UptimeMonitorController extends Controller
     {
         // implements cache for monitor data with histories included
         $monitorData = cache()->remember("monitor_{$monitor->id}", 60, function () use ($monitor) {
-            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            $dateFormatter = MonitorHistory::getDateFormatterSql();
             // Get unique history IDs using raw SQL to ensure only one record per minute
             $sql = "
                 SELECT id FROM (
@@ -127,7 +127,7 @@ class UptimeMonitorController extends Controller
     public function getHistory(Monitor $monitor)
     {
         $histories = cache()->remember("monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            $dateFormatter = MonitorHistory::getDateFormatterSql();
             // Get unique history IDs using raw SQL to ensure only one record per minute
             $sql = "
                 SELECT id FROM (
@@ -195,6 +195,7 @@ class UptimeMonitorController extends Controller
             'url' => ['required', 'url', 'unique:monitors,url'],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
+            'domain_expiration_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:255'],
@@ -206,6 +207,7 @@ class UptimeMonitorController extends Controller
                 'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
+                'domain_expiration_check_enabled' => $request->boolean('domain_expiration_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
             ]);
 
@@ -275,6 +277,7 @@ class UptimeMonitorController extends Controller
             'url' => ['required', 'url', 'unique:monitors,url,'.$monitor->id],
             'uptime_check_enabled' => ['boolean'],
             'certificate_check_enabled' => ['boolean'],
+            'domain_expiration_check_enabled' => ['boolean'],
             'uptime_check_interval' => ['required', 'integer', 'min:1'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:255'],
@@ -289,6 +292,7 @@ class UptimeMonitorController extends Controller
                 'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
+                'domain_expiration_check_enabled' => $request->boolean('domain_expiration_check_enabled'),
                 'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
                 'sensitivity' => $request->input('sensitivity', 'medium'),
                 'confirmation_delay_seconds' => $request->input('confirmation_delay_seconds'),

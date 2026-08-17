@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CheckDomainExpiration;
 use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Jobs\CalculateMonitorUptimeDailyJob;
 use App\Jobs\SendBatchedNotificationsJob;
@@ -28,7 +29,7 @@ if ($scheduleFrequency !== 'none') {
             info('UPTIME-CHECK: FAILED');
         })
         ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
-    
+
     // Schedule the notification batching job
     Schedule::job(new SendBatchedNotificationsJob)->$scheduleFrequency();
 
@@ -37,13 +38,14 @@ if ($scheduleFrequency !== 'none') {
         ->runInBackground();
     Schedule::command(ScheduleCheckHeartbeatCommand::class)->$scheduleFrequency();
     Schedule::command(DispatchQueueCheckJobsCommand::class)->$scheduleFrequency();
-    
+
     // Update maintenance status for monitors
     Schedule::command('monitor:update-maintenance-status')->$scheduleFrequency();
     Schedule::command('laritor:send-metrics')->$scheduleFrequency();
 }
 
 Schedule::command(CheckCertificates::class)->daily();
+Schedule::command(CheckDomainExpiration::class)->daily();
 
 // === LARAVEL HORIZON ===
 if (config('queue.default') === 'redis') {

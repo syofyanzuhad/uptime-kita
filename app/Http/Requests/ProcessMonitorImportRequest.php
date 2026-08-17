@@ -21,6 +21,7 @@ class ProcessMonitorImportRequest extends FormRequest
             'rows.*.display_name' => ['nullable', 'string', 'max:255'],
             'rows.*.uptime_check_enabled' => ['nullable'],
             'rows.*.certificate_check_enabled' => ['nullable'],
+            'rows.*.domain_expiration_check_enabled' => ['nullable'],
             'rows.*.uptime_check_interval' => ['nullable', 'integer', 'min:1', 'max:60'],
             'rows.*.is_public' => ['nullable'],
             'rows.*.sensitivity' => ['nullable', 'string', 'in:low,medium,high'],

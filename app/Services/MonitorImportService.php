@@ -14,6 +14,7 @@ class MonitorImportService
         'display_name' => ['nullable', 'string', 'max:255'],
         'uptime_check_enabled' => ['nullable'],
         'certificate_check_enabled' => ['nullable'],
+        'domain_expiration_check_enabled' => ['nullable'],
         'uptime_check_interval' => ['nullable', 'integer', 'min:1', 'max:60'],
         'is_public' => ['nullable'],
         'sensitivity' => ['nullable', 'string', 'in:low,medium,high'],
@@ -100,7 +101,7 @@ class MonitorImportService
         }
 
         // Normalize booleans
-        foreach (['uptime_check_enabled', 'certificate_check_enabled', 'is_public'] as $field) {
+        foreach (['uptime_check_enabled', 'certificate_check_enabled', 'domain_expiration_check_enabled', 'is_public'] as $field) {
             if (isset($row[$field])) {
                 $row[$field] = filter_var($row[$field], FILTER_VALIDATE_BOOLEAN);
             }
@@ -271,6 +272,7 @@ class MonitorImportService
             'is_public' => $data['is_public'] ?? false,
             'uptime_check_enabled' => $data['uptime_check_enabled'] ?? true,
             'certificate_check_enabled' => $data['certificate_check_enabled'] ?? false,
+            'domain_expiration_check_enabled' => $data['domain_expiration_check_enabled'] ?? false,
             'uptime_check_interval_in_minutes' => $data['uptime_check_interval'] ?? 5,
             'sensitivity' => $data['sensitivity'] ?? 'medium',
             'expected_status_code' => $data['expected_status_code'] ?? 200,
@@ -313,6 +315,9 @@ class MonitorImportService
         if (isset($data['certificate_check_enabled'])) {
             $updateData['certificate_check_enabled'] = $data['certificate_check_enabled'];
         }
+        if (isset($data['domain_expiration_check_enabled'])) {
+            $updateData['domain_expiration_check_enabled'] = $data['domain_expiration_check_enabled'];
+        }
         if (isset($data['uptime_check_interval'])) {
             $updateData['uptime_check_interval_in_minutes'] = $data['uptime_check_interval'];
         }
@@ -353,7 +358,7 @@ class MonitorImportService
     public function exportCsv(): string
     {
         $monitors = Monitor::all(); // Should respect global scope
-        $headers = ['url', 'display_name', 'uptime_check_enabled', 'certificate_check_enabled', 'uptime_check_interval', 'is_public', 'sensitivity', 'expected_status_code', 'tags'];
+        $headers = ['url', 'display_name', 'uptime_check_enabled', 'certificate_check_enabled', 'domain_expiration_check_enabled', 'uptime_check_interval', 'is_public', 'sensitivity', 'expected_status_code', 'tags'];
 
         $handle = fopen('php://temp', 'r+');
         fputcsv($handle, $headers);
@@ -364,6 +369,7 @@ class MonitorImportService
                 $monitor->display_name,
                 $monitor->uptime_check_enabled ? 'true' : 'false',
                 $monitor->certificate_check_enabled ? 'true' : 'false',
+                $monitor->domain_expiration_check_enabled ? 'true' : 'false',
                 $monitor->uptime_check_interval_in_minutes,
                 $monitor->is_public ? 'true' : 'false',
                 $monitor->sensitivity,
@@ -393,6 +399,7 @@ class MonitorImportService
                     'display_name' => $monitor->display_name,
                     'uptime_check_enabled' => (bool) $monitor->uptime_check_enabled,
                     'certificate_check_enabled' => (bool) $monitor->certificate_check_enabled,
+                    'domain_expiration_check_enabled' => (bool) $monitor->domain_expiration_check_enabled,
                     'uptime_check_interval' => (int) $monitor->uptime_check_interval_in_minutes,
                     'is_public' => (bool) $monitor->is_public,
                     'sensitivity' => $monitor->sensitivity,
@@ -410,10 +417,10 @@ class MonitorImportService
      */
     public function generateSampleCsv(): string
     {
-        $headers = ['url', 'display_name', 'uptime_check_enabled', 'certificate_check_enabled', 'uptime_check_interval', 'is_public', 'sensitivity', 'expected_status_code', 'tags'];
+        $headers = ['url', 'display_name', 'uptime_check_enabled', 'certificate_check_enabled', 'domain_expiration_check_enabled', 'uptime_check_interval', 'is_public', 'sensitivity', 'expected_status_code', 'tags'];
         $sample = [
-            ['https://example.com', 'Example Website', 'true', 'true', '5', 'true', 'medium', '200', 'production,web'],
-            ['https://api.example.com', 'Example API', 'true', 'false', '1', 'false', 'high', '200', 'api,critical'],
+            ['https://example.com', 'Example Website', 'true', 'true', 'true', '5', 'true', 'medium', '200', 'production,web'],
+            ['https://api.example.com', 'Example API', 'true', 'false', 'false', '1', 'false', 'high', '200', 'api,critical'],
         ];
 
         $output = implode(',', $headers)."\n";
@@ -436,6 +443,7 @@ class MonitorImportService
                     'display_name' => 'Example Website',
                     'uptime_check_enabled' => true,
                     'certificate_check_enabled' => true,
+                    'domain_expiration_check_enabled' => true,
                     'uptime_check_interval' => 5,
                     'is_public' => true,
                     'sensitivity' => 'medium',
@@ -447,6 +455,7 @@ class MonitorImportService
                     'display_name' => 'Example API',
                     'uptime_check_enabled' => true,
                     'certificate_check_enabled' => false,
+                    'domain_expiration_check_enabled' => false,
                     'uptime_check_interval' => 1,
                     'is_public' => false,
                     'sensitivity' => 'high',

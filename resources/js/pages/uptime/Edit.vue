@@ -35,6 +35,7 @@ const initialValues = {
     url: props.monitor.data.url,
     uptime_check_enabled: props.monitor.data.uptime_check_enabled,
     certificate_check_enabled: props.monitor.data.certificate_check_enabled,
+    domain_expiration_check_enabled: props.monitor.data.domain_expiration_check_enabled,
     uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
     is_public: props.monitor.data.is_public ?? false,
     tags: extractTagNames(props.monitor.data.tags || []),
@@ -48,6 +49,7 @@ const form = useForm({
     url: props.monitor.data.url,
     uptime_check_enabled: props.monitor.data.uptime_check_enabled,
     certificate_check_enabled: props.monitor.data.certificate_check_enabled,
+    domain_expiration_check_enabled: props.monitor.data.domain_expiration_check_enabled,
     uptime_check_interval: props.monitor.data.uptime_check_interval || 5,
     is_public: props.monitor.data.is_public ?? false,
     tags: extractTagNames(props.monitor.data.tags || []),
@@ -78,6 +80,7 @@ const isFormDirty = () => {
         form.url !== initialValues.url ||
         form.uptime_check_enabled !== initialValues.uptime_check_enabled ||
         form.certificate_check_enabled !== initialValues.certificate_check_enabled ||
+        form.domain_expiration_check_enabled !== initialValues.domain_expiration_check_enabled ||
         form.uptime_check_interval !== initialValues.uptime_check_interval ||
         form.is_public !== initialValues.is_public ||
         form.sensitivity !== initialValues.sensitivity ||
@@ -207,6 +210,18 @@ const submit = () => {
                                     class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
                                 />
                                 <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Sertifikat SSL</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    name="domain_expiration_check_enabled"
+                                    v-model="form.domain_expiration_check_enabled"
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
+                                />
+                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Kedaluwarsa Domain</span>
                             </label>
                         </div>
 

@@ -315,6 +315,12 @@ function onPerPageChange() {
                                                 Expired: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
                                             </span>
                                         </template>
+                                        <template v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date">
+                                            <br />
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                Domain: {{ new Date(monitor.domain_expiration_date).toLocaleDateString() }}
+                                            </span>
+                                        </template>
                                         <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span>
                                     </TableCell>
                                     <TableCell class="text-right">

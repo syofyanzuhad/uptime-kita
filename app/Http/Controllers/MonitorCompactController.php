@@ -46,6 +46,9 @@ class MonitorCompactController extends Controller
                     'monitors.certificate_check_enabled',
                     'monitors.certificate_status',
                     'monitors.certificate_expiration_date',
+                    'monitors.domain_expiration_check_enabled',
+                    'monitors.domain_expiration_date',
+                    'monitors.domain_expiration_lookup_error',
                 ])
                 ->where('monitors.uptime_check_enabled', 1)
                 ->when($isGuest, fn ($q) => $q->where('monitors.is_public', 1))
@@ -137,6 +140,9 @@ class MonitorCompactController extends Controller
                     'certificate_check_enabled' => (bool) $m->certificate_check_enabled,
                     'certificate_status' => $m->certificate_status,
                     'certificate_expiration_date' => $m->certificate_expiration_date,
+                    'domain_expiration_check_enabled' => (bool) $m->domain_expiration_check_enabled,
+                    'domain_expiration_date' => $m->domain_expiration_date,
+                    'domain_expiration_lookup_error' => $m->domain_expiration_lookup_error,
                     'today_uptime_percentage' => $monitorUptime ? (float) $monitorUptime->uptime_percentage : ($monitorStats->uptime_24h ?? 0),
                     'tags' => $monitorTags->map(fn ($t) => ['id' => $t->id, 'name' => $parseTagName($t->name), 'color' => null]),
                     'statistics' => [

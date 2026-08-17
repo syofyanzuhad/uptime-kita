@@ -348,6 +348,17 @@ onMounted(() => {
                                 </p>
                             </div>
 
+                            <!-- Domain Expiration Status -->
+                            <div class="space-y-2" v-if="monitorData.domain_expiration_check_enabled">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Domain Expiration</h4>
+                                <p v-if="monitorData.domain_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
+                                    Expires: {{ new Date(monitorData.domain_expiration_date).toLocaleDateString() }}
+                                </p>
+                                <p v-else-if="monitorData.domain_expiration_lookup_error" class="text-xs text-red-500">
+                                    {{ monitorData.domain_expiration_lookup_error }}
+                                </p>
+                            </div>
+
                             <!-- Check Interval -->
                             <div class="space-y-2">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Check Interval</h4>

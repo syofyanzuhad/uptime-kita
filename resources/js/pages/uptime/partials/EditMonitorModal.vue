@@ -29,6 +29,7 @@ const form = useForm({
     url: '',
     uptime_check_enabled: true,
     certificate_check_enabled: true,
+    domain_expiration_check_enabled: false,
     uptime_check_interval: 5,
     is_public: false,
     tags: [] as string[],
@@ -49,6 +50,7 @@ watch(() => props.monitor, (newMonitor) => {
         form.url = newMonitor.url;
         form.uptime_check_enabled = newMonitor.uptime_check_enabled;
         form.certificate_check_enabled = newMonitor.certificate_check_enabled;
+        form.domain_expiration_check_enabled = newMonitor.domain_expiration_check_enabled;
         form.uptime_check_interval = newMonitor.uptime_check_interval || 5;
         form.is_public = newMonitor.is_public ?? false;
         form.tags = extractTagNames(newMonitor.tags || []);
@@ -138,6 +140,10 @@ const close = () => {
                     <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                         <input type="checkbox" v-model="form.certificate_check_enabled" class="rounded border-gray-300 text-blue-600" />
                         Aktifkan Pengecekan Sertifikat SSL
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" v-model="form.domain_expiration_check_enabled" class="rounded border-gray-300 text-blue-600" />
+                        Aktifkan Pengecekan Kedaluwarsa Domain
                     </label>
                 </div>
 
