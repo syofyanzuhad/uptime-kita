@@ -2,6 +2,7 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
+use App\Models\User;
 
 use function Pest\Laravel\get;
 
@@ -119,6 +120,26 @@ describe('PublicMonitorShowController', function () {
             ->has('responseTimeStats.average')
             ->has('responseTimeStats.min')
             ->has('responseTimeStats.max')
+        );
+    });
+
+    it('displays public monitor for logged-in non-admin users', function () {
+        $user = User::factory()->create(['is_admin' => false]);
+        $this->actingAs($user);
+
+        MonitorHistory::factory()->create([
+            'monitor_id' => $this->publicMonitor->id,
+            'uptime_status' => 'up',
+            'response_time' => 250,
+            'created_at' => now(),
+        ]);
+
+        $response = get('/m/example.com');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('monitors/PublicShow')
+            ->has('monitor')
         );
     });
 

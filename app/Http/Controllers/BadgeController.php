@@ -24,8 +24,10 @@ class BadgeController extends Controller
         // Build the full HTTPS URL
         $url = 'https://'.urldecode($domain);
 
-        // Find the monitor
-        $monitor = Monitor::where('url', $url)
+        // Find the monitor.
+        // Bypass the user global scope so badges work for any visitor.
+        $monitor = Monitor::withoutGlobalScope('user')
+            ->where('url', $url)
             ->where('is_public', true)
             ->where('uptime_check_enabled', true)
             ->with('statistics')

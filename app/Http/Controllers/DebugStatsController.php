@@ -22,7 +22,7 @@ class DebugStatsController extends Controller
         ];
 
         // Get public monitor count
-        $results['public_monitors_count'] = Monitor::where('is_public', true)->count();
+        $results['public_monitors_count'] = Monitor::withoutGlobalScope('user')->where('is_public', true)->count();
 
         // Get monitor_statistics data
         $results['monitor_statistics'] = [

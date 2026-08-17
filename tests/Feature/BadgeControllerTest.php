@@ -2,6 +2,7 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorStatistic;
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\get;
@@ -45,6 +46,20 @@ describe('BadgeController', function () {
         expect($response->getContent())->toContain('<svg');
         expect($response->getContent())->toContain('99.5%');
         expect($response->getContent())->toContain('uptime');
+    });
+
+    it('returns badge for public monitor viewed by non-admin user', function () {
+        MonitorStatistic::factory()->create([
+            'monitor_id' => $this->publicMonitor->id,
+            'uptime_24h' => 99.5,
+        ]);
+
+        $user = User::factory()->create(['is_admin' => false]);
+        $response = $this->actingAs($user)->get('/badge/example.com');
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'image/svg+xml');
+        expect($response->getContent())->toContain('99.5%');
     });
 
     it('returns not found badge for private monitor', function () {

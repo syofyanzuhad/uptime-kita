@@ -25,8 +25,10 @@ class PublicMonitorShowController extends Controller
         // Build the full HTTPS URL
         $url = 'https://'.$domain;
 
-        // Find the monitor by URL with its statistics
-        $monitor = Monitor::where('url', $url)
+        // Find the monitor by URL with its statistics.
+        // Bypass the user global scope so any visitor can view a public monitor.
+        $monitor = Monitor::withoutGlobalScope('user')
+            ->where('url', $url)
             ->where('is_public', true)
             ->where('uptime_check_enabled', true)
             ->with(['statistics', 'tags'])
@@ -117,7 +119,7 @@ class PublicMonitorShowController extends Controller
      */
     private function calculateUptimePercentage($monitor, $startDate): float
     {
-        $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+        $dateFormatter = MonitorHistory::getDateFormatterSql();
 
         // Get unique history IDs using raw SQL to ensure only one record per minute
         $sql = "
@@ -155,7 +157,7 @@ class PublicMonitorShowController extends Controller
     private function getLiveHistory($monitor): array
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
-        $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+        $dateFormatter = MonitorHistory::getDateFormatterSql();
 
         // Get unique history IDs using raw SQL to ensure only one record per minute
         $sql = "

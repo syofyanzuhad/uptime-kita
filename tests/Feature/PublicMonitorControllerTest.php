@@ -144,6 +144,20 @@ describe('PublicMonitorController', function () {
         );
     });
 
+    it('shows all public monitor stats for logged-in non-admin users', function () {
+        $user = User::factory()->create(['is_admin' => false]);
+        $this->actingAs($user);
+
+        $response = get('/public-monitors');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('stats.total_public', 1) // Only the public + enabled monitor
+            ->where('stats.up', 1)
+            ->where('stats.down', 0)
+        );
+    });
+
     it('calculates monitor counts correctly', function () {
         Monitor::factory()->count(3)->create([
             'is_public' => true,

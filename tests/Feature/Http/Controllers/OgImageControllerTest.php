@@ -2,6 +2,7 @@
 
 use App\Models\Monitor;
 use App\Models\StatusPage;
+use App\Models\User;
 use App\Services\OgImageService;
 
 function mockOgImageService(): void
@@ -32,6 +33,36 @@ test('generates image for a public monitor', function () {
     $monitor = Monitor::factory()->create(['is_public' => true, 'url' => 'https://example.com']);
 
     $response = $this->get('/og/monitor/example.com.png');
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'image/png');
+});
+
+test('monitors index stats include all public monitors for non-admin users', function () {
+    test()->mock(OgImageService::class, function ($mock) {
+        $mock->shouldReceive('generateMonitorsIndex')
+            ->withArgs(fn ($stats) => $stats['total'] === 1 && $stats['up'] === 1 && $stats['down'] === 0)
+            ->andReturn('fake-png-data');
+    });
+
+    Monitor::factory()->create(['is_public' => true, 'uptime_status' => 'up']);
+
+    $user = User::factory()->create(['is_admin' => false]);
+    $response = $this->actingAs($user)->get('/og/monitors.png');
+
+    $response->assertOk();
+});
+
+test('generates image for public monitor viewed by non-admin user', function () {
+    test()->mock(OgImageService::class, function ($mock) {
+        $mock->shouldReceive('generateMonitor')->andReturn('fake-png-data');
+        $mock->shouldReceive('generateNotFound')->never();
+    });
+
+    Monitor::factory()->create(['is_public' => true, 'url' => 'https://example.com']);
+
+    $user = User::factory()->create(['is_admin' => false]);
+    $response = $this->actingAs($user)->get('/og/monitor/example.com.png');
 
     $response->assertOk();
     $response->assertHeader('content-type', 'image/png');

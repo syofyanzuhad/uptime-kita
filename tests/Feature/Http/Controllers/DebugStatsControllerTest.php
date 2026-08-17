@@ -37,6 +37,16 @@ test('returns stats for authenticated user', function () {
     expect($response->json('monitor_histories.total_rows'))->toBe(1);
 });
 
+test('public monitor count includes all public monitors for non-admin users', function () {
+    // Not attached to the authenticated user, so the user global scope would hide it.
+    Monitor::factory()->create(['is_public' => true]);
+
+    $response = $this->actingAs($this->user)->getJson('/debug-stats');
+
+    $response->assertOk();
+    expect($response->json('public_monitors_count'))->toBe(1);
+});
+
 test('requires authentication', function () {
     $response = $this->getJson('/debug-stats');
 

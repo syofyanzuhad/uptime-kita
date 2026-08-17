@@ -24,9 +24,9 @@ class OgImageController extends Controller
 
         $imageBase64 = Cache::remember($cacheKey, 300, function () {
             $stats = [
-                'total' => Monitor::query()->where('is_public', true)->count(),
-                'up' => Monitor::query()->where('is_public', true)->where('uptime_status', 'up')->count(),
-                'down' => Monitor::query()->where('is_public', true)->where('uptime_status', 'down')->count(),
+                'total' => Monitor::withoutGlobalScope('user')->where('is_public', true)->count(),
+                'up' => Monitor::withoutGlobalScope('user')->where('is_public', true)->where('uptime_status', 'up')->count(),
+                'down' => Monitor::withoutGlobalScope('user')->where('is_public', true)->where('uptime_status', 'down')->count(),
             ];
 
             return base64_encode($this->ogImageService->generateMonitorsIndex($stats));
@@ -43,7 +43,7 @@ class OgImageController extends Controller
     {
         $url = 'https://'.urldecode($domain);
 
-        $monitor = Monitor::query()
+        $monitor = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
             ->where('is_public', true)
             ->with('statistics')

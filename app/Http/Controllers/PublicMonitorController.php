@@ -161,8 +161,11 @@ class PublicMonitorController extends Controller
         });
 
         $appUrl = config('app.url');
-        $upCount = Monitor::public()->where('uptime_status', 'up')->count();
-        $totalPublic = Monitor::public()->count();
+
+        // Bypass the user global scope so stats reflect all public monitors,
+        // matching the list query below (see Monitor::boot()).
+        $upCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'up')->count();
+        $totalPublic = Monitor::withoutGlobalScope('user')->public()->count();
 
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
@@ -177,7 +180,7 @@ class PublicMonitorController extends Controller
             'stats' => [
                 'total' => $publicMonitors->total(),
                 'up' => $upCount,
-                'down' => Monitor::public()->where('uptime_status', 'down')->count(),
+                'down' => Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'down')->count(),
                 'total_public' => $totalPublic,
                 'daily_checks' => $this->getDailyChecksCount(),
                 'monthly_checks' => $this->getMonthlyChecksCount(),
