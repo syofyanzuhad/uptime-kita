@@ -130,8 +130,33 @@ it('reports recovery failure when sqlite command fails', function () {
         ]);
     DB::swap($db);
 
-    // sqlite3 command will fail because the file doesn't exist in tests
-    $this->artisan('db:health-check', ['--repair' => true])
-        ->assertExitCode(1)
-        ->expectsOutput('Attempting recovery...');
+    // The command copies database_path('database.sqlite'), which is gitignored and
+    // absent on CI. Create it so the backup step is deterministic on all platforms.
+    $dbPath = database_path('database.sqlite');
+    $fileExisted = file_exists($dbPath);
+    touch($dbPath);
+
+    $backupsBefore = glob(database_path('database_backup_*.sqlite')) ?: [];
+    $recoveredBefore = glob(database_path('database_recovered.sqlite')) ?: [];
+
+    try {
+        $this->artisan('db:health-check', ['--repair' => true])
+            ->assertExitCode(1)
+            ->expectsOutput('Attempting recovery...');
+    } finally {
+        // Remove artifacts created by the recovery attempt
+        foreach (glob(database_path('database_backup_*.sqlite')) ?: [] as $backup) {
+            if (! in_array($backup, $backupsBefore, true)) {
+                @unlink($backup);
+            }
+        }
+        foreach (glob(database_path('database_recovered.sqlite')) ?: [] as $recovered) {
+            if (! in_array($recovered, $recoveredBefore, true)) {
+                @unlink($recovered);
+            }
+        }
+        if (! $fileExisted) {
+            @unlink($dbPath);
+        }
+    }
 });

@@ -139,14 +139,34 @@ test('telemetry service previews the data that would be sent', function () {
     expect($service->previewData())->toHaveKeys(['instance_id', 'versions', 'stats', 'system', 'ping']);
 });
 
-test('telemetry service detects linux distro when os-release is unreadable', function () {
+test('telemetry service falls back to generic Linux when os-release is unreadable', function () {
     $service = app(TelemetryService::class);
 
     $method = new ReflectionMethod(TelemetryService::class, 'detectLinuxDistro');
 
-    // On non-Linux systems /etc/os-release does not exist, so it falls back to 'Linux'
-    expect($method->invoke($service))->toBe('Linux');
+    expect($method->invoke($service, '/nonexistent/os-release'))->toBe('Linux');
 });
+
+test('telemetry service detects linux distributions from os-release', function (string $contents, string $expected) {
+    $service = app(TelemetryService::class);
+
+    $path = tempnam(sys_get_temp_dir(), 'os-release');
+    file_put_contents($path, $contents);
+
+    try {
+        $method = new ReflectionMethod(TelemetryService::class, 'detectLinuxDistro');
+
+        expect($method->invoke($service, $path))->toBe($expected);
+    } finally {
+        @unlink($path);
+    }
+})->with([
+    'ubuntu' => ["NAME=\"Ubuntu\"\n", 'Ubuntu'],
+    'debian' => ["NAME=\"Debian GNU/Linux\"\n", 'Debian'],
+    'alpine' => ["NAME=\"Alpine Linux\"\n", 'Alpine'],
+    'rhel' => ["NAME=\"CentOS Linux\"\n", 'RHEL-based'],
+    'unknown distro' => ["NAME=\"SomeOther\"\n", 'Linux'],
+]);
 
 // === Telemetry Receiver Tests ===
 

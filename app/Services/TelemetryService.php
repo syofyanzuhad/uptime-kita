@@ -119,14 +119,16 @@ class TelemetryService
 
     /**
      * Detect Linux distribution (generic categorization only).
+     *
+     * @param  string  $osReleasePath  Path to os-release file (injectable for testing)
      */
-    protected function detectLinuxDistro(): string
+    protected function detectLinuxDistro(string $osReleasePath = '/etc/os-release'): string
     {
-        if (! is_readable('/etc/os-release')) {
+        if (! is_readable($osReleasePath)) {
             return 'Linux';
         }
 
-        $content = file_get_contents('/etc/os-release');
+        $content = file_get_contents($osReleasePath);
 
         // Only detect broad categories, not specific versions
         if (str_contains($content, 'Ubuntu')) {
