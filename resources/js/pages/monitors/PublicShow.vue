@@ -568,6 +568,23 @@
                                         Expires: {{ formatDate(monitor.certificate_expiration_date) }}
                                     </div>
                                 </div>
+
+                                <div v-if="monitor.domain_expiration_check_enabled">
+                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Domain Expiration</div>
+                                    <div v-if="monitor.domain_expiration_date" class="flex items-center space-x-2">
+                                        <Icon
+                                            name="calendarClock"
+                                            class="h-4 w-4"
+                                            :class="getDomainExpirationColor(monitor.domain_expiration_date)"
+                                        />
+                                        <span class="text-sm font-medium sm:text-base">
+                                            {{ formatDate(monitor.domain_expiration_date) }}
+                                        </span>
+                                    </div>
+                                    <div v-else-if="monitor.domain_expiration_lookup_error" class="text-xs text-red-500">
+                                        {{ monitor.domain_expiration_lookup_error }}
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -1076,6 +1093,14 @@ const getCertificateText = (status: string | null): string => {
         default:
             return 'Not Yet Checked';
     }
+};
+
+const getDomainExpirationColor = (date: string | null | undefined): string => {
+    if (!date) return 'text-gray-600';
+    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    if (daysLeft < 0) return 'text-red-600';
+    if (daysLeft <= 30) return 'text-yellow-600';
+    return 'text-green-600';
 };
 
 const getUptimeColor = (percentage: number): string => {

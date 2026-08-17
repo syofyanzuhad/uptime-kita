@@ -23,6 +23,9 @@ interface Monitor {
     certificate_check_enabled: boolean;
     certificate_status?: string | null;
     certificate_expiration_date?: string | null;
+    domain_expiration_check_enabled: boolean;
+    domain_expiration_date?: string | null;
+    domain_expiration_lookup_error?: string | null;
     down_for_events_count: number;
     uptime_check_interval: number;
     is_subscribed: boolean;
@@ -117,7 +120,8 @@ const isButtonDisabled = computed(() => {
 });
 
 // --- HELPER FUNCTIONS ---
-const formatDate = (dateString: string) => {
+const formatDate = (dateString?: string | null) => {
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString();
 };
 
@@ -510,6 +514,9 @@ const updateMonitorOrder = async () => {
                                         <span v-if="monitor.last_check_date">Last Check: {{ formatDate(monitor.last_check_date) }}</span>
                                         <span v-if="monitor.down_for_events_count > 0">Down Events: {{ monitor.down_for_events_count }}</span>
                                         <span v-if="monitor.certificate_check_enabled">Cert: {{ monitor.certificate_status || 'N/A' }}</span>
+                                        <span v-if="monitor.domain_expiration_check_enabled">
+                                            Domain: {{ formatDate(monitor.domain_expiration_date) }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

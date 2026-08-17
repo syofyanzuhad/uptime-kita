@@ -33,6 +33,9 @@ interface Monitor {
     certificate_check_enabled: boolean;
     certificate_status?: string | null;
     certificate_expiration_date?: string | null;
+    domain_expiration_check_enabled: boolean;
+    domain_expiration_date?: string | null;
+    domain_expiration_lookup_error?: string | null;
     down_for_events_count: number;
     uptime_check_interval: number;
     is_subscribed: boolean;
@@ -296,6 +299,22 @@ const getCertStatusColor = (certStatus?: string | null) => {
         default:
             return 'bg-gray-100 text-gray-800';
     }
+};
+
+const getDomainExpirationColor = (date?: string | null): string => {
+    if (!date) return 'bg-gray-100 text-gray-800';
+    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    if (daysLeft < 0) return 'bg-red-100 text-red-800';
+    if (daysLeft <= 30) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-green-100 text-green-800';
+};
+
+const getDomainExpirationLabel = (date?: string | null): string => {
+    if (!date) return '';
+    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    if (daysLeft < 0) return 'Domain expired';
+    if (daysLeft === 0) return 'Domain expires today';
+    return `Domain ${daysLeft}d`;
 };
 
 const overallStatus = computed(() => {
@@ -693,6 +712,15 @@ const handleClickOutside = (event: MouseEvent) => {
                                             />
                                             <Icon v-else name="clock" class="inline-block h-4 w-4" />
                                             <span class="sr-only uppercase">SSL {{ monitor.certificate_status }}</span>
+                                        </span>
+                                        <span
+                                            v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date"
+                                            class="ml-2 flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase"
+                                            :class="getDomainExpirationColor(monitor.domain_expiration_date)"
+                                            :title="'Domain expires ' + formatDate(monitor.domain_expiration_date)"
+                                        >
+                                            <Icon name="calendarClock" class="inline-block h-4 w-4" />
+                                            <span>{{ getDomainExpirationLabel(monitor.domain_expiration_date) }}</span>
                                         </span>
                                     </h4>
                                     <a
