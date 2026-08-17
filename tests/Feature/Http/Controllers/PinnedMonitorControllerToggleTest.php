@@ -166,11 +166,14 @@ describe('PinnedMonitorController toggle method', function () {
             'is_active' => true,
         ]);
 
-        // Cache clearing is handled by the controller, no need to mock
+        $cacheKey = 'is_pinned_'.$monitor->id.'_'.$user->id;
+        cache()->put($cacheKey, true);
 
         $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
+
+        expect(cache()->has($cacheKey))->toBeFalse();
     });
 
     it('requires authentication', function () {

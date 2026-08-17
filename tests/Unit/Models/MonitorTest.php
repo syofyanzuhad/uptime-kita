@@ -2,6 +2,7 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
+use App\Models\MonitorIncident;
 use App\Models\MonitorUptimeDaily;
 use App\Models\StatusPage;
 use App\Models\User;
@@ -254,6 +255,76 @@ describe('Monitor Model', function () {
             $this->monitor->load('uptimeDaily');
 
             expect($this->monitor->today_uptime_percentage)->toBe(95.5);
+        });
+    });
+
+    describe('maintenance and incident scopes', function () {
+        it('scopes monitors in maintenance', function () {
+            $inMaintenance = Monitor::factory()->create(['is_in_maintenance' => true]);
+            Monitor::factory()->create(['is_in_maintenance' => false]);
+
+            $result = Monitor::query()->inMaintenance()->get();
+
+            expect($result->pluck('id'))->toContain($inMaintenance->id);
+            expect($result)->toHaveCount(1);
+        });
+
+        it('scopes monitors not in maintenance', function () {
+            Monitor::factory()->create(['is_in_maintenance' => true]);
+            $notInMaintenance = Monitor::factory()->create(['is_in_maintenance' => false]);
+
+            $result = Monitor::query()->notInMaintenance()->get();
+
+            expect($result->pluck('id'))->toContain($notInMaintenance->id);
+        });
+
+        it('returns recent and latest incidents', function () {
+            $oldIncident = MonitorIncident::factory()->create([
+                'monitor_id' => $this->monitor->id,
+                'started_at' => now()->subDays(60),
+            ]);
+            $recentIncident = MonitorIncident::factory()->create([
+                'monitor_id' => $this->monitor->id,
+                'started_at' => now()->subDay(),
+            ]);
+
+            $this->monitor->refresh();
+
+            expect($this->monitor->recentIncidents->pluck('id'))->toContain($recentIncident->id);
+            expect($this->monitor->recentIncidents->pluck('id'))->not->toContain($oldIncident->id);
+            expect($this->monitor->latestIncidents->pluck('id'))->toContain($oldIncident->id);
+            expect($this->monitor->latestIncidents->pluck('id'))->toContain($recentIncident->id);
+        });
+
+        it('returns the next maintenance window', function () {
+            $monitor = Monitor::factory()->create([
+                'maintenance_windows' => [
+                    [
+                        'type' => 'one_time',
+                        'start' => now()->addDay()->toISOString(),
+                        'end' => now()->addDay()->addHours(2)->toISOString(),
+                    ],
+                ],
+            ]);
+
+            expect($monitor->getNextMaintenanceWindow())->not->toBeNull();
+        });
+    });
+
+    describe('uptime last check date accessor', function () {
+        it('returns null when last check date is not set', function () {
+            $monitor = Monitor::factory()->create(['uptime_last_check_date' => null]);
+
+            expect($monitor->uptime_last_check_date)->toBeNull();
+        });
+
+        it('zeroes out the seconds on the last check date', function () {
+            $date = now()->setSeconds(45);
+            $monitor = Monitor::factory()->create(['uptime_last_check_date' => $date]);
+
+            expect($monitor->uptime_last_check_date->second)->toBe(0);
+            expect($monitor->uptime_last_check_date->toDateTimeString())
+                ->toBe($date->copy()->setSeconds(0)->toDateTimeString());
         });
     });
 });

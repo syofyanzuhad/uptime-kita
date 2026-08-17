@@ -257,4 +257,56 @@ describe('StatusPage Model', function () {
             expect($this->statusPage->updated_at)->not->toBeNull();
         });
     });
+
+    describe('custom domain verification', function () {
+        it('returns false when no custom domain is set', function () {
+            $statusPage = StatusPage::factory()->create([
+                'path' => 'no-domain-'.uniqid(),
+                'custom_domain' => null,
+                'custom_domain_verification_token' => 'token123',
+            ]);
+
+            expect($statusPage->verifyCustomDomain())->toBeFalse();
+        });
+
+        it('returns false when no verification token is set', function () {
+            $statusPage = StatusPage::factory()->create([
+                'path' => 'no-token-'.uniqid(),
+                'custom_domain' => 'status-'.uniqid().'.example.com',
+                'custom_domain_verification_token' => null,
+            ]);
+
+            expect($statusPage->verifyCustomDomain())->toBeFalse();
+        });
+
+        it('marks the domain as verified when the dns token matches', function () {
+            $statusPage = StatusPage::factory()->create([
+                'path' => 'verified-'.uniqid(),
+                'custom_domain' => 'status-'.uniqid().'.example.com',
+                'custom_domain_verification_token' => 'dns-token-123',
+            ]);
+
+            $partial = new class extends StatusPage
+            {
+                public function getTable(): string
+                {
+                    return 'status_pages';
+                }
+
+                protected function checkDnsVerification(): bool
+                {
+                    return true;
+                }
+            };
+
+            $partial->forceFill($statusPage->getAttributes());
+            $partial->exists = true;
+            $partial->id = $statusPage->id;
+
+            expect($partial->verifyCustomDomain())->toBeTrue();
+
+            $partial->refresh();
+            expect($partial->custom_domain_verified)->toBeTrue();
+        });
+    });
 });

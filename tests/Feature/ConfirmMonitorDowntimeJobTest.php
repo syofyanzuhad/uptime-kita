@@ -3,6 +3,7 @@
 use App\Jobs\ConfirmMonitorDowntimeJob;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Models\Monitor;
+use App\Services\SmartRetryResult;
 use App\Services\SmartRetryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
@@ -93,9 +94,20 @@ it('lets event propagate on subsequent failures', function () {
 it('handles monitor that is still down', function () {
     Event::fake([UptimeCheckFailed::class]);
 
-    // Create a monitor that will fail the confirmation check (unreachable URL)
+    // Mock the smart retry service to report the monitor is still failing,
+    // avoiding any real HTTP requests
+    $this->mock(SmartRetryService::class, function ($mock) {
+        $mock->shouldReceive('performSmartCheck')
+            ->once()
+            ->andReturn(new SmartRetryResult(
+                success: false,
+                attempts: [],
+                message: 'Connection refused',
+            ));
+    });
+
     $monitor = Monitor::factory()->create([
-        'url' => 'https://this-url-definitely-does-not-exist-12345.invalid',
+        'url' => 'https://example.com',
         'uptime_status' => 'down',
         'uptime_check_times_failed_in_a_row' => 1,
         'uptime_check_failure_reason' => 'Connection timeout',
@@ -109,11 +121,15 @@ it('handles monitor that is still down', function () {
         1
     );
 
-    $job->handle();
+    $job->handle(app(SmartRetryService::class));
 
-    // Should fire UptimeCheckFailed event since the URL is unreachable
+    // Should fire UptimeCheckFailed event since the monitor is confirmed down
     Event::assertDispatched(UptimeCheckFailed::class);
-})->skip('Skipping test that requires actual HTTP request to unreachable URL');
+
+    // Failure reason should be updated from the smart retry result
+    $monitor->refresh();
+    expect($monitor->uptime_check_failure_reason)->toBe('Connection refused');
+});
 
 it('skips confirmation if monitor already recovered', function () {
     Event::fake([UptimeCheckFailed::class]);

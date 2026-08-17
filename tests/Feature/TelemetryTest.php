@@ -108,6 +108,46 @@ test('telemetry service respects enabled config', function () {
     expect($service->isEnabled())->toBeTrue();
 });
 
+test('telemetry service exposes settings for the admin page', function () {
+    $service = app(TelemetryService::class);
+    $settings = $service->getSettings();
+
+    expect($settings)->toHaveKeys([
+        'enabled',
+        'endpoint',
+        'frequency',
+        'instance_id',
+        'install_date',
+        'last_ping',
+        'debug',
+    ]);
+});
+
+test('telemetry service records and reads the last ping time', function () {
+    $service = app(TelemetryService::class);
+
+    expect($service->getLastPingTime())->toBeNull();
+
+    $service->recordPing();
+
+    expect($service->getLastPingTime())->not->toBeNull();
+});
+
+test('telemetry service previews the data that would be sent', function () {
+    $service = app(TelemetryService::class);
+
+    expect($service->previewData())->toHaveKeys(['instance_id', 'versions', 'stats', 'system', 'ping']);
+});
+
+test('telemetry service detects linux distro when os-release is unreadable', function () {
+    $service = app(TelemetryService::class);
+
+    $method = new ReflectionMethod(TelemetryService::class, 'detectLinuxDistro');
+
+    // On non-Linux systems /etc/os-release does not exist, so it falls back to 'Linux'
+    expect($method->invoke($service))->toBe('Linux');
+});
+
 // === Telemetry Receiver Tests ===
 
 test('telemetry receiver returns 403 when disabled', function () {

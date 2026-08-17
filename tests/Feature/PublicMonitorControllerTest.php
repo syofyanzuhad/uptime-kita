@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\PublicMonitorController;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorUptimeDaily;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 use function Pest\Laravel\get;
 
@@ -213,5 +216,235 @@ describe('PublicMonitorController', function () {
         $response->assertInertia(fn ($page) => $page
             ->has('monitors.data')
         );
+    });
+
+    it('filters by status up', function () {
+        $downMonitor = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'uptime_status' => 'down',
+        ]);
+
+        $response = get('/public-monitors?status_filter=up');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('monitors.data', 1)
+            ->where('monitors.data.0.id', $this->publicMonitor->id)
+        );
+    });
+
+    it('filters by status down', function () {
+        $downMonitor = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'uptime_status' => 'down',
+        ]);
+
+        $response = get('/public-monitors?status_filter=down');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('monitors.data', 1)
+            ->where('monitors.data.0.id', $downMonitor->id)
+        );
+    });
+
+    it('sorts by popular using page views', function () {
+        $popular = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'page_views_count' => 100,
+        ]);
+        $unpopular = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'page_views_count' => 1,
+        ]);
+
+        $response = get('/public-monitors?sort_by=popular');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('monitors.data.0.id', $popular->id)
+        );
+    });
+
+    it('sorts by name', function () {
+        $aaa = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'url' => 'https://aaa.example.com',
+        ]);
+        $zzz = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'url' => 'https://zzz.example.com',
+        ]);
+
+        $response = get('/public-monitors?sort_by=name');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('monitors.data.0.id', $aaa->id)
+        );
+    });
+
+    it('falls back to default sort for invalid sort option', function () {
+        $response = get('/public-monitors?sort_by=invalid-sort');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('filters.sort_by', 'default')
+        );
+    });
+
+    it('filters by tag', function () {
+        $monitor = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+        ]);
+        $monitor->attachTag('production');
+
+        $response = get('/public-monitors?tag_filter=production');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('availableTags')
+        );
+    });
+
+    it('ignores searches shorter than 3 characters', function () {
+        $response = get('/public-monitors?search=ab');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('filters.search', null)
+        );
+    });
+
+    it('returns json for json requests', function () {
+        $response = $this->getJson('/public-monitors');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('sorts by uptime via statistics', function () {
+        Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'url' => 'https://low.example.com',
+        ]);
+
+        $response = get('/public-monitors?sort_by=uptime');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('monitors.data')
+        );
+    });
+
+    it('sorts by response time via statistics', function () {
+        Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'url' => 'https://slow.example.com',
+        ]);
+
+        $response = get('/public-monitors?sort_by=response_time');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('monitors.data')
+        );
+    });
+
+    it('sorts by status with down first', function () {
+        $downMonitor = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'uptime_status' => 'down',
+        ]);
+
+        $response = get('/public-monitors?sort_by=status');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('monitors.data.0.id', $downMonitor->id)
+        );
+    });
+
+    it('filters disabled monitors with globally_disabled', function () {
+        $response = get('/public-monitors?status_filter=globally_disabled');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->has('monitors.data', 1)
+            ->where('monitors.data.0.id', $this->disabledMonitor->id)
+        );
+    });
+
+    it('filters enabled monitors with globally_enabled', function () {
+        $response = get('/public-monitors?status_filter=globally_enabled');
+
+        $response->assertOk();
+    });
+
+    it('filters unsubscribed monitors for guests', function () {
+        $response = get('/public-monitors?status_filter=unsubscribed');
+
+        $response->assertOk();
+    });
+
+    it('invokes the json api for guests', function () {
+        $controller = new PublicMonitorController;
+        $request = Request::create('/api/public-monitors', 'GET');
+
+        $response = $controller($request);
+
+        expect($response->status())->toBe(200);
+        expect(json_decode($response->getContent(), true))->toHaveKey('data');
+    });
+
+    it('invokes the json api with filters and sort', function () {
+        $downMonitor = Monitor::factory()->create([
+            'is_public' => true,
+            'uptime_check_enabled' => true,
+            'uptime_status' => 'down',
+        ]);
+
+        $controller = new PublicMonitorController;
+        $request = Request::create('/api/public-monitors?status_filter=down&sort_by=status', 'GET');
+
+        $response = $controller($request);
+
+        expect($response->status())->toBe(200);
+        $data = collect(json_decode($response->getContent(), true)['data']);
+        expect($data->pluck('id'))->toContain($downMonitor->id);
+    });
+
+    it('invokes the json api with search and invalid sort', function () {
+        $controller = new PublicMonitorController;
+        $request = Request::create('/api/public-monitors?sort_by=invalid&search=example', 'GET');
+
+        $response = $controller($request);
+
+        expect($response->status())->toBe(200);
+        expect(json_decode($response->getContent(), true))->toHaveKey('data');
+    });
+
+    it('invokes the json api for authenticated users', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $controller = new PublicMonitorController;
+        $request = Request::create('/api/public-monitors', 'GET');
+        $request->setUserResolver(fn () => $user);
+
+        $response = $controller($request);
+
+        expect($response->status())->toBe(200);
+        expect(json_decode($response->getContent(), true))->toHaveKey('data');
     });
 });

@@ -63,16 +63,17 @@ describe('User CRUD Operations', function () {
         });
 
         it('can search users by name', function () {
-            User::factory()->create(['name' => 'John Doe']);
+            $target = User::factory()->create(['name' => 'Zephyrinqa Searchable']);
             User::factory()->create(['name' => 'Jane Smith']);
 
-            $response = actingAs($this->user)->get('/users?search=john');
+            $response = actingAs($this->user)->get('/users?search=zephyrinqa');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
                 ->component('users/Index')
-                ->where('search', 'john')
+                ->where('search', 'zephyrinqa')
                 ->has('users.data', 1)
+                ->where('users.data.0.id', $target->id)
             );
         });
 

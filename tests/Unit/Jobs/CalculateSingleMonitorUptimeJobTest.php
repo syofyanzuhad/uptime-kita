@@ -6,6 +6,7 @@ use App\Models\MonitorHistory;
 use App\Services\MonitorPerformanceService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
     Carbon::setTestNow(now());
@@ -284,6 +285,27 @@ describe('CalculateSingleMonitorUptimeJob', function () {
                 'date' => $this->date,
                 'uptime_percentage' => 75.0,
             ]);
+        });
+    });
+
+    describe('error handling', function () {
+        it('retries within 30 minutes', function () {
+            $job = new CalculateSingleMonitorUptimeJob($this->monitor->id, $this->date);
+
+            expect($job->retryUntil())->toBeGreaterThan(now());
+            expect(now()->diffInMinutes($job->retryUntil()))->toBe(30.0);
+        });
+
+        it('logs permanent failure', function () {
+            $job = new CalculateSingleMonitorUptimeJob($this->monitor->id, $this->date);
+
+            $exception = new RuntimeException('boom');
+
+            Log::shouldReceive('error')
+                ->once()
+                ->with('CalculateSingleMonitorUptimeJob permanently failed', Mockery::type('array'));
+
+            $job->failed($exception);
         });
     });
 });

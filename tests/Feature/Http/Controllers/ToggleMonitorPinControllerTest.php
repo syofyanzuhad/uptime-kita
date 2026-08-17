@@ -7,6 +7,7 @@ use App\Models\UserMonitor;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 describe('ToggleMonitorPinController', function () {
     it('pins a monitor successfully when user is subscribed', function () {
@@ -97,10 +98,13 @@ describe('ToggleMonitorPinController', function () {
 
         $this->actingAs($user);
 
-        // Test through HTTP request to trigger validation
-        $this->post("/test-toggle-pin/{$monitor->id}", [])
-            ->assertSessionHasErrors(['is_pinned']);
-    })->skip('No route available for this controller');
+        $request = Request::create('/test', 'POST', []);
+
+        $controller = new ToggleMonitorPinController;
+
+        expect(fn () => $controller->__invoke($request, $monitor->id))
+            ->toThrow(ValidationException::class);
+    });
 
     it('validates is_pinned parameter must be boolean', function () {
         $user = User::factory()->create();
@@ -108,10 +112,13 @@ describe('ToggleMonitorPinController', function () {
 
         $this->actingAs($user);
 
-        // Test through HTTP request to trigger validation
-        $this->post("/test-toggle-pin/{$monitor->id}", ['is_pinned' => 'invalid'])
-            ->assertSessionHasErrors(['is_pinned']);
-    })->skip('No route available for this controller');
+        $request = Request::create('/test', 'POST', ['is_pinned' => 'invalid']);
+
+        $controller = new ToggleMonitorPinController;
+
+        expect(fn () => $controller->__invoke($request, $monitor->id))
+            ->toThrow(ValidationException::class);
+    });
 
     it('handles non-existent monitor', function () {
         $user = User::factory()->create();

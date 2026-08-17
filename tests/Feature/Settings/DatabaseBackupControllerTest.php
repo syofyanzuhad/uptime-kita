@@ -44,12 +44,6 @@ test('database settings page requires authentication', function () {
 });
 
 test('database download returns sql file', function () {
-    // Skip when using in-memory database as VACUUM and file operations
-    // are incompatible with SQLite in-memory within transactions
-    if (config('database.connections.sqlite.database') === ':memory:') {
-        $this->markTestSkipped('Database download requires file-based SQLite database');
-    }
-
     $user = User::factory()->create();
 
     $response = $this
@@ -60,6 +54,47 @@ test('database download returns sql file', function () {
     $response->assertHeader('content-type', 'application/sql');
     $response->assertHeader('content-disposition');
     expect($response->headers->get('content-disposition'))->toContain('.sql');
+});
+
+test('database download includes essential table data', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->get('/settings/database/download');
+
+    $content = $response->streamedContent();
+
+    expect($content)->toContain('-- Uptime Kita Database Backup');
+    expect($content)->toContain('PRAGMA foreign_keys = OFF;');
+    expect($content)->toContain('-- Table: users');
+    expect($content)->toContain('-- Table: migrations');
+    expect($content)->toContain('PRAGMA foreign_keys = ON;');
+});
+
+test('database download escapes string values', function () {
+    $user = User::factory()->create(['name' => "O'Reilly"]);
+
+    $response = $this
+        ->actingAs($user)
+        ->get('/settings/database/download');
+
+    $content = $response->streamedContent();
+
+    expect($content)->toContain("O''Reilly");
+});
+
+test('database download marks empty tables', function () {
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->get('/settings/database/download');
+
+    $content = $response->streamedContent();
+
+    // tags table should be empty
+    expect($content)->toContain("-- Table 'tags' is empty");
 });
 
 test('database download requires authentication', function () {

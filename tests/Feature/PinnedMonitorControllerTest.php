@@ -189,6 +189,48 @@ describe('PinnedMonitorController', function () {
         expect($hasMonitor)->toBeTrue();
     });
 
+    it('filters pinned monitors by search query', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?search='.urlencode('example'));
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('filters pinned monitors by status', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?status_filter=up');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('filters pinned monitors by disabled status', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?status_filter=disabled');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('filters pinned monitors by globally enabled status', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?status_filter=globally_enabled');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('filters pinned monitors by globally disabled status', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?status_filter=globally_disabled');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
+    it('paginates pinned monitors', function () {
+        $response = actingAs($this->user)->get('/pinned-monitors?page=1');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data']);
+    });
+
     it('returns empty array when no pinned monitors exist', function () {
         // Unpin all monitors by detaching user relationships
         $this->user->monitors()->detach();

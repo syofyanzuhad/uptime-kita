@@ -2,6 +2,7 @@
 
 use App\Services\DomainExpirationService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Iodev\Whois\Modules\Tld\TldInfo;
 use Iodev\Whois\Modules\Tld\TldResponse;
 use Iodev\Whois\Whois;
@@ -95,4 +96,43 @@ it('returns null when neither RDAP nor WHOIS provide an expiration date', functi
     $service = new DomainExpirationService($whois);
 
     expect($service->lookupExpirationDate('example.co.id'))->toBeNull();
+});
+
+it('returns null for an empty host', function () {
+    $service = app(DomainExpirationService::class);
+
+    expect($service->lookupExpirationDate(''))->toBeNull();
+    expect($service->lookupExpirationDate('   '))->toBeNull();
+});
+
+it('logs a warning when the RDAP request throws', function () {
+    Log::spy();
+    Http::fake(function () {
+        throw new Exception('Connection refused');
+    });
+
+    $whois = mock(Whois::class);
+    $whois->shouldReceive('loadDomainInfo')->once()->andReturnNull();
+
+    $service = new DomainExpirationService($whois);
+
+    expect($service->lookupExpirationDate('example.com'))->toBeNull();
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn ($message) => $message === 'Domain expiration RDAP lookup failed');
+});
+
+it('logs a warning when the WHOIS lookup throws', function () {
+    Log::spy();
+    Http::fake(['rdap.org/*' => Http::response(['events' => []], 200)]);
+
+    $whois = mock(Whois::class);
+    $whois->shouldReceive('loadDomainInfo')->once()->andThrow(new Exception('WHOIS server timeout'));
+
+    $service = new DomainExpirationService($whois);
+
+    expect($service->lookupExpirationDate('example.co.id'))->toBeNull();
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn ($message) => $message === 'Domain expiration WHOIS lookup failed');
 });

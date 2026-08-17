@@ -2,11 +2,14 @@
 
 use App\Models\Monitor;
 use App\Models\MonitorStatistic;
+use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\get;
 
 describe('BadgeController', function () {
     beforeEach(function () {
+        Http::fake();
+
         $this->publicMonitor = Monitor::factory()->create([
             'is_public' => true,
             'uptime_check_enabled' => true,
@@ -97,6 +100,21 @@ describe('BadgeController', function () {
 
         $response->assertOk();
         expect($response->getContent())->toContain('99.2%');
+    });
+
+    it('supports period query parameter for 90d', function () {
+        MonitorStatistic::factory()->create([
+            'monitor_id' => $this->publicMonitor->id,
+            'uptime_24h' => 95.0,
+            'uptime_7d' => 98.5,
+            'uptime_30d' => 99.2,
+            'uptime_90d' => 97.7,
+        ]);
+
+        $response = get('/badge/example.com?period=90d');
+
+        $response->assertOk();
+        expect($response->getContent())->toContain('97.7%');
     });
 
     it('supports custom label query parameter', function () {
@@ -210,5 +228,25 @@ describe('BadgeController', function () {
 
         $response->assertOk();
         expect($response->getContent())->toContain('100.0%');
+    });
+
+    it('hides the period when show_period is false', function () {
+        $response = get('/badge/example.com?show_period=false');
+
+        $response->assertOk();
+        expect($response->getContent())->toContain('uptime: 100.0%');
+        expect($response->getContent())->not->toContain('uptime 24h');
+    });
+
+    it('supports for-the-badge style', function () {
+        MonitorStatistic::factory()->create([
+            'monitor_id' => $this->publicMonitor->id,
+            'uptime_24h' => 99.0,
+        ]);
+
+        $response = get('/badge/example.com?style=for-the-badge');
+
+        $response->assertOk();
+        expect($response->getContent())->toContain('rx="4"');
     });
 });

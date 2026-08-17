@@ -19,6 +19,16 @@ class MonitorCheckUptimeCommandTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function test_it_casts_parent_status_to_int()
+    {
+        // Run through the real handle() with a monitor present so
+        // parent::handle() executes and its status is cast to int.
+        Monitor::factory()->create(['uptime_check_enabled' => true]);
+
+        $this->artisan('monitor:check-uptime')
+            ->assertExitCode(0);
+    }
+
     public function test_it_returns_success_when_parent_returns_null()
     {
         $command = new class extends MonitorCheckUptime
