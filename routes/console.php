@@ -59,6 +59,11 @@ if (config('telescope.enabled')) {
     Schedule::command('telescope:prune --hours=48')->everyOddHour();
 }
 
+// === TRACE-REPLAY ===
+if (config('trace-replay.enabled')) {
+    Schedule::command('trace-replay:prune --days=30')->daily();
+}
+
 // === LARAVEL PRUNABLE MODELS ===
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
