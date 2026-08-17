@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [Unreleased]
+
+### Features
+
+* add domain expiration monitoring with threshold and daily reminders (RDAP + WHOIS, email/Telegram/Slack) ([9fedc89](https://github.com/syofyanzuhad/uptime-kita/commit/9fedc89))
+* verify Telegram webhook requests with a secret token ([VerifyTelegramWebhook](app/Http/Middleware/VerifyTelegramWebhook.php))
+* schedule automatic database backups daily (S3 with local fallback)
+* add optional Smol Launch badge to homepage ([5c7cb84](https://github.com/syofyanzuhad/uptime-kita/commit/5c7cb84))
+* enforce minimum uptime check interval ([b665e08](https://github.com/syofyanzuhad/uptime-kita/commit/b665e08))
+* make console schedule frequency configurable via environment variable ([a7671bf](https://github.com/syofyanzuhad/uptime-kita/commit/a7671bf))
+
+### Bug Fixes
+
+* base64 encode cached OG images to prevent serialization issues ([45b3dfb](https://github.com/syofyanzuhad/uptime-kita/commit/45b3dfb))
+* use display_name for monitor search and incident display ([5971288](https://github.com/syofyanzuhad/uptime-kita/commit/5971288))
+* fix badge links and formatting in README ([7c6ceee](https://github.com/syofyanzuhad/uptime-kita/commit/7c6ceee))
+* prevent redundant monitor history records with a per-minute unique constraint ([f206cfb](https://github.com/syofyanzuhad/uptime-kita/commit/f206cfb), [b5ec3bf](https://github.com/syofyanzuhad/uptime-kita/commit/b5ec3bf), [a774fcc](https://github.com/syofyanzuhad/uptime-kita/commit/a774fcc))
+
+### Performance
+
+* abstract database date formatting to support multiple drivers ([bdf6c4a](https://github.com/syofyanzuhad/uptime-kita/commit/bdf6c4a))
+
+### Tests
+
+* fix tests broken by the per-minute monitor history unique constraint ([e30845c](https://github.com/syofyanzuhad/uptime-kita/commit/e30845c))
+* raise test coverage from ~71% to 90% with new tests for commands, controllers, services, and models
+* add a 90% coverage gate to the CI test and PR-check workflows
+* un-skip and fix previously skipped/risky tests
+
+### Chores
+
+* upgrade to Laravel 13 and bump package majors (telegram, twitter, debugbar, tinker, boost, resend) ([1866784](https://github.com/syofyanzuhad/uptime-kita/commit/1866784))
+* switch abandoned nunomaduro/pao to laravel/pao
+* default QUEUE_CONNECTION to redis in `.env.example`
+* disable trace-replay tracing by default in `.env.example`
+* remove unused monitor and metric schedule commands ([0f3ad9f](https://github.com/syofyanzuhad/uptime-kita/commit/0f3ad9f))
+* restrict sqlite optimization schedule to sqlite connections ([67256fb](https://github.com/syofyanzuhad/uptime-kita/commit/67256fb))
+* add conditional checks for Horizon and Telescope schedule tasks ([d0a305c](https://github.com/syofyanzuhad/uptime-kita/commit/d0a305c))
+* untrack sensitive AI configs, backups, and system artifacts ([8405938](https://github.com/syofyanzuhad/uptime-kita/commit/8405938))
+
 ## [0.3.0](https://github.com/syofyanzuhad/uptime-kita/compare/v0.2.0...v0.3.0) (2026-04-23)
 
 

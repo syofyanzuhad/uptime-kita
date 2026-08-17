@@ -62,10 +62,12 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 - 🔐 Google Oauth authentication
 - ✅ Monitoring uptime for HTTP(s)
 - 🔒 Certificate check
+- 🌐 Domain expiration check (RDAP + WHOIS) with threshold and daily reminders
 - ✨ Fancy, Reactive, Fast UI/UX
-- 📩 Notifications via Email (SMTP), Telegram, Slack, and the others are still in progress
+- 📩 Notifications via Email (SMTP), Telegram, and Slack
 - 🔔 Real-time toast notifications on public pages via Server-Sent Events (SSE)
 - 📊 Multiple status pages
+- 🗄️ Automatic database backups (S3 with local fallback)
 - 🐳 Docker support for easy deployment
 - 📈 Server resources monitoring (CPU, Memory, Disk, etc.)
 - 🏷️ Uptime badge for embedding in README/websites
@@ -270,6 +272,23 @@ APP_NAME=Uptime-Kita
 APP_ENV=production
 APP_KEY=base64:your-key-here
 APP_URL=https://your-domain.com
+
+# Queue driver: `redis` for local/single-server, `cloud` on Laravel Cloud (managed queue)
+QUEUE_CONNECTION=redis
+
+# Telegram bot
+TELEGRAM_BOT_TOKEN=
+# Set when registering the webhook via setWebhook to verify incoming requests
+TELEGRAM_BOT_SECRET_TOKEN=
+
+# iazaran/trace-replay request/job tracing (writes tr_* tables). Disable in production.
+TRACE_REPLAY_ENABLED=false
+
+# Backups: set AWS credentials to store backups on S3, otherwise they fall back to local disk
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
 ```
 
 The Docker image includes:
@@ -410,16 +429,18 @@ The feature uses **Server-Sent Events (SSE)** for efficient real-time updates:
 
 - [x] Uptime monitoring
 - [x] SSL Monitoring
+- [x] Domain expiration monitoring
 - [x] Monitoring history
-- [ ] Notification:
+- [x] Notification:
   - [x] Email
   - [x] Telegram
-  - [ ] Slack
+  - [x] Slack
   - [ ] Discord
 - [x] Status page
 - [x] Docker deployment
 - [x] Server resources monitoring
 - [x] Uptime badge for embedding
+- [x] Automatic database backups
 - [x] Cronless scheduler for container environments
 - [x] Real-time toast notifications via SSE
 - [ ] Do you have any suggestions?
