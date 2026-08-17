@@ -84,7 +84,7 @@ jobs:
         run: npm run build
 
       - name: Run tests with coverage
-        run: ./vendor/bin/pest --coverage --coverage-clover=storage/coverage/coverage.xml
+        run: ./vendor/bin/pest --coverage --min=90 --coverage-clover=storage/coverage/coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
