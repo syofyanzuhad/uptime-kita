@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('sent_at');
             $table->timestamps();
 
-            $table->unique(['monitor_id', 'reminder_key']);
+            $table->unique(['monitor_id', 'reminder_key'], 'monitor_expiration_reminders_unique');
         });
     }
 
