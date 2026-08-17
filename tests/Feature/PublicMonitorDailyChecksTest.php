@@ -9,27 +9,35 @@ it('displays daily checks count for public monitors', function () {
     $publicMonitor2 = Monitor::factory()->create(['is_public' => true]);
     $privateMonitor = Monitor::factory()->create(['is_public' => false]);
 
-    // Create monitor histories for today
-    MonitorHistory::factory()->count(5)->create([
-        'monitor_id' => $publicMonitor1->id,
+    // Create monitor histories for today (distinct minutes to satisfy the per-minute unique constraint)
+    MonitorHistory::factory()->count(5)->sequence(fn ($sequence) => [
         'checked_at' => now(),
+        'created_at' => now()->subMinutes($sequence->index + 1),
+    ])->create([
+        'monitor_id' => $publicMonitor1->id,
     ]);
 
-    MonitorHistory::factory()->count(3)->create([
-        'monitor_id' => $publicMonitor2->id,
+    MonitorHistory::factory()->count(3)->sequence(fn ($sequence) => [
         'checked_at' => now(),
+        'created_at' => now()->subMinutes($sequence->index + 10),
+    ])->create([
+        'monitor_id' => $publicMonitor2->id,
     ]);
 
     // This shouldn't be counted (private monitor)
-    MonitorHistory::factory()->count(2)->create([
-        'monitor_id' => $privateMonitor->id,
+    MonitorHistory::factory()->count(2)->sequence(fn ($sequence) => [
         'checked_at' => now(),
+        'created_at' => now()->subMinutes($sequence->index + 20),
+    ])->create([
+        'monitor_id' => $privateMonitor->id,
     ]);
 
     // This shouldn't be counted (yesterday)
-    MonitorHistory::factory()->count(4)->create([
-        'monitor_id' => $publicMonitor1->id,
+    MonitorHistory::factory()->count(4)->sequence(fn ($sequence) => [
         'checked_at' => now()->subDay(),
+        'created_at' => now()->subDay()->subMinutes($sequence->index + 1),
+    ])->create([
+        'monitor_id' => $publicMonitor1->id,
     ]);
 
     $response = $this->get('/public-monitors');
@@ -91,9 +99,11 @@ it('uses monitor_statistics table when available', function () {
 it('caches daily checks count for performance', function () {
     $publicMonitor = Monitor::factory()->create(['is_public' => true]);
 
-    MonitorHistory::factory()->count(5)->create([
-        'monitor_id' => $publicMonitor->id,
+    MonitorHistory::factory()->count(5)->sequence(fn ($sequence) => [
         'checked_at' => now(),
+        'created_at' => now()->subMinutes($sequence->index + 1),
+    ])->create([
+        'monitor_id' => $publicMonitor->id,
     ]);
 
     // First request
@@ -101,9 +111,11 @@ it('caches daily checks count for performance', function () {
     $response1->assertOk();
 
     // Add more histories
-    MonitorHistory::factory()->count(3)->create([
-        'monitor_id' => $publicMonitor->id,
+    MonitorHistory::factory()->count(3)->sequence(fn ($sequence) => [
         'checked_at' => now(),
+        'created_at' => now()->subMinutes($sequence->index + 10),
+    ])->create([
+        'monitor_id' => $publicMonitor->id,
     ]);
 
     // Second request should still show cached value

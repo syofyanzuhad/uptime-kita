@@ -162,10 +162,10 @@ describe('CleanupDuplicateMonitorHistories', function () {
             expect(MonitorHistory::where('monitor_id', $monitor2->id)->count())->toBe(1);
         });
 
-        it('keeps the latest record by created_at and id when multiple records exist', function () {
+        it('keeps the latest record when multiple records exist in the same minute', function () {
             $now = now();
 
-            // Create records with same created_at but different IDs using raw DB
+            // Create records within the same minute (different seconds) using raw DB
             DB::table('monitor_histories')->insert([
                 [
                     'monitor_id' => $this->monitor->id,
@@ -175,7 +175,7 @@ describe('CleanupDuplicateMonitorHistories', function () {
                 ],
                 [
                     'monitor_id' => $this->monitor->id,
-                    'created_at' => $now->copy()->setSeconds(30)->toDateTimeString(),
+                    'created_at' => $now->copy()->setSeconds(45)->toDateTimeString(),
                     'updated_at' => $now->toDateTimeString(),
                     'uptime_status' => 'up',
                 ],
@@ -190,7 +190,7 @@ describe('CleanupDuplicateMonitorHistories', function () {
             $this->artisan('monitor:cleanup-duplicates')
                 ->assertSuccessful();
 
-            // Should keep only the record with higher ID
+            // Should keep only the latest record
             expect(MonitorHistory::count())->toBe(1);
             $keptRecord = MonitorHistory::first();
             expect($keptRecord->id)->toBe($record2->id);
@@ -218,6 +218,15 @@ describe('CleanupDuplicateMonitorHistories', function () {
             ]);
 
             // Mock the duplicate check query to return that duplicates remain
+            // MonitorHistory::getDateFormatterSql() resolves the driver via DB::connection()
+            DB::shouldReceive('connection')->andReturn(new class
+            {
+                public function getDriverName(): string
+                {
+                    return 'sqlite';
+                }
+            });
+
             DB::shouldReceive('select')
                 ->andReturnUsing(function ($query, $bindings = []) {
                     // For the initial duplicate finding query

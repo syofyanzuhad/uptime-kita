@@ -66,16 +66,18 @@ describe('CalculateSingleMonitorUptimeJob', function () {
             $startDate = Carbon::parse($this->date)->startOfDay();
 
             // Create monitor histories: 8 up, 2 down = 80% uptime
-            MonitorHistory::factory()->count(8)->create([
+            MonitorHistory::factory()->count(8)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(1)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
-                'created_at' => $startDate->copy()->addHours(1),
             ]);
 
-            MonitorHistory::factory()->count(2)->create([
+            MonitorHistory::factory()->count(2)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(2)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
-                'created_at' => $startDate->copy()->addHours(2),
             ]);
 
             // Mock the performance service
@@ -110,10 +112,11 @@ describe('CalculateSingleMonitorUptimeJob', function () {
             $startDate = Carbon::parse($this->date)->startOfDay();
 
             // Create only successful checks
-            MonitorHistory::factory()->count(10)->create([
+            MonitorHistory::factory()->count(10)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(1)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
-                'created_at' => $startDate->copy()->addHours(1),
             ]);
 
             $performanceService = mock(MonitorPerformanceService::class);
@@ -136,10 +139,11 @@ describe('CalculateSingleMonitorUptimeJob', function () {
             $startDate = Carbon::parse($this->date)->startOfDay();
 
             // Create only failed checks
-            MonitorHistory::factory()->count(5)->create([
+            MonitorHistory::factory()->count(5)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(1)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
-                'created_at' => $startDate->copy()->addHours(1),
             ]);
 
             $performanceService = mock(MonitorPerformanceService::class);
@@ -209,16 +213,18 @@ describe('CalculateSingleMonitorUptimeJob', function () {
             $startDate = Carbon::parse($this->date)->startOfDay();
 
             // Create new data that should result in 80% uptime
-            MonitorHistory::factory()->count(8)->create([
+            MonitorHistory::factory()->count(8)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(1)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
-                'created_at' => $startDate->copy()->addHours(1),
             ]);
 
-            MonitorHistory::factory()->count(2)->create([
+            MonitorHistory::factory()->count(2)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(2)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
-                'created_at' => $startDate->copy()->addHours(2),
             ]);
 
             $performanceService = mock(MonitorPerformanceService::class);
@@ -250,16 +256,18 @@ describe('CalculateSingleMonitorUptimeJob', function () {
             $startDate = Carbon::parse($this->date)->startOfDay();
 
             // Create 3 up, 1 down = 75% uptime (no rounding needed)
-            MonitorHistory::factory()->count(3)->create([
+            MonitorHistory::factory()->count(3)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(1)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
-                'created_at' => $startDate->copy()->addHours(1),
             ]);
 
-            MonitorHistory::factory()->count(1)->create([
+            MonitorHistory::factory()->count(1)->sequence(fn ($sequence) => [
+                'created_at' => $startDate->copy()->addHours(2)->addMinutes($sequence->index),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
-                'created_at' => $startDate->copy()->addHours(2),
             ]);
 
             $performanceService = mock(MonitorPerformanceService::class);

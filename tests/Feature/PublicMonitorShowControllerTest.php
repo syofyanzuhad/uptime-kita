@@ -104,11 +104,12 @@ describe('PublicMonitorShowController', function () {
     });
 
     it('includes response time statistics', function () {
-        MonitorHistory::factory()->count(10)->create([
+        MonitorHistory::factory()->count(10)->sequence(fn ($sequence) => [
+            'created_at' => now()->subMinutes($sequence->index),
+        ])->create([
             'monitor_id' => $this->publicMonitor->id,
             'uptime_status' => 'up',
             'response_time' => 250,
-            'created_at' => now(),
         ]);
 
         $response = get('/m/example.com');

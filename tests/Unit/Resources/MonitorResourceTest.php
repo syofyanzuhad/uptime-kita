@@ -79,12 +79,16 @@ describe('MonitorResource', function () {
 
         it('counts down events when histories are loaded', function () {
             // Create some monitor histories
-            MonitorHistory::factory()->count(3)->create([
+            MonitorHistory::factory()->count(3)->sequence(fn ($sequence) => [
+                'created_at' => now()->subMinutes($sequence->index + 1),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
             ]);
 
-            MonitorHistory::factory()->count(2)->create([
+            MonitorHistory::factory()->count(2)->sequence(fn ($sequence) => [
+                'created_at' => now()->subMinutes($sequence->index + 4),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
             ]);
@@ -152,7 +156,9 @@ describe('MonitorResource', function () {
 
     describe('when loaded relationships', function () {
         it('includes histories when loaded', function () {
-            MonitorHistory::factory()->count(3)->create([
+            MonitorHistory::factory()->count(3)->sequence(fn ($sequence) => [
+                'created_at' => now()->subMinutes($sequence->index + 1),
+            ])->create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'up',
             ]);

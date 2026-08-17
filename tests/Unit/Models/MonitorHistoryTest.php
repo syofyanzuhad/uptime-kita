@@ -3,6 +3,7 @@
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 describe('MonitorHistory Model', function () {
     beforeEach(function () {
@@ -22,6 +23,9 @@ describe('MonitorHistory Model', function () {
 
     describe('fillable attributes', function () {
         it('allows mass assignment of fillable attributes', function () {
+            // Clear the history created in beforeEach to avoid a unique constraint collision
+            MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
+
             $history = MonitorHistory::create([
                 'monitor_id' => $this->monitor->id,
                 'uptime_status' => 'down',
@@ -144,24 +148,16 @@ describe('MonitorHistory Model', function () {
 
             $now = now();
 
-            // Create multiple records within the same minute
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(10),
-                'uptime_status' => 'down',
-            ]);
-
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(30),
-                'uptime_status' => 'up',
-            ]);
-
-            MonitorHistory::factory()->create([
-                'monitor_id' => $this->monitor->id,
-                'created_at' => $now->copy()->setSeconds(50),
-                'uptime_status' => 'recovery',
-            ]);
+            // Insert multiple records within the same minute directly via the query builder
+            // to simulate legacy data that predates the per-minute unique constraint
+            foreach ([10 => 'down', 30 => 'up', 50 => 'recovery'] as $second => $status) {
+                DB::table('monitor_histories')->insert([
+                    'monitor_id' => $this->monitor->id,
+                    'uptime_status' => $status,
+                    'created_at' => $now->copy()->setSeconds($second),
+                    'updated_at' => $now->copy()->setSeconds($second),
+                ]);
+            }
 
             $unique = MonitorHistory::getUniquePerMinute($this->monitor->id)->get();
 
@@ -173,6 +169,9 @@ describe('MonitorHistory Model', function () {
         });
 
         it('respects limit parameter', function () {
+            // Clear existing history
+            MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
+
             // Create records in different minutes
             for ($i = 0; $i < 5; $i++) {
                 MonitorHistory::factory()->create([
@@ -249,12 +248,16 @@ describe('MonitorHistory Model', function () {
 
     describe('status tracking', function () {
         it('tracks various uptime statuses', function () {
+            // Clear existing history and use distinct minutes to avoid the per-minute unique constraint
+            MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
+
             $statuses = ['up', 'down', 'recovery', 'maintenance'];
 
-            foreach ($statuses as $status) {
+            foreach ($statuses as $index => $status) {
                 $history = MonitorHistory::factory()->create([
                     'monitor_id' => $this->monitor->id,
                     'uptime_status' => $status,
+                    'created_at' => now()->subMinutes($index + 1),
                 ]);
 
                 expect($history->uptime_status)->toBe($status);
@@ -262,12 +265,16 @@ describe('MonitorHistory Model', function () {
         });
 
         it('stores response times correctly', function () {
+            // Clear existing history and use distinct minutes to avoid the per-minute unique constraint
+            MonitorHistory::where('monitor_id', $this->monitor->id)->delete();
+
             $responseTimes = [50, 250, 1000, 5000, null];
 
-            foreach ($responseTimes as $time) {
+            foreach ($responseTimes as $index => $time) {
                 $history = MonitorHistory::factory()->create([
                     'monitor_id' => $this->monitor->id,
                     'response_time' => $time,
+                    'created_at' => now()->subMinutes($index + 1),
                 ]);
 
                 if ($time === null) {
