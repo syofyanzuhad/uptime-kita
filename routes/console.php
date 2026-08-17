@@ -93,14 +93,14 @@ if (config('telemetry.enabled')) {
 Schedule::command('monitor:update-maintenance-status --cleanup')->daily();
 
 // === BACKUP DB ===
-// Schedule::command('backup:clean')->daily()->at('01:00');
-// Schedule::command('backup:run')->daily()->at('01:30')
-//     ->onFailure(function () {
-//         info('BACKUP-DB: SUCCESS');
-//     })
-//     ->onSuccess(function () {
-//         info('BACKUP-DB: FAILED');
-//     });
+Schedule::command('backup:clean')->daily()->at('01:00');
+Schedule::command('backup:run')->daily()->at('01:30')
+    ->onSuccess(function () {
+        info('BACKUP-DB: SUCCESS');
+    })
+    ->onFailure(function () {
+        info('BACKUP-DB: FAILED');
+    });
 
 /*
 Artisan::command('inspire', function () {

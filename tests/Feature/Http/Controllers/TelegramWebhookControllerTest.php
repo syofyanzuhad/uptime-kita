@@ -1,5 +1,7 @@
 <?php
 
+use NotificationChannels\Telegram\Telegram;
+
 // Constants to avoid duplication
 const WEBHOOK_ENDPOINT = '/webhook/telegram';
 const START_COMMAND = '/start';
@@ -9,6 +11,46 @@ const TEST_USER_NAME = 'John';
 beforeEach(function () {
     // Set a dummy telegram token for tests
     config(['services.telegram-bot-api.token' => 'test-token']);
+    // Webhook verification is off by default unless a secret token is configured
+    config(['services.telegram-bot-api.secret_token' => null]);
+});
+
+describe('TelegramWebhookController - secret token verification', function () {
+    it('rejects requests with a missing secret token', function () {
+        config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, []);
+
+        $response->assertForbidden();
+    });
+
+    it('rejects requests with an invalid secret token', function () {
+        config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, [], [
+            'X-Telegram-Bot-Api-Secret-Token' => 'wrong-secret',
+        ]);
+
+        $response->assertForbidden();
+    });
+
+    it('accepts requests with the correct secret token', function () {
+        config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, [], [
+            'X-Telegram-Bot-Api-Secret-Token' => 'webhook-secret',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['status' => 'ok']);
+    });
+
+    it('allows requests when no secret token is configured', function () {
+        $response = $this->postJson(WEBHOOK_ENDPOINT, []);
+
+        $response->assertOk();
+        $response->assertJson(['status' => 'ok']);
+    });
 });
 
 describe('TelegramWebhookController - basic webhook responses', function () {
@@ -210,19 +252,51 @@ describe('TelegramWebhookController - message type handling', function () {
     });
 });
 
-// Note: Tests for /start command message sending are skipped because:
-// 1. The TelegramMessage class uses its own Guzzle client, not Laravel's HTTP client
-// 2. Mocking the final TelegramMessage class is complex and prone to conflicts
-// 3. The controller behavior (returning 200 OK) is tested above
-// 4. These tests focus on the controller's request handling logic rather than external API calls
+describe('TelegramWebhookController - /start command', function () {
+    it('sends a telegram message for /start command', function () {
+        // TelegramMessage resolves Telegram from the container; mock it to
+        // avoid real HTTP calls.
+        $telegram = Mockery::mock(Telegram::class);
+        $telegram->shouldReceive('sendMessage')->once();
+        app()->instance(Telegram::class, $telegram);
 
-// Note: The controller has a bug where it doesn't handle missing first_name
-// These tests are commented out until the controller is fixed
-// it('handles missing first_name gracefully', function () {
-//     // Controller currently throws error when first_name is missing
-//     // This should be fixed in the controller
-// });
-// it('handles missing from field gracefully', function () {
-//     // Controller currently throws error when from field is missing
-//     // This should be fixed in the controller
-// });
+        $webhookData = [
+            'message' => [
+                'text' => '/start',
+                'chat' => [
+                    'id' => TEST_CHAT_ID,
+                ],
+                'from' => [
+                    'first_name' => TEST_USER_NAME,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, $webhookData);
+
+        $response->assertOk();
+        $response->assertJson(['status' => 'ok']);
+    });
+
+    it('does not send a telegram message for non-start commands', function () {
+        $telegram = Mockery::mock(Telegram::class);
+        $telegram->shouldNotReceive('sendMessage');
+        app()->instance(Telegram::class, $telegram);
+
+        $webhookData = [
+            'message' => [
+                'text' => 'Hello',
+                'chat' => [
+                    'id' => TEST_CHAT_ID,
+                ],
+                'from' => [
+                    'first_name' => TEST_USER_NAME,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, $webhookData);
+
+        $response->assertOk();
+    });
+});

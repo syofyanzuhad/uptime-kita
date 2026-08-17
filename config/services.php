@@ -49,6 +49,7 @@ return [
 
     'telegram-bot-api' => [
         'token' => env('TELEGRAM_BOT_TOKEN'),
+        'secret_token' => env('TELEGRAM_BOT_SECRET_TOKEN'),
     ],
 
     'twitter' => [

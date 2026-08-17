@@ -161,9 +161,12 @@ return [
             /*
              * The disk names on which the backups will be stored.
              */
-            'disks' => [
-                env('FILESYSTEM_DISK', 'local'),
-            ],
+            // Back up to S3 when credentials are configured, otherwise
+            // fall back to the local disk (e.g. local development).
+            'disks' => array_values(array_filter([
+                env('AWS_BUCKET') ? 's3' : null,
+                'local',
+            ])),
         ],
 
         /*
@@ -266,7 +269,7 @@ return [
     'monitor_backups' => [
         [
             'name' => env('APP_NAME', 'laravel-backup'),
-            'disks' => ['local'],
+            'disks' => ['s3', 'local'],
             'health_checks' => [
                 MaximumAgeInDays::class => 1,
                 MaximumStorageInMegabytes::class => 5000,
