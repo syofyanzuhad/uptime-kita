@@ -33,7 +33,7 @@ class TelegramRateLimitService
 
         // Check if we're in a backoff period
         if ($this->isInBackoffPeriod($rateLimitData)) {
-            Log::info('Telegram notification blocked due to backoff period', [
+            Log::debug('Telegram notification blocked due to backoff period', [
                 'user_id' => $user->id,
                 'telegram_destination' => $telegramChannel->destination,
                 'backoff_until' => $rateLimitData['backoff_until'] ?? null,
@@ -44,7 +44,7 @@ class TelegramRateLimitService
 
         // Check minute rate limit
         if (! $this->checkMinuteRateLimit($rateLimitData)) {
-            Log::info('Telegram notification blocked due to minute rate limit', [
+            Log::debug('Telegram notification blocked due to minute rate limit', [
                 'user_id' => $user->id,
                 'telegram_destination' => $telegramChannel->destination,
                 'minute_count' => $rateLimitData['minute_count'] ?? 0,
@@ -55,7 +55,7 @@ class TelegramRateLimitService
 
         // Check hour rate limit
         if (! $this->checkHourRateLimit($rateLimitData)) {
-            Log::info('Telegram notification blocked due to hour rate limit', [
+            Log::debug('Telegram notification blocked due to hour rate limit', [
                 'user_id' => $user->id,
                 'telegram_destination' => $telegramChannel->destination,
                 'hour_count' => $rateLimitData['hour_count'] ?? 0,
@@ -89,7 +89,7 @@ class TelegramRateLimitService
 
         $this->storeRateLimitData($rateLimitKey, $rateLimitData);
 
-        Log::info('Telegram notification tracked successfully', [
+        Log::debug('Telegram notification tracked successfully', [
             'user_id' => $user->id,
             'telegram_destination' => $telegramChannel->destination,
             'minute_count' => $rateLimitData['minute_count'],

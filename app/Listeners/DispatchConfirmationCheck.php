@@ -40,7 +40,7 @@ class DispatchConfirmationCheck
             // Get per-monitor delay or use sensitivity preset
             $delay = $this->getConfirmationDelay($monitor);
 
-            Log::info('DispatchConfirmationCheck: Dispatching confirmation check', [
+            Log::debug('DispatchConfirmationCheck: Dispatching confirmation check', [
                 'monitor_id' => $monitor->id,
                 'url' => (string) $monitor->url,
                 'failure_count' => $failureCount,

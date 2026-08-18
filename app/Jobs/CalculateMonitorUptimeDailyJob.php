@@ -24,21 +24,20 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info('Starting daily uptime calculation batch job');
+        Log::debug('Starting daily uptime calculation batch job');
 
         try {
             // Get all monitor IDs
             $monitorIds = $this->getMonitorIds();
 
             if (empty($monitorIds)) {
-                Log::info('No monitors found for uptime calculation');
+                Log::debug('No monitors found for uptime calculation');
 
                 return;
             }
 
-            Log::info('Creating batch jobs for monitors', [
+            Log::debug('Creating batch jobs for monitors', [
                 'total_monitors' => count($monitorIds),
-                // 'monitorIds' => $monitorIds,
             ]);
 
             // Chunk monitors into smaller batches for better memory management
@@ -47,7 +46,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             $totalChunks = count($monitorChunks);
             $totalJobs = 0;
 
-            Log::info('Processing monitors in chunks', [
+            Log::debug('Processing monitors in chunks', [
                 'total_monitors' => count($monitorIds),
                 'chunk_size' => $chunkSize,
                 'total_chunks' => $totalChunks,
@@ -56,9 +55,8 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             foreach ($monitorChunks as $index => $monitorChunk) {
                 $chunkNumber = $index + 1;
 
-                Log::info("Processing chunk {$chunkNumber}/{$totalChunks}", [
+                Log::debug("Processing chunk {$chunkNumber}/{$totalChunks}", [
                     'chunk_size' => count($monitorChunk),
-                    'monitors_in_chunk' => $monitorChunk,
                 ]);
 
                 // Calculate for yesterday to ensure we have a full day's data
@@ -71,8 +69,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
                     $totalJobs++;
                 }
 
-                Log::info("Chunk {$chunkNumber}/{$totalChunks} dispatched successfully", [
-                    'chunk_size' => count($monitorChunk),
+                Log::debug("Chunk {$chunkNumber}/{$totalChunks} dispatched", [
                     'total_jobs_dispatched' => $totalJobs,
                 ]);
 
@@ -82,7 +79,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
                 }
             }
 
-            Log::info('All chunks dispatched successfully', [
+            Log::info('All uptime calculation chunks dispatched', [
                 'total_chunks' => $totalChunks,
                 'total_jobs' => $totalJobs,
             ]);

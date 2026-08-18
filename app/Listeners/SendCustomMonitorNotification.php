@@ -33,7 +33,7 @@ class SendCustomMonitorNotification implements ShouldQueue
     {
         $monitor = $event->monitor;
 
-        Log::info('SendCustomMonitorNotification: Event received', [
+        Log::debug('SendCustomMonitorNotification: Event received', [
             'event_type' => get_class($event),
             'monitor_id' => $monitor->id,
             'monitor_url' => $monitor->url,
@@ -41,7 +41,7 @@ class SendCustomMonitorNotification implements ShouldQueue
 
         // Skip notification if monitor is in maintenance window
         if ($monitor->isInMaintenance()) {
-            Log::info('SendCustomMonitorNotification: Skipping notification - monitor is in maintenance window', [
+            Log::debug('SendCustomMonitorNotification: Skipping notification - monitor is in maintenance window', [
                 'monitor_id' => $monitor->id,
                 'monitor_url' => (string) $monitor->url,
                 'maintenance_ends_at' => $monitor->maintenance_ends_at,
@@ -53,10 +53,9 @@ class SendCustomMonitorNotification implements ShouldQueue
         // Get all users associated with this monitor
         $users = $monitor->users()->where('user_monitor.is_active', true)->get();
 
-        Log::info('SendCustomMonitorNotification: Found users for monitor', [
+        Log::debug('SendCustomMonitorNotification: Found users for monitor', [
             'monitor_id' => $monitor->id,
             'user_count' => $users->count(),
-            'user_ids' => $users->pluck('id')->toArray(),
         ]);
 
         if ($users->isEmpty()) {
@@ -89,7 +88,7 @@ class SendCustomMonitorNotification implements ShouldQueue
             cache()->put($cacheKey, $pending, now()->addMinutes(10));
         });
 
-        Log::info('SendCustomMonitorNotification: Event buffered for batching', [
+        Log::debug('SendCustomMonitorNotification: Event buffered for batching', [
             'monitor_id' => $monitor->id,
             'status' => $status,
             'user_count' => $users->count(),

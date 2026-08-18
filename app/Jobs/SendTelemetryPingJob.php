@@ -43,7 +43,7 @@ class SendTelemetryPingJob implements ShouldQueue
 
         // Debug mode: log instead of send
         if (config('telemetry.debug')) {
-            Log::info('Telemetry Debug - Would send data:', $data);
+            Log::debug('Telemetry Debug - Would send data:', $data);
             $telemetryService->recordPing();
 
             return;
@@ -77,6 +77,6 @@ class SendTelemetryPingJob implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         // Final failure after all retries - just log quietly
-        Log::info('Telemetry ping failed after all retries: '.$exception->getMessage());
+        Log::debug('Telemetry ping failed after all retries: '.$exception->getMessage());
     }
 }

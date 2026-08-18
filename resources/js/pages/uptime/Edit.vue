@@ -57,7 +57,6 @@ const form = useForm({
     confirmation_delay_seconds: props.monitor.data.confirmation_delay_seconds ?? null,
     confirmation_retries: props.monitor.data.confirmation_retries ?? null,
 });
-// console.log(form.url);
 
 // Add methods for interval control
 const incrementInterval = () => {

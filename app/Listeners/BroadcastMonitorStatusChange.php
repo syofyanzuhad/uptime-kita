@@ -56,7 +56,7 @@ class BroadcastMonitorStatusChange implements ShouldQueue
             'status_page_ids' => $monitor->statusPages()->pluck('status_pages.id')->toArray(),
         ];
 
-        Log::info('BroadcastMonitorStatusChange: Broadcasting status change', [
+        Log::debug('BroadcastMonitorStatusChange: Broadcasting status change', [
             'monitor_id' => $monitor->id,
             'old_status' => $oldStatus,
             'new_status' => $newStatus,

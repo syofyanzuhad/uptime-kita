@@ -65,7 +65,7 @@ class StoreMonitorCheckData implements ShouldQueue
         // Handle incidents
         $this->handleIncident($monitor, $event, $responseTime, $statusCode);
 
-        Log::info('Monitor check data stored', [
+        Log::debug('Monitor check data stored', [
             'monitor_id' => $monitor->id,
             'status' => $status,
             'response_time' => $responseTime,

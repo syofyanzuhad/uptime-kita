@@ -26,7 +26,7 @@ class TwitterRateLimitService
 
         // Check if we're in a backoff period
         if (isset($backoffData['backoff_until']) && now()->timestamp < $backoffData['backoff_until']) {
-            Log::info('Twitter notification blocked due to backoff period', [
+            Log::debug('Twitter notification blocked due to backoff period', [
                 'user_id' => $user->id,
                 'channel_id' => $channel?->id ?? 'system',
                 'backoff_until' => $backoffData['backoff_until'],

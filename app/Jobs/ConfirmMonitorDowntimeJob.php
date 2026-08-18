@@ -48,7 +48,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
 
         // If monitor is no longer enabled, skip
         if (! $monitor->uptime_check_enabled) {
-            Log::info('ConfirmMonitorDowntimeJob: Monitor disabled, skipping confirmation', [
+            Log::debug('ConfirmMonitorDowntimeJob: Monitor disabled, skipping confirmation', [
                 'monitor_id' => $this->monitorId,
             ]);
 
@@ -57,7 +57,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
 
         // If monitor has recovered since the failure, skip
         if ($monitor->uptime_status === 'up') {
-            Log::info('ConfirmMonitorDowntimeJob: Monitor already recovered, marking as transient failure', [
+            Log::debug('ConfirmMonitorDowntimeJob: Monitor already recovered, marking as transient failure', [
                 'monitor_id' => $this->monitorId,
                 'url' => (string) $monitor->url,
             ]);
@@ -80,7 +80,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
         $result = $smartRetry->performSmartCheck($monitor, $options);
 
         if ($result->isSuccess()) {
-            Log::info('ConfirmMonitorDowntimeJob: Confirmation check passed, marking as transient failure', [
+            Log::debug('ConfirmMonitorDowntimeJob: Confirmation check passed, marking as transient failure', [
                 'monitor_id' => $this->monitorId,
                 'url' => (string) $monitor->url,
                 'attempts' => $result->getAttemptCount(),
@@ -109,7 +109,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
      */
     protected function confirmDowntime(Monitor $monitor, SmartRetryResult $result): void
     {
-        Log::info('ConfirmMonitorDowntimeJob: Confirmed DOWN status', [
+        Log::warning('ConfirmMonitorDowntimeJob: Confirmed DOWN status', [
             'monitor_id' => $this->monitorId,
             'url' => (string) $monitor->url,
             'failure_reason' => $result->message ?? $this->failureReason,
@@ -135,7 +135,7 @@ class ConfirmMonitorDowntimeJob implements ShouldQueue
      */
     protected function logTransientFailure(Monitor $monitor): void
     {
-        Log::info('ConfirmMonitorDowntimeJob: Transient failure detected', [
+        Log::debug('ConfirmMonitorDowntimeJob: Transient failure detected', [
             'monitor_id' => $this->monitorId,
             'url' => (string) $monitor->url,
             'original_failure_reason' => $this->failureReason,

@@ -65,7 +65,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
      */
     public function handle(): void
     {
-        Log::info('Starting uptime calculation', [
+        Log::debug('Starting uptime calculation', [
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
             'attempt' => $this->attempts(),
@@ -88,7 +88,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
 
             $this->calculateAndStoreUptime();
 
-            Log::info('Uptime calculation completed successfully', [
+            Log::debug('Uptime calculation completed successfully', [
                 'monitor_id' => $this->monitorId,
                 'date' => $this->date,
             ]);
@@ -150,7 +150,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
             ->whereBetween('created_at', [$startDate, $endDate])
             ->first();
 
-        Log::info('Monitor history result', [
+        Log::debug('Monitor history result', [
             'result' => $result,
             'monitor_id' => $this->monitorId,
             'date' => $this->date,
@@ -158,7 +158,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
 
         // Handle case where no checks found
         if (! $result || $result->total_checks === 0) {
-            Log::info('No monitor history found for date', [
+            Log::debug('No monitor history found for date', [
                 'monitor_id' => $this->monitorId,
                 'date' => $this->date,
             ]);

@@ -43,7 +43,7 @@ it('logs data in debug mode instead of sending', function () {
 
     (new SendTelemetryPingJob)->handle($service);
 
-    Log::shouldHaveReceived('info')->once()->withArgs(function ($message) {
+    Log::shouldHaveReceived('debug')->once()->withArgs(function ($message) {
         return str_contains($message, 'Telemetry Debug');
     });
 });
@@ -93,7 +93,7 @@ it('logs final failure after all retries', function () {
 
     (new SendTelemetryPingJob)->failed(new Exception('connection refused'));
 
-    Log::shouldHaveReceived('info')
+    Log::shouldHaveReceived('debug')
         ->once()
         ->with('Telemetry ping failed after all retries: connection refused');
 });
