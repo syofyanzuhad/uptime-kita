@@ -41,7 +41,6 @@ if ($scheduleFrequency !== 'none') {
 
     // Update maintenance status for monitors
     Schedule::command('monitor:update-maintenance-status')->$scheduleFrequency();
-    Schedule::command('laritor:send-metrics')->$scheduleFrequency();
 }
 
 Schedule::command(CheckCertificates::class)->daily();
