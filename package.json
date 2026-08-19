@@ -5,7 +5,7 @@
     "scripts": {
         "ziggy:generate": "php artisan ziggy:generate resources/js/ziggy.js",
         "build": "npm run ziggy:generate && vite build",
-        "build:ssr": "vite build && vite build --ssr",
+        "build:ssr": "npm run ziggy:generate && vite build && vite build --ssr",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
