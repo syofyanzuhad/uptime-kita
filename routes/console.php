@@ -71,7 +71,7 @@ Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
 Schedule::job(new CalculateMonitorStatisticsJob)
-    ->everyThirtyMinutes()
+    ->$scheduleFrequency()
     ->withoutOverlapping();
 Schedule::command('sitemap:generate')->daily();
 
