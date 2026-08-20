@@ -5,8 +5,10 @@ import { useBookmarks } from '@/composables/useBookmarks';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
 import { Link, usePage } from '@inertiajs/vue3';
+import { Bookmark, ChevronDown, Plus, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import MonitorCard from './MonitorCard.vue';
+import Button from './ui/button/Button.vue';
 
 interface Props {
     searchQuery?: string;
@@ -63,10 +65,8 @@ const filteredMonitors = computed(() => {
     if (props.statusFilter === 'up' || props.statusFilter === 'down') {
         monitors = monitors.filter((monitor) => monitor.uptime_status === props.statusFilter);
     } else if (props.statusFilter === 'globally_enabled') {
-        // Filter for globally enabled monitors (uptime_check_enabled is true)
         monitors = monitors.filter((monitor) => monitor.uptime_check_enabled);
     } else if (props.statusFilter === 'globally_disabled') {
-        // Filter for globally disabled monitors (uptime_check_enabled is false)
         monitors = monitors.filter((monitor) => !monitor.uptime_check_enabled);
     }
     // Filter by search query
@@ -101,7 +101,6 @@ async function fetchPinnedMonitors(isInitialLoad = false, pageNum = 1) {
             isPolling.value = true;
         }
 
-        // Add search query and status filter to request if present
         const params = new URLSearchParams();
         params.append('page', String(pageNum));
         if (props.searchQuery && props.searchQuery.trim().length >= 3) {
@@ -121,11 +120,9 @@ async function fetchPinnedMonitors(isInitialLoad = false, pageNum = 1) {
         if (isInitialLoad || pageNum === 1) {
             pinnedMonitors.value = result.data || [];
         } else {
-            // Append new monitors to existing ones
             pinnedMonitors.value = [...pinnedMonitors.value, ...(result.data || [])];
         }
 
-        // Update pagination state using meta from MonitorResource
         hasMorePages.value = result.meta?.current_page < result.meta?.last_page;
         totalMonitors.value = result.meta?.total || 0;
         showingFrom.value = result.meta?.from || 0;
@@ -166,7 +163,6 @@ async function toggleMonitorActive(monitorId: number) {
 
         const result = await response.json();
 
-        // Update the monitor in the list
         const monitor = pinnedMonitors.value.find((m) => m.id === monitorId);
         if (monitor) {
             monitor.is_subscribed = result.is_active;
@@ -185,7 +181,6 @@ async function handleTogglePin(monitorId: number) {
 
     try {
         await togglePin(monitorId);
-        // The refresh will happen automatically via the onPinChanged callback
     } catch (err) {
         console.error('Error toggling pin:', err);
     } finally {
@@ -197,7 +192,6 @@ async function handleTogglePin(monitorId: number) {
 watch(
     [() => props.searchQuery, () => props.statusFilter],
     ([newQuery, newFilter], [oldQuery, oldFilter]) => {
-        // Reset pagination state when search or filter changes
         if (newQuery !== oldQuery || newFilter !== oldFilter) {
             currentPage.value = 1;
             hasMorePages.value = false;
@@ -206,7 +200,6 @@ watch(
             totalMonitors.value = 0;
         }
 
-        // Only search if 3+ chars or empty (reset)
         if (newQuery.trim().length === 0 || newQuery.trim().length >= 3) {
             fetchPinnedMonitors(true, 1);
         }
@@ -214,20 +207,8 @@ watch(
     { deep: true },
 );
 
-// Polling for updates and cleanup functions
 let pollingInterval: number | null = null;
 let cleanupPinCallback: (() => void) | null = null;
-
-// function startPolling() {
-//     // Auto-fetch disabled - polling is not active
-//     return;
-//     // if (pollingInterval) return;
-//     // pollingInterval = window.setInterval(() => {
-//     //     if (!loading.value && !loadingMore.value) {
-//     //         fetchPinnedMonitors(false, 1); // Polling update - always fetch first page
-//     //     }
-//     // }, 60000); // Poll every 60 seconds
-// }
 
 function stopPolling() {
     if (pollingInterval) {
@@ -238,9 +219,7 @@ function stopPolling() {
 
 onMounted(() => {
     fetchPinnedMonitors(true);
-    // startPolling(); // Auto-fetch disabled
 
-    // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
         fetchPinnedMonitors(false, 1);
     });
@@ -255,83 +234,100 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Card class="w-full">
-        <CardHeader>
-            <CardTitle class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <Icon name="bookmark" class="text-amber-500" />
-                    Pinned Monitors
-                    <div v-if="isPolling" class="ml-2 flex items-center gap-1">
-                        <div class="h-3 w-3 animate-spin rounded-full border-b-2 border-amber-500"></div>
-                        <span class="text-xs text-gray-500">Updating...</span>
+    <Card class="overflow-hidden border-border/80 bg-card/60 backdrop-blur-xs shadow-xs transition-shadow hover:shadow-sm">
+        <CardHeader class="pb-3 border-b border-border/50">
+            <CardTitle class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
+                        <Bookmark class="h-4 w-4 fill-amber-500/30" />
+                    </div>
+                    <div>
+                        <span class="text-base font-semibold text-foreground">Pinned Monitors</span>
+                        <span v-if="!loading && pinnedMonitors.length > 0" class="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                            {{ filteredMonitors.length }}
+                        </span>
+                    </div>
+                    <div v-if="isPolling" class="ml-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div class="h-3 w-3 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
+                        <span>Syncing...</span>
                     </div>
                 </div>
-                <button
+
+                <Button
+                    size="sm"
+                    variant="outline"
                     @click="fetchPinnedMonitors(false)"
                     :disabled="loading || isPolling"
-                    class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-1.5 text-sm text-amber-600 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
-                    title="Refresh monitors"
+                    class="h-8 gap-1.5 text-xs font-medium"
                 >
-                    <Icon name="refresh-cw" :class="refreshIconClass" size="16" />
-                    Refresh
-                </button>
+                    <RefreshCw class="h-3.5 w-3.5" :class="refreshIconClass" />
+                    <span>Refresh</span>
+                </Button>
             </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                <template v-if="!loading && !error">
-                    <template v-if="props.searchQuery && props.searchQuery.trim().length >= 3">
-                        <!-- Search results info -->
-                        <span v-if="filteredMonitors.length === 1"> Found 1 pinned monitor </span>
-                        <span v-else> Found {{ filteredMonitors.length }} pinned monitors </span>
-                        <span v-if="totalMonitors !== filteredMonitors.length"> from {{ totalMonitors }} total pinned monitors </span>
-                    </template>
-                    <template v-else>
-                        <!-- Regular pagination info -->
-                        <template v-if="totalMonitors > 0">
-                            Showing {{ showingFrom }} to {{ showingTo }} of {{ totalMonitors }} pinned monitor<span v-if="totalMonitors !== 1"
-                                >s</span
-                            >
-                            <span v-if="hasMorePages"> ({{ pinnedMonitors.length }} loaded)</span>
-                        </template>
-                        <template v-else> No pinned monitors found </template>
-                    </template>
-                </template>
+        <CardContent class="pt-4">
+            <!-- Search / Filter Summary -->
+            <div v-if="!loading && !error && (props.searchQuery || props.statusFilter !== 'all')" class="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Showing {{ filteredMonitors.length }} pinned monitor<span v-if="filteredMonitors.length !== 1">s</span></span>
             </div>
 
-            <div v-if="loading" class="flex items-center justify-center py-8">
-                <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-amber-500"></div>
-            </div>
-            <div v-else-if="error" class="py-8 text-center text-red-500">
-                {{ error }}
-            </div>
-            <div v-else-if="pinnedMonitors.length === 0" class="py-8 text-center text-gray-500">
-                <div class="flex flex-col items-center gap-4">
-                    <Icon name="bookmark" class="h-12 w-12 text-gray-400" />
-                    <div>
-                        <h3 class="mb-2 text-lg font-semibold text-gray-600 dark:text-gray-300">No Pinned Monitors</h3>
-                        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Pin important monitors to keep them at the top of your dashboard.</p>
-                        <Link
-                            :href="route('monitor.create')"
-                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-                        >
-                            <Icon name="plus" class="h-4 w-4" />
-                            Create Your First Monitor
-                        </Link>
+            <!-- Skeleton Loaders for Initial Load -->
+            <div v-if="loading" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div
+                    v-for="i in 3"
+                    :key="i"
+                    class="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 animate-pulse"
+                >
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="h-7 w-7 rounded-lg bg-muted"></div>
+                            <div class="space-y-1.5">
+                                <div class="h-3.5 w-28 rounded bg-muted"></div>
+                                <div class="h-2.5 w-36 rounded bg-muted/60"></div>
+                            </div>
+                        </div>
+                        <div class="h-5 w-16 rounded-full bg-muted"></div>
+                    </div>
+                    <div class="space-y-1.5 pt-2">
+                        <div class="h-2.5 w-full rounded bg-muted"></div>
+                        <div class="h-1.5 w-full rounded bg-muted"></div>
                     </div>
                 </div>
             </div>
-            <div
-                v-else-if="props.searchQuery && props.searchQuery.trim().length >= 3 && filteredMonitors.length === 0"
-                class="py-8 text-center text-gray-500"
-            >
-                <div class="flex flex-col items-center gap-2">
-                    <Icon name="search" class="h-8 w-8 text-gray-400" />
-                    <p>No pinned monitors found for "{{ props.searchQuery }}"</p>
-                    <p class="text-sm">Try different keywords</p>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-center text-sm text-destructive">
+                <p class="font-medium">{{ error }}</p>
+                <Button size="sm" variant="outline" class="mt-3" @click="fetchPinnedMonitors(true)">Try Again</Button>
+            </div>
+
+            <!-- Empty State: No Pinned Monitors -->
+            <div v-else-if="pinnedMonitors.length === 0" class="rounded-xl border border-dashed border-border/80 py-10 text-center">
+                <div class="mx-auto flex max-w-sm flex-col items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
+                        <Bookmark class="h-6 w-6" />
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-foreground">No pinned monitors</h4>
+                        <p class="mt-1 text-xs text-muted-foreground">Click the bookmark icon on any monitor card to pin it at the top for quick access.</p>
+                    </div>
                 </div>
             </div>
-            <div v-else :class="`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3`">
+
+            <!-- Empty State: Filter / Search Match None -->
+            <div
+                v-else-if="filteredMonitors.length === 0"
+                class="rounded-xl border border-dashed border-border/80 py-10 text-center"
+            >
+                <div class="mx-auto flex max-w-sm flex-col items-center gap-2">
+                    <Search class="h-8 w-8 text-muted-foreground/60" />
+                    <p class="text-sm font-medium text-foreground">No pinned monitors match your filter</p>
+                    <p class="text-xs text-muted-foreground">Try clearing your search query or selecting a different status.</p>
+                </div>
+            </div>
+
+            <!-- Monitor Grid -->
+            <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <MonitorCard
                     v-for="monitor in filteredMonitors"
                     :key="monitor.id"
@@ -351,26 +347,20 @@ onUnmounted(() => {
                 />
             </div>
 
-            <!-- Load More Button -->
-            <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 text-center">
-                <button
+            <!-- Load More Action -->
+            <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 flex flex-col items-center gap-2">
+                <Button
+                    variant="outline"
                     @click="loadMore"
                     :disabled="loadingMore"
-                    class="flex items-center gap-2 rounded-lg bg-amber-50 px-6 py-3 font-medium text-amber-600 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
+                    class="gap-2"
                 >
-                    <Icon name="arrow-down" :class="loadingMore ? 'animate-spin' : ''" size="16" />
-                    <span v-if="loadingMore">Loading...</span>
-                    <span v-else>Load More Monitors</span>
-                </button>
-            </div>
-
-            <!-- Loading More Indicator -->
-            <div v-if="loadingMore" class="mt-4 text-center">
-                <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-amber-500"></div>
-                    Loading more pinned monitors...
-                </div>
+                    <ChevronDown class="h-4 w-4" :class="loadingMore ? 'animate-spin' : ''" />
+                    <span v-if="loadingMore">Loading more...</span>
+                    <span v-else>Load More Pinned Monitors ({{ pinnedMonitors.length }} of {{ totalMonitors }})</span>
+                </Button>
             </div>
         </CardContent>
     </Card>
 </template>
+

@@ -5,8 +5,10 @@ import { useBookmarks } from '@/composables/useBookmarks';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
 import { router, usePage } from '@inertiajs/vue3';
+import { ChevronDown, Globe, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import MonitorGrid from './MonitorGrid.vue';
+import Button from './ui/button/Button.vue';
 
 interface Props {
     searchQuery?: string;
@@ -34,7 +36,6 @@ const publicMonitors = ref<Monitor[]>([]);
 const loading = ref(true);
 const isPolling = ref(false);
 const error = ref<string | null>(null);
-// const pollingInterval = ref<number | null>(null);
 const subscribingMonitors = ref<Set<number>>(new Set());
 const unsubscribingMonitors = ref<Set<number>>(new Set());
 
@@ -53,7 +54,6 @@ const { pinnedMonitors, isPinned, togglePin, loadingMonitors, initialize, onPinC
 
 const page = usePage<SharedData>();
 
-// Check if user is authenticated using Inertia's auth props
 const isAuthenticated = computed(() => {
     return !!page.props.auth.user;
 });
@@ -62,7 +62,6 @@ const refreshIconClass = computed(() => {
     return loading.value || isPolling.value ? 'animate-spin' : '';
 });
 
-// Filter monitors based on search query and status filter
 const filteredMonitors = computed(() => {
     let monitors = publicMonitors.value;
     // Filter by status
@@ -71,17 +70,13 @@ const filteredMonitors = computed(() => {
     } else if (props.statusFilter === 'unsubscribed') {
         monitors = monitors.filter((monitor) => !monitor.is_subscribed);
     } else if (props.statusFilter === 'globally_enabled') {
-        // Filter for globally enabled monitors (uptime_check_enabled is true)
         monitors = monitors.filter((monitor) => monitor.uptime_check_enabled);
     } else if (props.statusFilter === 'globally_disabled') {
-        // Filter for globally disabled monitors (uptime_check_enabled is false)
         monitors = monitors.filter((monitor) => !monitor.uptime_check_enabled);
     }
-    // Remove client-side search filter here
     return monitors;
 });
 
-// Sort monitors to show pinned ones first
 const sortedMonitors = computed(() => {
     return [...filteredMonitors.value].sort((a, b) => {
         const aPinned = isPinned(a.id);
@@ -133,18 +128,16 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
         const result = await response.json();
 
         if (isInitialLoad || page === 1) {
-            publicMonitors.value = result.data;
+            publicMonitors.value = result.data || [];
         } else {
-            // Append new monitors to existing ones
-            publicMonitors.value = [...publicMonitors.value, ...result.data];
+            publicMonitors.value = [...publicMonitors.value, ...(result.data || [])];
         }
 
-        // Update pagination state using meta from resource
-        hasMorePages.value = result.meta.current_page < result.meta.last_page;
-        totalMonitors.value = result.meta.total;
+        hasMorePages.value = result.meta?.current_page < result.meta?.last_page;
+        totalMonitors.value = result.meta?.total || 0;
         showingFrom.value = publicMonitors.value.length > 0 ? 1 : 0;
         showingTo.value = publicMonitors.value.length;
-        currentPage.value = result.meta.current_page;
+        currentPage.value = result.meta?.current_page || 1;
 
         error.value = null;
     } catch (err) {
@@ -156,9 +149,7 @@ const fetchPublicMonitors = async (isInitialLoad = false, page = 1) => {
     }
 };
 
-// Watch for searchQuery and statusFilter changes and refetch
 watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter], [oldQuery, oldFilter]) => {
-    // Reset pagination state when search or filter changes
     if (newQuery !== oldQuery || newFilter !== oldFilter) {
         currentPage.value = 1;
         hasMorePages.value = false;
@@ -167,7 +158,6 @@ watch([() => props.searchQuery, () => props.statusFilter], ([newQuery, newFilter
         totalMonitors.value = 0;
     }
 
-    // Only search if 3+ chars or empty (reset)
     if (newQuery.trim().length === 0 || newQuery.trim().length >= 3) {
         fetchPublicMonitors(true, 1);
     }
@@ -181,7 +171,6 @@ const loadMore = async () => {
 
 const subscribeToMonitor = async (monitorId: number) => {
     if (!isAuthenticated.value) {
-        // Redirect to login if not authenticated
         window.location.href = '/login';
         return;
     }
@@ -197,12 +186,10 @@ const subscribeToMonitor = async (monitorId: number) => {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    // Update the monitor's subscription status
                     const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.is_subscribed = true;
                     }
-                    alert('Berhasil berlangganan monitor');
                 },
                 onError: () => {
                     alert('Terjadi kesalahan saat berlangganan monitor');
@@ -219,7 +206,6 @@ const subscribeToMonitor = async (monitorId: number) => {
 
 const unsubscribeFromMonitor = async (monitorId: number) => {
     if (!isAuthenticated.value) {
-        // Redirect to login if not authenticated
         window.location.href = '/login';
         return;
     }
@@ -231,17 +217,15 @@ const unsubscribeFromMonitor = async (monitorId: number) => {
             '/monitor/' + monitorId + '/unsubscribe',
             {
                 _token: page.props.csrf_token as string,
-                _method: 'DELETE', // Use DELETE method for unsubscribe
+                _method: 'DELETE',
             },
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    // Update the monitor's subscription status
                     const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.is_subscribed = false;
                     }
-                    alert('Berhasil berhenti berlangganan monitor');
                 },
                 onError: () => {
                     alert('Terjadi kesalahan saat berhenti berlangganan monitor');
@@ -258,7 +242,6 @@ const unsubscribeFromMonitor = async (monitorId: number) => {
 
 const toggleActive = async (monitorId: number) => {
     if (!isAuthenticated.value) {
-        // Redirect to login if not authenticated
         window.location.href = '/login';
         return;
     }
@@ -274,7 +257,6 @@ const toggleActive = async (monitorId: number) => {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    // Update the monitor's uptime_check_enabled status
                     const monitor = publicMonitors.value.find((m) => m.id === monitorId);
                     if (monitor) {
                         monitor.uptime_check_enabled = !monitor.uptime_check_enabled;
@@ -294,124 +276,120 @@ const toggleActive = async (monitorId: number) => {
     }
 };
 
-// Cleanup function for pin change callback
 let cleanupPinCallback: (() => void) | null = null;
 
 onMounted(() => {
     initialize();
-    fetchPublicMonitors(true); // Initial load
+    fetchPublicMonitors(true);
 
-    // Register refresh callback for when pins change
     cleanupPinCallback = onPinChanged(() => {
         fetchPublicMonitors(false, 1);
     });
-
-    // pollingInterval.value = setInterval(() => {
-    //     fetchPublicMonitors(false, 1); // Polling update - always fetch first page
-    // }, 60000);
 });
 
 onUnmounted(() => {
     if (cleanupPinCallback) {
         cleanupPinCallback();
     }
-    // if (pollingInterval.value) {
-    //     clearInterval(pollingInterval.value);
-    // }
 });
 </script>
 
 <template>
-    <Card class="w-full">
-        <CardHeader>
-            <CardTitle class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <Icon name="globe" class="text-blue-500" />
-                    Public Monitors
-                    <div v-if="isPolling" class="ml-2 flex items-center gap-1">
-                        <div class="h-3 w-3 animate-spin rounded-full border-b-2 border-blue-500"></div>
-                        <span class="text-xs text-gray-500">Updating...</span>
+    <Card class="overflow-hidden border-border/80 bg-card/60 backdrop-blur-xs shadow-xs transition-shadow hover:shadow-sm">
+        <CardHeader class="pb-3 border-b border-border/50">
+            <CardTitle class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 dark:bg-blue-500/20">
+                        <Globe class="h-4 w-4" />
+                    </div>
+                    <div>
+                        <span class="text-base font-semibold text-foreground">Public Monitors</span>
+                        <span v-if="!loading && publicMonitors.length > 0" class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+                            {{ filteredMonitors.length }}
+                        </span>
+                    </div>
+                    <div v-if="isPolling" class="ml-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div class="h-3 w-3 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+                        <span>Syncing...</span>
                     </div>
                 </div>
-                <button
+
+                <Button
+                    size="sm"
+                    variant="outline"
                     @click="fetchPublicMonitors(false)"
                     :disabled="loading || isPolling"
-                    class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-600 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
-                    title="Refresh monitors"
+                    class="h-8 gap-1.5 text-xs font-medium"
                 >
-                    <Icon name="refresh-cw" :class="refreshIconClass" size="16" />
-                    Refresh
-                </button>
+                    <RefreshCw class="h-3.5 w-3.5" :class="refreshIconClass" />
+                    <span>Refresh</span>
+                </Button>
             </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                <template v-if="filteredMonitors.length">
-                    Showing {{ filteredMonitors.length }} of
-                    {{
-                        props.statusFilter === 'all'
-                            ? props.allCount
-                            : props.statusFilter === 'up'
-                              ? props.onlineCount
-                              : props.statusFilter === 'down'
-                                ? props.offlineCount
-                                : props.statusFilter === 'unsubscribed'
-                                  ? props.unsubscribedCount
-                                  : props.statusFilter === 'globally_enabled'
-                                    ? props.enabledCount
-                                    : props.statusFilter === 'globally_disabled'
-                                      ? props.disabledCount
-                                      : props.allCount
-                    }}
-                    monitor<span v-if="filteredMonitors.length !== 1">s</span>
-                </template>
-                <template v-else>
-                    No
-                    {{
-                        props.statusFilter === 'all'
-                            ? ''
-                            : props.statusFilter === 'up'
-                              ? 'online'
-                              : props.statusFilter === 'down'
-                                ? 'offline'
-                                : props.statusFilter === 'unsubscribed'
-                                  ? 'unsubscribed'
-                                  : props.statusFilter === 'globally_enabled'
-                                    ? 'enabled'
-                                    : props.statusFilter === 'globally_disabled'
-                                      ? 'disabled'
-                                      : ''
-                    }}
-                    monitors found.
-                </template>
+        <CardContent class="pt-4">
+            <!-- Search / Filter Summary -->
+            <div v-if="!loading && !error && (props.searchQuery || props.statusFilter !== 'all')" class="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Showing {{ filteredMonitors.length }} public monitor<span v-if="filteredMonitors.length !== 1">s</span></span>
             </div>
 
-            <!-- Search Results Counter -->
-            <div v-if="props.searchQuery && !loading && !error" class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                <span v-if="filteredMonitors.length === 1"> Ditemukan 1 monitor </span>
-                <span v-else> Ditemukan {{ filteredMonitors.length }} monitor </span>
-                <span v-if="publicMonitors.length !== filteredMonitors.length"> dari {{ publicMonitors.length }} total monitor </span>
-            </div>
-
-            <div v-if="loading" class="flex items-center justify-center py-8">
-                <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
-            </div>
-
-            <div v-else-if="error" class="py-8 text-center text-red-500">
-                {{ error }}
-            </div>
-
-            <div v-else-if="publicMonitors.length === 0" class="py-8 text-center text-gray-500">No public monitors available</div>
-
-            <div v-else-if="props.searchQuery && filteredMonitors.length === 0" class="py-8 text-center text-gray-500">
-                <div class="flex flex-col items-center gap-2">
-                    <Icon name="search" class="h-8 w-8 text-gray-400" />
-                    <p>Tidak ada monitor yang ditemukan untuk "{{ props.searchQuery }}"</p>
-                    <p class="text-sm">Coba kata kunci yang berbeda</p>
+            <!-- Skeleton Loaders -->
+            <div v-if="loading" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div
+                    v-for="i in 3"
+                    :key="i"
+                    class="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 animate-pulse"
+                >
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="h-7 w-7 rounded-lg bg-muted"></div>
+                            <div class="space-y-1.5">
+                                <div class="h-3.5 w-28 rounded bg-muted"></div>
+                                <div class="h-2.5 w-36 rounded bg-muted/60"></div>
+                            </div>
+                        </div>
+                        <div class="h-5 w-16 rounded-full bg-muted"></div>
+                    </div>
+                    <div class="space-y-1.5 pt-2">
+                        <div class="h-2.5 w-full rounded bg-muted"></div>
+                        <div class="h-1.5 w-full rounded bg-muted"></div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Error State -->
+            <div v-else-if="error" class="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-center text-sm text-destructive">
+                <p class="font-medium">{{ error }}</p>
+                <Button size="sm" variant="outline" class="mt-3" @click="fetchPublicMonitors(true)">Try Again</Button>
+            </div>
+
+            <!-- Empty State: No Public Monitors -->
+            <div v-else-if="publicMonitors.length === 0" class="rounded-xl border border-dashed border-border/80 py-10 text-center">
+                <div class="mx-auto flex max-w-sm flex-col items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 dark:bg-blue-500/20">
+                        <Globe class="h-6 w-6" />
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-foreground">No public monitors available</h4>
+                        <p class="mt-1 text-xs text-muted-foreground">Public status pages will appear here once configured in the system.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State: Filter / Search Match None -->
+            <div
+                v-else-if="filteredMonitors.length === 0"
+                class="rounded-xl border border-dashed border-border/80 py-10 text-center"
+            >
+                <div class="mx-auto flex max-w-sm flex-col items-center gap-2">
+                    <Search class="h-8 w-8 text-muted-foreground/60" />
+                    <p class="text-sm font-medium text-foreground">No public monitors match your filter</p>
+                    <p class="text-xs text-muted-foreground">Try adjusting your search criteria or status filter.</p>
+                </div>
+            </div>
+
+            <!-- Monitor Grid -->
             <MonitorGrid
+                v-else
                 :monitors="sortedMonitors"
                 type="public"
                 :pinned-monitors="pinnedMonitors"
@@ -431,26 +409,20 @@ onUnmounted(() => {
                 :show-last-checked="true"
             />
 
-            <!-- Load More Button -->
-            <div v-if="hasMorePages && !loading && !error && !props.searchQuery" class="mt-6 text-center">
+            <!-- Load More Action -->
+            <div v-if="hasMorePages && !loading && !error && !props.searchQuery" class="mt-6 flex flex-col items-center gap-2">
                 <Button
+                    variant="outline"
                     @click="loadMore"
                     :disabled="loadingMore"
-                    class="flex items-center gap-2 rounded-lg bg-blue-50 px-6 py-3 font-medium text-blue-600 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                    class="gap-2"
                 >
-                    <Icon name="arrow-down" :class="loadingMore ? 'animate-spin' : ''" size="16" />
-                    <span v-if="loadingMore">Loading...</span>
-                    <span v-else>Load More Monitors</span>
+                    <ChevronDown class="h-4 w-4" :class="loadingMore ? 'animate-spin' : ''" />
+                    <span v-if="loadingMore">Loading more...</span>
+                    <span v-else>Load More Public Monitors ({{ publicMonitors.length }} of {{ totalMonitors }})</span>
                 </Button>
-            </div>
-
-            <!-- Loading More Indicator -->
-            <div v-if="loadingMore" class="mt-4 text-center">
-                <div class="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-500"></div>
-                    Loading more monitors...
-                </div>
             </div>
         </CardContent>
     </Card>
 </template>
+
