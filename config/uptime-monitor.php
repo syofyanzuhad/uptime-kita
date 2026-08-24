@@ -183,6 +183,13 @@ return [
     ],
 
     /*
+     * Number of days to look back for missing daily uptime calculations.
+     * When CalculateMonitorUptimeDailyJob runs, it will auto-detect and calculate
+     * any missing daily records across this lookback window.
+     */
+    'daily_lookback_days' => env('UPTIME_DAILY_LOOKBACK_DAYS', 30),
+
+    /*
      * To add or modify behaviour to the Monitor model you can specify your
      * own model here. The only requirement is that it should extend
      * `Spatie\UptimeMonitor\Models\Monitor`.
