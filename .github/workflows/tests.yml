@@ -48,6 +48,8 @@ jobs:
         run: npm run build
 
       - name: Tests (TIA)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./vendor/bin/pest --tia
 
       - name: Tests with coverage
