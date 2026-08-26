@@ -42,6 +42,7 @@ const jsonLdString = computed(() => props.jsonLd ? JSON.stringify(props.jsonLd) 
         <meta name="twitter:description" :content="description" />
         <meta v-if="ogImage" name="twitter:image" :content="ogImage" />
         <link v-if="canonicalUrl" rel="canonical" :href="canonicalUrl" />
+        <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -- JSON-LD needs raw innerHTML inside <script> -->
         <component :is="'script'" v-if="jsonLdString" type="application/ld+json" v-html="jsonLdString" />
     </Head>
 
