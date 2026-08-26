@@ -761,39 +761,17 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 interface Props {
     monitor: { data: Monitor };
     histories: MonitorHistory[];
-    uptimeStats: {
-        '24h': number;
-        '7d': number;
-        '30d': number;
-        '90d': number;
-    };
-    responseTimeStats: {
-        average: number;
-        min: number;
-        max: number;
-    };
+    uptimeStats: { '24h': number; '7d': number; '30d': number; '90d': number };
+    responseTimeStats: { average: number; min: number; max: number };
     latestIncidents: any[];
+    appUrl: string;
 }
-
 const props = defineProps<Props>();
 const monitor = computed(() => props.monitor.data);
-
-// SSE for real-time status updates for this specific monitor
-useMonitorStatusStream({
-    monitorIds: [props.monitor.data.id],
-    enabled: true,
-    onStatusChange: (change) => {
-        globalToasts.addStatusChangeToast(change);
-        // The page will refresh anyway with the existing 60-second interval
-    },
-});
-
-// SEO computed properties
-const appUrl = computed(() => window.location.origin);
+useMonitorStatusStream({ monitorIds: [props.monitor.data.id], enabled: true, onStatusChange: (change) => globalToasts.addStatusChangeToast(change) });
+const appUrl = computed(() => props.appUrl || window.location.origin);
 const pageTitle = computed(() => `${monitor.value.host} - ${props.uptimeStats['24h']}% Uptime | Uptime Kita`);
-const pageDescription = computed(() =>
-    `Real-time monitoring for ${monitor.value.host}. Status: ${monitor.value.uptime_status === 'up' ? 'Operational' : 'Down'}. 24h uptime: ${props.uptimeStats['24h']}%, 7d: ${props.uptimeStats['7d']}%. Response time: ${props.responseTimeStats.average}ms.`
-);
+const pageDescription = computed(() => `Real-time monitoring for ${monitor.value.host}. Status: ${monitor.value.uptime_status === 'up' ? 'Operational' : 'Down'}. 24h uptime: ${props.uptimeStats['24h']}%.`);
 
 // Latest incidents from props (MonitorIncident model)
 const latestIncidents = computed(() => props.latestIncidents || []);
