@@ -34,13 +34,15 @@ jobs:
       - name: Record TIA baseline
         run: ./vendor/bin/pest --tia --fresh
 
+      - name: Resolve TIA baseline path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+
       - name: Upload TIA baseline
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pest-tia-baseline
-          path: |
-            ~/.pest/tia
-            .pest/tia
+          path: ${{ steps.baseline.outputs.path }}
           include-hidden-files: true
           retention-days: 14
