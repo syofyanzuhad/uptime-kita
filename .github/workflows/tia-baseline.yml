@@ -1,0 +1,46 @@
+name: TIA Baseline
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: pcov
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - run: npm ci
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+      - run: php artisan ziggy:generate
+      - run: npm run build
+
+      - name: Record TIA baseline
+        run: ./vendor/bin/pest --tia --fresh
+
+      - name: Upload TIA baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pest-tia-baseline
+          path: |
+            ~/.pest/tia
+            .pest/tia
+          include-hidden-files: true
+          retention-days: 14
