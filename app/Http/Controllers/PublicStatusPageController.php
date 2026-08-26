@@ -74,11 +74,8 @@ class PublicStatusPageController extends Controller
                 ->orderBy('status_page_monitor.order')
                 ->get();
         });
-        // info($monitors);
         if ($monitors->isEmpty()) {
-            return response()->json([
-                'message' => 'No monitors found',
-            ], 404);
+            return response()->json([]);
         }
 
         return response()->json(

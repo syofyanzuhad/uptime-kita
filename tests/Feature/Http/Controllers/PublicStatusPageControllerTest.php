@@ -206,15 +206,13 @@ describe('PublicStatusPageController', function () {
             expect($data[2]['name'])->toBe($monitor3->raw_url);
         });
 
-        it('returns 404 when no monitors found', function () {
+        it('returns 200 with empty array when no monitors found', function () {
             $statusPage = StatusPage::factory()->create(['path' => 'my-status']);
 
             $response = $this->get('/status/my-status/monitors');
 
-            $response->assertNotFound();
-            $response->assertJson([
-                'message' => 'No monitors found',
-            ]);
+            $response->assertOk();
+            $response->assertJson([]);
         });
 
         it('filters out null monitors when monitor is deleted', function () {
@@ -279,13 +277,11 @@ describe('PublicStatusPageController', function () {
             $response3->assertJsonCount(2);
         });
 
-        it('returns 404 when status page does not exist', function () {
+        it('returns 200 with empty array when status page does not exist', function () {
             $response = $this->get('/status/nonexistent/monitors');
 
-            $response->assertNotFound();
-            $response->assertJson([
-                'message' => 'No monitors found',
-            ]);
+            $response->assertOk();
+            $response->assertJson([]);
         });
 
         it('returns monitors only for the requested status page', function () {

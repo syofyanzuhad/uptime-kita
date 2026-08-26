@@ -6,6 +6,7 @@ use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorIncident;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -13,143 +14,35 @@ use Spatie\Tags\Tag;
 
 class PublicMonitorController extends Controller
 {
+    private const VALID_SORTS = ['default', 'popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
+
     /**
-     * Display the public monitors page.
+     * Display the public monitors page (Inertia).
      */
     public function index(Request $request)
     {
-        // $authenticated = auth()->check();
-        // Ensure page is numeric and valid
-        $page = (int) $request->get('page', 1);
-        if ($page < 1) {
-            $page = 1;
-        }
-        $perPage = min((int) $request->get('per_page', 15), 100); // Max 100 monitors per page, default 15
-        $search = $request->get('search');
-        $statusFilter = $request->get('status_filter', 'all');
-        $tagFilter = $request->get('tag_filter');
-        $sortBy = $request->get('sort_by', 'default'); // Default sort by id
+        $filters = $this->getFilters($request);
+        $cacheKey = $this->cacheKey($filters, 'inertia');
 
-        if ($search && mb_strlen($search) < 3) {
-            $search = null;
-        }
-
-        // Validate sort option
-        $validSortOptions = ['default', 'popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
-        if (! in_array($sortBy, $validSortOptions)) {
-            $sortBy = 'default';
-        }
-
-        // Differentiate cache keys for authenticated and guest users, and also by page number
-        $cacheKey = 'public_monitors_page_'.$page.'_sort_'.$sortBy;
-        if ($search) {
-            $cacheKey .= '_search_'.md5($search);
-        }
-        if ($statusFilter !== 'all') {
-            $cacheKey .= '_filter_'.$statusFilter;
-        }
-        if ($tagFilter) {
-            $cacheKey .= '_tag_'.md5($tagFilter);
-        }
-
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
-            // Always only show public monitors
-            $query = Monitor::withoutGlobalScope('user')
-                ->with([
-                    'users:id',
-                    'uptimeDaily',
-                    'tags',
-                    'statistics',
-                    'uptimesDaily' => function ($query) {
-                        $query->where('date', '>=', now()->subDays(7)->toDateString())
-                            ->orderBy('date', 'asc');
-                    },
-                ])
-                ->public();
-
-            // Exclude pinned monitors for authenticated users
-            // if (auth()->check()) {
-            //     $query->whereDoesntHave('users', function ($subQuery) {
-            //         $subQuery->where('user_id', auth()->id())
-            //             ->where('user_monitor.is_pinned', true);
-            //     });
-            // }
-
-            // Apply status filter
-            if ($statusFilter === 'up' || $statusFilter === 'down') {
-                $query->where('uptime_status', $statusFilter);
-            } elseif ($statusFilter === 'disabled' || $statusFilter === 'globally_disabled') {
-                $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', false);
-            } elseif ($statusFilter === 'globally_enabled') {
-                $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', true);
-            } elseif ($statusFilter === 'unsubscribed') {
-                $query->whereDoesntHave('users', function ($query) {
-                    $query->where('user_id', auth()->id());
-                });
-            }
-
-            if ($search) {
-                $query->search($search);
-            }
-
-            // Apply tag filter
-            if ($tagFilter) {
-                $query->withAnyTags([$tagFilter]);
-            }
-
-            // Apply sorting
-            switch ($sortBy) {
-                case 'popular':
-                    $query->orderBy('page_views_count', 'desc');
-                    break;
-                case 'uptime':
-                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
-                        ->orderByRaw('COALESCE(monitor_statistics.uptime_24h, 0) DESC')
-                        ->select('monitors.*');
-                    break;
-                case 'response_time':
-                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
-                        ->orderByRaw('COALESCE(monitor_statistics.avg_response_time_24h, 999999) ASC')
-                        ->select('monitors.*');
-                    break;
-                case 'name':
-                    $query->orderBy('url', 'asc');
-                    break;
-                case 'status':
-                    $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
-                    break;
-                case 'newest':
-                    $query->orderBy('created_at', 'desc');
-                    break;
-                case 'default':
-                default:
-                    $query->orderBy('id', 'asc');
-                    break;
-            }
-
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($filters) {
             return new MonitorCollection(
-                $query->paginate($perPage, ['*'], 'page', $page)
+                $this->buildQuery($filters)->paginate($filters['perPage'], ['*'], 'page', $filters['page'])
             );
         });
 
-        // Check if request wants JSON response (for load more functionality)
         if ($request->wantsJson() || $request->header('Accept') === 'application/json') {
             return response()->json($publicMonitors);
         }
 
-        // Get all unique tags used in public monitors
         $availableTags = Tag::whereIn('id', function ($query) {
             $query->select('tag_id')
                 ->from('taggables')
                 ->where('taggable_type', 'App\Models\Monitor')
                 ->whereIn('taggable_id', function ($subQuery) {
-                    $subQuery->select('id')
-                        ->from('monitors')
-                        ->where('is_public', true);
+                    $subQuery->select('id')->from('monitors')->where('is_public', true);
                 });
         })->orderBy('name')->get(['id', 'name']);
 
-        // Get latest incidents for public monitors
         $latestIncidents = cache()->remember('public_monitors_latest_incidents', 300, function () {
             return MonitorIncident::with(['monitor:id,url,display_name,is_public'])
                 ->whereHas('monitor', function ($query) {
@@ -161,19 +54,16 @@ class PublicMonitorController extends Controller
         });
 
         $appUrl = config('app.url');
-
-        // Bypass the user global scope so stats reflect all public monitors,
-        // matching the list query below (see Monitor::boot()).
         $upCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'up')->count();
         $totalPublic = Monitor::withoutGlobalScope('user')->public()->count();
 
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
             'filters' => [
-                'search' => $search,
-                'status_filter' => $statusFilter,
-                'tag_filter' => $tagFilter,
-                'sort_by' => $sortBy,
+                'search' => $filters['search'],
+                'status_filter' => $filters['statusFilter'],
+                'tag_filter' => $filters['tagFilter'],
+                'sort_by' => $filters['sortBy'],
             ],
             'availableTags' => $availableTags,
             'latestIncidents' => $latestIncidents,
@@ -186,6 +76,7 @@ class PublicMonitorController extends Controller
                 'monthly_checks' => $this->getMonthlyChecksCount(),
             ],
             'showSmolLaunchBadge' => config('app.show_smol_launch_badge'),
+            'appUrl' => $appUrl,
         ])->withViewData([
             'ogTitle' => 'Public Monitors - Uptime Kita',
             'ogDescription' => "Monitoring {$totalPublic} public services. {$upCount} services are up and running.",
@@ -199,121 +90,122 @@ class PublicMonitorController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $authenticated = auth()->check();
-        // Ensure page is numeric and valid
-        $page = (int) $request->get('page', 1);
-        if ($page < 1) {
-            $page = 1;
-        }
-        $perPage = min((int) $request->get('per_page', 15), 100); // Max 100 monitors per page, default 15
-        $search = $request->get('search');
-        $statusFilter = $request->get('status_filter', 'all');
-        $tagFilter = $request->get('tag_filter');
-        $sortBy = $request->get('sort_by', 'default');
+        $filters = $this->getFilters($request);
+        $cacheKey = $this->cacheKey($filters, 'api');
 
-        if ($search && mb_strlen($search) < 3) {
-            $search = null;
-        }
-
-        // Validate sort option
-        $validSortOptions = ['default', 'popular', 'uptime', 'response_time', 'newest', 'name', 'status'];
-        if (! in_array($sortBy, $validSortOptions)) {
-            $sortBy = 'default';
-        }
-
-        // Differentiate cache keys for authenticated and guest users, and also by page number
-        $cacheKey = ($authenticated ? 'public_monitors_authenticated_'.auth()->id() : 'public_monitors_guest').'_page_'.$page.'_sort_'.$sortBy;
-        if ($search) {
-            $cacheKey .= '_search_'.md5($search);
-        }
-        if ($statusFilter !== 'all') {
-            $cacheKey .= '_filter_'.$statusFilter;
-        }
-        if ($tagFilter) {
-            $cacheKey .= '_tag_'.md5($tagFilter);
-        }
-
-        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($page, $perPage, $search, $statusFilter, $tagFilter, $sortBy) {
-            // Always only show public monitors
-            $query = Monitor::withoutGlobalScope('user')
-                ->with([
-                    'users:id',
-                    'uptimeDaily',
-                    'tags',
-                    'statistics',
-                    'uptimesDaily' => function ($query) {
-                        $query->where('date', '>=', now()->subDays(7)->toDateString())
-                            ->orderBy('date', 'asc');
-                    },
-                ])
-                ->public();
-
-            // Exclude pinned monitors for authenticated users
-            if (auth()->check()) {
-                $query->whereDoesntHave('users', function ($subQuery) {
-                    $subQuery->where('user_id', auth()->id())
-                        ->where('user_monitor.is_pinned', true);
-                });
-            }
-
-            // Apply status filter
-            if ($statusFilter === 'up' || $statusFilter === 'down') {
-                $query->where('uptime_status', $statusFilter);
-            } elseif ($statusFilter === 'disabled' || $statusFilter === 'globally_disabled') {
-                $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', false);
-            } elseif ($statusFilter === 'globally_enabled') {
-                $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', true);
-            } elseif ($statusFilter === 'unsubscribed') {
-                $query->whereDoesntHave('users', function ($query) {
-                    $query->where('user_id', auth()->id());
-                });
-            }
-
-            if ($search) {
-                $query->search($search);
-            }
-
-            // Apply tag filter
-            if ($tagFilter) {
-                $query->withAnyTags([$tagFilter]);
-            }
-
-            // Apply sorting
-            switch ($sortBy) {
-                case 'popular':
-                    $query->orderBy('page_views_count', 'desc');
-                    break;
-                case 'uptime':
-                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
-                        ->orderByRaw('COALESCE(monitor_statistics.uptime_24h, 0) DESC')
-                        ->select('monitors.*');
-                    break;
-                case 'response_time':
-                    $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
-                        ->orderByRaw('COALESCE(monitor_statistics.avg_response_time_24h, 999999) ASC')
-                        ->select('monitors.*');
-                    break;
-                case 'name':
-                    $query->orderBy('url', 'asc');
-                    break;
-                case 'status':
-                    $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
-                    break;
-                case 'newest':
-                    $query->orderBy('created_at', 'desc');
-                    break;
-                case 'default':
-                default:
-                    $query->orderBy('id', 'asc');
-                    break;
-            }
-
+        $publicMonitors = cache()->remember($cacheKey, 60, function () use ($filters) {
             return new MonitorCollection(
-                $query->paginate($perPage, ['*'], 'page', $page)
+                $this->buildQuery($filters, true)->paginate($filters['perPage'], ['*'], 'page', $filters['page'])
             );
         });
 
         return response()->json($publicMonitors);
+    }
+
+    private function getFilters(Request $request): array
+    {
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = min((int) $request->get('per_page', 15), 100);
+        $search = $request->get('search');
+        if ($search && mb_strlen($search) < 3) {
+            $search = null;
+        }
+        $statusFilter = $request->get('status_filter', 'all');
+        $tagFilter = $request->get('tag_filter');
+        $sortBy = $request->get('sort_by', 'default');
+        if (! in_array($sortBy, self::VALID_SORTS, true)) {
+            $sortBy = 'default';
+        }
+
+        return compact('page', 'perPage', 'search', 'statusFilter', 'tagFilter', 'sortBy');
+    }
+
+    private function buildQuery(array $filters, bool $excludePinned = false): Builder
+    {
+        $query = Monitor::withoutGlobalScope('user')
+            ->with([
+                'users:id',
+                'uptimeDaily',
+                'tags',
+                'statistics',
+                'uptimesDaily' => function ($q) {
+                    $q->where('date', '>=', now()->subDays(7)->toDateString())->orderBy('date', 'asc');
+                },
+            ])
+            ->public();
+
+        if ($excludePinned && auth()->check()) {
+            $query->whereDoesntHave('users', function ($subQuery) {
+                $subQuery->where('user_id', auth()->id())->where('user_monitor.is_pinned', true);
+            });
+        }
+
+        if ($filters['statusFilter'] === 'up' || $filters['statusFilter'] === 'down') {
+            $query->where('uptime_status', $filters['statusFilter']);
+        } elseif ($filters['statusFilter'] === 'disabled' || $filters['statusFilter'] === 'globally_disabled') {
+            $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', false);
+        } elseif ($filters['statusFilter'] === 'globally_enabled') {
+            $query->withoutGlobalScope('enabled')->where('uptime_check_enabled', true);
+        } elseif ($filters['statusFilter'] === 'unsubscribed') {
+            $query->whereDoesntHave('users', function ($q) {
+                $q->where('user_id', auth()->id());
+            });
+        }
+
+        if ($filters['search']) {
+            $query->search($filters['search']);
+        }
+
+        if ($filters['tagFilter']) {
+            $query->withAnyTags([$filters['tagFilter']]);
+        }
+
+        switch ($filters['sortBy']) {
+            case 'popular':
+                $query->orderBy('page_views_count', 'desc');
+                break;
+            case 'uptime':
+                $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                    ->orderByRaw('COALESCE(monitor_statistics.uptime_24h, 0) DESC')
+                    ->select('monitors.*');
+                break;
+            case 'response_time':
+                $query->leftJoin('monitor_statistics', 'monitors.id', '=', 'monitor_statistics.monitor_id')
+                    ->orderByRaw('COALESCE(monitor_statistics.avg_response_time_24h, 999999) ASC')
+                    ->select('monitors.*');
+                break;
+            case 'name':
+                $query->orderBy('url', 'asc');
+                break;
+            case 'status':
+                $query->orderByRaw("CASE WHEN uptime_status = 'down' THEN 0 WHEN uptime_status = 'up' THEN 1 ELSE 2 END");
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->orderBy('id', 'asc');
+                break;
+        }
+
+        return $query;
+    }
+
+    private function cacheKey(array $filters, string $prefix): string
+    {
+        $authPart = auth()->check() ? 'auth_'.auth()->id() : 'guest';
+        $key = "public_monitors_{$prefix}_{$authPart}_page_{$filters['page']}_sort_{$filters['sortBy']}";
+        if ($filters['search']) {
+            $key .= '_search_'.md5($filters['search']);
+        }
+        if ($filters['statusFilter'] !== 'all') {
+            $key .= '_filter_'.$filters['statusFilter'];
+        }
+        if ($filters['tagFilter']) {
+            $key .= '_tag_'.md5($filters['tagFilter']);
+        }
+
+        return $key;
     }
 
     /**
@@ -321,9 +213,7 @@ class PublicMonitorController extends Controller
      */
     private function getDailyChecksCount(): int
     {
-        // Cache the daily checks count for 15 minutes
         return cache()->remember('public_monitors_daily_checks', 900, function () {
-            // First try to get from monitor_statistics table (if data exists)
             $statsCount = DB::table('monitor_statistics')
                 ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
                 ->where('monitors.is_public', true)
@@ -333,14 +223,9 @@ class PublicMonitorController extends Controller
                 return (int) $statsCount;
             }
 
-            // Fallback to counting from monitor_histories for today
             return MonitorHistory::whereIn('monitor_id', function ($query) {
-                $query->select('id')
-                    ->from('monitors')
-                    ->where('is_public', true);
-            })
-                ->where('checked_at', '>=', today())
-                ->count();
+                $query->select('id')->from('monitors')->where('is_public', true);
+            })->where('checked_at', '>=', today())->count();
         });
     }
 
@@ -349,9 +234,7 @@ class PublicMonitorController extends Controller
      */
     private function getMonthlyChecksCount(): int
     {
-        // Cache the monthly checks count for 1 hour
         return cache()->remember('public_monitors_monthly_checks', 3600, function () {
-            // First try to get from monitor_statistics table (if data exists)
             $statsCount = DB::table('monitor_statistics')
                 ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
                 ->where('monitors.is_public', true)
@@ -361,14 +244,9 @@ class PublicMonitorController extends Controller
                 return (int) $statsCount;
             }
 
-            // Fallback to counting from monitor_histories for the current month
             return MonitorHistory::whereIn('monitor_id', function ($query) {
-                $query->select('id')
-                    ->from('monitors')
-                    ->where('is_public', true);
-            })
-                ->where('checked_at', '>=', now()->startOfMonth())
-                ->count();
+                $query->select('id')->from('monitors')->where('is_public', true);
+            })->where('checked_at', '>=', now()->startOfMonth())->count();
         });
     }
 }

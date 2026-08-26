@@ -91,6 +91,7 @@ class PublicMonitorShowController extends Controller
             'uptimeStats' => $uptimeStats,
             'responseTimeStats' => $responseTimeStats,
             'latestIncidents' => $monitor->latestIncidents,
+            'appUrl' => $appUrl,
         ])->withViewData([
             'ogTitle' => "{$monitorName} Status - Uptime Kita",
             'ogDescription' => "{$statusText} - {$uptimePercent}% uptime in the last 24 hours. Monitor real-time status and performance.",
