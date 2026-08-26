@@ -64,8 +64,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         if (class_exists(Nightwatch::class)) {
-            Nightwatch::rejectQueries(fn () => true);
-            Nightwatch::rejectCacheEvents(fn () => true);
+            // Nightwatch::rejectQueries(fn () => true);
+            // Nightwatch::rejectCacheEvents(fn () => true);
         }
 
         LogViewer::auth(fn ($request) => auth()->id() === 1);
