@@ -2,7 +2,11 @@
 
 use Tests\TestCase;
 
-pest()->tia()->locally()->baselined();
+if (getenv('GITHUB_ACTIONS') === 'true') {
+    pest()->tia()->baselined();
+} else {
+    pest()->tia()->locally();
+}
 
 /*
 |--------------------------------------------------------------------------
