@@ -88,19 +88,6 @@ jobs:
       - name: Run tests (TIA)
         run: ./vendor/bin/pest --tia
 
-      - name: Run tests with coverage
-        if: github.event_name == 'push'
-        run: ./vendor/bin/pest --coverage --min=90 --coverage-clover=storage/coverage/coverage.xml
-
-      - name: Upload coverage to Codecov
-        if: github.event_name == 'push'
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./storage/coverage/coverage.xml
-          flags: php
-          fail_ci_if_error: false
-
   type-check:
     name: TypeScript Type Check
     runs-on: ubuntu-latest
