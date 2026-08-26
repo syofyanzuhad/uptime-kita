@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { useWebNotification } from '@vueuse/core';
+import { computed } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import Icon from '@/components/Icon.vue';
@@ -20,11 +21,16 @@ const props = defineProps<{
     editingChannel?: any;
 }>();
 
-const { isSupported, permission, show } = useWebNotification();
+const { isSupported, permissionGranted, show } = useWebNotification();
+
+const permissionStatus = computed(() => {
+    if (!isSupported.value) return 'not supported';
+    return Notification.permission;
+});
 
 const handleToggleBrowserNotifications = async (checked: boolean) => {
     if (checked) {
-        if (permission.value !== 'granted') {
+        if (!permissionGranted.value) {
             const result = await Notification.requestPermission();
             if (result !== 'granted') {
                 desktopNotificationsEnabled.value = false;
@@ -89,7 +95,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
                             <div class="space-y-0.5">
                                 <Label for="browser-notifications">Enable browser notifications</Label>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Status: <span class="font-medium capitalize">{{ permission }}</span>
+                                    Status: <span class="font-medium capitalize">{{ permissionStatus }}</span>
                                 </p>
                             </div>
                             <Switch
