@@ -2,11 +2,18 @@
 
 use Tests\TestCase;
 
-if (getenv('GITHUB_ACTIONS') === 'true') {
-    pest()->tia()->baselined();
-} else {
-    pest()->tia()->locally();
-}
+/*
+|--------------------------------------------------------------------------
+| Test Impact Analysis (TIA)
+|--------------------------------------------------------------------------
+|
+| Re-runs only the tests affected by the latest changes, replaying cached
+| results for everything else. Automatically skipped on CI and when the
+| --ci flag is passed, so pipelines always execute the full suite.
+|
+*/
+
+pest()->tia()->locally();
 
 /*
 |--------------------------------------------------------------------------
