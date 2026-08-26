@@ -1,774 +1,176 @@
 <script setup lang="ts">
 import DailyUptimeChart from '@/components/DailyUptimeChart.vue';
 import Icon from '@/components/Icon.vue';
-import OfflineBanner from '@/components/OfflineBanner.vue';
-import PublicFooter from '@/components/PublicFooter.vue';
-import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
-import ToastContainer from '@/components/ToastContainer.vue';
+import PublicLayout from '@/components/PublicLayout.vue';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatRelativeTime, getStatusColor, getStatusText, getStatusTextColor } from '@/composables/useMonitorHelpers';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
-import { useTheme } from '@/composables/useTheme';
 import { globalToasts } from '@/composables/useToastNotifications';
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { computed, onMounted, ref } from 'vue';
 
-// --- INTERFACES (Struktur Data Anda) ---
-interface MonitorHistory {
-    id: number;
-    monitor_id: number;
-    uptime_status: string;
-    message: string;
-    created_at: string;
-    updated_at: string;
-}
-
-interface Monitor {
-    id: number;
-    name: string;
-    url: string;
-    host: string;
-    uptime_status: string;
-    uptime_check_enabled: boolean;
-    favicon?: string | null;
-    last_check_date?: string | null;
-    certificate_check_enabled: boolean;
-    certificate_status?: string | null;
-    certificate_expiration_date?: string | null;
-    domain_expiration_check_enabled: boolean;
-    domain_expiration_date?: string | null;
-    domain_expiration_lookup_error?: string | null;
-    down_for_events_count: number;
-    uptime_check_interval: number;
-    is_subscribed: boolean;
-    is_public: boolean;
-    today_uptime_percentage: number;
-    uptime_status_last_change_date?: string | null;
-    uptime_check_failure_reason?: string | null;
-    created_at: string;
-    updated_at: string;
-    histories?: MonitorHistory[];
-    latest_history?: MonitorHistory | null;
-    uptimes_daily?: { date: string; uptime_percentage: number }[];
-}
-
-interface StatusPage {
-    id: number;
-    title: string;
-    description: string;
-    icon: string;
-    path: string;
-    created_at: string;
-    updated_at: string;
-    monitors: Monitor[];
-}
-
-interface Props {
-    statusPage: StatusPage;
-    isAuthenticated: boolean;
-}
-
+interface MonitorHistory { id: number; monitor_id: number; uptime_status: string; message: string; created_at: string; updated_at: string; }
+interface Monitor { id: number; name: string; url: string; host: string; uptime_status: string; uptime_check_enabled: boolean; favicon?: string | null; last_check_date?: string | null; certificate_check_enabled: boolean; certificate_status?: string | null; certificate_expiration_date?: string | null; domain_expiration_check_enabled: boolean; domain_expiration_date?: string | null; domain_expiration_lookup_error?: string | null; down_for_events_count: number; uptime_check_interval: number; is_subscribed: boolean; is_public: boolean; today_uptime_percentage: number; uptime_status_last_change_date?: string | null; created_at: string; updated_at: string; histories?: MonitorHistory[]; latest_history?: MonitorHistory | null; uptimes_daily?: { date: string; uptime_percentage: number }[]; }
+interface StatusPage { id: number; title: string; description: string; icon: string; path: string; created_at: string; updated_at: string; monitors: Monitor[]; }
+interface Props { statusPage: StatusPage; isAuthenticated: boolean; appUrl?: string; }
 const props = defineProps<Props>();
 
-// SEO computed properties
-const appUrl = computed(() => window.location.origin);
+const appUrl = computed(() => props.appUrl || window.location.origin);
 const pageTitle = computed(() => `${props.statusPage.title} - Status Page | Uptime Kita`);
-const pageDescription = computed(() =>
-    props.statusPage.description || `Status page for ${props.statusPage.title}. Real-time service status monitoring.`
-);
+const pageDescription = computed(() => props.statusPage.description || `Status page for ${props.statusPage.title}. Real-time service status.`);
+const shareUrl = computed(() => `${appUrl.value}/status/${props.statusPage.path}`);
+const shareText = computed(() => {
+    const up = monitors.value.filter((m) => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'up').length;
+    return `${props.statusPage.title}: ${overallStatus.value.text} (${up}/${monitors.value.length} services up)`;
+});
+const ogImage = computed(() => `${appUrl.value}/og/status/${props.statusPage.path}.png`);
+const jsonLd = computed(() => ({ '@context': 'https://schema.org', '@type': 'WebPage', name: props.statusPage.title, description: pageDescription.value, url: shareUrl.value }));
 
-// --- MONITORS ASYNC LOADING ---
 const monitors = ref<Monitor[]>([]);
 const monitorsLoading = ref(true);
 const monitorsError = ref<string | null>(null);
-
-// --- UPTIMES DAILY PER MONITOR ---
 const uptimesDaily = ref<Record<number, { date: string; uptime_percentage: number }[]>>({});
-const uptimesDailyLoading = ref<Record<number, boolean>>({});
-const uptimesDailyError = ref<Record<number, string | null>>({});
-
-// --- LATEST HISTORY PER MONITOR ---
 const latestHistory = ref<Record<number, MonitorHistory | null>>({});
-const latestHistoryLoading = ref<Record<number, boolean>>({});
-const latestHistoryError = ref<Record<number, string | null>>({});
 
-// SSE for real-time status updates for monitors on this status page
 useMonitorStatusStream({
-    statusPageId: props.statusPage.id,
-    enabled: true,
+    statusPageId: props.statusPage.id, enabled: true,
     onStatusChange: (change) => {
         globalToasts.addStatusChangeToast(change);
-
-        // Update local monitor status
-        const monitorIndex = monitors.value.findIndex((m) => m.id === change.monitor_id);
-        if (monitorIndex !== -1) {
-            monitors.value[monitorIndex] = {
-                ...monitors.value[monitorIndex],
-                uptime_status: change.new_status,
-            };
-
-            // Also update latestHistory if needed
-            if (latestHistory.value[change.monitor_id]) {
-                latestHistory.value[change.monitor_id] = {
-                    ...latestHistory.value[change.monitor_id]!,
-                    uptime_status: change.new_status,
-                };
-            }
-        }
+        const idx = monitors.value.findIndex((m) => m.id === change.monitor_id);
+        if (idx !== -1) monitors.value[idx] = { ...monitors.value[idx], uptime_status: change.new_status };
+        if (latestHistory.value[change.monitor_id]) latestHistory.value[change.monitor_id] = { ...latestHistory.value[change.monitor_id]!, uptime_status: change.new_status };
     },
 });
 
 async function fetchMonitors() {
-    monitorsLoading.value = true;
-    monitorsError.value = null;
+    monitorsLoading.value = true; monitorsError.value = null;
     try {
         const res = await fetch(`/status/${props.statusPage.path}/monitors`);
-        if (res.status === 404) {
-            throw new Error('Status page not found');
-        }
+        if (res.status === 404) throw new Error('Status page not found');
         if (!res.ok) throw new Error('Failed to load monitors');
         const data = await res.json();
-        // If data is wrapped in {data: [...]}, unwrap
-        const rawMonitors = Array.isArray(data) ? data : data.data || [];
-        monitors.value = rawMonitors;
-
-        // Populate latestHistory and uptimesDaily from the response to avoid extra fetch calls
-        rawMonitors.forEach((monitor: any) => {
-            if (monitor.latest_history) {
-                latestHistory.value[monitor.id] = monitor.latest_history;
-            }
-            if (monitor.uptimes_daily) {
-                uptimesDaily.value[monitor.id] = monitor.uptimes_daily;
-            }
+        const raw: any[] = Array.isArray(data) ? data : data.data || [];
+        monitors.value = raw;
+        raw.forEach((m: any) => {
+            if (m.latest_history) latestHistory.value[m.id] = m.latest_history;
+            if (m.uptimes_daily) uptimesDaily.value[m.id] = m.uptimes_daily;
         });
-    } catch (e: any) {
-        monitorsError.value = e.message || 'Unknown error';
-    } finally {
-        monitorsLoading.value = false;
-    }
+    } catch (e: any) { monitorsError.value = e.message || 'Unknown error'; }
+    finally { monitorsLoading.value = false; }
 }
 
-async function fetchUptimesDaily(monitorId: number, date?: string) {
-    uptimesDailyLoading.value[monitorId] = true;
-    uptimesDailyError.value[monitorId] = null;
-    try {
-        let url = `/monitor/${monitorId}/uptimes-daily`;
-        if (date) {
-            url += `?date=${date}`;
-        }
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to load uptimes');
-        const data = await res.json();
-        if (date) {
-            // Only update today's entry
-            const todayEntry = (data.uptimes_daily || [])[0];
-            const arr = uptimesDaily.value[monitorId] || [];
-            if (todayEntry) {
-                const idx = arr.findIndex((d) => d.date === date);
-                if (idx !== -1) {
-                    arr[idx] = todayEntry;
-                } else {
-                    arr.push(todayEntry);
-                }
-                uptimesDaily.value[monitorId] = arr;
-            }
-        } else {
-            // Initial load: set the whole array
-            uptimesDaily.value[monitorId] = data.uptimes_daily || [];
-        }
-    } catch (e: any) {
-        uptimesDailyError.value[monitorId] = e.message || 'Unknown error';
-    } finally {
-        uptimesDailyLoading.value[monitorId] = false;
-    }
-}
-
-async function fetchLatestHistory(monitorId: number) {
-    latestHistoryLoading.value[monitorId] = true;
-    latestHistoryError.value[monitorId] = null;
-    try {
-        const res = await fetch(`/monitor/${monitorId}/latest-history`);
-        if (!res.ok) throw new Error('Failed to load latest history');
-        const data = await res.json();
-        latestHistory.value[monitorId] = data.latest_history || null;
-    } catch (e: any) {
-        latestHistoryError.value[monitorId] = e.message || 'Unknown error';
-    } finally {
-        latestHistoryLoading.value[monitorId] = false;
-    }
-}
-
-// Fetch latestHistory for all monitors after loading
-watch(monitors, (newMonitors) => {
-    newMonitors.forEach((monitor) => {
-        if (latestHistory.value[monitor.id] === undefined) {
-            fetchLatestHistory(monitor.id);
-        }
-    });
-});
-
-// Remove uptimesDaily fetch from watchers to avoid double-fetching (only if authenticated)
-watch(monitors, (newMonitors) => {
-    if (props.isAuthenticated) {
-        newMonitors.forEach((monitor) => {
-            if (uptimesDaily.value[monitor.id] === undefined) {
-                fetchUptimesDaily(monitor.id);
-            }
-        });
-    }
-});
-
-// --- HELPER FUNCTIONS (Fungsi Bantuan) ---
-
-const formatDate = (dateString?: string, locale: string = navigator.language || 'en-US') => {
-    if (!dateString) return '';
-    // Mengembalikan format tanggal dan waktu yang lengkap
-    return new Date(dateString).toLocaleString(locale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
+const formatDate = (d?: string) => d ? new Date(d).toLocaleString(navigator.language || 'en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+const timeAgo = (d?: string) => {
+    if (!d) return '';
+    const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+    if (s < 30) return 'just now';
+    if (s < 60) return `${s} seconds ago`;
+    if (s < 3600) return `${Math.floor(s / 60)} minutes ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)} hours ago`;
+    if (s < 2592000) return `${Math.floor(s / 86400)} days ago`;
+    if (s < 31536000) return `${Math.floor(s / 2592000)} months ago`;
+    return `${Math.floor(s / 31536000)} years ago`;
 };
-
-// Fungsi baru untuk format "waktu yang lalu"
-const timeAgo = (dateString?: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + ' years ago';
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + ' months ago';
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + ' days ago';
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + ' hours ago';
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + ' minutes ago';
-    if (seconds < 30) return 'just now';
-    return Math.floor(seconds) + ' seconds ago';
+const getCertStatusColor = (s?: string | null) => {
+    switch (s?.toLowerCase()) { case 'valid': return 'bg-green-100 text-green-800'; case 'expiring soon': return 'bg-yellow-100 text-yellow-800'; case 'invalid': case 'expired': return 'bg-red-100 text-red-800'; default: return 'bg-gray-100 text-gray-800'; }
 };
-
-const getStatusColor = (status?: string) => {
-    switch (status?.toLowerCase()) {
-        case 'up':
-            return 'bg-green-500';
-        case 'down':
-            return 'bg-red-500';
-        case 'warning':
-            return 'bg-yellow-500';
-        default:
-            return 'bg-gray-400';
-    }
+const getDomainExpirationColor = (d?: string | null) => {
+    if (!d) return 'bg-gray-100 text-gray-800';
+    const days = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
+    if (days < 0) return 'bg-red-100 text-red-800'; if (days <= 30) return 'bg-yellow-100 text-yellow-800'; return 'bg-green-100 text-green-800';
 };
-
-const getStatusTextColor = (status?: string) => {
-    switch (status?.toLowerCase()) {
-        case 'up':
-            return 'text-green-600';
-        case 'down':
-            return 'text-red-600';
-        case 'warning':
-            return 'text-yellow-600';
-        default:
-            return 'text-gray-600';
-    }
-};
-
-const getStatusText = (status?: string) => {
-    switch (status?.toLowerCase()) {
-        case 'up':
-            return 'Operational';
-        case 'down':
-            return 'Outage';
-        case 'warning':
-            return 'Degraded';
-        default:
-            return 'Unknown';
-    }
-};
-
-const getCertStatusColor = (certStatus?: string | null) => {
-    switch (certStatus?.toLowerCase()) {
-        case 'valid':
-            return 'bg-green-100 text-green-800';
-        case 'expiring soon':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'invalid':
-        case 'expired':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
-};
-
-const getDomainExpirationColor = (date?: string | null): string => {
-    if (!date) return 'bg-gray-100 text-gray-800';
-    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
-    if (daysLeft < 0) return 'bg-red-100 text-red-800';
-    if (daysLeft <= 30) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
-};
-
-const getDomainExpirationLabel = (date?: string | null): string => {
-    if (!date) return '';
-    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
-    if (daysLeft < 0) return 'Domain expired';
-    if (daysLeft === 0) return 'Domain expires today';
-    return `Domain ${daysLeft}d`;
+const getDomainExpirationLabel = (d?: string | null) => {
+    if (!d) return ''; const days = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
+    if (days < 0) return 'Domain expired'; if (days === 0) return 'Domain expires today'; return `Domain ${days}d`;
 };
 
 const overallStatus = computed(() => {
-    if (!monitors.value || monitors.value.length === 0) {
-        return { color: 'bg-green-500', text: 'All Systems Operational' };
-    }
+    if (!monitors.value.length) return { color: 'bg-green-500', text: 'All Systems Operational' };
     const hasDown = monitors.value.some((m) => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'down');
     const hasWarning = monitors.value.some((m) => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'warning');
-    if (hasDown) {
-        return { color: 'bg-red-500', text: 'Some Systems Are Down' };
-    }
-    if (hasWarning) {
-        return { color: 'bg-yellow-500', text: 'Some Systems Are Degraded' };
-    }
+    if (hasDown) return { color: 'bg-red-500', text: 'Some Systems Are Down' };
+    if (hasWarning) return { color: 'bg-yellow-500', text: 'Some Systems Are Degraded' };
     return { color: 'bg-green-500', text: 'All Systems Operational' };
 });
 
-// --- AUTO REFRESH COUNTDOWN ---
-const countdown = ref(60);
-let intervalId: number | undefined;
-
-const isOnline = ref(navigator.onLine);
-
-function updateOnlineStatus() {
-    isOnline.value = navigator.onLine;
-}
-
-function startCountdown() {
-    intervalId = window.setInterval(() => {
-        countdown.value--;
-        if (countdown.value <= 0) {
-            if (isOnline.value) {
-                refetchStatusPage();
-            }
-            countdown.value = 60;
-        }
-    }, 1000);
-}
-
-function refetchStatusPage() {
-    if (!isOnline.value) return;
-    fetchMonitors();
-    if (props.isAuthenticated) {
-        monitors.value.forEach((monitor) => {
-            fetchLatestHistory(monitor.id);
-        });
-        const today = new Date().toISOString().slice(0, 10);
-        monitors.value.forEach((monitor) => {
-            fetchUptimesDaily(monitor.id, today);
-        });
-    }
-}
-
 const isFullscreen = ref(false);
-
 function toggleFullscreen() {
-    const elem = document.documentElement;
-    if (!isFullscreen.value) {
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if ((elem as any).webkitRequestFullscreen) {
-            (elem as any).webkitRequestFullscreen();
-        } else if ((elem as any).msRequestFullscreen) {
-            (elem as any).msRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-            (document as any).webkitExitFullscreen();
-        } else if ((document as any).msExitFullscreen) {
-            (document as any).msExitFullscreen();
-        }
-    }
+    const el = document.documentElement as any;
+    if (!isFullscreen.value) { (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el); }
+    else { (document.exitFullscreen || (document as any).webkitExitFullscreen || (document as any).msExitFullscreen)?.call(document); }
 }
-
-function fullscreenChangeHandler() {
-    isFullscreen.value = !!(document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).msFullscreenElement);
-}
+function onFsChange() { isFullscreen.value = !!(document.fullscreenElement || (document as any).webkitFullscreenElement); }
 
 onMounted(() => {
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    document.addEventListener('fullscreenchange', fullscreenChangeHandler);
-    document.addEventListener('webkitfullscreenchange', fullscreenChangeHandler);
-    document.addEventListener('msfullscreenchange', fullscreenChangeHandler);
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
     fetchMonitors();
-    if (props.isAuthenticated) {
-        // Initial fetch for uptimesDaily (all days)
-        monitors.value.forEach((monitor) => {
-            fetchUptimesDaily(monitor.id);
-        });
-    }
-    startCountdown();
 });
-onUnmounted(() => {
-    if (intervalId) clearInterval(intervalId);
-    window.removeEventListener('online', updateOnlineStatus);
-    window.removeEventListener('offline', updateOnlineStatus);
-    document.removeEventListener('fullscreenchange', fullscreenChangeHandler);
-    document.removeEventListener('webkitfullscreenchange', fullscreenChangeHandler);
-    document.removeEventListener('msfullscreenchange', fullscreenChangeHandler);
-    document.removeEventListener('click', handleClickOutside);
-});
-
-const { isDark, toggleTheme } = useTheme();
-
-// Share functionality
-const showShareDropdown = ref(false);
-const linkCopied = ref(false);
-const shareDropdownRef = ref<HTMLElement | null>(null);
-
-const toggleShareDropdown = () => {
-    showShareDropdown.value = !showShareDropdown.value;
-};
-
-const shareUrl = computed(() => `${appUrl.value}/status/${props.statusPage.path}`);
-const shareText = computed(() => {
-    const title = props.statusPage.title;
-    const status = overallStatus.value.text;
-    const monitorCount = monitors.value.length;
-
-    if (monitorCount === 0) {
-        return `${title} - ${status}`;
-    }
-
-    const upCount = monitors.value.filter(
-        (m) => (latestHistory.value[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'up'
-    ).length;
-
-    return `${title}: ${status} (${upCount}/${monitorCount} services up)`;
-});
-
-const shareToTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText.value)}&url=${encodeURIComponent(shareUrl.value)}`;
-    window.open(url, '_blank', 'width=550,height=420');
-    showShareDropdown.value = false;
-};
-
-const shareToFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`;
-    window.open(url, '_blank', 'width=550,height=420');
-    showShareDropdown.value = false;
-};
-
-const shareToLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`;
-    window.open(url, '_blank', 'width=550,height=420');
-    showShareDropdown.value = false;
-};
-
-const shareToWhatsApp = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(shareText.value + ' ' + shareUrl.value)}`;
-    window.open(url, '_blank');
-    showShareDropdown.value = false;
-};
-
-const copyLink = async () => {
-    try {
-        await navigator.clipboard.writeText(shareUrl.value);
-        linkCopied.value = true;
-        setTimeout(() => {
-            linkCopied.value = false;
-            showShareDropdown.value = false;
-        }, 1500);
-    } catch (err) {
-        console.error('Failed to copy link:', err);
-    }
-};
-
-// Close dropdown when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
-    if (shareDropdownRef.value && !shareDropdownRef.value.contains(event.target as Node)) {
-        showShareDropdown.value = false;
-    }
-};
 </script>
 
 <template>
-    <OfflineBanner v-if="!isOnline" />
-    <Head :title="pageTitle">
-        <meta name="description" :content="pageDescription" />
-        <meta property="og:title" :content="pageTitle" />
-        <meta property="og:description" :content="pageDescription" />
-        <meta property="og:image" :content="`${appUrl}/og/status/${props.statusPage.path}.png`" />
-        <meta property="og:url" :content="`${appUrl}/status/${props.statusPage.path}`" />
-        <meta name="twitter:title" :content="pageTitle" />
-        <meta name="twitter:description" :content="pageDescription" />
-        <meta name="twitter:image" :content="`${appUrl}/og/status/${props.statusPage.path}.png`" />
-        <link rel="canonical" :href="`${appUrl}/status/${props.statusPage.path}`" />
-    </Head>
-
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between gap-4">
-                    <!-- Left: Icon + Title/Description (flexible, can shrink) -->
-                    <div class="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 sm:h-12 sm:w-12 dark:bg-blue-900">
-                            <Icon :name="statusPage.icon" class="h-5 w-5 text-blue-600 sm:h-6 sm:w-6 dark:text-blue-400" />
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <h1 class="truncate text-lg font-bold text-gray-900 sm:text-2xl dark:text-gray-100">{{ statusPage.title }}</h1>
-                            <p class="line-clamp-2 text-sm text-gray-600 sm:text-base dark:text-gray-300" :title="statusPage.description">
-                                {{ statusPage.description }}
-                            </p>
-                        </div>
-                    </div>
-                    <!-- Right: Action buttons (fixed, won't shrink) -->
-                    <div class="flex flex-shrink-0 items-center gap-1 sm:gap-2">
-                        <!-- Server Stats Badge (hidden on small screens) -->
-                        <div class="hidden sm:block">
-                            <ServerStatsBadge />
-                        </div>
-                        <!-- Share Button -->
-                        <div class="relative" ref="shareDropdownRef">
-                            <button
-                                @click="toggleShareDropdown"
-                                class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                                title="Share this page"
-                            >
-                                <Icon name="share2" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
-                            </button>
-                            <!-- Share Dropdown -->
-                            <div
-                                v-if="showShareDropdown"
-                                class="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-                            >
-                                <button
-                                    @click="shareToTwitter"
-                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    <Icon name="twitter" class="h-4 w-4" />
-                                    Share on X
-                                </button>
-                                <button
-                                    @click="shareToFacebook"
-                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    <Icon name="facebook" class="h-4 w-4" />
-                                    Share on Facebook
-                                </button>
-                                <button
-                                    @click="shareToLinkedIn"
-                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    <Icon name="linkedin" class="h-4 w-4" />
-                                    Share on LinkedIn
-                                </button>
-                                <button
-                                    @click="shareToWhatsApp"
-                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    <Icon name="messageCircle" class="h-4 w-4" />
-                                    Share on WhatsApp
-                                </button>
-                                <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                                <button
-                                    @click="copyLink"
-                                    class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    <Icon :name="linkCopied ? 'check' : 'link'" class="h-4 w-4" />
-                                    {{ linkCopied ? 'Copied!' : 'Copy Link' }}
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Theme Toggle Button -->
-                        <button
-                            @click="toggleTheme"
-                            class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-                        >
-                            <Icon v-if="isDark" name="sun" class="h-4 w-4 text-yellow-400 sm:h-5 sm:w-5" />
-                            <Icon v-else name="moon" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
-                        </button>
-                        <!-- Fullscreen Button -->
-                        <button
-                            @click="toggleFullscreen"
-                            class="cursor-pointer rounded-full border border-gray-200 bg-white p-2 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                            :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
-                            :title="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
-                        >
-                            <Icon v-if="isFullscreen" name="minimize" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
-                            <Icon v-else name="maximize" class="h-4 w-4 text-gray-600 sm:h-5 sm:w-5 dark:text-gray-200" />
-                        </button>
-                    </div>
-                </div>
+    <PublicLayout :title="pageTitle" :description="pageDescription" :og-image="ogImage" :canonical-url="shareUrl" :share-url="shareUrl" :share-text="shareText" :json-ld="jsonLd">
+        <template #header-left>
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900"><Icon :name="statusPage.icon" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div>
+            <div class="min-w-0 flex-1">
+                <h1 class="truncate text-lg font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">{{ statusPage.title }}</h1>
+                <p class="line-clamp-2 text-sm text-gray-600 dark:text-gray-300" :title="statusPage.description">{{ statusPage.description }}</p>
             </div>
-        </header>
+            <button @click="toggleFullscreen" class="ml-2 rounded-full border border-gray-200 bg-white p-2 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"><Icon :name="isFullscreen ? 'minimize' : 'maximize'" class="h-4 w-4 text-gray-600 dark:text-gray-200" /></button>
+        </template>
 
-        <main class="mx-auto max-w-7xl px-2 py-8 sm:px-4 lg:px-8">
-            <div class="mb-8">
-                <div class="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-                    <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">System Status</h2>
-                    <div class="flex flex-col items-start justify-between space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                        <div class="flex items-center space-x-3">
-                            <div
-                                class="h-4 w-4 animate-pulse rounded-full"
-                                :class="[
-                                    overallStatus.color,
-                                    overallStatus.text === 'All Systems Operational'
-                                        ? 'shadow-[0_0_10px_3px_rgba(34,197,94,0.7)]'
-                                        : overallStatus.text === 'Some Systems Are Down'
-                                          ? 'shadow-[0_0_10px_3px_rgba(239,68,68,0.7)]'
-                                          : overallStatus.text === 'Some Systems Are Degraded'
-                                            ? 'shadow-[0_0_10px_3px_rgba(250,204,21,0.7)]'
-                                            : 'shadow-[0_0_10px_3px_rgba(156,163,175,0.5)]',
-                                ]"
-                            ></div>
-                            <span class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ overallStatus.text }}</span>
-                        </div>
-                        <div class="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400" title="Auto refresh">
-                            <Icon name="clock" class="h-4 w-4" />
-                            <span>{{ countdown }}</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- System Status -->
+        <div class="mb-8 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+            <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">System Status</h2>
+            <div class="flex items-center gap-3">
+                <div role="status" :aria-label="overallStatus.text" class="h-4 w-4 animate-pulse rounded-full" :class="overallStatus.color" />
+                <span class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ overallStatus.text }}</span>
+            </div>
+        </div>
+
+        <!-- Services -->
+        <div class="rounded-lg bg-white shadow dark:bg-gray-800">
+            <div class="border-b border-gray-200 px-4 py-4 dark:border-gray-700"><h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3></div>
+
+            <div v-if="monitorsError" class="p-12 text-center">
+                <Icon name="alert-circle" class="mx-auto h-16 w-16 text-red-500" />
+                <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">{{ monitorsError === 'Status page not found' ? '404 - Page Not Found' : 'Error' }}</h3>
+                <p class="mx-auto mt-2 max-w-md text-gray-600 dark:text-gray-400">{{ monitorsError === 'Status page not found' ? 'Status page does not exist or has been removed.' : monitorsError }}</p>
             </div>
 
-            <div class="rounded-lg bg-white shadow dark:bg-gray-800">
-                <div class="border-b border-gray-200 px-4 py-4 sm:px-6 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3>
-                </div>
-                <div v-if="monitorsError" class="p-12 text-center">
-                    <div class="flex flex-col items-center space-y-4">
-                        <Icon name="alert-circle" class="h-16 w-16 text-red-500" />
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {{ monitorsError === 'Status page not found' ? '404 - Page Not Found' : 'Error' }}
-                        </h3>
-                        <p class="max-w-md text-gray-600 dark:text-gray-400">
-                            {{
-                                monitorsError === 'Status page not found'
-                                    ? 'The status page you are looking for does not exist or has been removed.'
-                                    : monitorsError
-                            }}
-                        </p>
-                    </div>
-                </div>
-                <div v-else class="relative divide-y divide-gray-200 dark:divide-gray-700">
-                    <div v-if="monitorsLoading" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-gray-800/70">
-                        <span class="text-gray-500 dark:text-gray-400">Refreshing...</span>
-                    </div>
-                    <div v-for="monitor in monitors" :key="monitor.id" class="relative group px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <div class="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
-                            <div class="flex w-full min-w-0 items-center space-x-4">
-                                <img
-                                    v-if="monitor.favicon"
-                                    :src="monitor.favicon"
-                                    class="h-5 w-5 rounded-full"
-                                    alt="favicon"
-                                    @error="($event.target as HTMLImageElement).style.display = 'none'"
-                                />
-                                <div v-else class="h-5 w-5 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-
-                                <div
-                                    class="h-3 w-3 flex-shrink-0 animate-pulse rounded-full"
-                                    :class="[
-                                        getStatusColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status),
-                                        (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'up'
-                                            ? 'shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]'
-                                            : (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'down'
-                                              ? 'shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]'
-                                              : (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)?.toLowerCase() === 'warning'
-                                                ? 'shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]'
-                                                : 'shadow-[0_0_8px_2px_rgba(156,163,175,0.5)]',
-                                    ]"
-                                ></div>
-
-                                <div class="min-w-0 flex-grow">
-                                    <h4 class="flex flex-wrap items-center font-medium text-gray-900 dark:text-gray-100">
-                                        <Link :href="'/m/' + monitor.host" class="after:absolute after:inset-0 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                            {{ monitor.name }}
-                                        </Link>
-                                        <span
-                                            v-if="monitor.certificate_check_enabled && monitor.certificate_status"
-                                            class="ml-2 flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase"
-                                            :class="getCertStatusColor(monitor.certificate_status)"
-                                            :title="'SSL is ' + monitor.certificate_status"
-                                        >
-                                            <Icon
-                                                v-if="monitor.certificate_status.toLowerCase() === 'valid'"
-                                                name="lock"
-                                                class="inline-block h-4 w-4"
-                                            />
-                                            <Icon
-                                                v-else-if="['invalid', 'expired'].includes(monitor.certificate_status.toLowerCase())"
-                                                name="lockOpen"
-                                                class="inline-block h-4 w-4"
-                                            />
-                                            <Icon
-                                                v-else-if="monitor.certificate_status.toLowerCase() === 'expiring soon'"
-                                                name="lock"
-                                                class="inline-block h-4 w-4"
-                                            />
-                                            <Icon v-else name="clock" class="inline-block h-4 w-4" />
-                                            <span class="sr-only uppercase">SSL {{ monitor.certificate_status }}</span>
-                                        </span>
-                                        <span
-                                            v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date"
-                                            class="ml-2 flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase"
-                                            :class="getDomainExpirationColor(monitor.domain_expiration_date)"
-                                            :title="'Domain expires ' + formatDate(monitor.domain_expiration_date)"
-                                        >
-                                            <Icon name="calendarClock" class="inline-block h-4 w-4" />
-                                            <span>{{ getDomainExpirationLabel(monitor.domain_expiration_date) }}</span>
-                                        </span>
-                                    </h4>
-                                    <a
-                                        class="relative z-20 block text-sm break-all text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
-                                        :href="monitor.url"
-                                        target="_blank"
-                                        >{{ monitor.url }}</a
-                                    >
-                                </div>
-                            </div>
-
-                            <div class="ml-0 w-full flex-shrink-0 text-right sm:ml-4 sm:w-auto">
-                                <div
-                                    class="text-sm font-medium"
-                                    :class="
-                                        getStatusTextColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) + ' dark:text-inherit'
-                                    "
-                                >
-                                    <template v-if="props.isAuthenticated && latestHistoryLoading[monitor.id]">Loading...</template>
-                                    <template v-else-if="props.isAuthenticated && latestHistoryError[monitor.id]">Error</template>
-                                    <template v-else>{{ getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) }}</template>
-                                </div>
-                                <div
-                                    v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date"
-                                    class="text-xs text-gray-500 dark:text-gray-400"
-                                    :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined)"
-                                >
-                                    Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Daily History Bar Chart for Latest 100 Days -->
-                        <DailyUptimeChart
-                            :monitor-id="monitor.id"
-                            :is-authenticated="props.isAuthenticated"
-                            :uptimes-daily="uptimesDaily[monitor.id]"
-                            :is-loading="uptimesDailyLoading[monitor.id]"
-                            :error="uptimesDailyError[monitor.id]"
-                        />
-                    </div>
-                </div>
+            <div v-else-if="monitorsLoading" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <div v-for="i in 3" :key="i" class="px-4 py-4 sm:px-6"><Skeleton class="h-5 w-1/3" /><Skeleton class="mt-2 h-4 w-1/2" /></div>
             </div>
 
-            <PublicFooter powered-by-url="https://uptime.syofyanzuhad.dev" />
-        </main>
+            <div v-else-if="monitors.length === 0" class="p-12 text-center">
+                <Icon name="inbox" class="mx-auto h-12 w-12 text-gray-400" />
+                <p class="mt-4 text-gray-600 dark:text-gray-400">No services configured for this status page.</p>
+            </div>
 
-        <!-- Toast Container for real-time notifications -->
-        <ToastContainer />
-    </div>
+            <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                <div v-for="monitor in monitors" :key="monitor.id" class="group relative px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 sm:px-6">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex min-w-0 items-center gap-4">
+                            <img v-if="monitor.favicon" :src="monitor.favicon" class="h-5 w-5 rounded-full" alt="" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+                            <div v-else class="h-5 w-5 rounded-full bg-gray-200 dark:bg-gray-700" />
+                            <div role="status" :aria-label="getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)" class="h-3 w-3 flex-shrink-0 animate-pulse rounded-full" :class="getStatusColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)" />
+                            <div class="min-w-0 flex-1">
+                                <h4 class="flex flex-wrap items-center font-medium text-gray-900 dark:text-gray-100">
+                                    <Link :href="'/m/' + monitor.host" class="after:absolute after:inset-0 hover:text-blue-600 dark:hover:text-blue-400">{{ monitor.name }}</Link>
+                                    <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="ml-2 inline-flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase" :class="getCertStatusColor(monitor.certificate_status)"><span class="sr-only">SSL {{ monitor.certificate_status }}</span>{{ monitor.certificate_status }}</span>
+                                    <span v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date" class="ml-2 inline-flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase" :class="getDomainExpirationColor(monitor.domain_expiration_date)">{{ getDomainExpirationLabel(monitor.domain_expiration_date) }}</span>
+                                </h4>
+                                <a class="relative z-20 block break-all text-sm text-gray-500 hover:underline dark:text-gray-400" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                            </div>
+                        </div>
+                        <div class="ml-0 flex-shrink-0 text-right sm:ml-4">
+                            <div class="text-sm font-medium" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)">{{ getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) }}</div>
+                            <div v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined)">Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined) }}</div>
+                        </div>
+                    </div>
+                    <DailyUptimeChart :monitor-id="monitor.id" :is-authenticated="props.isAuthenticated" :uptimes-daily="uptimesDaily[monitor.id]" />
+                </div>
+            </div>
+        </div>
+    </PublicLayout>
 </template>
