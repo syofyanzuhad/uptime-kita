@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Unit\Listeners;
-
 use App\Listeners\SendCustomMonitorNotification;
 use App\Models\Monitor;
 use App\Models\User;
@@ -9,28 +7,22 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Helpers\Period;
-use Tests\TestCase;
 
-class SendCustomMonitorNotificationTest extends TestCase
-{
-    protected function setUp(): void
-    {
-        parent::setUp();
+beforeEach(function () {
+    $this->monitor = Monitor::factory()->create([
+        'url' => 'https://example.com',
+        'uptime_check_enabled' => true,
+    ]);
 
-        $this->monitor = Monitor::factory()->create([
-            'url' => 'https://example.com',
-            'uptime_check_enabled' => true,
-        ]);
+    $this->user1 = User::factory()->create();
+    $this->listener = new SendCustomMonitorNotification;
 
-        $this->user1 = User::factory()->create();
-        $this->listener = new SendCustomMonitorNotification;
+    Notification::fake();
+    Cache::flush();
+});
 
-        Notification::fake();
-        Cache::flush();
-    }
-
-    public function test_it_buffers_notifications_to_cache()
-    {
+describe('SendCustomMonitorNotification', function () {
+    it('buffers notifications to cache', function () {
         $this->monitor->users()->attach($this->user1->id, ['is_active' => true]);
 
         $downtimePeriod = new Period(now()->subMinutes(5), now());
@@ -39,13 +31,11 @@ class SendCustomMonitorNotificationTest extends TestCase
         $this->listener->handle($event);
 
         $pending = Cache::get('pending_monitor_notifications');
-        $this->assertCount(1, $pending);
-        $this->assertEquals($this->monitor->id, $pending[0]['monitor_id']);
-    }
+        expect($pending)->toHaveCount(1);
+        expect($pending[0]['monitor_id'])->toBe($this->monitor->id);
+    });
 
-    public function test_it_skips_buffering_for_monitors_in_maintenance()
-    {
-        // Set a valid maintenance window that covers 'now'
+    it('skips buffering for monitors in maintenance', function () {
         $this->monitor->update([
             'maintenance_windows' => [
                 [
@@ -63,6 +53,6 @@ class SendCustomMonitorNotificationTest extends TestCase
         $downtimePeriod = new Period(now()->subMinutes(5), now());
         $this->listener->handle(new UptimeCheckFailed($this->monitor, $downtimePeriod));
 
-        $this->assertNull(Cache::get('pending_monitor_notifications'));
-    }
-}
+        expect(Cache::get('pending_monitor_notifications'))->toBeNull();
+    });
+});
