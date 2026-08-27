@@ -59,7 +59,7 @@ const statusFilter = ref(props.filters.status_filter);
 const tagFilter = ref(props.filters.tag_filter || '');
 const sortBy = ref(props.filters.sort_by || 'default');
 const sortOptions = [
-    { value: 'default', label: 'Default (by ID)' }, { value: 'popular', label: 'Most Popular' },
+    { value: 'default', label: 'Default' }, { value: 'popular', label: 'Most Popular' },
     { value: 'uptime', label: 'Best Uptime' }, { value: 'response_time', label: 'Fastest Response' },
     { value: 'newest', label: 'Newest First' }, { value: 'name', label: 'Name (A-Z)' }, { value: 'status', label: 'Status (Down First)' },
 ];
@@ -121,10 +121,45 @@ watch(() => props.filters, (nf) => {
 
 const showBackToTop = ref(false);
 const onScroll = () => { showBackToTop.value = window.scrollY > 300; };
-onMounted(() => window.addEventListener('scroll', onScroll));
-onUnmounted(() => window.removeEventListener('scroll', onScroll));
 
 const hasActiveFilter = computed(() => !!searchQuery.value || statusFilter.value !== 'all' || !!tagFilter.value || sortBy.value !== 'default');
+const showingText = computed(() => {
+    const total = monitorsMeta.value.total ?? monitorsData.value.length;
+    if (!total) return '';
+    if (hasActiveFilter.value) return `Showing ${monitorsData.value.length} of ${total}`;
+    return `${total} monitors`;
+});
+const activePills = computed(() => {
+    const pills: Array<{ key: string; label: string; clear: () => void }> = [];
+    if (searchQuery.value) pills.push({ key: 'search', label: `"${searchQuery.value}"`, clear: () => { searchQuery.value = ''; applyFilters(); } });
+    if (statusFilter.value !== 'all') pills.push({ key: 'status', label: statusFilter.value === 'up' ? 'Operational' : 'Down', clear: () => { statusFilter.value = 'all'; applyFilters(); } });
+    if (tagFilter.value) pills.push({ key: 'tag', label: tagFilter.value, clear: () => { tagFilter.value = ''; applyFilters(); } });
+    if (sortBy.value !== 'default') pills.push({ key: 'sort', label: sortOptions.find((o) => o.value === sortBy.value)?.label ?? sortBy.value, clear: () => { sortBy.value = 'default'; applyFilters(); } });
+    return pills;
+});
+function clearSearch() { searchQuery.value = ''; applyFilters(); }
+
+// Infinite scroll sentinel
+const sentinelRef = ref<HTMLElement | null>(null);
+let io: IntersectionObserver | null = null;
+function setupInfiniteScroll() {
+    if (io) io.disconnect();
+    if (!sentinelRef.value) return;
+    io = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isLoading.value && currentPage.value < monitorsMeta.value.last_page) loadMore();
+    }, { rootMargin: '400px' });
+    io.observe(sentinelRef.value);
+}
+
+onMounted(() => {
+    window.addEventListener('scroll', onScroll);
+    setupInfiniteScroll();
+});
+onUnmounted(() => {
+    window.removeEventListener('scroll', onScroll);
+    io?.disconnect();
+});
+watch([() => currentPage.value, () => monitorsMeta.value.last_page], () => nextTick(setupInfiniteScroll));
 
 // Free domain checker — hero
 const domainInput = ref('');
@@ -149,6 +184,7 @@ function monitorThisDomain() {
     if (!domainResult.value) return;
     router.visit(`/monitor/create?url=${encodeURIComponent('https://' + domainResult.value.host)}`);
 }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 </script>
 
 <template>
@@ -200,15 +236,26 @@ function monitorThisDomain() {
         </div>
 
         <!-- Filters -->
-        <Card class="mb-6 p-2"><CardContent class="p-4">
-            <div class="flex flex-col gap-4 sm:flex-row">
-                <div class="flex-1"><label for="search-monitors" class="sr-only">Search monitors</label><input id="search-monitors" v-model="searchQuery" type="text" placeholder="Search monitors..." class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2" @input="debounceSearch" /></div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div><label for="sort-by" class="sr-only">Sort by</label><select id="sort-by" v-model="sortBy" @change="applyFilters" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"><option v-for="o in sortOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select></div>
-                    <div><label for="status-filter" class="sr-only">Filter by status</label><select id="status-filter" v-model="statusFilter" @change="applyFilters" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"><option value="all">All Status</option><option value="up">Operational</option><option value="down">Down</option></select></div>
-                    <div><label for="tag-filter" class="sr-only">Filter by tag</label><select id="tag-filter" v-model="tagFilter" @change="applyFilters" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:px-3 sm:py-2"><option value="">All Tags</option><option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">{{ tag.name.en }}</option></select></div>
+        <Card class="mb-2"><CardContent class="p-3 sm:p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div class="relative flex-1">
+                    <label for="search-monitors" class="sr-only">Search monitors</label>
+                    <Icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input id="search-monitors" v-model="searchQuery" type="text" placeholder="Search monitors..." class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" @input="debounceSearch" />
+                    <button v-if="searchQuery" type="button" @click="clearSearch" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600" aria-label="Clear search"><Icon name="x" class="h-3.5 w-3.5" /></button>
                 </div>
-                <div><button @click="router.visit('/monitor/create')" class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto sm:py-2"><Icon name="plus" class="h-4 w-4" /><span>Create Monitor</span></button></div>
+                <div class="grid grid-cols-3 gap-2 sm:flex sm:shrink-0">
+                    <label for="sort-by" class="sr-only">Sort by</label><select id="sort-by" v-model="sortBy" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option v-for="o in sortOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+                    <label for="status-filter" class="sr-only">Filter by status</label><select id="status-filter" v-model="statusFilter" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option value="all">All Status</option><option value="up">Operational</option><option value="down">Down</option></select>
+                    <label for="tag-filter" class="sr-only">Filter by tag</label><select id="tag-filter" v-model="tagFilter" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option value="">All Tags</option><option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">{{ tag.name.en }}</option></select>
+                </div>
+                <button @click="router.visit('/monitor/create')" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"><Icon name="plus" class="h-4 w-4" /><span>Create Monitor</span></button>
+            </div>
+            <div v-if="showingText || activePills.length" class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span v-if="showingText" class="text-gray-500 dark:text-gray-400">{{ showingText }}</span>
+                <span v-if="showingText && activePills.length" class="text-gray-300 dark:text-gray-600">•</span>
+                <span v-for="pill in activePills" :key="pill.key" class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{{ pill.label }}<button type="button" @click="pill.clear()" class="rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800" :aria-label="`Remove ${pill.key} filter`"><Icon name="x" class="h-3 w-3" /></button></span>
+                <button v-if="activePills.length" type="button" @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()" class="font-medium text-blue-600 hover:underline dark:text-blue-400">Clear all</button>
             </div>
         </CardContent></Card>
 
@@ -220,9 +267,12 @@ function monitorThisDomain() {
         <!-- Empty -->
         <div v-else-if="monitorsData.length === 0" class="py-12 text-center">
             <Icon name="search" class="mx-auto mb-4 h-16 w-16 text-gray-400" />
-            <h2 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">{{ hasActiveFilter ? 'No results for current filters' : 'No monitors found' }}</h2>
-            <p class="text-gray-500 dark:text-gray-400">{{ hasActiveFilter ? 'Try adjusting search or filters' : 'No public monitors yet' }}</p>
-            <button v-if="hasActiveFilter" @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()" class="mt-4 text-sm text-blue-600 hover:underline">Clear filters</button>
+            <h2 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">{{ hasActiveFilter ? 'No results for current filters' : 'No public monitors yet' }}</h2>
+            <p class="text-gray-500 dark:text-gray-400">{{ hasActiveFilter ? 'Try adjusting search or filters' : 'Be the first to share a monitor publicly.' }}</p>
+            <div class="mt-4 flex justify-center gap-3">
+                <button v-if="hasActiveFilter" @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()" class="text-sm text-blue-600 hover:underline">Clear filters</button>
+                <button v-else @click="router.visit('/monitor/create')" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Create first monitor</button>
+            </div>
         </div>
 
         <!-- Grid -->
@@ -230,9 +280,11 @@ function monitorThisDomain() {
             <MonitorCardPublic v-for="m in monitorsData" :key="m.id" :monitor="m" @click="viewMonitor" />
         </div>
 
-        <!-- Load More -->
-        <div v-if="currentPage < monitorsMeta.last_page" class="mt-8 text-center">
-            <button @click="loadMore" :disabled="isLoading" class="inline-flex w-full items-center justify-center rounded-lg bg-gray-600 px-6 py-4 text-sm font-medium text-white hover:bg-gray-700 disabled:bg-gray-400 sm:w-auto sm:py-3">
+        <!-- Infinite sentinel + fallback button -->
+        <div ref="sentinelRef" class="h-1" aria-hidden="true"></div>
+        <div v-if="isLoading && monitorsData.length > 0" class="mt-4 flex justify-center"><Icon name="loader" class="h-5 w-5 animate-spin text-gray-400" /></div>
+        <div v-if="currentPage < monitorsMeta.last_page" class="mt-6 text-center">
+            <button @click="loadMore" :disabled="isLoading" class="inline-flex w-full items-center justify-center rounded-lg bg-gray-600 px-6 py-3 text-sm font-medium text-white hover:bg-gray-700 disabled:bg-gray-400 sm:w-auto">
                 <Icon v-if="isLoading" name="loader" class="mr-2 h-4 w-4 animate-spin" /><span v-else>Load More Monitors</span>
             </button>
         </div>
@@ -249,7 +301,7 @@ function monitorThisDomain() {
                 <div class="mb-4 flex items-center justify-between"><h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2><span class="text-sm text-gray-500">Last 10</span></div>
                 <div class="space-y-3">
                     <div v-for="inc in props.latestIncidents" :key="inc.id" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50" @click="viewIncidentMonitor(inc)">
-                        <div :class="['flex h-8 w-8 items-center justify-center rounded-full', inc.ended_at ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30']"><Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" :class="['h-4 w-4', inc.ended_at ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']" /></div>
+                        <div :class="['flex h-8 w-8 items-center justify-center rounded-full', inc.ended_at ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30']"><Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" :class="inc.ended_at ? 'h-4 w-4 text-green-600 dark:text-green-400' : 'h-4 w-4 text-red-600 dark:text-red-400'" /></div>
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400"><span v-if="inc.type">Type: {{ inc.type }} • </span><span v-if="inc.status_code">Status: {{ inc.status_code }} • </span>Started {{ formatRelativeTime(inc.started_at) }}</p>
@@ -264,6 +316,6 @@ function monitorThisDomain() {
 
         <div v-if="props.showSmolLaunchBadge" class="mt-12 flex justify-center pb-8"><a href="https://smollaunch.com" target="_blank" rel="noopener"><img src="https://smollaunch.com/badges/featured.svg" alt="Featured on Smol Launch" loading="lazy" width="250" height="60" /></a></div>
 
-        <button v-show="showBackToTop" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" class="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 p-3 text-white shadow-lg hover:bg-blue-700 dark:bg-blue-500" aria-label="Back to top"><Icon name="chevronUp" class="h-5 w-5" /></button>
+        <button v-show="showBackToTop" @click="scrollToTop" class="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 p-3 text-white shadow-lg hover:bg-blue-700 dark:bg-blue-500" aria-label="Back to top"><Icon name="chevronUp" class="h-5 w-5" /></button>
     </PublicLayout>
 </template>
