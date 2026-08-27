@@ -18,7 +18,32 @@ use Spatie\UptimeMonitor\Commands\CheckCertificates;
 
 $scheduleFrequency = env('SCHEDULE_FREQUENCY', 'everyMinute');
 
-if ($scheduleFrequency !== 'none') {
+if ($scheduleFrequency === 'hourly') {
+    // Staggered to avoid thundering herd at :00
+    Schedule::command('monitor:check-uptime')->hourlyAt(0)
+        ->withoutOverlapping(10)
+        ->runInBackground()
+        ->onSuccess(function () {
+            info('UPTIME-CHECK: SUCCESS');
+        })
+        ->onFailure(function () {
+            info('UPTIME-CHECK: FAILED');
+        })
+        ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+
+    Schedule::job(new SendBatchedNotificationsJob)->hourlyAt(5);
+
+    Schedule::command(RunHealthChecksCommand::class)->hourlyAt(10)
+        ->withoutOverlapping()
+        ->runInBackground();
+    Schedule::command(ScheduleCheckHeartbeatCommand::class)->hourlyAt(12);
+    Schedule::command(DispatchQueueCheckJobsCommand::class)->hourlyAt(15);
+
+    Schedule::command('monitor:update-maintenance-status')->hourlyAt(20);
+
+    Schedule::job(new CalculateMonitorStatisticsJob)->hourlyAt(30)
+        ->withoutOverlapping(10);
+} elseif ($scheduleFrequency !== 'none') {
     Schedule::command('monitor:check-uptime')->$scheduleFrequency()
         ->withoutOverlapping(10)
         ->runInBackground()
@@ -41,6 +66,10 @@ if ($scheduleFrequency !== 'none') {
 
     // Update maintenance status for monitors
     Schedule::command('monitor:update-maintenance-status')->$scheduleFrequency();
+
+    Schedule::job(new CalculateMonitorStatisticsJob)
+        ->$scheduleFrequency()
+        ->withoutOverlapping(10);
 }
 
 Schedule::command(CheckCertificates::class)->daily();
@@ -70,9 +99,6 @@ Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::cl
 Schedule::job(new CalculateMonitorUptimeDailyJob)->twiceDaily()
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
-Schedule::job(new CalculateMonitorStatisticsJob)
-    ->$scheduleFrequency()
-    ->withoutOverlapping(10);
 Schedule::command('sitemap:generate')->daily();
 
 if (config('database.default') === 'sqlite') {
