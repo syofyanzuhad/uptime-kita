@@ -126,11 +126,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll));
 
 const hasActiveFilter = computed(() => !!searchQuery.value || statusFilter.value !== 'all' || !!tagFilter.value || sortBy.value !== 'default');
 
-// Free domain checker
+// Free domain checker — hero
 const domainInput = ref('');
 const domainChecking = ref(false);
 const domainResult = ref<null | { url: string; host: string; status_code: number | null; ok: boolean; response_time_ms: number; error?: string }>(null);
 const domainError = ref('');
+const exampleDomains = ['example.com', 'google.com', 'github.com'];
 async function checkDomain() {
     const v = domainInput.value.trim();
     if (!v) { domainError.value = 'Enter a domain or URL.'; return; }
@@ -143,55 +144,60 @@ async function checkDomain() {
     } catch { domainError.value = 'Network error. Try again.'; }
     finally { domainChecking.value = false; }
 }
+function tryExample(domain: string) { domainInput.value = domain; checkDomain(); }
+function monitorThisDomain() {
+    if (!domainResult.value) return;
+    router.visit(`/monitor/create?url=${encodeURIComponent('https://' + domainResult.value.host)}`);
+}
 </script>
 
 <template>
     <PublicLayout :title="pageTitle" :description="pageDescription" :og-image="ogImage" :canonical-url="shareUrl" :share-url="shareUrl" :share-text="shareText" :show-server-stats="true" :json-ld="jsonLd">
 
-        <!-- Free Domain Checker -->
-        <Card class="mb-6 border-blue-200 dark:border-blue-800">
-            <CardContent class="p-4 sm:p-5">
-                <div class="flex items-center gap-2 mb-3">
-                    <Icon name="globe" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <h2 class="font-semibold text-gray-900 dark:text-white">Free Website Checker</h2>
-                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">Free</span>
+        <!-- Hero: Free Website Checker -->
+        <div class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 p-6 sm:p-8 shadow-lg">
+            <div class="mx-auto max-w-3xl text-center">
+                <div class="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                    <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span> Free • No signup • Instant
                 </div>
-                <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">Enter any domain or URL to check if it's up — instant, no signup.</p>
-                <form @submit.prevent="checkDomain" class="flex flex-col gap-2 sm:flex-row">
-                    <input v-model="domainInput" type="text" placeholder="example.com or https://example.com" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                    <button type="submit" :disabled="domainChecking" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                <h2 class="text-2xl font-bold tracking-tight text-white sm:text-3xl">Check any website in seconds</h2>
+                <p class="mt-2 text-sm text-blue-100 sm:text-base">Enter a domain or URL to see if it's up — response time & status, instantly.</p>
+                <form @submit.prevent="checkDomain" class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <label for="hero-domain-input" class="sr-only">Domain or URL to check</label>
+                    <input id="hero-domain-input" v-model="domainInput" type="text" placeholder="example.com or https://example.com" autocomplete="off" class="flex-1 rounded-xl border-0 bg-white px-5 py-3.5 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:ring-2 focus:ring-white/50" />
+                    <button type="submit" :disabled="domainChecking" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-60">
                         <Icon v-if="domainChecking" name="loader" class="h-4 w-4 animate-spin" />
                         <Icon v-else name="search" class="h-4 w-4" />
                         {{ domainChecking ? 'Checking…' : 'Check Now' }}
                     </button>
                 </form>
-                <p v-if="domainError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ domainError }}</p>
-                <div v-if="domainResult" class="mt-3 flex flex-wrap items-center gap-2 rounded-lg border p-3" :class="domainResult.ok ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'">
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="domainResult.ok ? 'bg-green-500' : 'bg-red-500'"></span>
-                    <span class="font-medium text-sm" :class="domainResult.ok ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'">{{ domainResult.ok ? 'Up' : 'Down / Error' }}</span>
-                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ domainResult.host }}</span>
-                    <span v-if="domainResult.status_code" class="rounded bg-white px-2 py-0.5 text-xs font-mono dark:bg-gray-800">{{ domainResult.status_code }}</span>
-                    <span class="text-xs text-gray-500">{{ domainResult.response_time_ms }} ms</span>
-                    <span v-if="domainResult.error" class="w-full text-xs text-red-600 dark:text-red-400">{{ domainResult.error }}</span>
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
+                    <span class="text-blue-200">Try:</span>
+                    <button v-for="ex in exampleDomains" :key="ex" type="button" @click="tryExample(ex)" class="rounded-full bg-white/15 px-3 py-1 font-medium text-white hover:bg-white/25 backdrop-blur">{{ ex }}</button>
                 </div>
-            </CardContent>
-        </Card>
-
-        <!-- Stats Overview -->
-        <div class="mb-8 grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">
-            <Card class="cursor-pointer hover:shadow-md" @click="filterByStatus('all')" :class="statusFilter === 'all' ? 'ring-2 ring-blue-500' : ''"><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{{ stats.total_public }}</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Total Public</div></CardContent></Card>
-            <Card class="cursor-pointer hover:shadow-md" @click="filterByStatus('up')" :class="statusFilter === 'up' ? 'ring-2 ring-green-500' : ''"><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-green-600 dark:text-green-400 sm:text-2xl">{{ stats.up }}</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Operational</div></CardContent></Card>
-            <Card class="cursor-pointer hover:shadow-md" @click="filterByStatus('down')" :class="statusFilter === 'down' ? 'ring-2 ring-red-500' : ''"><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-red-600 dark:text-red-400 sm:text-2xl">{{ stats.down }}</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Down</div></CardContent></Card>
-            <Card><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-blue-600 dark:text-blue-400 sm:text-2xl">{{ Math.round((stats.up / stats.total_public) * 100) || 0 }}%</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Uptime</div></CardContent></Card>
-            <Card><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-purple-600 dark:text-purple-400 sm:text-2xl" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} daily checks`">{{ formatChecksCount(stats.daily_checks || 0) }}</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">Last 24 H</div></CardContent></Card>
-            <Card><CardContent class="p-2 text-center sm:p-4"><div class="text-xl font-bold text-indigo-600 dark:text-indigo-400 sm:text-2xl" :title="`${(stats.monthly_checks || 0).toLocaleString('id-ID')} monthly checks`">{{ formatChecksCount(stats.monthly_checks || 0) }}</div><div class="text-xs text-gray-500 dark:text-gray-400 sm:text-sm">This Month</div></CardContent></Card>
+                <p v-if="domainError" role="alert" class="mt-3 rounded-lg bg-red-500/20 px-3 py-2 text-sm text-white">{{ domainError }}</p>
+                <div v-if="domainResult" role="status" aria-live="polite" class="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-sm">
+                    <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="domainResult.ok ? 'bg-green-500' : 'bg-red-500'"></span>
+                    <span class="font-semibold" :class="domainResult.ok ? 'text-green-700' : 'text-red-700'">{{ domainResult.ok ? 'Up' : 'Down / Error' }}</span>
+                    <span class="font-medium text-gray-700">{{ domainResult.host }}</span>
+                    <span v-if="domainResult.status_code" class="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">{{ domainResult.status_code }}</span>
+                    <span class="text-gray-500">{{ domainResult.response_time_ms }} ms</span>
+                    <button v-if="domainResult.ok" type="button" @click="monitorThisDomain" class="ml-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">Monitor this →</button>
+                    <span v-if="domainResult.error" class="w-full text-xs text-red-600">{{ domainResult.error }}</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Demo Banner -->
-        <Link href="/status/demo" class="mb-6 flex items-center justify-between rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 hover:border-blue-300 hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50"><Icon name="activity" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div><div><p class="font-medium text-gray-900 dark:text-white">Try our Demo Status Page</p><p class="text-sm text-gray-600 dark:text-gray-400">See how status pages work</p></div></div>
-            <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400"><span class="hidden text-sm font-medium sm:inline">View Demo</span><Icon name="arrowRight" class="h-5 w-5" /></div>
-        </Link>
+        <!-- Stats strip -->
+        <div class="mb-6 flex flex-wrap items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-800 sm:gap-6">
+            <button type="button" @click="filterByStatus('all')" class="flex items-center gap-2" :class="statusFilter === 'all' ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500'"><span class="text-lg font-bold">{{ stats.total_public }}</span> Total</button>
+            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
+            <button type="button" @click="filterByStatus('up')" class="flex items-center gap-1.5" :class="statusFilter === 'up' ? 'font-semibold text-green-700 dark:text-green-400' : 'text-gray-500'"><span class="h-2 w-2 rounded-full bg-green-500"></span>{{ stats.up }} Operational</button>
+            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
+            <span class="flex items-center gap-1.5 text-gray-500"><span class="font-bold text-blue-600 dark:text-blue-400">{{ Math.round((stats.up / stats.total_public) * 100) || 0 }}%</span> Uptime</span>
+            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
+            <span class="flex items-center gap-1.5 text-gray-500" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} checks last 24h`"><Icon name="activity" class="h-3.5 w-3.5" />{{ formatChecksCount(stats.daily_checks || 0) }} / 24h</span>
+        </div>
 
         <!-- Filters -->
         <Card class="mb-6 p-2"><CardContent class="p-4">
@@ -230,6 +236,12 @@ async function checkDomain() {
                 <Icon v-if="isLoading" name="loader" class="mr-2 h-4 w-4 animate-spin" /><span v-else>Load More Monitors</span>
             </button>
         </div>
+
+        <!-- Demo Banner (secondary, below grid) -->
+        <Link href="/status/demo" class="mt-8 flex items-center justify-between rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 hover:border-blue-300 hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50"><Icon name="activity" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div><div><p class="font-medium text-gray-900 dark:text-white">Try our Demo Status Page</p><p class="text-sm text-gray-600 dark:text-gray-400">See how status pages work</p></div></div>
+            <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400"><span class="hidden text-sm font-medium sm:inline">View Demo</span><Icon name="arrowRight" class="h-5 w-5" /></div>
+        </Link>
 
         <!-- Latest Incidents -->
         <div v-if="props.latestIncidents?.length" class="mt-8">
