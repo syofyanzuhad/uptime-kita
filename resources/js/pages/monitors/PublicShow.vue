@@ -467,13 +467,55 @@
                             </CardTitle>
                         </CardHeader>
                         <CardContent class="p-6 pt-2 space-y-4">
-                            <div class="flex justify-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
-                                <img :src="badgeUrl" :alt="`${monitor.host} uptime badge`" class="h-6" />
+                            <!-- Live Preview -->
+                            <div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 mb-2">Live Preview</span>
+                                <img :src="badgeUrl" :alt="`${monitor.host} uptime badge`" class="h-6 transition-all" />
                             </div>
 
-                            <div class="space-y-3">
+                            <!-- Customization Controls -->
+                            <div class="space-y-2.5">
                                 <div>
-                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Markdown (for README)</label>
+                                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Time Range</label>
+                                    <div class="grid grid-cols-4 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+                                        <button
+                                            v-for="p in (['24h', '7d', '30d', '90d'] as const)"
+                                            :key="p"
+                                            type="button"
+                                            @click="badgePeriod = p"
+                                            class="rounded-lg py-1 text-xs font-bold transition-all"
+                                            :class="badgePeriod === p ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'"
+                                        >
+                                            {{ p }}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Badge Style</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+                                        <button
+                                            v-for="s in [
+                                                { key: 'flat', label: 'Flat' },
+                                                { key: 'flat-square', label: 'Square' },
+                                                { key: 'for-the-badge', label: 'Caps' },
+                                                { key: 'plastic', label: 'Plastic' },
+                                            ] as const"
+                                            :key="s.key"
+                                            type="button"
+                                            @click="badgeStyle = s.key"
+                                            class="rounded-lg py-1 text-xs font-bold transition-all"
+                                            :class="badgeStyle === s.key ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'"
+                                        >
+                                            {{ s.label }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 pt-1">
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Markdown (with Status Page Link)</label>
                                     <div class="relative">
                                         <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeMarkdown }}</code>
                                         <button
@@ -486,7 +528,20 @@
                                 </div>
 
                                 <div>
-                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Direct Badge URL</label>
+                                    <label class="mb-1 block text-xs font-semibold text-gray-500">HTML Embed</label>
+                                    <div class="relative">
+                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeHtml }}</code>
+                                        <button
+                                            @click="copyToClipboard(badgeHtml, 'html')"
+                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                        >
+                                            <Icon :name="copiedType === 'html' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Direct SVG URL</label>
                                     <div class="relative">
                                         <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeUrl }}</code>
                                         <button
@@ -556,17 +611,29 @@ const formatDuration = (minutes: number): string => {
 };
 
 // Badge embed functionality
+const badgePeriod = ref<'24h' | '7d' | '30d' | '90d'>('24h');
+const badgeStyle = ref<'flat' | 'flat-square' | 'for-the-badge' | 'plastic'>('flat');
+
 const badgeUrl = computed(() => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/badge/${monitor.value.host}`;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (props.appUrl || 'https://uptime.syofyanzuhad.dev');
+    const params = new URLSearchParams();
+    if (badgePeriod.value !== '24h') params.append('period', badgePeriod.value);
+    if (badgeStyle.value !== 'flat') params.append('style', badgeStyle.value);
+    const qs = params.toString();
+    return `${baseUrl}/badge/${monitor.value.host}${qs ? `?${qs}` : ''}`;
+});
+
+const monitorPageUrl = computed(() => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (props.appUrl || 'https://uptime.syofyanzuhad.dev');
+    return `${baseUrl}/m/${monitor.value.host}`;
 });
 
 const badgeMarkdown = computed(() => {
-    return `![Uptime](${badgeUrl.value})`;
+    return `[![Uptime](${badgeUrl.value})](${monitorPageUrl.value})`;
 });
 
 const badgeHtml = computed(() => {
-    return `<img src="${badgeUrl.value}" alt="Uptime" />`;
+    return `<a href="${monitorPageUrl.value}" target="_blank"><img src="${badgeUrl.value}" alt="${monitor.value.name} Uptime" /></a>`;
 });
 
 const copiedType = ref<string | null>(null);

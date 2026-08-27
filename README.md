@@ -389,47 +389,79 @@ The page auto-refreshes every 5 seconds (configurable), with color-coded progres
 - 🟡 Yellow: 70-90% usage
 - 🔴 Red: > 90% usage
 
-## 🏷️ Uptime Badge
+## 🏷️ Embed Status Badge
 
-Embed an uptime badge in your README or website to show your service status.
+Showcase your real-time service availability with dynamic SVG status badges in your GitHub `README.md`, personal portfolio, or documentation site.
 
-### Usage
-
-```markdown
-![Uptime](https://your-uptime-instance.com/badge/your-domain.com)
+### Badge Endpoint:
+```
+https://uptime.syofyanzuhad.dev/badge/{domain}
 ```
 
-### Parameters
+### Customization Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `period` | Time period for uptime calculation | `24h` |
+| Parameter | Type | Default | Options / Description |
+| :--- | :--- | :--- | :--- |
+| `period` | `string` | `24h` | `24h`, `7d`, `30d`, `90d` — Time calculation range |
+| `style` | `string` | `flat` | `flat`, `flat-square`, `for-the-badge`, `plastic` |
+| `label` | `string` | `uptime` | Custom label text (e.g. `API Uptime`, `System Health`) |
+| `show_period` | `boolean` | `true` | When `false`, hides the `24h`/`7d` suffix from the badge label |
 
-Available periods: `1h`, `24h`, `7d`, `30d`, `90d`
+---
 
-### Examples
+### Badge Style Examples
 
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d)
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d)
+| Style | Preview | Query Parameter |
+| :--- | :--- | :--- |
+| **Flat (Default)** | ![Flat Badge](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?style=flat) | `?style=flat` |
+| **Flat Square** | ![Square Badge](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?style=flat-square) | `?style=flat-square` |
+| **For The Badge** | ![For The Badge](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?style=for-the-badge) | `?style=for-the-badge` |
+| **Plastic** | ![Plastic Badge](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?style=plastic) | `?style=plastic` |
 
+---
+
+### Time Period Examples
+
+| Range | Preview | Query Parameter |
+| :--- | :--- | :--- |
+| **Last 24 Hours** | ![24h Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=24h) | `?period=24h` |
+| **Last 7 Days** | ![7d Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d) | `?period=7d` |
+| **Last 30 Days** | ![30d Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d) | `?period=30d` |
+| **Last 90 Days** | ![90d Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=90d) | `?period=90d` |
+
+---
+
+### Custom Label Examples
+
+| Use Case | Preview | URL |
+| :--- | :--- | :--- |
+| **Custom Label** | ![API Health](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?label=API%20Health&show_period=false) | `?label=API%20Health&show_period=false` |
+| **Clean Uptime** | ![Clean Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?label=uptime&show_period=false) | `?show_period=false` |
+| **Combined** | ![Combined](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?label=Core%20API&period=30d&style=for-the-badge) | `?label=Core%20API&period=30d&style=for-the-badge` |
+
+---
+
+### Ready-to-Use Embed Code Snippets
+
+#### 1. Clickable Markdown (Recommended for GitHub READMEs):
 ```markdown
-<!-- Default 24h uptime -->
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)
-
-<!-- 7-day uptime -->
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=7d)
-
-<!-- 30-day uptime -->
-![Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d)
+[![Service Uptime](https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev)](https://uptime.syofyanzuhad.dev/m/syofyanzuhad.dev)
 ```
 
-### Badge Appearance
+#### 2. Clickable HTML (For Websites & Dashboards):
+```html
+<a href="https://uptime.syofyanzuhad.dev/m/syofyanzuhad.dev" target="_blank" rel="noopener noreferrer">
+  <img src="https://uptime.syofyanzuhad.dev/badge/syofyanzuhad.dev?period=30d&style=flat-square" alt="Service Uptime" />
+</a>
+```
 
-The badge shows:
-- Label: "uptime {period}" (e.g., "uptime 24h")
-- Value: Uptime percentage (e.g., "99.9%")
-- Color: Green (>= 99%), Yellow (>= 95%), Red (< 95%)
+#### 3. Automatic Health Threshold Colors:
+- 🟢 **Bright Green (`#4c1`)**: Uptime ≥ 99.0%
+- 🟢 **Green (`#97ca00`)**: Uptime ≥ 97.0%
+- 🟡 **Yellow-Green (`#a4a61d`)**: Uptime ≥ 95.0%
+- 🟡 **Yellow (`#dfb317`)**: Uptime ≥ 90.0%
+- 🟠 **Orange (`#fe7d37`)**: Uptime ≥ 80.0%
+- 🔴 **Red (`#e05d44`)**: Uptime < 80.0%
 
 ## 🖼️ Dynamic Open Graph (OG) Images
 
