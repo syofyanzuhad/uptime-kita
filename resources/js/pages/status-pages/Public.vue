@@ -111,64 +111,160 @@ onMounted(() => {
 <template>
     <PublicLayout :title="pageTitle" :description="pageDescription" :og-image="ogImage" :canonical-url="shareUrl" :share-url="shareUrl" :share-text="shareText" :json-ld="jsonLd">
         <template #header-left>
-            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900"><Icon :name="statusPage.icon" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div>
-            <div class="min-w-0 flex-1">
-                <h1 class="truncate text-lg font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">{{ statusPage.title }}</h1>
-                <p class="line-clamp-2 text-sm text-gray-600 dark:text-gray-300" :title="statusPage.description">{{ statusPage.description }}</p>
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2 text-white shadow-md shadow-blue-500/20">
+                    <Icon :name="statusPage.icon || 'activity'" class="h-5 w-5" />
+                </div>
+                <div class="min-w-0">
+                    <h1 class="truncate text-base font-extrabold text-gray-900 dark:text-white sm:text-xl">{{ statusPage.title }}</h1>
+                    <p class="line-clamp-1 text-xs text-gray-500 dark:text-gray-400" :title="statusPage.description">{{ statusPage.description }}</p>
+                </div>
             </div>
-            <button @click="toggleFullscreen" class="ml-2 rounded-full border border-gray-200 bg-white p-2 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"><Icon :name="isFullscreen ? 'minimize' : 'maximize'" class="h-4 w-4 text-gray-600 dark:text-gray-200" /></button>
         </template>
 
-        <!-- System Status -->
-        <div class="mb-8 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
-            <h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">System Status</h2>
-            <div class="flex items-center gap-3">
-                <div role="status" :aria-label="overallStatus.text" class="h-4 w-4 animate-pulse rounded-full" :class="overallStatus.color" />
-                <span class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ overallStatus.text }}</span>
+        <template #header-actions>
+            <button
+                @click="toggleFullscreen"
+                class="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700"
+                :aria-label="isFullscreen ? 'Exit kiosk mode' : 'Enter kiosk mode'"
+            >
+                <Icon :name="isFullscreen ? 'minimize' : 'maximize'" class="h-3.5 w-3.5" />
+                <span>{{ isFullscreen ? 'Exit Kiosk' : 'Kiosk Mode' }}</span>
+            </button>
+        </template>
+
+        <!-- System Overall Status Hero -->
+        <div
+            class="mb-8 overflow-hidden rounded-3xl border p-6 sm:p-8 shadow-sm backdrop-blur-md transition-all duration-300"
+            :class="[
+                overallStatus.text.includes('Operational')
+                    ? 'border-emerald-200/80 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-gray-900 dark:to-gray-900'
+                    : overallStatus.text.includes('Down')
+                      ? 'border-rose-200/80 bg-gradient-to-r from-rose-50/80 via-orange-50/40 to-white dark:border-rose-900/50 dark:from-rose-950/30 dark:via-gray-900 dark:to-gray-900'
+                      : 'border-amber-200/80 bg-gradient-to-r from-amber-50/80 via-yellow-50/40 to-white dark:border-amber-900/50 dark:from-amber-950/30 dark:via-gray-900 dark:to-gray-900',
+            ]"
+        >
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-md text-white"
+                        :class="[
+                            overallStatus.text.includes('Operational')
+                                ? 'bg-emerald-500 shadow-emerald-500/20'
+                                : overallStatus.text.includes('Down')
+                                  ? 'bg-rose-500 shadow-rose-500/20'
+                                  : 'bg-amber-500 shadow-amber-500/20',
+                        ]"
+                    >
+                        <Icon :name="overallStatus.text.includes('Operational') ? 'checkCircle' : 'alertTriangle'" class="h-8 w-8" />
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                                {{ overallStatus.text }}
+                            </h2>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+                            Real-time service health verified across all operational nodes.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
+                        <span class="block text-lg font-extrabold text-gray-900 dark:text-white">
+                            {{ monitors.filter(m => (latestHistory[m.id]?.uptime_status || m.uptime_status)?.toLowerCase() === 'up').length }} / {{ monitors.length }}
+                        </span>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Services Online</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Services -->
-        <div class="rounded-lg bg-white shadow dark:bg-gray-800">
-            <div class="border-b border-gray-200 px-4 py-4 dark:border-gray-700"><h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Services</h3></div>
-
-            <div v-if="monitorsError" class="p-12 text-center">
-                <Icon name="alert-circle" class="mx-auto h-16 w-16 text-red-500" />
-                <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">{{ monitorsError === 'Status page not found' ? '404 - Page Not Found' : 'Error' }}</h3>
-                <p class="mx-auto mt-2 max-w-md text-gray-600 dark:text-gray-400">{{ monitorsError === 'Status page not found' ? 'Status page does not exist or has been removed.' : monitorsError }}</p>
+        <!-- Services List -->
+        <div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+            <div class="border-b border-gray-100 px-6 py-4 dark:border-gray-800 flex items-center justify-between">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">Tracked Services</h3>
+                <span class="text-xs text-gray-400 font-medium">{{ monitors.length }} Monitored Components</span>
             </div>
 
-            <div v-else-if="monitorsLoading" class="divide-y divide-gray-200 dark:divide-gray-700">
-                <div v-for="i in 3" :key="i" class="px-4 py-4 sm:px-6"><Skeleton class="h-5 w-1/3" /><Skeleton class="mt-2 h-4 w-1/2" /></div>
+            <div v-if="monitorsError" class="p-12 text-center">
+                <Icon name="alertCircle" class="mx-auto h-12 w-12 text-rose-500" />
+                <h4 class="mt-3 text-lg font-bold text-gray-900 dark:text-white">{{ monitorsError === 'Status page not found' ? '404 - Page Not Found' : 'Error Loading Status' }}</h4>
+                <p class="mx-auto mt-1 max-w-md text-xs text-gray-500 dark:text-gray-400">{{ monitorsError === 'Status page not found' ? 'This status page does not exist or has been removed.' : monitorsError }}</p>
+            </div>
+
+            <div v-else-if="monitorsLoading" class="divide-y divide-gray-100 dark:divide-gray-800">
+                <div v-for="i in 3" :key="i" class="p-6">
+                    <Skeleton class="h-5 w-1/3 rounded-lg" />
+                    <Skeleton class="mt-2 h-4 w-1/2 rounded-md" />
+                </div>
             </div>
 
             <div v-else-if="monitors.length === 0" class="p-12 text-center">
                 <Icon name="inbox" class="mx-auto h-12 w-12 text-gray-400" />
-                <p class="mt-4 text-gray-600 dark:text-gray-400">No services configured for this status page.</p>
+                <p class="mt-3 text-sm text-gray-500">No services configured on this status page yet.</p>
             </div>
 
-            <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-                <div v-for="monitor in monitors" :key="monitor.id" class="group relative px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 sm:px-6">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex min-w-0 items-center gap-4">
-                            <img v-if="monitor.favicon" :src="monitor.favicon" class="h-5 w-5 rounded-full" alt="" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
-                            <div v-else class="h-5 w-5 rounded-full bg-gray-200 dark:bg-gray-700" />
-                            <div role="status" :aria-label="getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)" class="h-3 w-3 flex-shrink-0 animate-pulse rounded-full" :class="getStatusColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)" />
+            <div v-else class="divide-y divide-gray-100 dark:divide-gray-800">
+                <div v-for="monitor in monitors" :key="monitor.id" class="group p-5 sm:p-6 transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex min-w-0 items-center gap-3.5">
+                            <img
+                                v-if="monitor.favicon"
+                                :src="monitor.favicon"
+                                class="h-6 w-6 rounded-lg object-contain drop-shadow-sm"
+                                alt=""
+                                @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+                            />
+                            <div v-else class="flex h-6 w-6 items-center justify-center rounded-lg bg-gray-100 font-mono text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                {{ monitor.name?.slice(0, 2).toUpperCase() || 'UK' }}
+                            </div>
+
                             <div class="min-w-0 flex-1">
-                                <h4 class="flex flex-wrap items-center font-medium text-gray-900 dark:text-gray-100">
-                                    <Link :href="'/m/' + monitor.host" class="after:absolute after:inset-0 hover:text-blue-600 dark:hover:text-blue-400">{{ monitor.name }}</Link>
-                                    <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="ml-2 inline-flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase" :class="getCertStatusColor(monitor.certificate_status)"><span class="sr-only">SSL {{ monitor.certificate_status }}</span>{{ monitor.certificate_status }}</span>
-                                    <span v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date" class="ml-2 inline-flex items-center gap-1 rounded-full px-1 py-0.5 text-xs font-semibold uppercase" :class="getDomainExpirationColor(monitor.domain_expiration_date)">{{ getDomainExpirationLabel(monitor.domain_expiration_date) }}</span>
-                                </h4>
-                                <a class="relative z-20 block break-all text-sm text-gray-500 hover:underline dark:text-gray-400" :href="monitor.url" target="_blank">{{ monitor.url }}</a>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <Link :href="'/m/' + monitor.host" class="text-base font-bold text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400 transition-colors">
+                                        {{ monitor.name }}
+                                    </Link>
+                                    <span v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" :class="getCertStatusColor(monitor.certificate_status)">
+                                        SSL {{ monitor.certificate_status }}
+                                    </span>
+                                    <span v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date" class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" :class="getDomainExpirationColor(monitor.domain_expiration_date)">
+                                        {{ getDomainExpirationLabel(monitor.domain_expiration_date) }}
+                                    </span>
+                                </div>
+                                <a class="block truncate text-xs text-gray-400 hover:text-blue-500 transition-colors" :href="monitor.url" target="_blank" rel="noopener">{{ monitor.url }}</a>
                             </div>
                         </div>
-                        <div class="ml-0 flex-shrink-0 text-right sm:ml-4">
-                            <div class="text-sm font-medium" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)">{{ getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) }}</div>
-                            <div v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date" class="text-xs text-gray-500 dark:text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined)">Last check: {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined) }}</div>
+
+                        <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                            <div class="text-left sm:text-right">
+                                <div class="text-sm font-bold" :class="getStatusTextColor(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status)">
+                                    {{ getStatusText(latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) }}
+                                </div>
+                                <div v-if="latestHistory[monitor.id]?.created_at || monitor.last_check_date" class="text-[11px] text-gray-400" :title="formatDate(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined)">
+                                    Checked {{ timeAgo(latestHistory[monitor.id]?.created_at || monitor.last_check_date || undefined) }}
+                                </div>
+                            </div>
+
+                            <span
+                                role="status"
+                                :class="[
+                                    'flex h-3.5 w-3.5 items-center justify-center rounded-full',
+                                    (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) === 'up'
+                                        ? 'bg-emerald-500 ring-4 ring-emerald-500/20'
+                                        : (latestHistory[monitor.id]?.uptime_status || monitor.uptime_status) === 'down'
+                                          ? 'bg-rose-500 ring-4 ring-rose-500/20 animate-ping'
+                                          : 'bg-amber-500 ring-4 ring-amber-500/20',
+                                ]"
+                            />
                         </div>
                     </div>
-                    <DailyUptimeChart :monitor-id="monitor.id" :is-authenticated="props.isAuthenticated" :uptimes-daily="uptimesDaily[monitor.id]" />
+
+                    <!-- 90-Day Daily Chart -->
+                    <div class="mt-4">
+                        <DailyUptimeChart :monitor-id="monitor.id" :is-authenticated="props.isAuthenticated" :uptimes-daily="uptimesDaily[monitor.id]" />
+                    </div>
                 </div>
             </div>
         </div>

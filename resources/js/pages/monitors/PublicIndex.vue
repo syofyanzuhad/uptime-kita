@@ -151,12 +151,22 @@ function setupInfiniteScroll() {
     io.observe(sentinelRef.value);
 }
 
+const searchInputRef = ref<HTMLInputElement | null>(null);
+function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === '/' && document.activeElement !== searchInputRef.value && document.activeElement !== heroInputRef.value && (document.activeElement as HTMLElement)?.tagName !== 'INPUT' && (document.activeElement as HTMLElement)?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        searchInputRef.value?.focus();
+    }
+}
+
 onMounted(() => {
     window.addEventListener('scroll', onScroll);
+    window.addEventListener('keydown', handleKeyDown);
     setupInfiniteScroll();
 });
 onUnmounted(() => {
     window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('keydown', handleKeyDown);
     io?.disconnect();
 });
 watch([() => currentPage.value, () => monitorsMeta.value.last_page], () => nextTick(setupInfiniteScroll));
@@ -166,17 +176,17 @@ const domainInput = ref('');
 const domainChecking = ref(false);
 const domainResult = ref<null | { url: string; host: string; status_code: number | null; ok: boolean; response_time_ms: number; error?: string }>(null);
 const domainError = ref('');
-const exampleDomains = ['example.com', 'google.com', 'github.com'];
+const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'laravel.com'];
 async function checkDomain() {
     const v = domainInput.value.trim();
-    if (!v) { domainError.value = 'Enter a domain or URL.'; return; }
+    if (!v) { domainError.value = 'Enter a domain or URL to inspect.'; return; }
     domainChecking.value = true; domainResult.value = null; domainError.value = '';
     try {
         const res = await fetch(`/api/check-domain?url=${encodeURIComponent(v)}`, { headers: { Accept: 'application/json' } });
         const data = await res.json();
-        if (!res.ok) { domainError.value = data.message || 'Check failed.'; return; }
+        if (!res.ok) { domainError.value = data.message || 'Check failed. Please check the domain.'; return; }
         domainResult.value = data;
-    } catch { domainError.value = 'Network error. Try again.'; }
+    } catch { domainError.value = 'Network error. Please try again.'; }
     finally { domainChecking.value = false; }
 }
 function tryExample(domain: string) { domainInput.value = domain; checkDomain(); }
@@ -189,151 +199,534 @@ function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 // Phase 3: incidents collapsible + hero focus
 const incidentsExpanded = ref(false);
 const heroInputRef = ref<HTMLInputElement | null>(null);
-function focusHeroInput() { heroInputRef.value?.focus(); }
 </script>
 
 <template>
     <PublicLayout :title="pageTitle" :description="pageDescription" :og-image="ogImage" :canonical-url="shareUrl" :share-url="shareUrl" :share-text="shareText" :show-server-stats="true" :json-ld="jsonLd">
 
-        <!-- Hero: Free Website Checker -->
-        <div class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 p-6 sm:p-8 shadow-lg">
-            <div class="mx-auto max-w-3xl text-center">
-                <div class="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                    <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span> Free • No signup • Instant
+        <!-- Hero: Compact Free Website Checker -->
+        <div class="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-4 sm:p-6 shadow-lg ring-1 ring-white/10">
+            <!-- Ambient Glow Accents -->
+            <div class="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-blue-400/20 blur-2xl" />
+            <div class="pointer-events-none absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-indigo-500/20 blur-2xl" />
+
+            <div class="relative mx-auto max-w-3xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm">
+                            <Icon name="zap" class="h-4 w-4 text-amber-300" />
+                        </div>
+                        <h2 class="text-base font-extrabold text-white sm:text-lg">
+                            Instant Website Health Check
+                        </h2>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold text-blue-100 backdrop-blur-sm">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Free & No Sign-up</span>
+                    </span>
                 </div>
-                <h2 class="text-2xl font-bold tracking-tight text-white sm:text-3xl">Check any website in seconds</h2>
-                <p class="mt-2 text-sm text-blue-100 sm:text-base">Enter a domain or URL to see if it's up — response time & status, instantly.</p>
-                <form @submit.prevent="checkDomain" class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center">
+
+                <!-- Compact Search Input Form -->
+                <form @submit.prevent="checkDomain" class="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <label for="hero-domain-input" class="sr-only">Domain or URL to check</label>
-                    <input ref="heroInputRef" id="hero-domain-input" v-model="domainInput" type="text" placeholder="example.com or https://example.com" autocomplete="off" aria-label="Domain or URL to check" class="flex-1 rounded-xl border-0 bg-white px-5 py-3.5 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:ring-2 focus:ring-white/50" @keydown.escape="domainResult = null; domainError = ''" />
-                    <button type="submit" :disabled="domainChecking" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-60">
-                        <Icon v-if="domainChecking" name="loader" class="h-4 w-4 animate-spin" />
-                        <Icon v-else name="search" class="h-4 w-4" />
-                        {{ domainChecking ? 'Checking…' : 'Check Now' }}
+                    <div class="relative flex-1">
+                        <Icon name="globe" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                            ref="heroInputRef"
+                            id="hero-domain-input"
+                            v-model="domainInput"
+                            type="text"
+                            placeholder="Enter any domain or URL (e.g. google.com, myapp.io)..."
+                            autocomplete="off"
+                            aria-label="Domain or URL to check"
+                            class="w-full rounded-2xl border-0 bg-white/95 py-2.5 pl-10 pr-9 text-sm text-gray-900 placeholder-gray-400 shadow-inner backdrop-blur-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-white/80"
+                            @keydown.escape="domainResult = null; domainError = ''"
+                        />
+                        <button
+                            v-if="domainInput"
+                            type="button"
+                            @click="domainInput = ''; domainResult = null; domainError = ''"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        >
+                            <Icon name="x" class="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="domainChecking"
+                        class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-white px-5 py-2.5 text-xs font-bold text-blue-700 shadow-md transition-all hover:bg-blue-50 active:scale-95 disabled:opacity-70"
+                    >
+                        <Icon v-if="domainChecking" name="loader" class="h-3.5 w-3.5 animate-spin" />
+                        <Icon v-else name="zap" class="h-3.5 w-3.5 text-blue-600" />
+                        <span>{{ domainChecking ? 'Checking…' : 'Check Now' }}</span>
                     </button>
                 </form>
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
-                    <span class="text-blue-200">Try:</span>
-                    <button v-for="ex in exampleDomains" :key="ex" type="button" @click="tryExample(ex)" class="rounded-full bg-white/15 px-3 py-1 font-medium text-white hover:bg-white/25 backdrop-blur">{{ ex }}</button>
+
+                <!-- Compact Example Chips -->
+                <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-blue-100/80">
+                    <span class="font-medium">Try:</span>
+                    <button
+                        v-for="ex in exampleDomains"
+                        :key="ex"
+                        type="button"
+                        @click="tryExample(ex)"
+                        class="rounded-md border border-white/10 bg-white/10 px-2 py-0.5 font-medium text-white transition-colors hover:bg-white/20 active:scale-95"
+                    >
+                        {{ ex }}
+                    </button>
                 </div>
-                <p v-if="domainError" role="alert" class="mt-3 rounded-lg bg-red-500/20 px-3 py-2 text-sm text-white">{{ domainError }}</p>
-                <div v-if="domainResult" role="status" aria-live="polite" class="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-sm">
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="domainResult.ok ? 'bg-green-500' : 'bg-red-500'"></span>
-                    <span class="font-semibold" :class="domainResult.ok ? 'text-green-700' : 'text-red-700'">{{ domainResult.ok ? 'Up' : 'Down / Error' }}</span>
-                    <span class="font-medium text-gray-700">{{ domainResult.host }}</span>
-                    <span v-if="domainResult.status_code" class="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">{{ domainResult.status_code }}</span>
-                    <span class="text-gray-500">{{ domainResult.response_time_ms }} ms</span>
-                    <button v-if="domainResult.ok" type="button" @click="monitorThisDomain" class="ml-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">Monitor this →</button>
-                    <span v-if="domainResult.error" class="w-full text-xs text-red-600">{{ domainResult.error }}</span>
+
+                <!-- Error message -->
+                <p v-if="domainError" role="alert" class="mt-3 rounded-xl bg-rose-500/30 border border-rose-400/40 px-3 py-2 text-xs font-medium text-white backdrop-blur-sm">
+                    {{ domainError }}
+                </p>
+
+                <!-- Compact Result Card -->
+                <div
+                    v-if="domainResult"
+                    role="status"
+                    aria-live="polite"
+                    class="mt-3.5 overflow-hidden rounded-2xl border border-white/20 bg-white/95 p-3.5 text-left shadow-lg backdrop-blur-md"
+                >
+                    <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white shadow-sm"
+                                :class="domainResult.ok ? 'bg-emerald-500' : 'bg-rose-500'"
+                            >
+                                <Icon :name="domainResult.ok ? 'check' : 'alertTriangle'" class="h-4 w-4" />
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold text-gray-900">{{ domainResult.host }}</span>
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase"
+                                        :class="domainResult.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                                    >
+                                        {{ domainResult.ok ? 'Operational' : 'Unavailable' }}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                    <span v-if="domainResult.status_code" class="font-mono font-medium">
+                                        HTTP {{ domainResult.status_code }}
+                                    </span>
+                                    <span>•</span>
+                                    <span class="font-mono font-medium text-blue-600">
+                                        ⚡ {{ domainResult.response_time_ms }} ms
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button
+                                v-if="domainResult.ok"
+                                type="button"
+                                @click="monitorThisDomain"
+                                class="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
+                            >
+                                <span>Monitor 24/7</span>
+                                <Icon name="arrowRight" class="h-3 w-3" />
+                            </button>
+                            <button
+                                type="button"
+                                @click="domainResult = null"
+                                class="rounded-xl border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                    <p v-if="domainResult.error" class="mt-2 text-xs font-medium text-rose-600">
+                        {{ domainResult.error }}
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Stats strip -->
-        <div class="mb-6 flex flex-wrap items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-800 sm:gap-6">
-            <button type="button" @click="filterByStatus('all')" class="flex items-center gap-2" :class="statusFilter === 'all' ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-500'"><span class="text-lg font-bold">{{ stats.total_public }}</span> Total</button>
-            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
-            <button type="button" @click="filterByStatus('up')" class="flex items-center gap-1.5" :class="statusFilter === 'up' ? 'font-semibold text-green-700 dark:text-green-400' : 'text-gray-500'"><span class="h-2 w-2 rounded-full bg-green-500"></span>{{ stats.up }} Operational</button>
-            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
-            <span class="flex items-center gap-1.5 text-gray-500"><span class="font-bold text-blue-600 dark:text-blue-400">{{ Math.round((stats.up / stats.total_public) * 100) || 0 }}%</span> Uptime</span>
-            <span class="hidden h-4 w-px bg-gray-200 dark:bg-gray-700 sm:block"></span>
-            <span class="flex items-center gap-1.5 text-gray-500" :title="`${(stats.daily_checks || 0).toLocaleString('id-ID')} checks last 24h`"><Icon name="activity" class="h-3.5 w-3.5" />{{ formatChecksCount(stats.daily_checks || 0) }} / 24h</span>
+        <!-- Metric Summary Cards -->
+        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <button
+                type="button"
+                @click="filterByStatus('all')"
+                class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80"
+                :class="statusFilter === 'all' ? 'ring-2 ring-blue-500/20 border-blue-500' : ''"
+            >
+                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span>Total Tracked</span>
+                    <Icon name="globe" class="h-4 w-4 text-blue-500" />
+                </div>
+                <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
+                    {{ stats.total_public }}
+                </div>
+                <span class="text-[11px] text-gray-400">Public services</span>
+            </button>
+
+            <button
+                type="button"
+                @click="filterByStatus('up')"
+                class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-emerald-400 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80"
+                :class="statusFilter === 'up' ? 'ring-2 ring-emerald-500/20 border-emerald-500' : ''"
+            >
+                <div class="flex items-center justify-between w-full text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <span>Operational</span>
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </div>
+                <div class="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:text-3xl">
+                    {{ stats.up }}
+                </div>
+                <span class="text-[11px] text-emerald-500/80">Services online</span>
+            </button>
+
+            <div class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span>Global Uptime</span>
+                    <Icon name="activity" class="h-4 w-4 text-indigo-500" />
+                </div>
+                <div class="mt-2 text-2xl font-black text-indigo-600 dark:text-indigo-400 sm:text-3xl">
+                    {{ Math.round((stats.up / (stats.total_public || 1)) * 100) }}%
+                </div>
+                <span class="text-[11px] text-gray-400">Network availability</span>
+            </div>
+
+            <div class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
+                    <span>24h Inspections</span>
+                    <Icon name="checkCircle" class="h-4 w-4 text-purple-500" />
+                </div>
+                <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
+                    {{ formatChecksCount(stats.daily_checks || 0) }}
+                </div>
+                <span class="text-[11px] text-gray-400">Automated checks</span>
+            </div>
         </div>
 
-        <!-- Filters -->
-        <Card class="mb-2"><CardContent class="p-3 sm:p-4">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <!-- Featured Status Page & Wallboard Spotlight Banner (Directly Visible Above Directory) -->
+        <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Link
+                href="/status/demo"
+                class="group flex items-center justify-between rounded-3xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white p-5 shadow-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-blue-900/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-gray-900"
+            >
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                        <Icon name="activity" class="h-6 w-6" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white sm:text-base">Public Status Page</h3>
+                            <span class="rounded-full bg-blue-600/10 px-2 py-0.5 text-[10px] font-extrabold uppercase text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">Live Demo</span>
+                        </div>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">Clean 90-day uptime and component health for stakeholders.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 shrink-0 ml-2">
+                    <span class="hidden sm:inline">Explore</span>
+                    <Icon name="arrowRight" class="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+            </Link>
+
+            <Link
+                href="/monitors"
+                class="group flex items-center justify-between rounded-3xl border border-purple-200/80 bg-gradient-to-r from-purple-50/80 via-pink-50/40 to-white p-5 shadow-sm transition-all hover:border-purple-400 hover:shadow-md dark:border-purple-900/50 dark:from-purple-950/30 dark:via-purple-950/20 dark:to-gray-900"
+            >
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
+                        <Icon name="layoutGrid" class="h-6 w-6" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white sm:text-base">NOC Status Wallboard</h3>
+                            <span class="rounded-full bg-purple-600/10 px-2 py-0.5 text-[10px] font-extrabold uppercase text-purple-600 dark:bg-purple-400/10 dark:text-purple-400">Kiosk View</span>
+                        </div>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">High-density live grid with dots, bars, and sound alerts.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 font-bold text-xs text-purple-600 dark:text-purple-400 shrink-0 ml-2">
+                    <span class="hidden sm:inline">Open</span>
+                    <Icon name="arrowRight" class="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+            </Link>
+        </div>
+
+        <!-- Recent Incidents Alert Strip (if active) -->
+        <div v-if="props.latestIncidents?.length" class="mb-8">
+            <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                <CardContent class="p-5 sm:p-6">
+                    <button
+                        type="button"
+                        @click="incidentsExpanded = !incidentsExpanded"
+                        class="flex w-full items-center justify-between text-left"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                                <Icon name="alertTriangle" class="h-4 w-4" />
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-bold text-gray-900 dark:text-white sm:text-base">Recent Incident Activity</h2>
+                                <p class="text-xs text-gray-400">Latest detected service downtime and recovery events</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                            <span>{{ incidentsExpanded ? 'Hide' : 'Show' }} ({{ props.latestIncidents.length }})</span>
+                            <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" />
+                        </span>
+                    </button>
+
+                    <div v-if="incidentsExpanded" class="mt-4 space-y-2.5 border-t border-gray-100 pt-4 dark:border-gray-800">
+                        <div
+                            v-for="inc in props.latestIncidents.slice(0, 5)"
+                            :key="inc.id"
+                            class="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 transition-colors hover:bg-gray-100/80 dark:border-gray-800 dark:bg-gray-800/40 dark:hover:bg-gray-800/80"
+                            @click="viewIncidentMonitor(inc)"
+                        >
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                                    :class="inc.ended_at ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'"
+                                >
+                                    <Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" class="h-4 w-4" />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-bold text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
+                                    <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                        <span v-if="inc.status_code" class="font-mono">HTTP {{ inc.status_code }} • </span>
+                                        <span>Started {{ formatRelativeTime(inc.started_at) }}</span>
+                                        <span v-if="inc.duration_minutes"> • Lasted {{ formatDuration(inc.duration_minutes) }}</span>
+                                    </p>
+                                    <p v-if="inc.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                        {{ inc.reason }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <span
+                                class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                                :class="inc.ended_at ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'"
+                            >
+                                {{ inc.ended_at ? 'Resolved' : 'Ongoing' }}
+                            </span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="mb-6 rounded-3xl border border-gray-200/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <!-- Search Input with Keyboard Shortcut Indicator -->
                 <div class="relative flex-1">
                     <label for="search-monitors" class="sr-only">Search monitors</label>
-                    <Icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input id="search-monitors" v-model="searchQuery" type="text" placeholder="Search monitors..." class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-900 placeholder-gray-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" @input="debounceSearch" />
-                    <button v-if="searchQuery" type="button" @click="clearSearch" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-600" aria-label="Clear search"><Icon name="x" class="h-3.5 w-3.5" /></button>
+                    <Icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input
+                        ref="searchInputRef"
+                        id="search-monitors"
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Search public monitors (e.g. google, api, blog)..."
+                        class="w-full rounded-xl border border-gray-200/80 bg-gray-50/50 py-2.5 pl-10 pr-16 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-white dark:focus:bg-gray-800"
+                        @input="debounceSearch"
+                    />
+                    <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <button
+                            v-if="searchQuery"
+                            type="button"
+                            @click="clearSearch"
+                            class="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700"
+                            aria-label="Clear search"
+                        >
+                            <Icon name="x" class="h-3.5 w-3.5" />
+                        </button>
+                        <kbd v-else class="hidden sm:inline-flex items-center rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[10px] text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                            /
+                        </kbd>
+                    </div>
                 </div>
-                <div class="grid grid-cols-3 gap-2 sm:flex sm:shrink-0">
-                    <label for="sort-by" class="sr-only">Sort by</label><select id="sort-by" v-model="sortBy" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option v-for="o in sortOptions" :key="o.value" :value="o.value">{{ o.label }}</option></select>
-                    <label for="status-filter" class="sr-only">Filter by status</label><select id="status-filter" v-model="statusFilter" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option value="all">All Status</option><option value="up">Operational</option><option value="down">Down</option></select>
-                    <label for="tag-filter" class="sr-only">Filter by tag</label><select id="tag-filter" v-model="tagFilter" @change="applyFilters" class="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"><option value="">All Tags</option><option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">{{ tag.name.en }}</option></select>
+
+                <!-- Status Segmented Pills -->
+                <div class="flex items-center rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                    <button
+                        type="button"
+                        @click="filterByStatus('all')"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        :class="statusFilter === 'all' ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'"
+                    >
+                        All ({{ stats.total_public }})
+                    </button>
+                    <button
+                        type="button"
+                        @click="filterByStatus('up')"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        :class="statusFilter === 'up' ? 'bg-white text-emerald-600 shadow-sm dark:bg-gray-700 dark:text-emerald-400' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'"
+                    >
+                        Online ({{ stats.up }})
+                    </button>
+                    <button
+                        type="button"
+                        @click="filterByStatus('down')"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        :class="statusFilter === 'down' ? 'bg-white text-rose-600 shadow-sm dark:bg-gray-700 dark:text-rose-400' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'"
+                    >
+                        Down ({{ stats.down }})
+                    </button>
                 </div>
-                <button @click="router.visit('/monitor/create')" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"><Icon name="plus" class="h-4 w-4" /><span>Create Monitor</span></button>
-            </div>
-            <div v-if="showingText || activePills.length" class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span v-if="showingText" class="text-gray-500 dark:text-gray-400">{{ showingText }}</span>
-                <span v-if="showingText && activePills.length" class="text-gray-300 dark:text-gray-600">•</span>
-                <span v-for="pill in activePills" :key="pill.key" class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{{ pill.label }}<button type="button" @click="pill.clear()" class="rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800" :aria-label="`Remove ${pill.key} filter`"><Icon name="x" class="h-3 w-3" /></button></span>
-                <button v-if="activePills.length" type="button" @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()" class="font-medium text-blue-600 hover:underline dark:text-blue-400">Clear all</button>
-            </div>
-        </CardContent></Card>
 
-        <!-- Skeletons -->
-        <div v-if="isLoading && monitorsData.length === 0" class="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            <Card v-for="i in 8" :key="i" class="p-4"><Skeleton class="mb-3 h-5 w-3/4" /><Skeleton class="mb-2 h-4 w-full" /><Skeleton class="h-4 w-1/2" /></Card>
+                <!-- Dropdowns: Sort and Tags -->
+                <div class="flex items-center gap-2">
+                    <label for="sort-by" class="sr-only">Sort by</label>
+                    <select
+                        id="sort-by"
+                        v-model="sortBy"
+                        @change="applyFilters"
+                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-3 py-2 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
+                    >
+                        <option v-for="o in sortOptions" :key="o.value" :value="o.value">
+                            Sort: {{ o.label }}
+                        </option>
+                    </select>
+
+                    <label for="tag-filter" class="sr-only">Filter by tag</label>
+                    <select
+                        id="tag-filter"
+                        v-model="tagFilter"
+                        @change="applyFilters"
+                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-3 py-2 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
+                    >
+                        <option value="">All Tags</option>
+                        <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">
+                            #{{ tag.name.en }}
+                        </option>
+                    </select>
+
+                    <button
+                        @click="router.visit('/monitor/create')"
+                        class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
+                    >
+                        <Icon name="plus" class="h-3.5 w-3.5" />
+                        <span>Add Monitor</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Pills Row -->
+            <div v-if="showingText || activePills.length" class="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 text-xs dark:border-gray-800">
+                <span v-if="showingText" class="font-medium text-gray-500 dark:text-gray-400">{{ showingText }}</span>
+                <span v-if="showingText && activePills.length" class="text-gray-300 dark:text-gray-700">•</span>
+                <span
+                    v-for="pill in activePills"
+                    :key="pill.key"
+                    class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 ring-1 ring-blue-600/20"
+                >
+                    {{ pill.label }}
+                    <button
+                        type="button"
+                        @click="pill.clear()"
+                        class="rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
+                        :aria-label="`Remove ${pill.key} filter`"
+                    >
+                        <Icon name="x" class="h-3 w-3" />
+                    </button>
+                </span>
+                <button
+                    v-if="activePills.length"
+                    type="button"
+                    @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()"
+                    class="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                >
+                    Reset all
+                </button>
+            </div>
         </div>
 
-        <!-- Empty -->
-        <div v-else-if="monitorsData.length === 0" class="py-12 text-center">
-            <Icon name="search" class="mx-auto mb-4 h-16 w-16 text-gray-400" />
-            <h2 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">{{ hasActiveFilter ? 'No results for current filters' : 'No public monitors yet' }}</h2>
-            <p class="text-gray-500 dark:text-gray-400">{{ hasActiveFilter ? 'Try adjusting search or filters' : 'Be the first to share a monitor publicly.' }}</p>
-            <div class="mt-4 flex justify-center gap-3">
-                <button v-if="hasActiveFilter" @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()" class="text-sm text-blue-600 hover:underline">Clear filters</button>
-                <button v-else @click="router.visit('/monitor/create')" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Create first monitor</button>
+        <!-- Skeletons Loading State -->
+        <div v-if="isLoading && monitorsData.length === 0" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            <Card v-for="i in 8" :key="i" class="rounded-2xl p-5 border border-gray-200/80 dark:border-gray-800/80">
+                <div class="flex items-center justify-between mb-3">
+                    <Skeleton class="h-6 w-24 rounded-lg" />
+                    <Skeleton class="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton class="mb-2 h-5 w-3/4 rounded-md" />
+                <Skeleton class="mb-4 h-4 w-1/2 rounded-md" />
+                <div class="border-t border-gray-100 pt-3 dark:border-gray-800 flex justify-between items-center">
+                    <Skeleton class="h-4 w-20 rounded-md" />
+                    <Skeleton class="h-4 w-12 rounded-full" />
+                </div>
+            </Card>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="monitorsData.length === 0" class="rounded-3xl border border-dashed border-gray-200 bg-white/50 py-16 text-center backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/50">
+            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                <Icon name="search" class="h-8 w-8" />
+            </div>
+            <h3 class="mb-1 text-lg font-bold text-gray-900 dark:text-white">
+                {{ hasActiveFilter ? 'No matching monitors found' : 'No public monitors available' }}
+            </h3>
+            <p class="mx-auto max-w-sm text-sm text-gray-500 dark:text-gray-400">
+                {{ hasActiveFilter ? 'Try clearing your search query or changing active status/tag filters.' : 'Be the first to create and publish a monitor for the community.' }}
+            </p>
+            <div class="mt-6 flex justify-center gap-3">
+                <button
+                    v-if="hasActiveFilter"
+                    @click="searchQuery = ''; statusFilter = 'all'; tagFilter = ''; sortBy = 'default'; applyFilters()"
+                    class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                >
+                    Clear all filters
+                </button>
+                <button
+                    v-else
+                    @click="router.visit('/monitor/create')"
+                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
+                >
+                    Create a Monitor Now
+                </button>
             </div>
         </div>
 
-        <!-- Grid -->
-        <div v-else class="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            <MonitorCardPublic v-for="m in monitorsData" :key="m.id" :monitor="m" @click="viewMonitor" />
+        <!-- Monitors Grid -->
+        <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            <MonitorCardPublic
+                v-for="m in monitorsData"
+                :key="m.id"
+                :monitor="m"
+                @click="viewMonitor"
+            />
         </div>
 
-        <!-- Infinite sentinel + fallback button -->
+        <!-- Infinite scroll sentinel + fallback button -->
         <div ref="sentinelRef" class="h-1" aria-hidden="true"></div>
-        <div v-if="isLoading && monitorsData.length > 0" class="mt-4 flex justify-center"><Icon name="loader" class="h-5 w-5 animate-spin text-gray-400" /></div>
-        <div v-if="currentPage < monitorsMeta.last_page" class="mt-6 text-center">
-            <button @click="loadMore" :disabled="isLoading" class="inline-flex w-full items-center justify-center rounded-lg bg-gray-600 px-6 py-3 text-sm font-medium text-white hover:bg-gray-700 disabled:bg-gray-400 sm:w-auto">
-                <Icon v-if="isLoading" name="loader" class="mr-2 h-4 w-4 animate-spin" /><span v-else>Load More Monitors</span>
+        <div v-if="isLoading && monitorsData.length > 0" class="mt-8 flex justify-center">
+            <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <Icon name="loader" class="h-4 w-4 animate-spin text-blue-600" />
+                <span>Loading more monitors…</span>
+            </div>
+        </div>
+        <div v-if="currentPage < monitorsMeta.last_page" class="mt-8 text-center">
+            <button
+                @click="loadMore"
+                :disabled="isLoading"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 text-xs font-bold text-gray-700 shadow-sm hover:bg-gray-50 active:scale-95 disabled:bg-gray-100 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+                <Icon v-if="isLoading" name="loader" class="h-4 w-4 animate-spin" />
+                <span>Load More (Page {{ currentPage + 1 }} of {{ monitorsMeta.last_page }})</span>
             </button>
         </div>
 
-        <!-- Trust row -->
-        <div class="mb-6 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span class="inline-flex items-center gap-1.5"><Icon name="github" class="h-3.5 w-3.5" />Open-source</span>
-            <span class="text-gray-300 dark:text-gray-600">•</span>
-            <a href="https://github.com/syofyanzuhad/uptime-kita" target="_blank" rel="noopener" class="hover:text-gray-700 dark:hover:text-gray-300 hover:underline">GitHub</a>
-            <span class="text-gray-300 dark:text-gray-600">•</span>
-            <span>{{ stats.total_public }} monitors tracked</span>
+        <div v-if="props.showSmolLaunchBadge" class="mt-12 flex justify-center pb-8">
+            <a href="https://smollaunch.com" target="_blank" rel="noopener">
+                <img src="https://smollaunch.com/badges/featured.svg" alt="Featured on Smol Launch" loading="lazy" width="250" height="60" />
+            </a>
         </div>
 
-        <!-- Demo Banner (secondary, below grid) -->
-        <Link href="/status/demo" class="mt-8 flex items-center justify-between rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 hover:border-blue-300 hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
-            <div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50"><Icon name="activity" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div><div><p class="font-medium text-gray-900 dark:text-white">Try our Demo Status Page</p><p class="text-sm text-gray-600 dark:text-gray-400">See how status pages work</p></div></div>
-            <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400"><span class="hidden text-sm font-medium sm:inline">View Demo</span><Icon name="arrowRight" class="h-5 w-5" /></div>
-        </Link>
-
-        <!-- Latest Incidents (collapsible) -->
-        <div v-if="props.latestIncidents?.length" class="mt-8">
-            <Card><CardContent class="px-4 py-4 sm:px-6">
-                <button type="button" @click="incidentsExpanded = !incidentsExpanded" class="flex w-full items-center justify-between text-left">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2>
-                    <span class="inline-flex items-center gap-2 text-sm text-gray-500"><span>Last {{ incidentsExpanded ? props.latestIncidents.length : Math.min(3, props.latestIncidents.length) }}</span><Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" /></span>
-                </button>
-                <div class="mt-4 max-h-[50vh] space-y-3 overflow-y-auto">
-                    <div v-for="inc in (incidentsExpanded ? props.latestIncidents : props.latestIncidents.slice(0, 3))" :key="inc.id" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50" @click="viewIncidentMonitor(inc)">
-                        <div :class="['flex h-8 w-8 items-center justify-center rounded-full', inc.ended_at ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30']"><Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" :class="inc.ended_at ? 'h-4 w-4 text-green-600 dark:text-green-400' : 'h-4 w-4 text-red-600 dark:text-red-400'" /></div>
-                        <div class="min-w-0 flex-1">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400"><span v-if="inc.type">Type: {{ inc.type }} • </span><span v-if="inc.status_code">Status: {{ inc.status_code }} • </span>Started {{ formatRelativeTime(inc.started_at) }}</p>
-                            <p v-if="inc.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-300">{{ inc.reason }}</p>
-                            <p v-if="inc.duration_minutes" class="mt-1 text-xs text-gray-500">Duration: {{ formatDuration(inc.duration_minutes) }}</p>
-                        </div>
-                        <span :class="['rounded-full px-2 py-1 text-xs font-medium', inc.ended_at ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300']">{{ inc.ended_at ? 'Resolved' : 'Ongoing' }}</span>
-                    </div>
-                </div>
-                <button v-if="props.latestIncidents.length > 3" type="button" @click="incidentsExpanded = !incidentsExpanded" class="mt-3 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">{{ incidentsExpanded ? 'Show less' : `Show all ${props.latestIncidents.length}` }}</button>
-            </CardContent></Card>
-        </div>
-
-        <div v-if="props.showSmolLaunchBadge" class="mt-12 flex justify-center pb-8"><a href="https://smollaunch.com" target="_blank" rel="noopener"><img src="https://smollaunch.com/badges/featured.svg" alt="Featured on Smol Launch" loading="lazy" width="250" height="60" /></a></div>
-
-        <button v-show="showBackToTop" @click="scrollToTop" class="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 p-3 text-white shadow-lg hover:bg-blue-700 dark:bg-blue-500" aria-label="Back to top"><Icon name="chevronUp" class="h-5 w-5" /></button>
+        <!-- Back to top button -->
+        <button
+            v-show="showBackToTop"
+            @click="scrollToTop"
+            class="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-xl hover:bg-blue-700 active:scale-90 transition-all dark:bg-blue-500"
+            aria-label="Back to top"
+        >
+            <Icon name="chevronUp" class="h-5 w-5" />
+        </button>
     </PublicLayout>
 </template>

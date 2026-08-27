@@ -1,754 +1,516 @@
 <template>
-    <Head :title="pageTitle">
-        <meta name="description" :content="pageDescription" />
-        <meta property="og:title" :content="pageTitle" />
-        <meta property="og:description" :content="pageDescription" />
-        <meta property="og:image" :content="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`" />
-        <meta property="og:url" :content="`${appUrl}/m/${encodeURIComponent(monitor.host)}`" />
-        <meta name="twitter:title" :content="pageTitle" />
-        <meta name="twitter:description" :content="pageDescription" />
-        <meta name="twitter:image" :content="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`" />
-        <link rel="canonical" :href="`${appUrl}/m/${encodeURIComponent(monitor.host)}`" />
-    </Head>
+    <PublicLayout
+        :title="pageTitle"
+        :description="pageDescription"
+        :og-image="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`"
+        :canonical-url="`${appUrl}/m/${encodeURIComponent(monitor.host)}`"
+        :share-url="`${appUrl}/m/${encodeURIComponent(monitor.host)}`"
+        :share-text="`${monitor.host} uptime: ${uptimeStats['24h']}% (${getStatusText(monitor.uptime_status)})`"
+        :show-server-stats="true"
+    >
+        <template #header-left>
+            <div class="flex items-center gap-3 min-w-0">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <Link
+                                href="/"
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200/80 bg-white p-2 text-gray-600 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                            >
+                                <Icon name="arrowLeft" class="h-4 w-4" />
+                            </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Back to all monitors</TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
 
-    <TooltipProvider>
-        <div class="min-h-full bg-gray-50 dark:bg-gray-900">
-            <!-- Header -->
-            <div class="fixed top-0 w-full bg-white shadow dark:bg-gray-800">
-                <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-                    <div class="flex justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
-                        <div class="flex items-center space-x-3 sm:space-x-4">
-                            <!-- Back Button -->
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Link
-                                        href="/"
-                                        class="flex-shrink-0 rounded-full bg-gray-100 p-1.5 transition-colors hover:bg-gray-200 sm:p-2 dark:bg-gray-700 dark:hover:bg-gray-600"
-                                    >
-                                        <Icon name="arrowLeft" class="h-4 w-4 cursor-pointer text-gray-600 sm:h-5 sm:w-5 dark:text-gray-300" />
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent> Go to home page </TooltipContent>
-                            </Tooltip>
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <img
+                        v-if="monitor.favicon && !faviconFailed"
+                        :src="monitor.favicon"
+                        :alt="`${monitor.host} favicon`"
+                        class="h-7 w-7 shrink-0 rounded-lg object-contain drop-shadow-sm"
+                        @error="faviconFailed = true"
+                    />
+                    <div
+                        v-else
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 font-mono text-xs font-bold text-blue-700 dark:from-blue-950 dark:to-indigo-900/50 dark:text-blue-300"
+                    >
+                        {{ monitor.host.slice(0, 2).toUpperCase() }}
+                    </div>
 
-                            <img
-                                v-if="monitor.favicon"
-                                :src="monitor.favicon"
-                                :alt="`${monitor.host} favicon`"
-                                class="h-6 w-6 flex-shrink-0 rounded sm:h-8 sm:w-8"
-                                @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
-                            />
-                            <div class="min-w-0 flex-1">
-                                <h1
-                                    class="max-w-[200px] truncate text-lg font-bold text-gray-900 sm:max-w-none sm:text-xl lg:text-2xl dark:text-white"
-                                >
-                                    {{ monitor.host }}
-                                </h1>
-                                <a
-                                    :href="monitor.url"
-                                    target="_blank"
-                                    class="block max-w-[200px] truncate text-xs text-blue-600 hover:text-blue-800 sm:max-w-none sm:text-sm dark:text-blue-400 dark:hover:text-blue-300"
-                                >
-                                    {{ monitor.url }}
-                                </a>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h1 class="truncate text-base font-extrabold text-gray-900 dark:text-white sm:text-xl">
+                                {{ monitor.host }}
+                            </h1>
+                        </div>
+                        <a
+                            :href="monitor.url"
+                            target="_blank"
+                            rel="noopener"
+                            class="flex items-center gap-1 truncate text-xs text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                            <span>{{ monitor.url }}</span>
+                            <Icon name="externalLink" class="h-3 w-3" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #header-actions>
+            <!-- Live Status Pill in Header -->
+            <span
+                role="status"
+                :aria-label="getStatusText(monitor.uptime_status)"
+                :class="[
+                    'inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold shadow-sm ring-1 transition-colors',
+                    monitor.uptime_status === 'up'
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30'
+                        : monitor.uptime_status === 'down'
+                          ? 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-500/30'
+                          : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-500/30',
+                ]"
+            >
+                <span
+                    class="h-2 w-2 rounded-full"
+                    :class="[
+                        monitor.uptime_status === 'up'
+                            ? 'bg-emerald-500 animate-pulse'
+                            : monitor.uptime_status === 'down'
+                              ? 'bg-rose-500 animate-ping'
+                              : 'bg-amber-500',
+                    ]"
+                />
+                <span>{{ getStatusText(monitor.uptime_status) }}</span>
+            </span>
+        </template>
+
+        <TooltipProvider>
+            <!-- Hero Status Banner -->
+            <div
+                class="mb-6 overflow-hidden rounded-3xl border p-6 sm:p-8 shadow-sm backdrop-blur-md transition-all duration-300"
+                :class="[
+                    monitor.uptime_status === 'up'
+                        ? 'border-emerald-200/80 bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-gray-900 dark:to-gray-900'
+                        : monitor.uptime_status === 'down'
+                          ? 'border-rose-200/80 bg-gradient-to-r from-rose-50/70 via-orange-50/40 to-white dark:border-rose-900/50 dark:from-rose-950/30 dark:via-gray-900 dark:to-gray-900'
+                          : 'border-amber-200/80 bg-gradient-to-r from-amber-50/70 via-yellow-50/40 to-white dark:border-amber-900/50 dark:from-amber-950/30 dark:via-gray-900 dark:to-gray-900',
+                ]"
+            >
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-md"
+                            :class="[
+                                monitor.uptime_status === 'up'
+                                    ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                                    : monitor.uptime_status === 'down'
+                                      ? 'bg-rose-500 text-white shadow-rose-500/20'
+                                      : 'bg-amber-500 text-white shadow-amber-500/20',
+                            ]"
+                        >
+                            <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-8 w-8" />
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                                    {{ getStatusText(monitor.uptime_status) }}
+                                </h2>
                             </div>
+                            <p class="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
+                                Checked every {{ monitor.uptime_check_interval }} minutes
+                                <span v-if="monitor.last_check_date">• Last checked {{ formatDate(monitor.last_check_date) }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Metrics Chips -->
+                    <div class="flex flex-wrap items-center gap-2.5 sm:justify-end">
+                        <div class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
+                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white" :class="getUptimeColor(uptimeStats['24h'])">
+                                {{ uptimeStats['24h'] }}%
+                            </span>
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">24h Uptime</span>
                         </div>
 
-                        <!-- Current Status Badge, Share Button and Theme Toggle -->
-                        <div class="flex items-center justify-center space-x-2 sm:justify-end">
-                            <!-- Mobile: Icon only -->
-                            <span
-                                :class="[
-                                    'rounded-full p-2 sm:hidden',
-                                    monitor.uptime_status === 'up'
-                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                        : monitor.uptime_status === 'down'
-                                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                          : monitor.uptime_status === 'not yet checked'
-                                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
-                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                                ]"
-                            >
-                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-5 w-5" />
+                        <div class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
+                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white">
+                                {{ avgResponseTime }}ms
                             </span>
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Avg Latency</span>
+                        </div>
 
-                            <!-- Desktop: Icon with text -->
-                            <span
-                                :class="[
-                                    'hidden items-center rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap sm:inline-flex',
-                                    monitor.uptime_status === 'up'
-                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                        : monitor.uptime_status === 'down'
-                                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                          : monitor.uptime_status === 'not yet checked'
-                                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
-                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                                ]"
-                            >
-                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="mr-1 h-4 w-4" />
-                                {{ getStatusText(monitor.uptime_status) }}
+                        <div v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
+                            <span class="flex items-center justify-center gap-1 text-base font-extrabold" :class="getCertificateColor(monitor.certificate_status)">
+                                <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-4 w-4" />
+                                <span>{{ getCertificateText(monitor.certificate_status) }}</span>
                             </span>
-
-                            <!-- Page Views Badge -->
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                        <Icon name="eye" class="h-3 w-3" />
-                                        <span>{{ monitor.formatted_page_views }}</span>
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {{ monitor.page_views_count.toLocaleString() }} page views
-                                </TooltipContent>
-                            </Tooltip>
-
-                            <!-- Share Button -->
-                            <ShareButton 
-                                :title="monitor.host || ''" 
-                                :status="monitor.uptime_status"
-                                :uptime="uptimeStats['24h']"
-                                :responseTime="avgResponseTime"
-                                :sslStatus="monitor.certificate_check_enabled ? monitor.certificate_status : null"
-                            />
-
-                            <!-- Theme Toggle -->
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        @click="toggleTheme"
-                                        class="cursor-pointer rounded-full bg-gray-100 p-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
-                                    >
-                                        <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {{ isDark ? 'Switch to light mode' : 'Switch to dark mode' }}
-                                </TooltipContent>
-                            </Tooltip>
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">SSL Certificate</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Content -->
-            <div class="mx-auto mt-24 max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-                <!-- Latest 100 Minutes History -->
-                <div class="mb-6">
-                    <div class="mb-3 flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Latest 100 Minutes</h3>
-                            <div class="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
-                                <Icon :name="isRefreshing ? 'loader' : 'refreshCw'" class="h-3 w-3" :class="isRefreshing ? 'animate-spin' : ''" />
-                                <span>{{ isRefreshing ? 'Refreshing...' : 'Auto-refresh every minute' }}</span>
-                            </div>
+            <!-- Latest 100 Minutes Timeline Card -->
+            <div class="mb-8 rounded-3xl border border-gray-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80 sm:p-6">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                            <Icon name="activity" class="h-4 w-4" />
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <!-- Chart View Toggle -->
-                            <div class="flex items-center rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            @click="setChartViewMode('bar')"
-                                            :class="[
-                                                'rounded-md px-2 py-1 text-xs transition-colors',
-                                                chartViewMode === 'bar'
-                                                    ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
-                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                                            ]"
-                                        >
-                                            <Icon name="chartBar" class="h-4 w-4" />
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Status Bar View</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            @click="setChartViewMode('line')"
-                                            :class="[
-                                                'rounded-md px-2 py-1 text-xs transition-colors',
-                                                chartViewMode === 'line'
-                                                    ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
-                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                                            ]"
-                                        >
-                                            <Icon name="chartLine" class="h-4 w-4" />
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Response Time Graph</TooltipContent>
-                                </Tooltip>
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ latestHistory.length }} checks</div>
-                        </div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">Real-Time Inspection History (Last 100 Minutes)</h3>
                     </div>
-                    <div v-if="monitor.uptime_status === 'not yet checked'" class="rounded-lg bg-gray-50 py-8 text-center dark:bg-gray-800">
-                        <Icon name="clock" class="mx-auto mb-2 h-8 w-8 text-gray-400" />
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No history data available yet</p>
-                    </div>
-                    <!-- Bar View -->
-                    <div v-else-if="chartViewMode === 'bar'" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                        <div class="flex items-center space-x-1 overflow-x-auto">
-                            <Tooltip v-for="(date, i) in last100Minutes" :key="i">
-                                <TooltipTrigger asChild>
-                                    <div
-                                        class="h-8 w-1.5 flex-shrink-0 cursor-pointer rounded-sm transition-all sm:w-2"
-                                        :class="[
-                                            getMinuteStatus(date)?.uptime_status === 'up'
-                                                ? 'bg-green-500 hover:bg-green-600'
-                                                : getMinuteStatus(date)?.uptime_status === 'down'
-                                                  ? 'bg-red-500 hover:bg-red-600'
-                                                  : 'bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500',
-                                        ]"
-                                    />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <div class="space-y-1">
-                                        <div>{{ date.toLocaleString() }}</div>
-                                        <div v-if="getMinuteStatus(date)">
-                                            <div>{{ getStatusText(getMinuteStatus(date)!.uptime_status) }}</div>
-                                            <div v-if="getMinuteStatus(date)!.response_time">{{ getMinuteStatus(date)!.response_time }}ms</div>
-                                        </div>
-                                        <div v-else class="text-gray-400">No data</div>
-                                    </div>
-                                </TooltipContent>
-                            </Tooltip>
-                        </div>
-                        <div class="mt-2 flex justify-between text-xs text-gray-400">
-                            <span>{{ last100Minutes[0].toLocaleString() }}</span>
-                            <span>{{ last100Minutes[last100Minutes.length - 1].toLocaleString() }}</span>
-                        </div>
-                        <div class="mt-3 flex items-center justify-center space-x-4 text-xs text-gray-600 dark:text-gray-400">
-                            <div class="flex items-center space-x-1">
-                                <div class="h-3 w-3 rounded-sm bg-green-500"></div>
-                                <span>Up</span>
-                            </div>
-                            <div class="flex items-center space-x-1">
-                                <div class="h-3 w-3 rounded-sm bg-red-500"></div>
-                                <span>Down</span>
-                            </div>
-                            <div class="flex items-center space-x-1">
-                                <div class="h-3 w-3 rounded-sm bg-gray-300 dark:bg-gray-600"></div>
-                                <span>No data</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Line Graph View -->
-                    <div v-else class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                        <ResponseTimeLineChart :histories="histories" :last100Minutes="last100Minutes" />
-                        <div class="mt-2 flex justify-between text-xs text-gray-400">
-                            <span>{{ last100Minutes[0].toLocaleString() }}</span>
-                            <span>{{ last100Minutes[last100Minutes.length - 1].toLocaleString() }}</span>
-                        </div>
-                        <div class="mt-3 flex items-center justify-center space-x-4 text-xs text-gray-600 dark:text-gray-400">
-                            <div class="flex items-center space-x-1">
-                                <div class="h-3 w-3 rounded-full bg-green-500"></div>
-                                <span>Up</span>
-                            </div>
-                            <div class="flex items-center space-x-1">
-                                <div class="h-3 w-3 rounded-full bg-red-500"></div>
-                                <span>Down</span>
-                            </div>
-                            <div class="flex items-center space-x-1">
-                                <div class="h-1 w-6 bg-green-500"></div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1 rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                            <button
+                                @click="setChartViewMode('bar')"
+                                :class="[
+                                    'flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
+                                    chartViewMode === 'bar'
+                                        ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400'
+                                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400',
+                                ]"
+                            >
+                                <Icon name="chartBar" class="h-3.5 w-3.5" />
+                                <span>Status Bars</span>
+                            </button>
+                            <button
+                                @click="setChartViewMode('line')"
+                                :class="[
+                                    'flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
+                                    chartViewMode === 'line'
+                                        ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400'
+                                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400',
+                                ]"
+                            >
+                                <Icon name="chartLine" class="h-3.5 w-3.5" />
                                 <span>Response Time</span>
-                            </div>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                            <Icon :name="isRefreshing ? 'loader' : 'refreshCw'" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" />
+                            <span class="hidden sm:inline">{{ isRefreshing ? 'Refreshing…' : 'Live' }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
-                    <!-- Left Column - Stats -->
-                    <div class="space-y-4 sm:space-y-6 lg:col-span-2">
-                        <!-- Uptime Statistics -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Uptime Statistics</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
-                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
-                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No uptime data available yet</p>
-                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
+                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-12 text-center">
+                    <Icon name="clock" class="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                    <p class="text-sm font-medium text-gray-500">No inspection records logged yet.</p>
+                </div>
+
+                <!-- Bar View -->
+                <div v-else-if="chartViewMode === 'bar'">
+                    <div class="flex items-center gap-1 overflow-x-auto py-2">
+                        <Tooltip v-for="(date, i) in last100Minutes" :key="i">
+                            <TooltipTrigger as-child>
+                                <div
+                                    class="h-10 w-2 flex-shrink-0 cursor-pointer rounded-full transition-all hover:scale-125 sm:w-2.5"
+                                    :class="[
+                                        getMinuteStatus(date)?.uptime_status === 'up'
+                                            ? 'bg-emerald-500 hover:bg-emerald-400'
+                                            : getMinuteStatus(date)?.uptime_status === 'down'
+                                              ? 'bg-rose-500 hover:bg-rose-400'
+                                              : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600',
+                                    ]"
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" class="text-xs">
+                                <div class="space-y-1">
+                                    <p class="font-bold">{{ date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</p>
+                                    <div v-if="getMinuteStatus(date)">
+                                        <p>{{ getStatusText(getMinuteStatus(date)!.uptime_status) }}</p>
+                                        <p v-if="getMinuteStatus(date)!.response_time" class="font-mono text-blue-400">
+                                            ⚡ {{ getMinuteStatus(date)!.response_time }}ms
+                                        </p>
+                                    </div>
+                                    <p v-else class="text-gray-400">No check executed</p>
                                 </div>
-                                <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                                    <Tooltip v-for="(value, period) in uptimeStats" :key="period">
-                                        <TooltipTrigger asChild>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+
+                    <div class="mt-3 flex items-center justify-between text-xs text-gray-400">
+                        <span>{{ last100Minutes[0].toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }} (100m ago)</span>
+                        <div class="flex items-center gap-4">
+                            <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Operational</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-rose-500"></span>Downtime</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></span>No check</span>
+                        </div>
+                        <span>Just now</span>
+                    </div>
+                </div>
+
+                <!-- Line Graph View -->
+                <div v-else>
+                    <ResponseTimeLineChart :histories="histories" :last100Minutes="last100Minutes" />
+                </div>
+            </div>
+
+            <!-- Two Column Analytics Grid -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <!-- Left Column (2 Cols) -->
+                <div class="space-y-6 lg:col-span-2">
+                    <!-- Uptime Historical Percentages Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Uptime Availability Rates</CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2">
+                            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                                <div
+                                    v-for="(value, period) in uptimeStats"
+                                    :key="period"
+                                    class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 text-center dark:border-gray-800 dark:bg-gray-800/40"
+                                >
+                                    <div class="text-2xl font-black sm:text-3xl" :class="getUptimeColor(value)">
+                                        {{ value }}%
+                                    </div>
+                                    <div class="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                        {{ getPeriodLabel(period) }}
+                                    </div>
+                                    <span
+                                        class="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                        :class="value >= 99.5 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'"
+                                    >
+                                        {{ value >= 99.5 ? 'Optimal' : value >= 95 ? 'Good' : 'Degraded' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Response Time Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Response Latency (Last 24 Hours)</CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2">
+                            <div class="grid grid-cols-3 gap-3 text-center sm:gap-4">
+                                <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
+                                    <div class="text-2xl font-black text-blue-600 dark:text-blue-400 sm:text-3xl font-mono">
+                                        {{ avgResponseTime }}ms
+                                    </div>
+                                    <div class="mt-1 text-xs font-semibold text-gray-500">Average Latency</div>
+                                </div>
+
+                                <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
+                                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:text-3xl font-mono">
+                                        {{ minResponseTime }}ms
+                                    </div>
+                                    <div class="mt-1 text-xs font-semibold text-gray-500">Fastest (Min)</div>
+                                </div>
+
+                                <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
+                                    <div class="text-2xl font-black text-purple-600 dark:text-purple-400 sm:text-3xl font-mono">
+                                        {{ maxResponseTime }}ms
+                                    </div>
+                                    <div class="mt-1 text-xs font-semibold text-gray-500">Slowest (Max)</div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- 90 Days Heatmap Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle class="text-base font-bold text-gray-900 dark:text-white">90-Day Uptime Heatmap</CardTitle>
+                            <div class="flex items-center gap-1 rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                                <button
+                                    @click="setUptimeChartViewMode('bar')"
+                                    :class="[
+                                        'rounded-lg px-2 py-1 text-xs font-semibold transition-all',
+                                        uptimeChartViewMode === 'bar' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500',
+                                    ]"
+                                >
+                                    Bars
+                                </button>
+                                <button
+                                    @click="setUptimeChartViewMode('line')"
+                                    :class="[
+                                        'rounded-lg px-2 py-1 text-xs font-semibold transition-all',
+                                        uptimeChartViewMode === 'line' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500',
+                                    ]"
+                                >
+                                    Trend
+                                </button>
+                            </div>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2">
+                            <div v-if="uptimeChartViewMode === 'bar'" class="space-y-3">
+                                <div class="flex items-center justify-between text-xs font-medium text-gray-400">
+                                    <span>{{ getDateRange() }}</span>
+                                    <span>Today</span>
+                                </div>
+                                <div class="flex items-center gap-0.5 overflow-x-auto py-2">
+                                    <Tooltip v-for="day in getUptimeDays()" :key="day.date">
+                                        <TooltipTrigger as-child>
                                             <div
-                                                class="cursor-pointer rounded-lg p-2 text-center transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                                            >
-                                                <div class="text-xl font-bold sm:text-2xl" :class="getUptimeColor(value)">{{ value }}%</div>
-                                                <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
-                                                    {{ getPeriodLabel(period) }}
-                                                </div>
-                                            </div>
+                                                class="h-12 w-2 flex-shrink-0 cursor-pointer rounded-full transition-all hover:scale-125 sm:w-2.5"
+                                                :class="[
+                                                    day.uptime === 100
+                                                        ? 'bg-emerald-500'
+                                                        : day.uptime >= 99.5
+                                                          ? 'bg-emerald-400'
+                                                          : day.uptime >= 95
+                                                            ? 'bg-amber-400'
+                                                            : day.uptime > 0
+                                                              ? 'bg-rose-500'
+                                                              : 'bg-gray-200 dark:bg-gray-700',
+                                                ]"
+                                            />
                                         </TooltipTrigger>
-                                        <TooltipContent>
-                                            <div class="space-y-1">
-                                                <div class="font-medium">{{ getPeriodLabel(period) }}</div>
-                                                <div>{{ value }}% uptime over the {{ getPeriodLabel(period).toLowerCase() }}</div>
-                                                <div class="text-xs text-gray-400">
-                                                    {{ value >= 99.5 ? 'Excellent' : value >= 95 ? 'Good' : 'Needs improvement' }}
-                                                </div>
-                                            </div>
+                                        <TooltipContent side="top" class="text-xs">
+                                            <p class="font-bold">{{ day.date }}</p>
+                                            <p>{{ day.uptime }}% uptime</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                            <div v-else>
+                                <UptimeLineChart :uptimesDaily="monitor.uptimes_daily || []" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <!-- Response Time Stats -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Response Time (Last 24 Hours)</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
-                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
-                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No response time data available yet</p>
-                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
-                                </div>
-                                <div v-else class="space-y-4">
-                                    <div class="grid grid-cols-3 gap-2 text-center sm:gap-4">
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div class="cursor-pointer rounded-lg p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                    <div class="text-lg font-bold text-gray-900 sm:text-xl lg:text-2xl dark:text-white">
-                                                        {{ avgResponseTime }}ms
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Average</div>
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent> Average response time over the last 24 hours </TooltipContent>
-                                        </Tooltip>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div class="cursor-pointer rounded-lg p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                    <div class="text-lg font-bold text-gray-900 sm:text-xl lg:text-2xl dark:text-white">
-                                                        {{ minResponseTime }}ms
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Min</div>
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent> Fastest response time in the last 24 hours </TooltipContent>
-                                        </Tooltip>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div class="cursor-pointer rounded-lg p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                    <div class="text-lg font-bold text-gray-900 sm:text-xl lg:text-2xl dark:text-white">
-                                                        {{ maxResponseTime }}ms
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Max</div>
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent> Slowest response time in the last 24 hours </TooltipContent>
-                                        </Tooltip>
+                    <!-- Latest Incidents Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Recent Incidents</CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2">
+                            <div v-if="latestIncidents.length > 0" class="space-y-3">
+                                <div
+                                    v-for="incident in latestIncidents"
+                                    :key="incident.id"
+                                    class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <span
+                                            class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold"
+                                            :class="incident.type === 'down' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'"
+                                        >
+                                            {{ incident.type === 'down' ? 'Outage' : 'Degraded' }}
+                                        </span>
+                                        <span class="text-xs font-mono text-gray-400">{{ formatDuration(incident.duration_minutes || 0) }}</span>
                                     </div>
+                                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Started {{ formatDate(incident.started_at) }}
+                                        <span v-if="incident.ended_at"> → Resolved {{ formatDate(incident.ended_at) }}</span>
+                                    </p>
+                                    <p v-if="incident.reason" class="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        {{ incident.reason }}
+                                    </p>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                            <div v-else class="py-8 text-center">
+                                <Icon name="checkCircle" class="mx-auto mb-2 h-10 w-10 text-emerald-500" />
+                                <p class="text-sm font-bold text-gray-900 dark:text-white">No incidents reported</p>
+                                <p class="text-xs text-gray-400">This service has been running continuously without outages.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                        <!-- Uptime Graph -->
-                        <Card>
-                            <CardHeader class="flex flex-row items-center justify-between space-y-0">
-                                <CardTitle>Uptime History (Last 90 Days)</CardTitle>
-                                <!-- Chart View Toggle for Uptime -->
-                                <div v-if="monitor.uptime_status !== 'not yet checked'" class="flex items-center rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <button
-                                                @click="setUptimeChartViewMode('bar')"
-                                                :class="[
-                                                    'rounded-md px-2 py-1 text-xs transition-colors',
-                                                    uptimeChartViewMode === 'bar'
-                                                        ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
-                                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                                                ]"
-                                            >
-                                                <Icon name="chartBar" class="h-4 w-4" />
-                                            </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Daily Bar View</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <button
-                                                @click="setUptimeChartViewMode('line')"
-                                                :class="[
-                                                    'rounded-md px-2 py-1 text-xs transition-colors',
-                                                    uptimeChartViewMode === 'line'
-                                                        ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-white'
-                                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                                                ]"
-                                            >
-                                                <Icon name="chartLine" class="h-4 w-4" />
-                                            </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Uptime Line Graph</TooltipContent>
-                                    </Tooltip>
+                <!-- Right Column (1 Col) -->
+                <div class="space-y-6">
+                    <!-- Security & Domain Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Domain & Security</CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2 space-y-4">
+                            <!-- SSL Info -->
+                            <div v-if="monitor.certificate_check_enabled" class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-gray-500">SSL Certificate</span>
+                                    <span class="flex items-center gap-1 text-xs font-bold" :class="getCertificateColor(monitor.certificate_status)">
+                                        <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-3.5 w-3.5" />
+                                        {{ getCertificateText(monitor.certificate_status) }}
+                                    </span>
                                 </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
-                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
-                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No uptime history available yet</p>
-                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
+                                <div v-if="monitor.certificate_expiration_date" class="mt-1.5 text-xs text-gray-500">
+                                    Expires: {{ formatDate(monitor.certificate_expiration_date) }}
                                 </div>
-                                <!-- Bar View -->
-                                <div v-else-if="uptimeChartViewMode === 'bar'" class="space-y-2">
-                                    <div class="flex items-center justify-between text-xs text-gray-600 sm:text-sm dark:text-gray-400">
-                                        <span>{{ getDateRange() }}</span>
-                                        <span>Today</span>
-                                    </div>
-                                    <div class="grid h-16 grid-cols-90 gap-0.5 overflow-x-auto sm:h-20">
-                                        <Tooltip v-for="day in getUptimeDays()" :key="day.date">
-                                            <TooltipTrigger asChild>
-                                                <div class="cursor-pointer">
-                                                    <div
-                                                        v-if="day.uptime"
-                                                        :class="[
-                                                            'h-full rounded-sm transition-all',
-                                                            day.uptime === 100
-                                                                ? 'bg-green-500'
-                                                                : day.uptime >= 99.5
-                                                                  ? 'bg-green-300'
-                                                                  : day.uptime >= 95
-                                                                    ? 'bg-yellow-400'
-                                                                    : 'bg-red-500',
-                                                        ]"
-                                                    />
-                                                    <div v-else class="h-full rounded-sm bg-gray-300 dark:bg-gray-700" />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent> {{ day.date }}: {{ day.uptime }}% uptime </TooltipContent>
-                                        </Tooltip>
-                                    </div>
-                                    <div class="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-600 sm:gap-4 dark:text-gray-400">
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-sm bg-green-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">100% Uptime</span>
-                                        </div>
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-sm bg-yellow-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">Partial Outage</span>
-                                        </div>
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-sm bg-red-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">Major Outage</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Line Graph View -->
-                                <div v-else class="space-y-2">
-                                    <UptimeLineChart :uptimesDaily="monitor.uptimes_daily || []" />
-                                    <div class="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-600 sm:gap-4 dark:text-gray-400">
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-full bg-green-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">100% Uptime</span>
-                                        </div>
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-full bg-yellow-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">95-99.9% Uptime</span>
-                                        </div>
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-2 w-2 rounded-full bg-red-500 sm:h-3 sm:w-3"></div>
-                                            <span class="text-xs">&lt;95% Uptime</span>
-                                        </div>
-                                        <div class="flex items-center space-x-1">
-                                            <div class="h-1 w-6 bg-green-500"></div>
-                                            <span class="text-xs">Uptime %</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            </div>
 
-                        <!-- Latest Incidents -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Latest Incidents</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div v-if="monitor.uptime_status === 'not yet checked'" class="py-6 text-center sm:py-8">
-                                    <Icon name="clock" class="mx-auto mb-3 h-8 w-8 text-gray-400 sm:mb-4 sm:h-12 sm:w-12" />
-                                    <p class="text-sm text-gray-500 sm:text-base dark:text-gray-400">No incidents data available yet</p>
-                                    <p class="text-xs text-gray-400 sm:text-sm dark:text-gray-500">Monitor has not been checked yet</p>
+                            <!-- Domain WHOIS Expiration -->
+                            <div v-if="monitor.domain_expiration_check_enabled" class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-gray-500">Domain Expiration</span>
+                                    <span v-if="monitor.domain_expiration_date" class="text-xs font-bold" :class="getDomainExpirationColor(monitor.domain_expiration_date)">
+                                        {{ formatDate(monitor.domain_expiration_date) }}
+                                    </span>
                                 </div>
-                                <div v-else-if="latestIncidents.length > 0" class="space-y-3">
-                                    <div
-                                        v-for="incident in latestIncidents"
-                                        :key="incident.id"
-                                        class="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
-                                    >
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    :class="[
-                                                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                                                        incident.type === 'down'
-                                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-                                                    ]"
-                                                >
-                                                    {{ incident.type === 'down' ? 'Downtime' : 'Degraded' }}
-                                                </span>
-                                                <span v-if="incident.status_code" class="text-xs text-gray-500 dark:text-gray-400">
-                                                    HTTP {{ incident.status_code }}
-                                                </span>
-                                            </div>
-                                            <span v-if="incident.duration_minutes" class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ formatDuration(incident.duration_minutes) }}
-                                            </span>
-                                            <span v-else class="text-xs text-red-500">Ongoing</span>
-                                        </div>
-                                        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                            {{ formatDate(incident.started_at) }}
-                                            <span v-if="incident.ended_at"> → {{ formatDate(incident.ended_at) }}</span>
-                                        </div>
-                                        <div v-if="incident.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                                            {{ incident.reason }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="py-4 text-center">
-                                    <Icon name="checkCircle" class="mx-auto mb-2 h-8 w-8 text-green-500" />
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">No incidents recorded</p>
-                                    <p class="text-xs text-gray-400 dark:text-gray-500">This monitor has been running smoothly</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                            </div>
 
-                    <!-- Right Column - Info -->
-                    <div class="space-y-4 sm:space-y-6">
-                        <!-- Monitor Details -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Monitor Details</CardTitle>
-                            </CardHeader>
-                            <CardContent class="space-y-3">
+                            <!-- Check Frequency -->
+                            <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold text-gray-500">Check Interval</span>
+                                    <span class="text-xs font-bold text-gray-900 dark:text-white">Every {{ monitor.uptime_check_interval }} min</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Embed Badge Card -->
+                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
+                                <Icon name="code" class="h-4 w-4 text-blue-500" />
+                                <span>Embed Status Badge</span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="p-6 pt-2 space-y-4">
+                            <div class="flex justify-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
+                                <img :src="badgeUrl" :alt="`${monitor.host} uptime badge`" class="h-6" />
+                            </div>
+
+                            <div class="space-y-3">
                                 <div>
-                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Check Interval</div>
-                                    <div class="text-sm font-medium sm:text-base">Every {{ monitor.uptime_check_interval }} minutes</div>
-                                </div>
-
-                                <div v-if="monitor.last_check_date">
-                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Last Checked</div>
-                                    <div class="text-sm font-medium sm:text-base">{{ formatDate(monitor.last_check_date) }}</div>
-                                </div>
-
-                                <div v-if="monitor.uptime_status_last_change_date">
-                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Status Since</div>
-                                    <div class="text-sm font-medium sm:text-base">{{ formatDate(monitor.uptime_status_last_change_date) }}</div>
-                                </div>
-
-                                <div v-if="monitor.certificate_check_enabled">
-                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">SSL Certificate</div>
-                                    <div v-if="monitor.certificate_status === 'not yet checked'" class="flex items-center space-x-2">
-                                        <Icon name="clock" class="h-4 w-4 text-gray-400" />
-                                        <span class="text-sm font-medium text-gray-500 sm:text-base"> Not Yet Checked </span>
-                                    </div>
-                                    <div v-else class="flex items-center space-x-2">
-                                        <Icon
-                                            :name="getCertificateIcon(monitor.certificate_status)"
-                                            class="h-4 w-4"
-                                            :class="getCertificateColor(monitor.certificate_status)"
-                                        />
-                                        <span class="text-sm font-medium sm:text-base">
-                                            {{ getCertificateText(monitor.certificate_status) }}
-                                        </span>
-                                    </div>
-                                    <div
-                                        v-if="
-                                            monitor.certificate_expiration_date &&
-                                            monitor.certificate_status &&
-                                            monitor.certificate_status !== 'not yet checked'
-                                        "
-                                        class="mt-1 text-xs text-gray-500"
-                                    >
-                                        Expires: {{ formatDate(monitor.certificate_expiration_date) }}
+                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Markdown (for README)</label>
+                                    <div class="relative">
+                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeMarkdown }}</code>
+                                        <button
+                                            @click="copyToClipboard(badgeMarkdown, 'markdown')"
+                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                        >
+                                            <Icon :name="copiedType === 'markdown' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div v-if="monitor.domain_expiration_check_enabled">
-                                    <div class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Domain Expiration</div>
-                                    <div v-if="monitor.domain_expiration_date" class="flex items-center space-x-2">
-                                        <Icon
-                                            name="calendarClock"
-                                            class="h-4 w-4"
-                                            :class="getDomainExpirationColor(monitor.domain_expiration_date)"
-                                        />
-                                        <span class="text-sm font-medium sm:text-base">
-                                            {{ formatDate(monitor.domain_expiration_date) }}
-                                        </span>
-                                    </div>
-                                    <div v-else-if="monitor.domain_expiration_lookup_error" class="text-xs text-red-500">
-                                        {{ monitor.domain_expiration_lookup_error }}
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold text-gray-500">Direct Badge URL</label>
+                                    <div class="relative">
+                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeUrl }}</code>
+                                        <button
+                                            @click="copyToClipboard(badgeUrl, 'url')"
+                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                        >
+                                            <Icon :name="copiedType === 'url' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
+                                        </button>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        <!-- Embed Badge -->
-                        <Card>
-                            <CardHeader>
-                                <CardTitle class="flex items-center space-x-2">
-                                    <Icon name="code" class="h-4 w-4" />
-                                    <span>Embed Badge</span>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent class="space-y-4">
-                                <div class="flex justify-center">
-                                    <img :src="badgeUrl" :alt="`${monitor.host} uptime badge`" class="h-5" />
-                                </div>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Markdown</label>
-                                        <div class="relative">
-                                            <code class="block overflow-x-auto rounded bg-gray-100 p-2 text-xs break-all dark:bg-gray-700">{{ badgeMarkdown }}</code>
-                                            <button
-                                                @click="copyToClipboard(badgeMarkdown, 'markdown')"
-                                                class="absolute top-1 right-1 rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-                                            >
-                                                <Icon :name="copiedType === 'markdown' ? 'check' : 'copy'" class="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">HTML</label>
-                                        <div class="relative">
-                                            <code class="block overflow-x-auto rounded bg-gray-100 p-2 text-xs break-all dark:bg-gray-700">{{ badgeHtml }}</code>
-                                            <button
-                                                @click="copyToClipboard(badgeHtml, 'html')"
-                                                class="absolute top-1 right-1 rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-                                            >
-                                                <Icon :name="copiedType === 'html' ? 'check' : 'copy'" class="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">URL Only</label>
-                                        <div class="relative">
-                                            <code class="block overflow-x-auto rounded bg-gray-100 p-2 text-xs break-all dark:bg-gray-700">{{ badgeUrl }}</code>
-                                            <button
-                                                @click="copyToClipboard(badgeUrl, 'url')"
-                                                class="absolute top-1 right-1 rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
-                                            >
-                                                <Icon :name="copiedType === 'url' ? 'check' : 'copy'" class="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Usage Guide -->
-                                <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
-                                    <div class="mb-3 flex items-center space-x-2">
-                                        <Icon name="helpCircle" class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Usage Guide</span>
-                                    </div>
-
-                                    <!-- Available Parameters -->
-                                    <div class="space-y-3 text-xs">
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Available Parameters:</span>
-                                            <ul class="mt-1 ml-3 list-disc space-y-1 text-gray-600 dark:text-gray-400">
-                                                <li>
-                                                    <code class="rounded bg-gray-100 px-1 dark:bg-gray-700">period</code> - Time period for uptime calculation
-                                                    <ul class="mt-0.5 ml-3 list-none space-y-0.5 text-gray-500 dark:text-gray-500">
-                                                        <li><code class="bg-gray-100 dark:bg-gray-700">24h</code> (default), <code class="bg-gray-100 dark:bg-gray-700">7d</code>, <code class="bg-gray-100 dark:bg-gray-700">30d</code>, <code class="bg-gray-100 dark:bg-gray-700">90d</code></li>
-                                                    </ul>
-                                                </li>
-                                                <li>
-                                                    <code class="rounded bg-gray-100 px-1 dark:bg-gray-700">style</code> - Badge style
-                                                    <ul class="mt-0.5 ml-3 list-none space-y-0.5 text-gray-500 dark:text-gray-500">
-                                                        <li><code class="bg-gray-100 dark:bg-gray-700">flat</code> (default), <code class="bg-gray-100 dark:bg-gray-700">flat-square</code>, <code class="bg-gray-100 dark:bg-gray-700">plastic</code>, <code class="bg-gray-100 dark:bg-gray-700">for-the-badge</code></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <!-- Examples -->
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Examples:</span>
-                                            <div class="mt-2 space-y-2">
-                                                <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
-                                                    <div class="mb-1 text-gray-500 dark:text-gray-400">Weekly uptime:</div>
-                                                    <code class="text-xs break-all">{{ badgeUrl }}?period=7d</code>
-                                                </div>
-                                                <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
-                                                    <div class="mb-1 text-gray-500 dark:text-gray-400">Flat-square style with 30-day period:</div>
-                                                    <code class="text-xs break-all">{{ badgeUrl }}?period=30d&amp;style=flat-square</code>
-                                                </div>
-                                                <div class="rounded bg-gray-50 p-2 dark:bg-gray-800">
-                                                    <div class="mb-1 text-gray-500 dark:text-gray-400">For-the-badge style:</div>
-                                                    <code class="text-xs break-all">{{ badgeUrl }}?style=for-the-badge</code>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Preview Different Styles -->
-                                        <div>
-                                            <span class="font-medium text-gray-700 dark:text-gray-300">Style Preview:</span>
-                                            <div class="mt-2 grid grid-cols-2 gap-2">
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                            <img :src="`${badgeUrl}?style=flat`" alt="flat style" class="h-5" />
-                                                            <span class="mt-1 text-gray-500 dark:text-gray-400">flat</span>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Default style</TooltipContent>
-                                                </Tooltip>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                            <img :src="`${badgeUrl}?style=flat-square`" alt="flat-square style" class="h-5" />
-                                                            <span class="mt-1 text-gray-500 dark:text-gray-400">flat-square</span>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Flat with square corners</TooltipContent>
-                                                </Tooltip>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                            <img :src="`${badgeUrl}?style=plastic`" alt="plastic style" class="h-5" />
-                                                            <span class="mt-1 text-gray-500 dark:text-gray-400">plastic</span>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Plastic 3D style</TooltipContent>
-                                                </Tooltip>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                                            <img :src="`${badgeUrl}?style=for-the-badge`" alt="for-the-badge style" class="h-5" />
-                                                            <span class="mt-1 text-gray-500 dark:text-gray-400">for-the-badge</span>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>Large badge style</TooltipContent>
-                                                </Tooltip>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-
-            <!-- Footer -->
-            <PublicFooter />
-        </div>
-
-        <!-- Toast Container for real-time notifications -->
-        <ToastContainer />
-    </TooltipProvider>
+        </TooltipProvider>
+    </PublicLayout>
 </template>
 
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
-import PublicFooter from '@/components/PublicFooter.vue';
+import PublicLayout from '@/components/PublicLayout.vue';
 import ResponseTimeLineChart from '@/components/ResponseTimeLineChart.vue';
 import ShareButton from '@/components/ShareButton.vue';
-import ToastContainer from '@/components/ToastContainer.vue';
 import UptimeLineChart from '@/components/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -757,6 +519,8 @@ import { globalToasts } from '@/composables/useToastNotifications';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+
+const faviconFailed = ref(false);
 
 interface Props {
     monitor: { data: Monitor };
