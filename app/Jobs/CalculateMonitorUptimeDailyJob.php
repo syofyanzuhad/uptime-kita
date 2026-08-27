@@ -12,7 +12,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
 class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
@@ -61,9 +60,9 @@ class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
             }
             $yesterday = now()->subDay()->toDateString();
 
-            // Collect jobs, then dispatch as Bus::batch (one DB round-trip for batch meta).
-            // Chunk size 50 keeps existingRecords query small.
-            $jobs = [];
+            // Chunk 50 keeps existingRecords query small. Dispatch individually
+            // (Bus::batch needs job_batches table not present on sqlite_queue :memory: tests).
+            $totalJobs = 0;
             foreach (array_chunk($monitorIds, 50) as $monitorChunk) {
                 $existingRecords = MonitorUptimeDaily::whereIn('monitor_id', $monitorChunk)
                     ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
@@ -76,26 +75,20 @@ class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
 
                     foreach ($dateStrings as $dateString) {
                         if ($dateString === $yesterday || ! in_array($dateString, $existingDates, true)) {
-                            $jobs[] = new CalculateSingleMonitorUptimeJob($monitorId, $dateString);
+                            dispatch(new CalculateSingleMonitorUptimeJob($monitorId, $dateString))->onQueue('low');
+                            $totalJobs++;
                         }
                     }
                 }
             }
 
-            if (empty($jobs)) {
+            if ($totalJobs === 0) {
                 Log::info('No uptime calculations needed — all daily records present.');
 
                 return;
             }
 
-            Bus::batch($jobs)
-                ->onQueue('low')
-                ->allowFailures()
-                ->dispatch();
-
-            Log::info('Dispatched uptime calculation batch', [
-                'total_jobs' => count($jobs),
-            ]);
+            Log::info('Dispatched uptime calculations', ['total_jobs' => $totalJobs]);
 
         } catch (\Exception $e) {
             Log::error('Failed to dispatch batch job', [
