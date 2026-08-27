@@ -6,19 +6,27 @@ use App\Models\Monitor;
 use App\Services\SmartRetryResult;
 use App\Services\SmartRetryService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Helpers\Period;
 
-class ConfirmMonitorDowntimeJob implements ShouldQueue
+class ConfirmMonitorDowntimeJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 1;
 
     public int $timeout = 30;
+
+    public int $uniqueFor = 60;
+
+    public function uniqueId(): string
+    {
+        return 'confirm-downtime-'.$this->monitorId;
+    }
 
     /**
      * Create a new job instance.
