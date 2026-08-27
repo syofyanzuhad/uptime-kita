@@ -184,11 +184,16 @@ class MonitorCompactController extends Controller
             });
         });
 
+        $view = $request->input('view');
+        $group = $request->input('group');
+
         return Inertia::render('monitors/Compact', [
             'monitors' => ['data' => $data],
             'availableTags' => $availableTags,
             'currentSort' => $sortBy,
             'currentDirection' => $direction,
+            'currentView' => $view,
+            'currentGroup' => $group,
         ]);
     }
 }

@@ -86,6 +86,7 @@ Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name(
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
 Route::get('/monitor/{monitor}/latest-history', LatestHistoryController::class)->name('monitor.latest-history');
 Route::get('/monitors', [MonitorCompactController::class, 'index'])->name('monitor.compact');
+Route::get('/monitors/compact', [MonitorCompactController::class, 'index'])->name('monitor.compact.alias');
 
 // AJAX route for pinned monitors data (returns JSON)
 Route::middleware(['auth'])->group(function () {
