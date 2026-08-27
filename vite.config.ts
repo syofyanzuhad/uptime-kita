@@ -26,4 +26,15 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    build: {
+        chunkSizeWarningLimit: 500,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['vue', '@inertiajs/vue3', 'reka-ui'],
+                    lucide: ['lucide-vue-next'],
+                },
+            },
+        },
+    },
 });
