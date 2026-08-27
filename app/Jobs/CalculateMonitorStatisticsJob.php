@@ -18,19 +18,16 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 600; // 10 minutes timeout
+    public $timeout = 120;
 
     public $tries = 3;
 
-    public $backoff = [60, 300, 900];
+    public $backoff = [30, 60, 120];
 
     /**
      * The number of seconds after which the job's unique lock will be released.
-     * This should be longer than the timeout + backoff time to prevent duplicates.
-     *
-     * @var int
      */
-    public $uniqueFor = 1800; // 30 minutes
+    public $uniqueFor = 300;
 
     protected ?int $monitorId;
 
@@ -40,7 +37,8 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
     public function __construct(?int $monitorId = null)
     {
         $this->monitorId = $monitorId;
-        $this->onQueue('default'); // Use dedicated queue for statistics
+        $this->timeout = $monitorId ? 60 : 120;
+        $this->onQueue('default');
     }
 
     /**
@@ -71,20 +69,20 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
                 return;
             }
 
-            // Global execution path: process all monitors sequentially within this single job
-            // This eliminates the overhead of dispatching and processing hundreds of individual jobs
-            $monitorCount = 0;
-            Monitor::where('is_public', true)
+            // Dispatcher path: fan out one child job per monitor (parallelizable, short-lived).
+            $ids = Monitor::where('is_public', true)
                 ->where('uptime_check_enabled', true)
-                ->select(['id', 'url']) // Only select what's needed for the chunk
-                ->chunkById(100, function ($monitors) use (&$monitorCount) {
-                    foreach ($monitors as $monitor) {
-                        $this->calculateStatistics($monitor);
-                        $monitorCount++;
-                    }
-                });
+                ->pluck('id');
 
-            Log::info("Calculated statistics for {$monitorCount} monitor(s) within a single job.");
+            if ($ids->isEmpty()) {
+                return;
+            }
+
+            foreach ($ids as $id) {
+                dispatch(new static($id));
+            }
+
+            Log::info("Dispatched statistics jobs for {$ids->count()} monitor(s).");
         } catch (\Throwable $e) {
             report($e);
             throw $e;

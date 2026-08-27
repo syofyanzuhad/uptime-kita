@@ -30,9 +30,9 @@ describe('CalculateMonitorStatisticsJob', function () {
             $job = new CalculateMonitorStatisticsJob;
             $job->handle();
 
-            $this->assertDatabaseHas('monitor_statistics', ['monitor_id' => $monitor->id]);
-
-            Queue::assertNothingPushed();
+            Queue::assertPushed(CalculateMonitorStatisticsJob::class, function ($pushed) use ($monitor) {
+                return (new ReflectionProperty($pushed, 'monitorId'))->getValue($pushed) === $monitor->id;
+            });
         });
 
         it('calculates statistics for a single monitor', function () {
