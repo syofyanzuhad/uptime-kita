@@ -59,18 +59,66 @@ U can try the [uptime kita demo](https://uptime.syofyanzuhad.dev) (Server locate
 
 ## ⭐ Key Features
 
-- 🔐 Google Oauth authentication
-- ✅ Monitoring uptime for HTTP(s)
-- 🔒 Certificate check
-- 🌐 Domain expiration check (RDAP + WHOIS) with threshold and daily reminders
-- ✨ Fancy, Reactive, Fast UI/UX
-- 📩 Notifications via Email (SMTP), Telegram, and Slack
-- 🔔 Real-time toast notifications on public pages via Server-Sent Events (SSE)
-- 📊 Multiple status pages
-- 🗄️ Automatic database backups (S3 with local fallback)
-- 🐳 Docker support for easy deployment
-- 📈 Server resources monitoring (CPU, Memory, Disk, etc.)
-- 🏷️ Uptime badge for embedding in README/websites
+- 🔐 Google OAuth authentication & Role-based management
+- ✅ Continuous HTTP/HTTPS uptime monitoring with custom intervals & latency tracking
+- 🔌 **Public Developer Health Check API (v1)** (`/api/v1/check`) with rate limiting & SSRF protection
+- 🖥️ **High-Density NOC Wallboard** (`/monitors`) with live dots, bars, sound alerts & URL filtering
+- 🌐 **Domain Expiration Monitoring** (RDAP + WHOIS) with proactive threshold alerts
+- 🔒 SSL Certificate validation and expiry tracking
+- ✨ Modern, reactive glassmorphic UI/UX with dark/light mode and telemetry popover
+- 📩 Multi-channel incident alerts: Email, Telegram, Slack, and Discord webhooks
+- 🔔 Real-time status updates and incident toasts via Server-Sent Events (SSE)
+- 📊 Public and private custom Status Pages (`/status/{slug}`)
+- 📈 Real-time server resource monitoring (CPU, Memory, Disk, DB ping)
+- 🏷️ Dynamic SVG uptime badges for README and website embeds
+- 🗄️ Automated encrypted database backups (S3 / Local)
+- 🐳 Docker & Docker Compose support for effortless deployment
+
+## 🔌 Public Health Check API (v1)
+
+Uptime Kita provides a public, rate-limited API for automating health and SSL checks in CI/CD pipelines, CLI tools, or custom scripts.
+
+### Endpoint: `GET` / `POST` `/api/v1/check`
+- **Rate Limit**: 30 requests / minute per IP
+- **Security**: Strict SSRF guard (blocks loopback, private subnets, cloud metadata)
+
+#### Query / Body Parameters:
+| Parameter | Type | Required | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `url` | `string` | **Yes** | — | Target URL or domain (e.g. `example.com` or `https://laravel.com`) |
+| `check_ssl` | `boolean` | Optional | `true` | Inspect SSL certificate validity and expiration |
+| `timeout` | `integer` | Optional | `10` | Request timeout in seconds (1 to 15) |
+
+#### Quick `curl` Example:
+```bash
+curl -X GET "https://uptime.syofyanzuhad.dev/api/v1/check?url=example.com"
+```
+
+#### JSON Response (`200 OK`):
+```json
+{
+  "ok": true,
+  "status": "up",
+  "status_code": 200,
+  "response_time_ms": 118,
+  "url": "https://example.com",
+  "host": "example.com",
+  "ip": "93.184.216.34",
+  "ssl": {
+    "valid": true,
+    "issuer": "DigiCert Global G2 TLS RSA SHA256 2020 CA1",
+    "subject": "example.com",
+    "valid_from": "2026-03-01T00:00:00Z",
+    "valid_to": "2026-11-25T23:59:59Z",
+    "days_remaining": 90
+  },
+  "headers": {
+    "content_type": "text/html; charset=UTF-8",
+    "server": "ECS (dcb/7EA3)"
+  },
+  "checked_at": "2026-08-27T03:22:00Z"
+}
+```
 
 ## 🔧 How to Install
 
