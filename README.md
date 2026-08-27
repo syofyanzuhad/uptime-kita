@@ -120,250 +120,109 @@ curl -X GET "https://uptime.syofyanzuhad.dev/api/v1/check?url=example.com"
 }
 ```
 
-## 🔧 How to Install
+## Requirements
 
-### Requirements:
-- php ^8.2 (and meet [Laravel 12.x requirements](https://laravel.com/docs/12.x/deployment#server-requirements)).
-- Node.js ^22
-- Redis
-- SQLite
-- Crontab
-- Supervisord
+- PHP ^8.2 · Node.js ^22 · Redis · SQLite (or MySQL/PostgreSQL)
+
+## 🔧 Installation
+
+### Option 1 — Laravel Cloud (recommended, zero ops)
+
+No cron or Supervisor needed — Cloud handles scheduler + queue.
+
+1. Push repo to GitHub and [create a project on Laravel Cloud](https://cloud.laravel.com).
+2. Connect your repo → Cloud auto-detects Laravel.
+3. Set env vars in **Cloud Dashboard → Environment**:
+   ```bash
+   APP_KEY=base64:...              # php artisan key:generate --show
+   APP_URL=https://your-app.cloud.laravel.cloud
+   ADMIN_EMAIL=admin@example.com
+   ADMIN_PASSWORD=your-password
+   QUEUE_CONNECTION=cloud          # managed queue — no Horizon/Supervisor
+   SCHEDULE_FREQUENCY=hourly       # everyMinute | hourly | none (see Capacity below)
+   GOOGLE_CLIENT_ID=               # optional — Google OAuth
+   GOOGLE_CLIENT_SECRET=
+   TELEGRAM_BOT_TOKEN=             # optional — Telegram alerts
+   RESEND_API_KEY=                 # optional — email alerts
+   AWS_ACCESS_KEY_ID=              # optional — S3 backups (else local disk)
+   AWS_SECRET_ACCESS_KEY=
+   AWS_BUCKET=
+   ```
+4. Deploy. Migrations + seeders run automatically. Done.
+
+> Cloud runs `php artisan schedule:run` every minute for you. `QUEUE_CONNECTION=cloud` routes jobs to the managed queue.
+
+### Option 2 — VPS / Local (5 steps)
+
+```bash
+git clone https://github.com/syofyanzuhad/uptime-kita && cd uptime-kita
+composer install && npm install && npm run build
+cp .env.example .env && php artisan key:generate
+# edit .env — set ADMIN_EMAIL, ADMIN_PASSWORD, and any optional keys above
+touch database/database.sqlite database/queue.sqlite database/telescope.sqlite
+php artisan migrate --seed --force
+```
+
+**Scheduler** (pick one):
+```bash
+# cron (VPS) — runs every minute, staggered hourly avoids thundering herd
+crontab -e
+# add: * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+
+# cronless (Docker / no cron access)
+php artisan schedule:run-cronless-safe --frequency=60
+```
+
+**Queue worker** (pick one):
+```bash
+# Horizon (recommended)
+sudo apt-get install supervisor
+# /etc/supervisor/conf.d/horizon.conf → command=php /path-to-project/artisan horizon
+sudo supervisorctl reread && sudo supervisorctl update && sudo supervisorctl start horizon
+
+# Plain queue (no Horizon)
+# /etc/supervisor/conf.d/laravel-worker.conf → command=php /path-to-project/artisan queue:work --sleep=3 --tries=3
+```
+
+> Tune check frequency via `SCHEDULE_FREQUENCY` in `.env` — see Capacity below.
+
+### Option 3 — Docker
+
+```bash
+docker compose up -d          # production (nginx + php-fpm + supervisor + cronless)
+docker compose --profile dev up -d  # dev with hot reload
+```
+
+Image includes nginx, PHP-FPM, Supervisor, cronless scheduler, and queue workers. No extra setup needed. See [TROUBLESHOOTING-CRONLESS.md](TROUBLESHOOTING-CRONLESS.md) for cronless options.
+
+### Custom Seed Monitors (optional)
+
+Edit `database/seeders/monitors/monitors.php` and `collages.php` before `php artisan migrate --seed`.
+
+## 📊 Capacity Planning
+
+How many monitors can one instance handle? Bottleneck is `monitor:check-uptime` (Guzzle concurrent pool + DB writes), not the queue.
+
+**Config:** `concurrent_checks` in `config/uptime-monitor.php` (default `300`, lower to `80–100` on Flex Starter to avoid OOM), `timeout_per_site=10s`, `run_interval_in_minutes=5`.
+
+| `SCHEDULE_FREQUENCY` | Effective check | Safe monitors (Flex Starter ~1 vCPU/1GB) | Notes |
+|---|---|---|---|
+| `everyMinute` | every 5 min* | **800–1.5k** | ~19s/run at 1.5k, fastest detection |
+| `hourly` | every 60 min | **3k–6k** | ~75s/run at 6k, DB-heavy, staggered 0/5/10/12/15/20/30 |
+| `none` | disabled | — | manual `php artisan monitor:check-uptime` only |
+
+\* Spatie filters by `run_interval_in_minutes=5` even when scheduler fires every minute. Set `UPTIME_MINIMUM_CHECK_INTERVAL=1` + `run_interval=1` to force true 1-min checks (300–600 monitors max).
+
+**When to scale:**
+- >1.5k monitors needing <5 min detection → Flex Pro or dedicated worker.
+- `withoutOverlapping(10)` skips next run if previous >10 min → bump instance size.
+- Watch `php artisan schedule:list`, Horizon metrics, and DB slow log.
+
+**Tuning for Flex Starter:** set `concurrent_checks` to `80` in `config/uptime-monitor.php` (300 × 5 MB/handle ≈ 1.5 GB > RAM).
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on our development workflow, pull request process, and coding standards.
-
-## 🔧 Installation
-- Clone repository:
-    ```bash
-    git clone https://github.com/syofyanzuhad/uptime-kita
-    ```
-- Install PHP dependencies: 
-    ```bash
-    composer install
-    ```
-- Install javscript dependencies and build assets:
-    ```bash
-    # install dependencies
-    npm install
-    
-    # build assetes
-    npm run build
-    ```
-- Setup .env file
-    ```bash
-    # change directory to the uptime-kita
-    cd uptime-kita
-    
-    # copy .env file from .env.example
-    cp .env.example .env
-    ```
-    ```bash
-    # admin credential
-    ADMIN_EMAIL=admin@syofyanzuhad.dev
-    ADMIN_PASSWORD=password123
-    
-    # google oauth https://developers.google.com/identity/protocols/oauth2?hl=id
-    GOOGLE_CLIENT_ID=
-    GOOGLE_CLIENT_SECRET=
-    
-    # telegram bot token https://t.me/botfather
-    TELEGRAM_BOT_TOKEN=
-    
-    # email configuration with https://resend.com/
-    RESEND_API_KEY=
-    ```
-- Generate application key: 
-    ```bash
-    php artisan key:generate
-    ```
-- Update default monitor on `database/seeder/monitors/` directory and `MonitorSeeder.php` file
-    ```
-    - seeders
-      |_ monitors
-      |  |_monitors.php
-      |  |_collages.php
-      |_ MonitorSeeer.php
-    ```
-    ```php
-        // MonitorSeeder.php
-
-        /**
-        * Run the database seeds.
-        */
-        public function run(): void
-        {
-            $monitors = require database_path('seeders/monitors/monitors.php');
-            $collages = require database_path('seeders/monitors/collage.php');
-
-            // others code
-        }
-    ```
-- Create databases:
-    ```bash
-    touch database/database.sqlite
-    touch database/queue.sqlite
-    touch database/telescope.sqlite
-    ```
-
-- Run migration and seeder (this will prompt to create database.sqlite file if it doesn't exists)
-    ```bash
-    php artisan migrate --seed --force
-    ```
-- Run the scheduler using cron job:
-    ```bash
-    # open cron configuration
-    crontab -e
-    ```
-    ```bash
-    # copy this text to the end of line (change the path to your project path)
-    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
-    ```
-
-    > Read more about [laravel scheduler](https://laravel.com/docs/12.x/scheduling#running-the-scheduler)
-
-- There are 2 ways to run the background job:
-
-  1. Laravel Queue
-
-        ```bash
-        # install supervisord
-        sudo apt-get install supervisor
-        
-        # add new file on /etc/supervisor/conf.d directory
-        touch /etc/supervisor/conf.d/laravel-worker.conf
-        ```
-        ```bash
-        # copy this text (change the path to your project path)
-        [program:laravel-worker]
-        process_name=%(program_name)s_%(process_num)02d
-        command=php /home/path-to-project/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
-        autostart=true
-        autorestart=true
-        stopasgroup=true
-        killasgroup=true
-        user=forge
-        numprocs=8
-        redirect_stderr=true
-        stdout_logfile=/home/forge/app.com/worker.log
-        stopwaitsecs=3600
-        ```
-
-        > Read more about [laravel queue](https://laravel.com/docs/12.x/queues#supervisor-configuration)
-
-  2. Laravel Horizon
-  
-        ```bash
-        # install supervisord
-        sudo apt-get install supervisor
-        
-        # add new file on /etc/supervisor/conf.d directory
-        touch /etc/supervisor/conf.d/horizon.conf
-        ```
-        ```bash
-        # copy this text (change the path to your project path)
-        [program:horizon]
-        process_name=%(program_name)s
-        command=php /home/path-to-project/artisan horizon
-        autostart=true
-        autorestart=true
-        user=forge
-        redirect_stderr=true
-        stdout_logfile=/home/path-to-project/horizon.log
-        stopwaitsecs=3600
-        ```
-
-        ```bash
-        sudo supervisorctl reread
-        
-        sudo supervisorctl update
-        
-        sudo supervisorctl start horizon
-        ```
-
-        > Read more about [laravel horizon](https://laravel.com/docs/12.x/horizon#installing-supervisor)
-
-> [!NOTE]
-> change the path to your project path
-
-## 🐳 Docker Deployment
-
-You can deploy Uptime Kita using Docker for easier setup and production deployment.
-
-### Quick Start with Docker
-
-```bash
-# Build the image
-docker build -t uptime-kita .
-
-# Run with docker-compose
-docker compose up -d
-```
-
-### Docker Compose
-
-```bash
-# Production
-docker compose up -d
-
-# Development (with hot reload)
-docker compose --profile dev up -d
-```
-
-### Environment Variables
-
-Create a `.env` file or pass environment variables to the container:
-
-```bash
-APP_NAME=Uptime-Kita
-APP_ENV=production
-APP_KEY=base64:your-key-here
-APP_URL=https://your-domain.com
-
-# Queue driver: `redis` for local/single-server, `cloud` on Laravel Cloud (managed queue)
-QUEUE_CONNECTION=redis
-
-# Telegram bot
-TELEGRAM_BOT_TOKEN=
-# Set when registering the webhook via setWebhook to verify incoming requests
-TELEGRAM_BOT_SECRET_TOKEN=
-
-# iazaran/trace-replay request/job tracing (writes tr_* tables). Disable in production.
-TRACE_REPLAY_ENABLED=false
-
-# Backups: set AWS credentials to store backups on S3, otherwise they fall back to local disk
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=
-```
-
-The Docker image includes:
-- Nginx web server
-- PHP-FPM
-- Supervisor for process management
-- Cronless scheduler (no cron required)
-- Queue workers
-
-### Cronless Scheduler
-
-For environments without cron access (like some Docker/container setups), use the cronless scheduler:
-
-```bash
-# Run directly
-php artisan schedule:run-cronless-safe
-
-# With options
-php artisan schedule:run-cronless-safe --frequency=60 --max-memory=256 --max-runtime=86400
-```
-
-Options:
-- `--frequency=60`: Check interval in seconds (default: 60)
-- `--max-memory=512`: Maximum memory in MB before restart (default: 512)
-- `--max-runtime=86400`: Maximum runtime in seconds before restart (default: 24 hours)
-
-See [TROUBLESHOOTING-CRONLESS.md](TROUBLESHOOTING-CRONLESS.md) for troubleshooting tips.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📈 Server Resources Monitoring
 
