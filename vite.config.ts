@@ -4,7 +4,7 @@ import path from 'path';
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
     plugins: [
         laravel({
             input: ['resources/js/app.ts'],
@@ -29,12 +29,14 @@ export default defineConfig({
     build: {
         chunkSizeWarningLimit: 500,
         rollupOptions: {
-            output: {
-                manualChunks: {
-                    vendor: ['vue', '@inertiajs/vue3', 'reka-ui'],
-                    lucide: ['lucide-vue-next'],
-                },
-            },
+            output: isSsrBuild
+                ? {}
+                : {
+                      manualChunks: {
+                          vendor: ['vue', '@inertiajs/vue3', 'reka-ui'],
+                          lucide: ['lucide-vue-next'],
+                      },
+                  },
         },
     },
-});
+}));
