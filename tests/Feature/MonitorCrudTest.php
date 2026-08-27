@@ -88,6 +88,16 @@ describe('Monitor CRUD Operations', function () {
             );
         });
 
+        it('passes prefilled url parameter to create form', function () {
+            $response = actingAs($this->user)->get('/monitor/create?url=https%3A%2F%2Fgontorian.com');
+
+            $response->assertSuccessful();
+            $response->assertInertia(fn ($page) => $page
+                ->component('uptime/Create')
+                ->where('url', 'https://gontorian.com')
+            );
+        });
+
         it('requires authentication to show create form', function () {
             $response = get('/monitor/create');
 

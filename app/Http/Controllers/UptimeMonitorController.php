@@ -161,9 +161,11 @@ class UptimeMonitorController extends Controller
     /**
      * Show the form for creating a new monitor.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('uptime/Create');
+        return Inertia::render('uptime/Create', [
+            'url' => $request->query('url', ''),
+        ]);
     }
 
     /**

@@ -4,20 +4,28 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { SharedData } from '@/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
-// Hapus impor komponen yang tidak ada
-// import TextInput from '@/Components/TextInput.vue';
-// import InputLabel from '@/Components/InputLabel.vue';
-// import PrimaryButton from '@/Components/PrimaryButton.vue';
-// import InputError from '@/Components/InputError.vue';
-// import Checkbox from '@/Components/Checkbox.vue';
+const props = defineProps<{
+    url?: string;
+}>();
 
 const page = usePage<SharedData>();
 const userId = page.props.auth?.user?.id;
 
+const getInitialUrl = (): string => {
+    if (props.url) {
+        return props.url;
+    }
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('url') || '';
+    }
+    return '';
+};
+
 const form = useForm({
-    url: '',
+    url: getInitialUrl(),
     uptime_check_enabled: true,
     certificate_check_enabled: true,
     domain_expiration_check_enabled: false,
@@ -142,6 +150,12 @@ watch(
         }, 1000); // 1 second debounce
     },
 );
+
+onMounted(() => {
+    if (form.url && form.url.startsWith('http')) {
+        checkDns(form.url);
+    }
+});
 
 const decrementInterval = () => {
     if (form.uptime_check_interval > 1) {
