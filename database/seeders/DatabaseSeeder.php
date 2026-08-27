@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             MonitorSeeder::class,
+            DemoStatusPageSeeder::class,
             // NotificationChannelSeeder::class,
         ]);
     }
