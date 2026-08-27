@@ -71,115 +71,138 @@ const statCards = computed(() => [
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Domain Expiration" />
 
-        <div class="py-8">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <!-- Summary Cards -->
-                <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div
-                        v-for="card in statCards"
-                        :key="card.label"
-                        class="flex items-center gap-4 rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800"
-                    >
-                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
-                            <Icon :name="card.icon" class="h-6 w-6" :class="card.color" />
-                        </div>
-                        <div>
-                            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ card.value }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ card.label }}</div>
-                        </div>
+        <div class="max-w-7xl mx-auto px-4 py-6 md:px-6 w-full space-y-6">
+            <!-- Header -->
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">Domain Expiration Monitoring</h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Track domain expiration deadlines, renew in advance, and prevent unexpected downtime.
+                    </p>
+                </div>
+                <Link
+                    href="/monitor/create"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95"
+                >
+                    <Icon name="plus" class="h-4 w-4" />
+                    <span>New Monitor</span>
+                </Link>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div
+                    v-for="card in statCards"
+                    :key="card.label"
+                    class="flex items-center gap-4 rounded-3xl border border-gray-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
+                >
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+                        <Icon :name="card.icon" class="h-6 w-6" :class="card.color" />
+                    </div>
+                    <div>
+                        <div class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">{{ card.value }}</div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ card.label }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
+                <div class="border-b border-gray-100 px-6 py-4 dark:border-gray-800 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">Active Domain Trackers</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Sorted by soonest expiration date</p>
                     </div>
                 </div>
 
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                    <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Domain Expiration Monitoring</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Monitors with domain expiration checking enabled, sorted by soonest expiration.
-                        </p>
+                <div v-if="props.monitors.data.length === 0" class="px-6 py-16 text-center text-gray-500 dark:text-gray-400">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 dark:bg-gray-800">
+                        <Icon name="calendarClock" class="h-7 w-7" />
                     </div>
+                    <p class="mt-3 text-base font-bold text-gray-900 dark:text-white">No domain expiration monitoring yet</p>
+                    <p class="mt-1 text-xs max-w-sm mx-auto">Enable "Domain Expiration Check" when creating or editing a monitor to track its domain expiry.</p>
+                    <Link href="/monitor/create" class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                        <span>Create a monitor</span>
+                        <Icon name="arrowRight" class="h-3.5 w-3.5" />
+                    </Link>
+                </div>
 
-                    <div v-if="props.monitors.data.length === 0" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                        <Icon name="calendarClock" class="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-gray-600" />
-                        <p class="text-lg font-medium">No domain expiration monitoring yet</p>
-                        <p class="mt-1 text-sm">Enable "Domain Expiration Check" when creating or editing a monitor to track its domain expiry.</p>
-                        <Link href="/monitor/create" class="mt-4 inline-block text-blue-600 hover:underline dark:text-blue-400">
-                            Create a monitor →
-                        </Link>
-                    </div>
-
-                    <div v-else class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50 dark:bg-gray-900">
-                                <tr>
-                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Monitor</th>
-                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Expiration Date</th>
-                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Days Left</th>
-                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
-                                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Tags</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr v-for="monitor in props.monitors.data" :key="monitor.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
+                <div v-else class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
+                            <tr>
+                                <th class="px-6 py-3.5">Monitor</th>
+                                <th class="px-6 py-3.5">Expiration Date</th>
+                                <th class="px-6 py-3.5">Days Left</th>
+                                <th class="px-6 py-3.5">Status</th>
+                                <th class="px-6 py-3.5">Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            <tr v-for="monitor in props.monitors.data" :key="monitor.id" class="transition-colors hover:bg-gray-50/60 dark:hover:bg-gray-800/40">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                                             <img
                                                 v-if="monitor.favicon"
                                                 :src="monitor.favicon"
                                                 :alt="`${monitor.host} favicon`"
-                                                class="h-6 w-6 flex-shrink-0 rounded"
+                                                class="h-4 w-4 rounded-sm object-contain"
                                                 @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
                                             />
-                                            <div class="min-w-0">
-                                                <Link
-                                                    :href="route('monitor.show', monitor.id)"
-                                                    class="block max-w-[200px] truncate font-medium text-blue-600 hover:underline sm:max-w-xs dark:text-blue-400"
-                                                >
-                                                    {{ monitor.name }}
-                                                </Link>
-                                                <span class="block max-w-[200px] truncate text-xs text-gray-500 sm:max-w-xs dark:text-gray-400">
-                                                    {{ monitor.url }}
-                                                </span>
-                                            </div>
+                                            <Icon v-else name="globe" class="h-4 w-4 text-gray-400" />
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                                        {{ formatDate(monitor.domain_expiration_date) }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap"
-                                            :class="getDaysLeftColor(monitor.days_left)"
-                                        >
-                                            {{ getDaysLeftLabel(monitor.days_left) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="rounded-full px-2.5 py-0.5 text-sm font-medium"
-                                            :class="getStatusBadgeColor(monitor.uptime_status)"
-                                        >
-                                            {{ monitor.uptime_status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-wrap gap-1">
-                                            <span
-                                                v-for="tag in monitor.tags || []"
-                                                :key="tag.id || tag.name"
-                                                class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                        <div class="min-w-0">
+                                            <Link
+                                                :href="route('monitor.show', monitor.id)"
+                                                class="block max-w-[200px] truncate font-bold text-gray-900 hover:text-blue-600 sm:max-w-xs dark:text-white dark:hover:text-blue-400"
                                             >
-                                                {{ tag.name || tag }}
+                                                {{ monitor.name }}
+                                            </Link>
+                                            <span class="block max-w-[200px] truncate text-xs text-gray-400 sm:max-w-xs">
+                                                {{ monitor.url }}
                                             </span>
                                         </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                    {{ formatDate(monitor.domain_expiration_date) }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap"
+                                        :class="getDaysLeftColor(monitor.days_left)"
+                                    >
+                                        {{ getDaysLeftLabel(monitor.days_left) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider"
+                                        :class="getStatusBadgeColor(monitor.uptime_status)"
+                                    >
+                                        <span class="h-1.5 w-1.5 rounded-full" :class="monitor.uptime_status === 'up' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'" />
+                                        {{ monitor.uptime_status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span
+                                            v-for="tag in monitor.tags || []"
+                                            :key="tag.id || tag.name"
+                                            class="inline-flex items-center rounded-lg border border-gray-200/60 bg-gray-100/70 px-2 py-0.5 text-[10px] font-semibold text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                        >
+                                            #{{ tag.name || tag }}
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div v-if="props.monitors.meta.last_page > 1" class="px-6 py-4">
-                        <Pagination :data="props.monitors" />
-                    </div>
+                <div v-if="props.monitors.meta.last_page > 1" class="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+                    <Pagination :data="props.monitors" />
                 </div>
             </div>
         </div>

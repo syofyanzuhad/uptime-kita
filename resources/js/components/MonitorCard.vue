@@ -100,6 +100,13 @@ const getUptimeBarColor = (percentage: number) => {
     return 'bg-rose-500';
 };
 
+const topAccentClass = computed(() => {
+    if (!props.monitor.uptime_check_enabled) return 'bg-gray-300 dark:bg-gray-700';
+    if (props.monitor.uptime_status === 'up') return 'bg-gradient-to-r from-emerald-500 to-teal-400';
+    if (props.monitor.uptime_status === 'down') return 'bg-gradient-to-r from-rose-500 to-red-600';
+    return 'bg-gradient-to-r from-amber-400 to-yellow-500';
+});
+
 const openMonitorUrl = (url: string) => {
     window.open(url, '_blank');
 };
@@ -138,8 +145,11 @@ const handleUnsubscribe = () => {
 
 <template>
     <div
-        class="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/90 dark:hover:border-gray-700"
+        class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/80 bg-white/80 shadow-xs backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/80 dark:hover:border-gray-700"
     >
+        <!-- Top Status Line Accent -->
+        <div class="h-1 w-full" :class="topAccentClass" />
+
         <Link
             :href="route('monitor.show', monitor.id)"
             class="flex flex-1 flex-col p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"

@@ -234,15 +234,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Card class="overflow-hidden border-border/80 bg-card/60 backdrop-blur-xs shadow-xs transition-shadow hover:shadow-sm">
-        <CardHeader class="pb-3 border-b border-border/50">
+    <Card class="overflow-hidden rounded-3xl border-gray-200/80 bg-white/80 backdrop-blur-sm shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900/80">
+        <CardHeader class="pb-3 border-b border-gray-100 dark:border-gray-800">
             <CardTitle class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
                         <Bookmark class="h-4 w-4 fill-amber-500/30" />
                     </div>
                     <div>
-                        <span class="text-base font-semibold text-foreground">Pinned Monitors</span>
+                        <span class="text-base font-bold text-gray-900 dark:text-white">Pinned Monitors</span>
                         <span v-if="!loading && pinnedMonitors.length > 0" class="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                             {{ filteredMonitors.length }}
                         </span>

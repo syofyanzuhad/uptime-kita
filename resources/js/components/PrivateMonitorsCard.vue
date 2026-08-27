@@ -235,15 +235,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Card class="overflow-hidden border-border/80 bg-card/60 backdrop-blur-xs shadow-xs transition-shadow hover:shadow-sm">
-        <CardHeader class="pb-3 border-b border-border/50">
+    <Card class="overflow-hidden rounded-3xl border-gray-200/80 bg-white/80 backdrop-blur-sm shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900/80">
+        <CardHeader class="pb-3 border-b border-gray-100 dark:border-gray-800">
             <CardTitle class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/20">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/20">
                         <Lock class="h-4 w-4" />
                     </div>
                     <div>
-                        <span class="text-base font-semibold text-foreground">Private Monitors</span>
+                        <span class="text-base font-bold text-gray-900 dark:text-white">Private Monitors</span>
                         <span v-if="!loading && privateMonitors.length > 0" class="ml-2 inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
                             {{ filteredMonitors.length }}
                         </span>

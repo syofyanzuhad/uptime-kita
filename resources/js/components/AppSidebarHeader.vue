@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import { Button } from '@/components/ui/button';
+import Icon from '@/components/Icon.vue';
+import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/composables/useAppearance';
 import type { BreadcrumbItemType } from '@/types';
-import { Moon, Sun } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 withDefaults(
@@ -25,18 +26,39 @@ function toggleDarkMode() {
 
 <template>
     <header
-        class="border-sidebar-border/70 flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4"
+        class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-gray-200/80 bg-white/80 px-4 backdrop-blur-md transition-all md:px-6 dark:border-gray-800/80 dark:bg-gray-900/80"
     >
-        <div class="flex flex-1 items-center gap-2">
-            <SidebarTrigger class="-ml-1" />
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+            <SidebarTrigger class="h-9 w-9 rounded-xl border border-gray-200/80 bg-white/80 p-2 text-gray-600 shadow-sm transition-all hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700" />
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
-        <!-- Dark Mode Toggle Button -->
-        <Button variant="ghost" size="icon" class="group ml-auto h-9 w-9 cursor-pointer" @click="toggleDarkMode">
-            <span class="sr-only">Toggle dark mode</span>
-            <component :is="isDark ? Sun : Moon" class="size-5 opacity-80 group-hover:opacity-100" />
-        </Button>
+
+        <div class="flex shrink-0 items-center gap-2">
+            <!-- Server Telemetry Badge -->
+            <ServerStatsBadge class="hidden lg:block" />
+
+            <!-- View Public Site Link -->
+            <Link
+                href="/"
+                target="_blank"
+                class="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700"
+                title="Open Public Site in New Tab"
+            >
+                <Icon name="globe" class="h-3.5 w-3.5 text-blue-500" />
+                <span>Public View</span>
+            </Link>
+
+            <!-- Dark Mode Toggle Button -->
+            <button
+                @click="toggleDarkMode"
+                class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-gray-200/80 bg-white/80 p-2 text-gray-600 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700"
+                :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                aria-label="Toggle dark mode"
+            >
+                <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 transition-transform duration-300 rotate-0 dark:-rotate-12" />
+            </button>
+        </div>
     </header>
 </template>

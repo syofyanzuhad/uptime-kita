@@ -274,84 +274,91 @@ onUnmounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="pageTitle" />
 
-        <div class="container mx-auto px-4 py-8">
+        <div class="max-w-7xl mx-auto px-4 py-6 md:px-6 w-full space-y-6">
             <!-- Header -->
-            <div class="mb-6 flex items-center justify-between">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold">{{ pageTitle }}</h1>
-                    <p class="mt-2 text-gray-600 dark:text-gray-400">
-                        <span v-if="type === 'pinned'">Your pinned monitors for quick access</span>
-                        <span v-else-if="type === 'private'">Monitors only visible to you</span>
-                        <span v-else>Publicly accessible monitors</span>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ pageTitle }}</h1>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <span v-if="type === 'pinned'">Your pinned monitors for quick access and live telemetry</span>
+                        <span v-else-if="type === 'private'">Private monitors visible only to authenticated team members</span>
+                        <span v-else>Publicly accessible uptime and health check endpoints</span>
                     </p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Auto-refresh in {{ countdown }}s</div>
-                    <Link href="/monitor/create">
-                        <Button>
-                            <Icon name="heroicons:plus" class="mr-2" />
-                            Add Monitor
-                        </Button>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-xs backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-400">
+                        <span class="h-2 w-2 rounded-full bg-blue-500 animate-ping" />
+                        <span>Auto-refresh: {{ countdown }}s</span>
+                    </span>
+                    <Link
+                        href="/monitor/create"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95"
+                    >
+                        <Icon name="plus" class="h-4 w-4" />
+                        <span>New Monitor</span>
                     </Link>
                 </div>
             </div>
 
             <!-- Filters -->
-            <div class="mb-6 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+            <div class="rounded-3xl border border-gray-200/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <!-- Search -->
                     <div>
-                        <label class="mb-2 block text-sm font-medium">Search</label>
-                        <Input v-model="searchQuery" placeholder="Search monitors..." class="w-full" />
+                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Search</label>
+                        <Input v-model="searchQuery" placeholder="Search monitors..." class="w-full h-10 rounded-2xl" />
                     </div>
 
                     <!-- Status Filter -->
                     <div>
-                        <label class="mb-2 block text-sm font-medium">Status</label>
+                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</label>
                         <Select
                             v-model="statusFilter"
                             :items="[
-                                { label: 'All', value: 'all' },
-                                { label: 'Up', value: 'up' },
-                                { label: 'Down', value: 'down' },
+                                { label: 'All Statuses', value: 'all' },
+                                { label: 'Up (Online)', value: 'up' },
+                                { label: 'Down (Offline)', value: 'down' },
                                 { label: 'Disabled', value: 'disabled' },
                             ]"
                             placeholder="All statuses"
+                            class="h-10 rounded-2xl"
                         />
                     </div>
 
                     <!-- Visibility Filter (only for non-type-specific views) -->
                     <div v-if="type !== 'private' && type !== 'public'">
-                        <label class="mb-2 block text-sm font-medium">Visibility</label>
+                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Visibility</label>
                         <Select
                             v-model="visibilityFilter"
                             :items="[
-                                { label: 'All', value: 'all' },
+                                { label: 'All Visibility', value: 'all' },
                                 { label: 'Public', value: 'public' },
                                 { label: 'Private', value: 'private' },
                             ]"
                             placeholder="All visibility"
+                            class="h-10 rounded-2xl"
                         />
                     </div>
 
                     <!-- Per Page -->
                     <div>
-                        <label class="mb-2 block text-sm font-medium">Per Page</label>
+                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Per Page</label>
                         <Select
                             v-model="perPage"
                             :items="[
-                                { label: '12', value: 12 },
-                                { label: '24', value: 24 },
-                                { label: '48', value: 48 },
-                                { label: '96', value: 96 },
+                                { label: '12 items', value: 12 },
+                                { label: '24 items', value: 24 },
+                                { label: '48 items', value: 48 },
+                                { label: '96 items', value: 96 },
                             ]"
+                            class="h-10 rounded-2xl"
                         />
                     </div>
                 </div>
             </div>
 
             <!-- Monitors Grid -->
-            <div class="bg-card rounded-lg border border-gray-200 p-6 shadow dark:border-gray-700">
+            <div class="rounded-3xl border border-gray-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
                 <MonitorGrid
                     v-if="allMonitors.length > 0"
                     :monitors="allMonitors"
