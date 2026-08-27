@@ -128,4 +128,137 @@ describe('MonitorExpirationController', function () {
                 ->where('monitors.data.0.days_left', -3)
             );
     });
+
+    it('filters monitors by search query', function () {
+        $alpha = Monitor::factory()->create([
+            'url' => 'https://alpha-service.com',
+            'display_name' => 'Alpha Service',
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(20),
+        ]);
+        $beta = Monitor::factory()->create([
+            'url' => 'https://beta-platform.org',
+            'display_name' => 'Beta Platform',
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(40),
+        ]);
+
+        $this->user->monitors()->syncWithoutDetaching([$alpha->id, $beta->id]);
+
+        $this->get(route('monitors.expiration', ['search' => 'alpha']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $alpha->id)
+                ->where('search', 'alpha')
+            );
+    });
+
+    it('filters monitors by expiration status', function () {
+        $expired = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->subDays(2),
+        ]);
+        $expiringSoon = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(15),
+        ]);
+        $healthy = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(90),
+        ]);
+
+        $this->user->monitors()->syncWithoutDetaching([$expired->id, $expiringSoon->id, $healthy->id]);
+
+        // Filter expired
+        $this->get(route('monitors.expiration', ['status_filter' => 'expired']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $expired->id)
+                ->where('statusFilter', 'expired')
+            );
+
+        // Filter expiring soon
+        $this->get(route('monitors.expiration', ['status_filter' => 'expiring_soon']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $expiringSoon->id)
+                ->where('statusFilter', 'expiring_soon')
+            );
+
+        // Filter healthy
+        $this->get(route('monitors.expiration', ['status_filter' => 'healthy']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $healthy->id)
+                ->where('statusFilter', 'healthy')
+            );
+    });
+
+    it('filters monitors by uptime status', function () {
+        $up = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(30),
+            'uptime_status' => 'up',
+        ]);
+        $down = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(30),
+            'uptime_status' => 'down',
+        ]);
+
+        $this->user->monitors()->syncWithoutDetaching([$up->id, $down->id]);
+
+        $this->get(route('monitors.expiration', ['uptime_filter' => 'down']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $down->id)
+                ->where('uptimeFilter', 'down')
+            );
+    });
+
+    it('filters monitors by tag', function () {
+        $monitorWithTag = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(30),
+        ]);
+        $monitorWithoutTag = Monitor::factory()->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(30),
+        ]);
+
+        $monitorWithTag->attachTag('production');
+
+        $this->user->monitors()->syncWithoutDetaching([$monitorWithTag->id, $monitorWithoutTag->id]);
+
+        $this->get(route('monitors.expiration', ['tag_filter' => 'production']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $monitorWithTag->id)
+                ->where('tagFilter', 'production')
+            );
+    });
+
+    it('respects per_page parameter', function () {
+        $monitors = Monitor::factory()->count(30)->create([
+            'domain_expiration_check_enabled' => true,
+            'domain_expiration_date' => now()->addDays(30),
+        ]);
+
+        $this->user->monitors()->syncWithoutDetaching($monitors->pluck('id'));
+
+        $this->get(route('monitors.expiration', ['per_page' => 25]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 25)
+                ->where('monitors.meta.per_page', 25)
+                ->where('monitors.meta.total', 30)
+                ->where('perPage', 25)
+            );
+    });
 });

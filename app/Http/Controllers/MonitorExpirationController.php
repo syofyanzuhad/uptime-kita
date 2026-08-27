@@ -6,6 +6,7 @@ use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Tags\Tag;
 
 class MonitorExpirationController extends Controller
 {
@@ -15,12 +16,56 @@ class MonitorExpirationController extends Controller
      */
     public function index(Request $request): Response
     {
-        $paginator = Monitor::query()
+        $search = $request->input('search');
+        $statusFilter = $request->input('status_filter', 'all');
+        $uptimeFilter = $request->input('uptime_filter', 'all');
+        $tagFilter = $request->input('tag_filter');
+        $perPage = (int) $request->input('per_page', 50);
+
+        if (! in_array($perPage, [25, 50, 100], true)) {
+            $perPage = 50;
+        }
+
+        $baseQuery = Monitor::query()
             ->where('domain_expiration_check_enabled', true)
-            ->whereNotNull('domain_expiration_date')
+            ->whereNotNull('domain_expiration_date');
+
+        // Base stats before search/filters are applied
+        $stats = [
+            'total' => (clone $baseQuery)->count(),
+            'expired' => (clone $baseQuery)
+                ->where('domain_expiration_date', '<', now())
+                ->count(),
+            'expiring_soon' => (clone $baseQuery)
+                ->where('domain_expiration_date', '>=', now())
+                ->where('domain_expiration_date', '<=', now()->addDays(30))
+                ->count(),
+        ];
+
+        $query = (clone $baseQuery)
             ->with(['tags'])
+            ->search($search);
+
+        if ($statusFilter === 'expired') {
+            $query->where('domain_expiration_date', '<', now());
+        } elseif ($statusFilter === 'expiring_soon') {
+            $query->where('domain_expiration_date', '>=', now())
+                ->where('domain_expiration_date', '<=', now()->addDays(30));
+        } elseif ($statusFilter === 'healthy') {
+            $query->where('domain_expiration_date', '>', now()->addDays(30));
+        }
+
+        if ($uptimeFilter === 'up' || $uptimeFilter === 'down') {
+            $query->where('uptime_status', $uptimeFilter);
+        }
+
+        if ($tagFilter) {
+            $query->withAnyTags([$tagFilter]);
+        }
+
+        $paginator = $query
             ->orderBy('domain_expiration_date', 'asc')
-            ->paginate(50)
+            ->paginate($perPage)
             ->withQueryString();
 
         $monitors = $paginator->map(fn (Monitor $monitor) => [
@@ -38,6 +83,12 @@ class MonitorExpirationController extends Controller
                 : null,
             'tags' => $monitor->tags->map(fn ($tag) => ['id' => $tag->id, 'name' => $tag->name]),
         ]);
+
+        $availableTags = Tag::whereIn('id', function ($query) {
+            $query->select('tag_id')
+                ->from('taggables')
+                ->where('taggable_type', Monitor::class);
+        })->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('monitors/Expiration', [
             'monitors' => [
@@ -58,18 +109,13 @@ class MonitorExpirationController extends Controller
                     'total' => $paginator->total(),
                 ],
             ],
-            'stats' => [
-                'total' => $paginator->total(),
-                'expired' => Monitor::query()
-                    ->where('domain_expiration_check_enabled', true)
-                    ->where('domain_expiration_date', '<', now())
-                    ->count(),
-                'expiring_soon' => Monitor::query()
-                    ->where('domain_expiration_check_enabled', true)
-                    ->where('domain_expiration_date', '>=', now())
-                    ->where('domain_expiration_date', '<=', now()->addDays(30))
-                    ->count(),
-            ],
+            'stats' => $stats,
+            'search' => $search,
+            'statusFilter' => $statusFilter,
+            'uptimeFilter' => $uptimeFilter,
+            'tagFilter' => $tagFilter,
+            'perPage' => $perPage,
+            'availableTags' => $availableTags,
         ]);
     }
 }
