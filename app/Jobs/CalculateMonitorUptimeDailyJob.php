@@ -7,20 +7,32 @@ use App\Models\MonitorUptimeDaily;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
-class CalculateMonitorUptimeDailyJob implements ShouldQueue
+class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public $uniqueFor = 3600;
+
+    public function uniqueId(): string
+    {
+        return 'uptime-daily-dispatcher';
+    }
 
     /**
      * Create a new job instance.
      */
-    public function __construct() {}
+    public function __construct()
+    {
+        $this->onQueue('low');
+    }
 
     /**
      * Execute the job.
@@ -39,22 +51,6 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
                 return;
             }
 
-            Log::debug('Creating batch jobs for monitors', [
-                'total_monitors' => count($monitorIds),
-            ]);
-
-            // Chunk monitors into smaller batches for better memory management
-            $chunkSize = 10; // Process 10 monitors per batch to reduce database contention
-            $monitorChunks = array_chunk($monitorIds, $chunkSize);
-            $totalChunks = count($monitorChunks);
-            $totalJobs = 0;
-
-            Log::debug('Processing monitors in chunks', [
-                'total_monitors' => count($monitorIds),
-                'chunk_size' => $chunkSize,
-                'total_chunks' => $totalChunks,
-            ]);
-
             $lookbackDays = config('uptime-monitor.daily_lookback_days', 30);
             $startDate = now()->subDays($lookbackDays)->startOfDay();
             $endDate = now()->subDay()->endOfDay();
@@ -63,50 +59,42 @@ class CalculateMonitorUptimeDailyJob implements ShouldQueue
             foreach ($period as $date) {
                 $dateStrings[] = $date->toDateString();
             }
+            $yesterday = now()->subDay()->toDateString();
 
-            foreach ($monitorChunks as $index => $monitorChunk) {
-                $chunkNumber = $index + 1;
-
-                Log::debug("Processing chunk {$chunkNumber}/{$totalChunks}", [
-                    'chunk_size' => count($monitorChunk),
-                ]);
-
-                // Fetch all existing daily records for the monitors in this chunk within the lookback window
+            // Collect jobs, then dispatch as Bus::batch (one DB round-trip for batch meta).
+            // Chunk size 50 keeps existingRecords query small.
+            $jobs = [];
+            foreach (array_chunk($monitorIds, 50) as $monitorChunk) {
                 $existingRecords = MonitorUptimeDaily::whereIn('monitor_id', $monitorChunk)
                     ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
                     ->get(['monitor_id', 'date'])
                     ->groupBy('monitor_id')
                     ->map(fn ($records) => $records->pluck('date')->map(fn ($d) => Carbon::parse($d)->toDateString())->all());
 
-                $yesterday = now()->subDay()->toDateString();
-
                 foreach ($monitorChunk as $monitorId) {
                     $existingDates = $existingRecords->get($monitorId, []);
 
                     foreach ($dateStrings as $dateString) {
-                        // Always calculate yesterday (to ensure final day's numbers are calculated/updated)
-                        // or calculate any missing previous day within the lookback window
                         if ($dateString === $yesterday || ! in_array($dateString, $existingDates, true)) {
-                            $job = new CalculateSingleMonitorUptimeJob($monitorId, $dateString);
-                            dispatch($job);
-                            $totalJobs++;
+                            $jobs[] = new CalculateSingleMonitorUptimeJob($monitorId, $dateString);
                         }
                     }
                 }
-
-                Log::debug("Chunk {$chunkNumber}/{$totalChunks} dispatched", [
-                    'total_jobs_dispatched' => $totalJobs,
-                ]);
-
-                // Small delay between chunks to reduce database contention
-                if ($chunkNumber < $totalChunks) {
-                    usleep(500000); // 0.5 second delay
-                }
             }
 
-            Log::info('All uptime calculation chunks dispatched', [
-                'total_chunks' => $totalChunks,
-                'total_jobs' => $totalJobs,
+            if (empty($jobs)) {
+                Log::info('No uptime calculations needed — all daily records present.');
+
+                return;
+            }
+
+            Bus::batch($jobs)
+                ->onQueue('low')
+                ->allowFailures()
+                ->dispatch();
+
+            Log::info('Dispatched uptime calculation batch', [
+                'total_jobs' => count($jobs),
             ]);
 
         } catch (\Exception $e) {
