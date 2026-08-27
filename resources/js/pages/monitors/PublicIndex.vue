@@ -185,6 +185,11 @@ function monitorThisDomain() {
     router.visit(`/monitor/create?url=${encodeURIComponent('https://' + domainResult.value.host)}`);
 }
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+// Phase 3: incidents collapsible + hero focus
+const incidentsExpanded = ref(false);
+const heroInputRef = ref<HTMLInputElement | null>(null);
+function focusHeroInput() { heroInputRef.value?.focus(); }
 </script>
 
 <template>
@@ -200,7 +205,7 @@ function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
                 <p class="mt-2 text-sm text-blue-100 sm:text-base">Enter a domain or URL to see if it's up — response time & status, instantly.</p>
                 <form @submit.prevent="checkDomain" class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <label for="hero-domain-input" class="sr-only">Domain or URL to check</label>
-                    <input id="hero-domain-input" v-model="domainInput" type="text" placeholder="example.com or https://example.com" autocomplete="off" class="flex-1 rounded-xl border-0 bg-white px-5 py-3.5 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:ring-2 focus:ring-white/50" />
+                    <input ref="heroInputRef" id="hero-domain-input" v-model="domainInput" type="text" placeholder="example.com or https://example.com" autocomplete="off" aria-label="Domain or URL to check" class="flex-1 rounded-xl border-0 bg-white px-5 py-3.5 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:ring-2 focus:ring-white/50" @keydown.escape="domainResult = null; domainError = ''" />
                     <button type="submit" :disabled="domainChecking" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50 disabled:opacity-60">
                         <Icon v-if="domainChecking" name="loader" class="h-4 w-4 animate-spin" />
                         <Icon v-else name="search" class="h-4 w-4" />
@@ -289,18 +294,30 @@ function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
             </button>
         </div>
 
+        <!-- Trust row -->
+        <div class="mb-6 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <span class="inline-flex items-center gap-1.5"><Icon name="github" class="h-3.5 w-3.5" />Open-source</span>
+            <span class="text-gray-300 dark:text-gray-600">•</span>
+            <a href="https://github.com/syofyanzuhad/uptime-kita" target="_blank" rel="noopener" class="hover:text-gray-700 dark:hover:text-gray-300 hover:underline">GitHub</a>
+            <span class="text-gray-300 dark:text-gray-600">•</span>
+            <span>{{ stats.total_public }} monitors tracked</span>
+        </div>
+
         <!-- Demo Banner (secondary, below grid) -->
         <Link href="/status/demo" class="mt-8 flex items-center justify-between rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 hover:border-blue-300 hover:shadow-md dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
             <div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50"><Icon name="activity" class="h-5 w-5 text-blue-600 dark:text-blue-400" /></div><div><p class="font-medium text-gray-900 dark:text-white">Try our Demo Status Page</p><p class="text-sm text-gray-600 dark:text-gray-400">See how status pages work</p></div></div>
             <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400"><span class="hidden text-sm font-medium sm:inline">View Demo</span><Icon name="arrowRight" class="h-5 w-5" /></div>
         </Link>
 
-        <!-- Latest Incidents -->
+        <!-- Latest Incidents (collapsible) -->
         <div v-if="props.latestIncidents?.length" class="mt-8">
-            <Card class="max-h-[50vh] overflow-y-auto"><CardContent class="px-4 sm:px-6">
-                <div class="mb-4 flex items-center justify-between"><h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2><span class="text-sm text-gray-500">Last 10</span></div>
-                <div class="space-y-3">
-                    <div v-for="inc in props.latestIncidents" :key="inc.id" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50" @click="viewIncidentMonitor(inc)">
+            <Card><CardContent class="px-4 py-4 sm:px-6">
+                <button type="button" @click="incidentsExpanded = !incidentsExpanded" class="flex w-full items-center justify-between text-left">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Latest Incidents</h2>
+                    <span class="inline-flex items-center gap-2 text-sm text-gray-500"><span>Last {{ incidentsExpanded ? props.latestIncidents.length : Math.min(3, props.latestIncidents.length) }}</span><Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" /></span>
+                </button>
+                <div class="mt-4 max-h-[50vh] space-y-3 overflow-y-auto">
+                    <div v-for="inc in (incidentsExpanded ? props.latestIncidents : props.latestIncidents.slice(0, 3))" :key="inc.id" class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50" @click="viewIncidentMonitor(inc)">
                         <div :class="['flex h-8 w-8 items-center justify-center rounded-full', inc.ended_at ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30']"><Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" :class="inc.ended_at ? 'h-4 w-4 text-green-600 dark:text-green-400' : 'h-4 w-4 text-red-600 dark:text-red-400'" /></div>
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
@@ -311,6 +328,7 @@ function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
                         <span :class="['rounded-full px-2 py-1 text-xs font-medium', inc.ended_at ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300']">{{ inc.ended_at ? 'Resolved' : 'Ongoing' }}</span>
                     </div>
                 </div>
+                <button v-if="props.latestIncidents.length > 3" type="button" @click="incidentsExpanded = !incidentsExpanded" class="mt-3 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">{{ incidentsExpanded ? 'Show less' : `Show all ${props.latestIncidents.length}` }}</button>
             </CardContent></Card>
         </div>
 
