@@ -67,7 +67,7 @@ if (config('trace-replay.enabled')) {
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->dailyAt('03:00')
+Schedule::job(new CalculateMonitorUptimeDailyJob)->twiceDaily()
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 
 Schedule::job(new CalculateMonitorStatisticsJob)
