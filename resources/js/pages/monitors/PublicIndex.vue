@@ -125,10 +125,57 @@ onMounted(() => window.addEventListener('scroll', onScroll));
 onUnmounted(() => window.removeEventListener('scroll', onScroll));
 
 const hasActiveFilter = computed(() => !!searchQuery.value || statusFilter.value !== 'all' || !!tagFilter.value || sortBy.value !== 'default');
+
+// Free domain checker
+const domainInput = ref('');
+const domainChecking = ref(false);
+const domainResult = ref<null | { url: string; host: string; status_code: number | null; ok: boolean; response_time_ms: number; error?: string }>(null);
+const domainError = ref('');
+async function checkDomain() {
+    const v = domainInput.value.trim();
+    if (!v) { domainError.value = 'Enter a domain or URL.'; return; }
+    domainChecking.value = true; domainResult.value = null; domainError.value = '';
+    try {
+        const res = await fetch(`/api/check-domain?url=${encodeURIComponent(v)}`, { headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        if (!res.ok) { domainError.value = data.message || 'Check failed.'; return; }
+        domainResult.value = data;
+    } catch { domainError.value = 'Network error. Try again.'; }
+    finally { domainChecking.value = false; }
+}
 </script>
 
 <template>
     <PublicLayout :title="pageTitle" :description="pageDescription" :og-image="ogImage" :canonical-url="shareUrl" :share-url="shareUrl" :share-text="shareText" :show-server-stats="true" :json-ld="jsonLd">
+
+        <!-- Free Domain Checker -->
+        <Card class="mb-6 border-blue-200 dark:border-blue-800">
+            <CardContent class="p-4 sm:p-5">
+                <div class="flex items-center gap-2 mb-3">
+                    <Icon name="globe" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <h2 class="font-semibold text-gray-900 dark:text-white">Free Website Checker</h2>
+                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">Free</span>
+                </div>
+                <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">Enter any domain or URL to check if it's up — instant, no signup.</p>
+                <form @submit.prevent="checkDomain" class="flex flex-col gap-2 sm:flex-row">
+                    <input v-model="domainInput" type="text" placeholder="example.com or https://example.com" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                    <button type="submit" :disabled="domainChecking" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                        <Icon v-if="domainChecking" name="loader" class="h-4 w-4 animate-spin" />
+                        <Icon v-else name="search" class="h-4 w-4" />
+                        {{ domainChecking ? 'Checking…' : 'Check Now' }}
+                    </button>
+                </form>
+                <p v-if="domainError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ domainError }}</p>
+                <div v-if="domainResult" class="mt-3 flex flex-wrap items-center gap-2 rounded-lg border p-3" :class="domainResult.ok ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'">
+                    <span class="inline-flex h-2.5 w-2.5 rounded-full" :class="domainResult.ok ? 'bg-green-500' : 'bg-red-500'"></span>
+                    <span class="font-medium text-sm" :class="domainResult.ok ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'">{{ domainResult.ok ? 'Up' : 'Down / Error' }}</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ domainResult.host }}</span>
+                    <span v-if="domainResult.status_code" class="rounded bg-white px-2 py-0.5 text-xs font-mono dark:bg-gray-800">{{ domainResult.status_code }}</span>
+                    <span class="text-xs text-gray-500">{{ domainResult.response_time_ms }} ms</span>
+                    <span v-if="domainResult.error" class="w-full text-xs text-red-600 dark:text-red-400">{{ domainResult.error }}</span>
+                </div>
+            </CardContent>
+        </Card>
 
         <!-- Stats Overview -->
         <div class="mb-8 grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">

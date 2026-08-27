@@ -5,6 +5,7 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CustomDomainController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DebugStatsController;
+use App\Http\Controllers\DomainCheckController;
 use App\Http\Controllers\LatestHistoryController;
 use App\Http\Controllers\MonitorCompactController;
 use App\Http\Controllers\MonitorExpirationController;
@@ -42,6 +43,10 @@ use Spatie\Health\Http\Controllers\HealthCheckResultsController;
 use Spatie\Health\Http\Controllers\SimpleHealthCheckController;
 
 Route::get('/', [PublicMonitorController::class, 'index'])->name('home');
+
+Route::get('/api/check-domain', DomainCheckController::class)
+    ->middleware('throttle:20,1')
+    ->name('api.check-domain');
 
 // Public server stats API (for transparency badge)
 Route::get('/api/server-stats', PublicServerStatsController::class)
