@@ -19,6 +19,7 @@
         "larabug/larabug": "^3.3",
         "laravel-notification-channels/telegram": "^7.0",
         "laravel-notification-channels/twitter": "^9.1",
+        "aws/aws-sdk-php": "^3.0",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.32",
         "laravel/nightwatch": "^1.26",
