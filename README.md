@@ -138,7 +138,6 @@ No cron or Supervisor needed — Cloud handles scheduler + queue.
    APP_URL=https://your-app.cloud.laravel.cloud
    ADMIN_EMAIL=admin@example.com
    ADMIN_PASSWORD=your-password
-   QUEUE_CONNECTION=cloud          # managed queue — no Horizon/Supervisor
    SCHEDULE_FREQUENCY=hourly       # everyMinute | hourly | none (see Capacity below)
    GOOGLE_CLIENT_ID=               # optional — Google OAuth
    GOOGLE_CLIENT_SECRET=
@@ -148,9 +147,19 @@ No cron or Supervisor needed — Cloud handles scheduler + queue.
    AWS_SECRET_ACCESS_KEY=
    AWS_BUCKET=
    ```
-4. Deploy. Migrations + seeders run automatically. Done.
+   Do **not** set `QUEUE_CONNECTION` manually — Cloud sets `cloud` automatically when you add a managed queue (next step).
 
-> Cloud runs `php artisan schedule:run` every minute for you. `QUEUE_CONNECTION=cloud` routes jobs to the managed queue.
+4. **Add managed queue** (required for background jobs):
+   - Cloud Dashboard → your Environment → canvas toolbar → **Add compute → Managed queue**
+   - Name: `default` (or any name — first queue becomes the default)
+   - Type: **Standard** · Memory: **256 MiB** (enough for notifications/stats) · Autoscaling: **0–3 workers** (Flex Starter limit)
+   - Deploy. Cloud provisions the queue, sets `QUEUE_CONNECTION=cloud`, and autoscales workers to zero when idle.
+
+   > Requires `aws/aws-sdk-php` in `composer.json` and Laravel ≥12.63 (this repo already satisfies both). Starter plan = 1 managed queue per environment (enough — all jobs use `default`). Verify in **Monitoring → Queues**.
+
+5. Deploy. Migrations + seeders run automatically. Done.
+
+> Cloud runs `php artisan schedule:run` every minute for you. Managed queue workers wake in <1s when jobs arrive and scale to zero when idle — no Horizon/Supervisor needed.
 
 ### Option 2 — VPS / Local (5 steps)
 
