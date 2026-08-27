@@ -1,27 +1,27 @@
-import MailController from './MailController'
-import MailHtmlController from './MailHtmlController'
-import MailEmlController from './MailEmlController'
-import ExceptionController from './ExceptionController'
-import DumpController from './DumpController'
-import LogController from './LogController'
-import NotificationsController from './NotificationsController'
-import QueueController from './QueueController'
-import QueueBatchesController from './QueueBatchesController'
-import EventsController from './EventsController'
-import GatesController from './GatesController'
-import CacheController from './CacheController'
-import QueriesController from './QueriesController'
-import ModelsController from './ModelsController'
-import RequestsController from './RequestsController'
-import ViewsController from './ViewsController'
-import CommandsController from './CommandsController'
-import ScheduleController from './ScheduleController'
-import RedisController from './RedisController'
-import ClientRequestController from './ClientRequestController'
-import MonitoredTagController from './MonitoredTagController'
-import RecordingController from './RecordingController'
-import EntriesController from './EntriesController'
-import HomeController from './HomeController'
+import CacheController from './CacheController';
+import ClientRequestController from './ClientRequestController';
+import CommandsController from './CommandsController';
+import DumpController from './DumpController';
+import EntriesController from './EntriesController';
+import EventsController from './EventsController';
+import ExceptionController from './ExceptionController';
+import GatesController from './GatesController';
+import HomeController from './HomeController';
+import LogController from './LogController';
+import MailController from './MailController';
+import MailEmlController from './MailEmlController';
+import MailHtmlController from './MailHtmlController';
+import ModelsController from './ModelsController';
+import MonitoredTagController from './MonitoredTagController';
+import NotificationsController from './NotificationsController';
+import QueriesController from './QueriesController';
+import QueueBatchesController from './QueueBatchesController';
+import QueueController from './QueueController';
+import RecordingController from './RecordingController';
+import RedisController from './RedisController';
+import RequestsController from './RequestsController';
+import ScheduleController from './ScheduleController';
+import ViewsController from './ViewsController';
 
 const Controllers = {
     MailController: Object.assign(MailController, MailController),
@@ -48,6 +48,6 @@ const Controllers = {
     RecordingController: Object.assign(RecordingController, RecordingController),
     EntriesController: Object.assign(EntriesController, EntriesController),
     HomeController: Object.assign(HomeController, HomeController),
-}
+};
 
-export default Controllers
+export default Controllers;

@@ -65,7 +65,7 @@ const checkDns = async (url: string) => {
     try {
         const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${hostname}&type=A`, {
             headers: {
-                'Accept': 'application/dns-json',
+                Accept: 'application/dns-json',
             },
         });
 
@@ -91,19 +91,22 @@ const checkDns = async (url: string) => {
     }
 };
 
-watch(() => form.url, (newUrl) => {
-    if (dnsCheckTimeout) clearTimeout(dnsCheckTimeout);
-    if (!newUrl) {
-        dnsStatus.value = 'idle';
-        dnsMessage.value = '';
-        return;
-    }
-    dnsCheckTimeout = window.setTimeout(() => {
-        if (newUrl && newUrl.startsWith('http')) {
-            checkDns(newUrl);
+watch(
+    () => form.url,
+    (newUrl) => {
+        if (dnsCheckTimeout) clearTimeout(dnsCheckTimeout);
+        if (!newUrl) {
+            dnsStatus.value = 'idle';
+            dnsMessage.value = '';
+            return;
         }
-    }, 1000);
-});
+        dnsCheckTimeout = window.setTimeout(() => {
+            if (newUrl && newUrl.startsWith('http')) {
+                checkDns(newUrl);
+            }
+        }, 1000);
+    },
+);
 
 const decrementInterval = () => {
     if (form.uptime_check_interval > 1) form.uptime_check_interval--;
@@ -117,7 +120,7 @@ const submit = () => {
     if (dnsStatus.value === 'invalid') {
         if (!confirm('The domain DNS could not be verified. Do you want to continue?')) return;
     }
-    
+
     form.post(route('monitor.store'), {
         onSuccess: () => {
             form.reset();
@@ -139,9 +142,7 @@ const close = () => {
         <DialogContent class="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle>Tambah Monitor Baru</DialogTitle>
-                <DialogDescription>
-                    Tambahkan URL website atau API yang ingin Anda pantau.
-                </DialogDescription>
+                <DialogDescription> Tambahkan URL website atau API yang ingin Anda pantau. </DialogDescription>
             </DialogHeader>
 
             <form @submit.prevent="submit" class="space-y-4 py-4">
@@ -162,11 +163,15 @@ const close = () => {
                             <Icon v-else-if="dnsStatus === 'invalid'" name="alertTriangle" class="h-4 w-4 text-yellow-500" />
                         </div>
                     </div>
-                    <div v-if="dnsMessage" class="mt-1 text-xs" :class="{
-                        'text-gray-500': dnsStatus === 'checking',
-                        'text-green-600': dnsStatus === 'valid',
-                        'text-yellow-600': dnsStatus === 'invalid',
-                    }">
+                    <div
+                        v-if="dnsMessage"
+                        class="mt-1 text-xs"
+                        :class="{
+                            'text-gray-500': dnsStatus === 'checking',
+                            'text-green-600': dnsStatus === 'valid',
+                            'text-yellow-600': dnsStatus === 'invalid',
+                        }"
+                    >
                         {{ dnsMessage }}
                     </div>
                     <div v-if="form.errors.url" class="mt-1 text-xs text-red-600">{{ form.errors.url }}</div>
@@ -175,7 +180,11 @@ const close = () => {
                 <div>
                     <label for="interval" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
                     <div class="mt-1 flex items-center">
-                        <button type="button" @click="decrementInterval" class="flex h-10 w-10 items-center justify-center rounded-l-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                        <button
+                            type="button"
+                            @click="decrementInterval"
+                            class="flex h-10 w-10 items-center justify-center rounded-l-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <Icon name="minus" size="16" />
                         </button>
                         <input
@@ -184,7 +193,11 @@ const close = () => {
                             v-model="form.uptime_check_interval"
                             class="h-10 w-20 border-t border-b border-gray-300 text-center text-sm focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                         />
-                        <button type="button" @click="incrementInterval" class="flex h-10 w-10 items-center justify-center rounded-r-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                        <button
+                            type="button"
+                            @click="incrementInterval"
+                            class="flex h-10 w-10 items-center justify-center rounded-r-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <Icon name="plus" size="16" />
                         </button>
                     </div>

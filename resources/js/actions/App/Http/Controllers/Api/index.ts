@@ -1,7 +1,7 @@
-import TelemetryReceiverController from './TelemetryReceiverController'
+import TelemetryReceiverController from './TelemetryReceiverController';
 
 const Api = {
     TelemetryReceiverController: Object.assign(TelemetryReceiverController, TelemetryReceiverController),
-}
+};
 
-export default Api
+export default Api;

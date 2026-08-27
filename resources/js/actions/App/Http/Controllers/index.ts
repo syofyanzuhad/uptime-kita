@@ -1,40 +1,40 @@
-import PublicMonitorController from './PublicMonitorController'
-import PublicServerStatsController from './PublicServerStatsController'
-import MonitorStatusStreamController from './MonitorStatusStreamController'
-import StatisticMonitorController from './StatisticMonitorController'
-import DashboardController from './DashboardController'
-import PublicMonitorShowController from './PublicMonitorShowController'
-import BadgeController from './BadgeController'
-import OgImageController from './OgImageController'
-import PublicStatusPageController from './PublicStatusPageController'
-import LatestHistoryController from './LatestHistoryController'
-import MonitorCompactController from './MonitorCompactController'
-import PinnedMonitorController from './PinnedMonitorController'
-import MonitorListController from './MonitorListController'
-import PrivateMonitorController from './PrivateMonitorController'
-import MonitorImportController from './MonitorImportController'
-import UptimeMonitorController from './UptimeMonitorController'
-import SubscribeMonitorController from './SubscribeMonitorController'
-import UnsubscribeMonitorController from './UnsubscribeMonitorController'
-import TagController from './TagController'
-import ToggleMonitorActiveController from './ToggleMonitorActiveController'
-import UptimesDailyController from './UptimesDailyController'
-import StatusPageController from './StatusPageController'
-import StatusPageAssociateMonitorController from './StatusPageAssociateMonitorController'
-import StatusPageDisassociateMonitorController from './StatusPageDisassociateMonitorController'
-import StatusPageAvailableMonitorsController from './StatusPageAvailableMonitorsController'
-import StatusPageOrderController from './StatusPageOrderController'
-import CustomDomainController from './CustomDomainController'
-import UserController from './UserController'
-import TestFlashController from './TestFlashController'
-import DebugStatsController from './DebugStatsController'
-import TelegramWebhookController from './TelegramWebhookController'
-import Api from './Api'
-import TelemetryDashboardController from './TelemetryDashboardController'
-import Settings from './Settings'
-import ServerResourceController from './ServerResourceController'
-import NotificationController from './NotificationController'
-import Auth from './Auth'
+import Api from './Api';
+import Auth from './Auth';
+import BadgeController from './BadgeController';
+import CustomDomainController from './CustomDomainController';
+import DashboardController from './DashboardController';
+import DebugStatsController from './DebugStatsController';
+import LatestHistoryController from './LatestHistoryController';
+import MonitorCompactController from './MonitorCompactController';
+import MonitorImportController from './MonitorImportController';
+import MonitorListController from './MonitorListController';
+import MonitorStatusStreamController from './MonitorStatusStreamController';
+import NotificationController from './NotificationController';
+import OgImageController from './OgImageController';
+import PinnedMonitorController from './PinnedMonitorController';
+import PrivateMonitorController from './PrivateMonitorController';
+import PublicMonitorController from './PublicMonitorController';
+import PublicMonitorShowController from './PublicMonitorShowController';
+import PublicServerStatsController from './PublicServerStatsController';
+import PublicStatusPageController from './PublicStatusPageController';
+import ServerResourceController from './ServerResourceController';
+import Settings from './Settings';
+import StatisticMonitorController from './StatisticMonitorController';
+import StatusPageAssociateMonitorController from './StatusPageAssociateMonitorController';
+import StatusPageAvailableMonitorsController from './StatusPageAvailableMonitorsController';
+import StatusPageController from './StatusPageController';
+import StatusPageDisassociateMonitorController from './StatusPageDisassociateMonitorController';
+import StatusPageOrderController from './StatusPageOrderController';
+import SubscribeMonitorController from './SubscribeMonitorController';
+import TagController from './TagController';
+import TelegramWebhookController from './TelegramWebhookController';
+import TelemetryDashboardController from './TelemetryDashboardController';
+import TestFlashController from './TestFlashController';
+import ToggleMonitorActiveController from './ToggleMonitorActiveController';
+import UnsubscribeMonitorController from './UnsubscribeMonitorController';
+import UptimeMonitorController from './UptimeMonitorController';
+import UptimesDailyController from './UptimesDailyController';
+import UserController from './UserController';
 
 const Controllers = {
     PublicMonitorController: Object.assign(PublicMonitorController, PublicMonitorController),
@@ -74,6 +74,6 @@ const Controllers = {
     ServerResourceController: Object.assign(ServerResourceController, ServerResourceController),
     NotificationController: Object.assign(NotificationController, NotificationController),
     Auth: Object.assign(Auth, Auth),
-}
+};
 
-export default Controllers
+export default Controllers;

@@ -198,22 +198,11 @@ onUnmounted(() => {
                 <div class="flex items-center justify-between">
                     <HeadingSmall title="Server Resources" description="Real-time server resource monitoring" />
                     <div class="flex items-center gap-2">
-                        <span class="text-muted-foreground text-xs">
-                            Updated: {{ formattedLastUpdated }}
-                        </span>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            @click="fetchMetrics"
-                            :disabled="loading"
-                        >
+                        <span class="text-muted-foreground text-xs"> Updated: {{ formattedLastUpdated }} </span>
+                        <Button size="sm" variant="outline" @click="fetchMetrics" :disabled="loading">
                             <Icon name="RefreshCw" :class="loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'" />
                         </Button>
-                        <Button
-                            size="sm"
-                            :variant="autoRefresh ? 'default' : 'outline'"
-                            @click="toggleAutoRefresh"
-                        >
+                        <Button size="sm" :variant="autoRefresh ? 'default' : 'outline'" @click="toggleAutoRefresh">
                             {{ autoRefresh ? 'Auto: ON' : 'Auto: OFF' }}
                         </Button>
                     </div>
@@ -269,9 +258,7 @@ onUnmounted(() => {
                                         :style="{ width: `${metrics.memory.usage_percent}%` }"
                                     ></div>
                                 </div>
-                                <div class="text-muted-foreground text-xs">
-                                    Free: {{ metrics.memory.free_formatted }}
-                                </div>
+                                <div class="text-muted-foreground text-xs">Free: {{ metrics.memory.free_formatted }}</div>
                             </div>
                         </CardContent>
                     </Card>
@@ -298,9 +285,7 @@ onUnmounted(() => {
                                         :style="{ width: `${metrics.disk.usage_percent}%` }"
                                     ></div>
                                 </div>
-                                <div class="text-muted-foreground text-xs">
-                                    Free: {{ metrics.disk.free_formatted }}
-                                </div>
+                                <div class="text-muted-foreground text-xs">Free: {{ metrics.disk.free_formatted }}</div>
                             </div>
                         </CardContent>
                     </Card>

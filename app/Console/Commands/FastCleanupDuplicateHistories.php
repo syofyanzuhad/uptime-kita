@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\MonitorHistory;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -50,7 +51,7 @@ class FastCleanupDuplicateHistories extends Command
             $this->info('Creating temporary table with deduplicated records...');
             DB::statement('DROP TABLE IF EXISTS temp_unique_histories');
 
-            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            $dateFormatter = MonitorHistory::getDateFormatterSql();
             DB::statement("
                 CREATE TEMPORARY TABLE temp_unique_histories AS 
                 SELECT * FROM (
@@ -92,7 +93,7 @@ class FastCleanupDuplicateHistories extends Command
 
         } else {
             // Just count duplicates for dry run
-            $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+            $dateFormatter = MonitorHistory::getDateFormatterSql();
             $duplicates = DB::select("
                 SELECT COUNT(*) as duplicate_count
                 FROM (

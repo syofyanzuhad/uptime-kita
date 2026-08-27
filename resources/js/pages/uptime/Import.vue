@@ -40,7 +40,7 @@ const uploadError = ref<string>('');
 const previewResult = ref<ImportPreviewResult | null>(null);
 
 // Import form
- 
+
 const importForm = useForm<any>({
     rows: [] as ImportRow[],
     duplicate_action: 'skip' as DuplicateAction,
@@ -193,14 +193,7 @@ const getStatusLabel = (status: string) => {
                     <div class="grid gap-2">
                         <Label for="import_file">File Import</Label>
                         <div class="flex gap-2">
-                            <input
-                                ref="fileInput"
-                                id="import_file"
-                                type="file"
-                                accept=".csv,.json,.txt"
-                                class="hidden"
-                                @change="handleFileChange"
-                            />
+                            <input ref="fileInput" id="import_file" type="file" accept=".csv,.json,.txt" class="hidden" @change="handleFileChange" />
                             <Input
                                 type="text"
                                 :value="selectedFileName"
@@ -317,7 +310,9 @@ const getStatusLabel = (status: string) => {
                     <Button variant="outline" @click="goBackToStep1"> Kembali </Button>
                     <Button :disabled="!canImport || importForm.processing" @click="submitImport">
                         <template v-if="importForm.processing"> Mengimport... </template>
-                        <template v-else> Import {{ validRows.length + (importForm.duplicate_action !== 'skip' ? duplicateRows.length : 0) }} Monitor </template>
+                        <template v-else>
+                            Import {{ validRows.length + (importForm.duplicate_action !== 'skip' ? duplicateRows.length : 0) }} Monitor
+                        </template>
                     </Button>
                 </div>
 

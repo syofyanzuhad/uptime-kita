@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Monitor } from '@/types/monitor';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Icon from '@/components/Icon.vue';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import type { Monitor } from '@/types/monitor';
 
 defineProps<{
     monitors: Monitor[];
@@ -39,30 +39,25 @@ const getDomainFromUrl = (url: string) => {
         <Table>
             <TableHeader>
                 <TableRow class="hover:bg-transparent">
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Monitor</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider">Status</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Interval</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-center">SSL</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Today Uptime</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right whitespace-nowrap">Avg Resp</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Incidents</TableHead>
-                    <TableHead class="h-8 py-1 text-xs uppercase tracking-wider text-right">Last Checked</TableHead>
-                    <TableHead v-if="canEdit" class="h-8 py-1 text-xs uppercase tracking-wider text-right">Aksi</TableHead>
+                    <TableHead class="h-8 py-1 text-xs tracking-wider uppercase">Monitor</TableHead>
+                    <TableHead class="h-8 py-1 text-xs tracking-wider uppercase">Status</TableHead>
+                    <TableHead class="h-8 py-1 text-right text-xs tracking-wider uppercase">Interval</TableHead>
+                    <TableHead class="h-8 py-1 text-center text-xs tracking-wider uppercase">SSL</TableHead>
+                    <TableHead class="h-8 py-1 text-right text-xs tracking-wider whitespace-nowrap uppercase">Today Uptime</TableHead>
+                    <TableHead class="h-8 py-1 text-right text-xs tracking-wider whitespace-nowrap uppercase">Avg Resp</TableHead>
+                    <TableHead class="h-8 py-1 text-right text-xs tracking-wider uppercase">Incidents</TableHead>
+                    <TableHead class="h-8 py-1 text-right text-xs tracking-wider uppercase">Last Checked</TableHead>
+                    <TableHead v-if="canEdit" class="h-8 py-1 text-right text-xs tracking-wider uppercase">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 <TableRow v-for="monitor in monitors" :key="monitor.id" class="group transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <TableCell class="py-1.5 min-w-[200px]">
+                    <TableCell class="min-w-[200px] py-1.5">
                         <button
                             @click="emit('view', monitor)"
-                            class="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
+                            class="flex cursor-pointer items-center gap-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
                         >
-                            <img
-                                v-if="monitor.favicon"
-                                :src="monitor.favicon"
-                                alt=""
-                                class="h-4 w-4 rounded-full"
-                            />
+                            <img v-if="monitor.favicon" :src="monitor.favicon" alt="" class="h-4 w-4 rounded-full" />
                             {{ getDomainFromUrl(monitor.url) }}
                         </button>
                     </TableCell>
@@ -80,9 +75,7 @@ const getDomainFromUrl = (url: string) => {
                             <span class="text-xs font-medium capitalize">{{ monitor.uptime_status }}</span>
                         </div>
                     </TableCell>
-                    <TableCell class="py-1.5 text-right text-xs font-medium text-gray-500">
-                        {{ monitor.uptime_check_interval }}m
-                    </TableCell>
+                    <TableCell class="py-1.5 text-right text-xs font-medium text-gray-500"> {{ monitor.uptime_check_interval }}m </TableCell>
                     <TableCell class="py-1.5 text-center">
                         <Icon
                             :name="monitor.certificate_check_enabled ? 'shieldCheck' : 'shieldOff'"
@@ -96,7 +89,8 @@ const getDomainFromUrl = (url: string) => {
                             v-if="monitor.today_uptime_percentage !== null && monitor.today_uptime_percentage !== undefined"
                             :class="{
                                 'text-green-600 dark:text-green-400': monitor.today_uptime_percentage >= 99.5,
-                                'text-yellow-600 dark:text-yellow-400': monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
+                                'text-yellow-600 dark:text-yellow-400':
+                                    monitor.today_uptime_percentage >= 95 && monitor.today_uptime_percentage < 99.5,
                                 'text-red-600 dark:text-red-400': monitor.today_uptime_percentage < 95,
                             }"
                             class="text-xs font-semibold"
@@ -105,11 +99,11 @@ const getDomainFromUrl = (url: string) => {
                         </span>
                         <span v-else class="text-xs text-gray-400">-</span>
                     </TableCell>
-                    <TableCell class="py-1.5 text-right text-xs font-mono text-gray-600 dark:text-gray-400">
+                    <TableCell class="py-1.5 text-right font-mono text-xs text-gray-600 dark:text-gray-400">
                         {{ monitor.statistics?.avg_response_time_24h ? monitor.statistics.avg_response_time_24h + 'ms' : '-' }}
                     </TableCell>
                     <TableCell class="py-1.5 text-right text-xs">
-                        <span :class="monitor.statistics?.incidents_24h > 0 ? 'text-red-500 font-bold' : 'text-gray-400'">
+                        <span :class="(monitor.statistics?.incidents_24h ?? 0) > 0 ? 'font-bold text-red-500' : 'text-gray-400'">
                             {{ monitor.statistics?.incidents_24h ?? 0 }}
                         </span>
                     </TableCell>
@@ -119,7 +113,7 @@ const getDomainFromUrl = (url: string) => {
                     <TableCell v-if="canEdit" class="py-1.5 text-right">
                         <button
                             @click="emit('edit', monitor)"
-                            class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold uppercase cursor-pointer"
+                            class="cursor-pointer text-xs font-bold text-blue-600 uppercase hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                             Edit
                         </button>

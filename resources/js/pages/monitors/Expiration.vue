@@ -71,18 +71,18 @@ const statCards = computed(() => [
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Domain Expiration" />
 
-        <div class="max-w-7xl mx-auto px-4 py-6 md:px-6 w-full space-y-6">
+        <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
             <!-- Header -->
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">Domain Expiration Monitoring</h1>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">Domain Expiration Monitoring</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Track domain expiration deadlines, renew in advance, and prevent unexpected downtime.
                     </p>
                 </div>
                 <Link
                     href="/monitor/create"
-                    class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                 >
                     <Icon name="plus" class="h-4 w-4" />
                     <span>New Monitor</span>
@@ -101,14 +101,16 @@ const statCards = computed(() => [
                     </div>
                     <div>
                         <div class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">{{ card.value }}</div>
-                        <div class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ card.label }}</div>
+                        <div class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">{{ card.label }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Table Card -->
-            <div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
-                <div class="border-b border-gray-100 px-6 py-4 dark:border-gray-800 flex items-center justify-between">
+            <div
+                class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
+            >
+                <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-800">
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white">Active Domain Trackers</h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Sorted by soonest expiration date</p>
@@ -120,8 +122,13 @@ const statCards = computed(() => [
                         <Icon name="calendarClock" class="h-7 w-7" />
                     </div>
                     <p class="mt-3 text-base font-bold text-gray-900 dark:text-white">No domain expiration monitoring yet</p>
-                    <p class="mt-1 text-xs max-w-sm mx-auto">Enable "Domain Expiration Check" when creating or editing a monitor to track its domain expiry.</p>
-                    <Link href="/monitor/create" class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                    <p class="mx-auto mt-1 max-w-sm text-xs">
+                        Enable "Domain Expiration Check" when creating or editing a monitor to track its domain expiry.
+                    </p>
+                    <Link
+                        href="/monitor/create"
+                        class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                    >
                         <span>Create a monitor</span>
                         <Icon name="arrowRight" class="h-3.5 w-3.5" />
                     </Link>
@@ -129,7 +136,9 @@ const statCards = computed(() => [
 
                 <div v-else class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
-                        <thead class="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400">
+                        <thead
+                            class="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400"
+                        >
                             <tr>
                                 <th class="px-6 py-3.5">Monitor</th>
                                 <th class="px-6 py-3.5">Expiration Date</th>
@@ -139,7 +148,11 @@ const statCards = computed(() => [
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                            <tr v-for="monitor in props.monitors.data" :key="monitor.id" class="transition-colors hover:bg-gray-50/60 dark:hover:bg-gray-800/40">
+                            <tr
+                                v-for="monitor in props.monitors.data"
+                                :key="monitor.id"
+                                class="transition-colors hover:bg-gray-50/60 dark:hover:bg-gray-800/40"
+                            >
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
@@ -178,10 +191,13 @@ const statCards = computed(() => [
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
-                                        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider"
+                                        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase"
                                         :class="getStatusBadgeColor(monitor.uptime_status)"
                                     >
-                                        <span class="h-1.5 w-1.5 rounded-full" :class="monitor.uptime_status === 'up' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'" />
+                                        <span
+                                            class="h-1.5 w-1.5 rounded-full"
+                                            :class="monitor.uptime_status === 'up' ? 'animate-pulse bg-emerald-500' : 'bg-rose-500'"
+                                        />
                                         {{ monitor.uptime_status }}
                                     </span>
                                 </td>

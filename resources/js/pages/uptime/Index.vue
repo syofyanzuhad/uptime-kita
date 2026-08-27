@@ -18,8 +18,8 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import CreateMonitorModal from './partials/CreateMonitorModal.vue';
-import EditMonitorModal from './partials/EditMonitorModal.vue';
 import DetailMonitorModal from './partials/DetailMonitorModal.vue';
+import EditMonitorModal from './partials/EditMonitorModal.vue';
 
 // Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
@@ -182,7 +182,10 @@ function onPerPageChange() {
                             >
                                 Import
                             </Link>
-                            <Button @click="isCreateModalOpen = true" class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
+                            <Button
+                                @click="isCreateModalOpen = true"
+                                class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                            >
                                 Tambah Monitor
                             </Button>
                         </div>

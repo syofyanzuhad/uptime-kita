@@ -276,7 +276,15 @@ const formatDate = (dateStr: string) => {
                 <div
                     v-if="tooltipData.uptime !== null"
                     class="mt-1 font-medium"
-                    :class="tooltipData.uptime === 100 ? 'text-green-600' : tooltipData.uptime >= 99.5 ? 'text-green-500' : tooltipData.uptime >= 95 ? 'text-yellow-600' : 'text-red-600'"
+                    :class="
+                        tooltipData.uptime === 100
+                            ? 'text-green-600'
+                            : tooltipData.uptime >= 99.5
+                              ? 'text-green-500'
+                              : tooltipData.uptime >= 95
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                    "
                 >
                     {{ tooltipData.uptime.toFixed(2) }}% uptime
                 </div>

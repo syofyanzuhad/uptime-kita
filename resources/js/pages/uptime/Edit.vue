@@ -253,16 +253,10 @@ const submit = () => {
 
                         <!-- Advanced Settings Section - Collapsible -->
                         <div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-                            <button
-                                @click="showAdvanced = !showAdvanced"
-                                type="button"
-                                class="flex w-full items-center justify-between text-left"
-                            >
+                            <button @click="showAdvanced = !showAdvanced" type="button" class="flex w-full items-center justify-between text-left">
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Pengaturan Lanjutan</h3>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Konfigurasi untuk mengurangi false positive
-                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Konfigurasi untuk mengurangi false positive</p>
                                 </div>
                                 <svg
                                     :class="showAdvanced ? 'rotate-180' : ''"
@@ -282,9 +276,7 @@ const submit = () => {
                             <div v-show="showAdvanced" class="mt-4 space-y-4">
                                 <!-- Sensitivity -->
                                 <div>
-                                    <label for="sensitivity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Sensitivitas
-                                    </label>
+                                    <label for="sensitivity" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Sensitivitas </label>
                                     <select
                                         id="sensitivity"
                                         v-model="form.sensitivity"
@@ -294,9 +286,7 @@ const submit = () => {
                                         <option value="medium">Sedang (default, delay 30s, 3x retry)</option>
                                         <option value="high">Tinggi (cepat alert, delay 15s, 2x retry)</option>
                                     </select>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Sensitivitas rendah cocok untuk jaringan tidak stabil
-                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Sensitivitas rendah cocok untuk jaringan tidak stabil</p>
                                 </div>
 
                                 <!-- Custom Confirmation Delay -->
@@ -332,9 +322,7 @@ const submit = () => {
                                         placeholder="Gunakan default dari sensitivitas"
                                         class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
                                     />
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Berapa kali percobaan ulang sebelum konfirmasi down
-                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Berapa kali percobaan ulang sebelum konfirmasi down</p>
                                 </div>
                             </div>
                         </div>

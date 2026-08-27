@@ -168,7 +168,7 @@ class CalculateMonitorStatistics extends Command
     private function getRecentHistory(Monitor $monitor): array
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
-        $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+        $dateFormatter = MonitorHistory::getDateFormatterSql();
 
         // Get unique history IDs using raw SQL to ensure only one record per minute
         $sql = "

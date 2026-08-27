@@ -67,7 +67,7 @@ function getBadgeClass(variant: 'default' | 'success' | 'secondary' | 'outline')
     }
 }
 
-function formatDistribution(data: Record<string, number> | null): { label: string; count: number; percent: number }[] {
+function formatDistribution(data?: Record<string, number> | null): { label: string; count: number; percent: number }[] {
     if (!data) return [];
     const total = Object.values(data).reduce((a, b) => a + b, 0);
     return Object.entries(data).map(([label, count]) => ({
@@ -83,10 +83,7 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
         <Head title="Telemetry Dashboard" />
 
         <div class="px-4 py-6">
-            <HeadingSmall
-                title="Telemetry Dashboard"
-                description="View anonymous usage statistics from self-hosted Uptime-Kita instances"
-            />
+            <HeadingSmall title="Telemetry Dashboard" description="View anonymous usage statistics from self-hosted Uptime-Kita instances" />
 
             <!-- Receiver Not Enabled Warning -->
             <div v-if="!receiverEnabled" class="mt-6">
@@ -96,10 +93,7 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                             <Icon name="AlertTriangle" class="h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
                             <div class="text-sm text-yellow-800 dark:text-yellow-200">
                                 <p class="mb-1 font-medium">Telemetry Receiver Disabled</p>
-                                <p>
-                                    To receive telemetry pings from other Uptime-Kita instances, enable the receiver in
-                                    your .env file:
-                                </p>
+                                <p>To receive telemetry pings from other Uptime-Kita instances, enable the receiver in your .env file:</p>
                                 <pre class="bg-muted mt-2 rounded p-2 text-xs">TELEMETRY_RECEIVER_ENABLED=true</pre>
                             </div>
                         </div>
@@ -151,9 +145,7 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                         </CardHeader>
                         <CardContent>
                             <div class="text-3xl font-bold text-purple-600">{{ statistics?.new_this_month || 0 }}</div>
-                            <p class="text-muted-foreground text-xs">
-                                vs {{ statistics?.new_last_month || 0 }} last month
-                            </p>
+                            <p class="text-muted-foreground text-xs">vs {{ statistics?.new_last_month || 0 }} last month</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -178,14 +170,9 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                                     <span class="text-sm">{{ item.label }}</span>
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 w-20 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                            <div
-                                                class="h-full bg-blue-500"
-                                                :style="{ width: `${item.percent}%` }"
-                                            ></div>
+                                            <div class="h-full bg-blue-500" :style="{ width: `${item.percent}%` }"></div>
                                         </div>
-                                        <span class="text-muted-foreground w-12 text-right text-xs"
-                                            >{{ item.count }}</span
-                                        >
+                                        <span class="text-muted-foreground w-12 text-right text-xs">{{ item.count }}</span>
                                     </div>
                                 </div>
                                 <p
@@ -216,21 +203,13 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                                     <span class="text-sm">{{ item.label }}</span>
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 w-20 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                            <div
-                                                class="h-full bg-red-500"
-                                                :style="{ width: `${item.percent}%` }"
-                                            ></div>
+                                            <div class="h-full bg-red-500" :style="{ width: `${item.percent}%` }"></div>
                                         </div>
-                                        <span class="text-muted-foreground w-12 text-right text-xs"
-                                            >{{ item.count }}</span
-                                        >
+                                        <span class="text-muted-foreground w-12 text-right text-xs">{{ item.count }}</span>
                                     </div>
                                 </div>
                                 <p
-                                    v-if="
-                                        !versionDistribution?.laravel ||
-                                        Object.keys(versionDistribution.laravel).length === 0
-                                    "
+                                    v-if="!versionDistribution?.laravel || Object.keys(versionDistribution.laravel).length === 0"
                                     class="text-muted-foreground text-sm"
                                 >
                                     No data yet
@@ -249,28 +228,16 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-2">
-                                <div
-                                    v-for="item in formatDistribution(osDistribution)"
-                                    :key="item.label"
-                                    class="flex items-center justify-between"
-                                >
+                                <div v-for="item in formatDistribution(osDistribution)" :key="item.label" class="flex items-center justify-between">
                                     <span class="text-sm">{{ item.label }}</span>
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 w-20 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                            <div
-                                                class="h-full bg-green-500"
-                                                :style="{ width: `${item.percent}%` }"
-                                            ></div>
+                                            <div class="h-full bg-green-500" :style="{ width: `${item.percent}%` }"></div>
                                         </div>
-                                        <span class="text-muted-foreground w-12 text-right text-xs"
-                                            >{{ item.count }}</span
-                                        >
+                                        <span class="text-muted-foreground w-12 text-right text-xs">{{ item.count }}</span>
                                     </div>
                                 </div>
-                                <p
-                                    v-if="!osDistribution || Object.keys(osDistribution).length === 0"
-                                    class="text-muted-foreground text-sm"
-                                >
+                                <p v-if="!osDistribution || Object.keys(osDistribution).length === 0" class="text-muted-foreground text-sm">
                                     No data yet
                                 </p>
                             </div>
@@ -288,26 +255,15 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                     </CardHeader>
                     <CardContent>
                         <div class="flex h-40 items-end gap-1">
-                            <div
-                                v-for="item in growthData"
-                                :key="item.month"
-                                class="group relative flex flex-1 flex-col items-center"
-                            >
+                            <div v-for="item in growthData" :key="item.month" class="group relative flex flex-1 flex-col items-center">
                                 <div
-                                    class="w-full rounded-t bg-primary transition-all hover:bg-primary/80"
+                                    class="bg-primary hover:bg-primary/80 w-full rounded-t transition-all"
                                     :style="{
-                                        height: `${Math.max(
-                                            (item.count / Math.max(...growthData.map((d) => d.count), 1)) * 100,
-                                            4,
-                                        )}%`,
+                                        height: `${Math.max((item.count / Math.max(...growthData.map((d) => d.count), 1)) * 100, 4)}%`,
                                     }"
                                 ></div>
-                                <span class="text-muted-foreground mt-1 text-[10px]">{{
-                                    item.month.split(' ')[0]
-                                }}</span>
-                                <div
-                                    class="bg-popover absolute -top-8 hidden rounded px-2 py-1 text-xs shadow group-hover:block"
-                                >
+                                <span class="text-muted-foreground mt-1 text-[10px]">{{ item.month.split(' ')[0] }}</span>
+                                <div class="bg-popover absolute -top-8 hidden rounded px-2 py-1 text-xs shadow group-hover:block">
                                     {{ item.count }} instances
                                 </div>
                             </div>
@@ -338,20 +294,14 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr
-                                        v-for="ping in recentPings"
-                                        :key="ping.id"
-                                        class="border-b last:border-0"
-                                    >
+                                    <tr v-for="ping in recentPings" :key="ping.id" class="border-b last:border-0">
                                         <td class="px-2 py-2">
                                             <code class="text-xs">{{ ping.instance_id }}</code>
                                         </td>
                                         <td class="px-2 py-2">
                                             <div class="flex flex-wrap gap-1">
                                                 <span :class="getBadgeClass('outline')">PHP {{ ping.php_version }}</span>
-                                                <span :class="getBadgeClass('outline')"
-                                                    >Laravel {{ ping.laravel_version }}</span
-                                                >
+                                                <span :class="getBadgeClass('outline')">Laravel {{ ping.laravel_version }}</span>
                                             </div>
                                         </td>
                                         <td class="px-2 py-2">
@@ -370,9 +320,7 @@ function formatDistribution(data: Record<string, number> | null): { label: strin
                                         </td>
                                     </tr>
                                     <tr v-if="recentPings.length === 0">
-                                        <td colspan="6" class="text-muted-foreground px-2 py-4 text-center">
-                                            No telemetry pings received yet
-                                        </td>
+                                        <td colspan="6" class="text-muted-foreground px-2 py-4 text-center">No telemetry pings received yet</td>
                                     </tr>
                                 </tbody>
                             </table>

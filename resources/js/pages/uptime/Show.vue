@@ -522,7 +522,9 @@ onMounted(() => {
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Markdown</label>
                                 <div class="relative">
-                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeMarkdown }}</code>
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{
+                                        badgeMarkdown
+                                    }}</code>
                                     <button
                                         @click="copyToClipboard(badgeMarkdown, 'markdown')"
                                         class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
@@ -534,7 +536,9 @@ onMounted(() => {
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">HTML</label>
                                 <div class="relative">
-                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeHtml }}</code>
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{
+                                        badgeHtml
+                                    }}</code>
                                     <button
                                         @click="copyToClipboard(badgeHtml, 'html')"
                                         class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
@@ -546,7 +550,9 @@ onMounted(() => {
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">URL Only</label>
                                 <div class="relative">
-                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{ badgeUrl }}</code>
+                                    <code class="block overflow-x-auto rounded bg-gray-100 p-2 pr-8 text-xs break-all dark:bg-gray-700">{{
+                                        badgeUrl
+                                    }}</code>
                                     <button
                                         @click="copyToClipboard(badgeUrl, 'url')"
                                         class="absolute top-1 right-1 cursor-pointer rounded bg-gray-200 p-1 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
@@ -597,7 +603,9 @@ onMounted(() => {
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                    <div
+                                                        class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
                                                         <img :src="`${badgeUrl}?style=flat`" alt="flat style" class="h-5" />
                                                         <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">flat</span>
                                                     </div>
@@ -606,7 +614,9 @@ onMounted(() => {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                    <div
+                                                        class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
                                                         <img :src="`${badgeUrl}?style=flat-square`" alt="flat-square style" class="h-5" />
                                                         <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">flat-square</span>
                                                     </div>
@@ -615,7 +625,9 @@ onMounted(() => {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                    <div
+                                                        class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
                                                         <img :src="`${badgeUrl}?style=plastic`" alt="plastic style" class="h-5" />
                                                         <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">plastic</span>
                                                     </div>
@@ -624,7 +636,9 @@ onMounted(() => {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                                    <div
+                                                        class="flex cursor-pointer flex-col items-center rounded bg-gray-50 p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
                                                         <img :src="`${badgeUrl}?style=for-the-badge`" alt="for-the-badge style" class="h-5" />
                                                         <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">for-the-badge</span>
                                                     </div>

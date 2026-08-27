@@ -9,6 +9,7 @@ import {
     ArrowRight,
     ArrowUp,
     ArrowUpNarrowWide,
+    Box,
     CalendarClock,
     ChartBar,
     ChartLine,
@@ -30,6 +31,7 @@ import {
     Columns2,
     Copy,
     Cpu,
+    Database,
     Download,
     ExternalLink,
     Eye,
@@ -43,6 +45,7 @@ import {
     House,
     Inbox,
     Info,
+    Layers,
     LayoutGrid,
     Link,
     Linkedin,
@@ -57,9 +60,11 @@ import {
     Monitor,
     Moon,
     Plus,
+    Radio,
     RefreshCw,
     Search,
     SearchX,
+    Send,
     Server,
     Settings,
     Share2,
@@ -68,17 +73,12 @@ import {
     ShieldCheck,
     ShieldOff,
     Sun,
+    Terminal,
     TrendingUp,
     Twitter,
     Upload,
     X,
     Zap,
-    Box,
-    Layers,
-    Radio,
-    Send,
-    Database,
-    Terminal,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -183,7 +183,7 @@ const registry: Record<string, any> = {
 
 interface Props {
     name: string;
-    class?: string;
+    class?: any;
     size?: number | string;
     color?: string;
     strokeWidth?: number | string;

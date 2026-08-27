@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
 import Icon from '@/components/Icon.vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 interface ServerStats {
     enabled: boolean;
@@ -75,12 +75,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div
-        v-if="stats?.enabled !== false"
-        class="relative inline-block"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
-    >
+    <div v-if="stats?.enabled !== false" class="relative inline-block" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
         <!-- Collapsed Badge - Mobile (Icon only) -->
         <button
             @click="expanded = !expanded"
@@ -96,32 +91,28 @@ onUnmounted(() => {
                 <Icon name="alertCircle" class="h-4 w-4 text-rose-500" />
             </template>
             <template v-else-if="stats">
-                <Icon
-                    name="server"
-                    class="h-4 w-4"
-                    :class="getStatusColor(Math.max(stats.cpu_percent || 0, stats.memory_percent || 0))"
-                />
+                <Icon name="server" class="h-4 w-4" :class="getStatusColor(Math.max(stats.cpu_percent || 0, stats.memory_percent || 0))" />
             </template>
         </button>
 
         <!-- Collapsed Badge - Desktop (Full info) -->
         <button
             @click="expanded = !expanded"
-            class="hidden cursor-pointer items-center gap-2 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm transition-all hover:bg-gray-100 hover:border-gray-300 sm:flex dark:border-gray-800 dark:bg-gray-800/80 dark:hover:bg-gray-700 dark:hover:border-gray-700"
-            :class="{ 'ring-2 ring-blue-500/20 border-blue-400': expanded }"
+            class="hidden cursor-pointer items-center gap-2 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm transition-all hover:border-gray-300 hover:bg-gray-100 sm:flex dark:border-gray-800 dark:bg-gray-800/80 dark:hover:border-gray-700 dark:hover:bg-gray-700"
+            :class="{ 'border-blue-400 ring-2 ring-blue-500/20': expanded }"
             aria-label="Server Stats Overview"
         >
             <template v-if="loading">
                 <Icon name="loader" class="h-3.5 w-3.5 animate-spin text-gray-400" />
-                <span class="text-xs text-gray-400 font-medium">Node stats…</span>
+                <span class="text-xs font-medium text-gray-400">Node stats…</span>
             </template>
             <template v-else-if="error">
                 <Icon name="alertCircle" class="h-3.5 w-3.5 text-rose-500" />
-                <span class="text-xs text-gray-400 font-medium">Offline</span>
+                <span class="text-xs font-medium text-gray-400">Offline</span>
             </template>
             <template v-else-if="stats">
                 <div class="flex items-center gap-1.5">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
                     <Icon name="server" class="h-3.5 w-3.5 text-gray-400" />
                 </div>
                 <div class="flex items-center gap-1 font-mono text-[11px] font-bold">
@@ -133,11 +124,7 @@ onUnmounted(() => {
                     <span class="text-gray-400">RAM</span>
                     <span :class="getStatusColor(stats.memory_percent || 0)">{{ stats.memory_percent }}%</span>
                 </div>
-                <Icon
-                    name="chevronDown"
-                    class="h-3 w-3 text-gray-400 transition-transform duration-200"
-                    :class="{ 'rotate-180': expanded }"
-                />
+                <Icon name="chevronDown" class="h-3 w-3 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': expanded }" />
             </template>
         </button>
 
@@ -152,17 +139,19 @@ onUnmounted(() => {
         >
             <div
                 v-if="expanded && stats && !loading && !error"
-                class="absolute right-0 top-full z-50 mt-2 w-72 origin-top-right overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                class="absolute top-full right-0 z-50 mt-2 w-72 origin-top-right overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
             >
                 <div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2.5 dark:border-gray-800">
                     <div class="flex items-center gap-2">
-                        <div class="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                        <div
+                            class="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                        >
                             <Icon name="activity" class="h-3.5 w-3.5" />
                         </div>
                         <span class="text-xs font-bold text-gray-900 dark:text-white">Live Node Telemetry</span>
                     </div>
                     <span class="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
                         Operational
                     </span>
                 </div>
@@ -170,20 +159,18 @@ onUnmounted(() => {
                 <div class="space-y-3">
                     <!-- CPU Load -->
                     <div>
-                        <div class="flex items-center justify-between text-xs mb-1">
+                        <div class="mb-1 flex items-center justify-between text-xs">
                             <span class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
                                 <Icon name="cpu" class="h-3.5 w-3.5" />
                                 <span>CPU Utilization</span>
                             </span>
-                            <span class="font-mono font-bold" :class="getStatusColor(stats.cpu_percent || 0)">
-                                {{ stats.cpu_percent }}%
-                            </span>
+                            <span class="font-mono font-bold" :class="getStatusColor(stats.cpu_percent || 0)"> {{ stats.cpu_percent }}% </span>
                         </div>
                         <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                             <div
-                                class="h-full transition-all duration-500 rounded-full"
+                                class="h-full rounded-full transition-all duration-500"
                                 :class="[
-                                    (stats.cpu_percent || 0) < 70 ? 'bg-emerald-500' : (stats.cpu_percent || 0) < 90 ? 'bg-amber-500' : 'bg-rose-500'
+                                    (stats.cpu_percent || 0) < 70 ? 'bg-emerald-500' : (stats.cpu_percent || 0) < 90 ? 'bg-amber-500' : 'bg-rose-500',
                                 ]"
                                 :style="{ width: `${Math.min(100, Math.max(2, stats.cpu_percent || 0))}%` }"
                             />
@@ -192,20 +179,22 @@ onUnmounted(() => {
 
                     <!-- Memory Load -->
                     <div>
-                        <div class="flex items-center justify-between text-xs mb-1">
+                        <div class="mb-1 flex items-center justify-between text-xs">
                             <span class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
                                 <Icon name="hardDrive" class="h-3.5 w-3.5" />
                                 <span>RAM Memory</span>
                             </span>
-                            <span class="font-mono font-bold" :class="getStatusColor(stats.memory_percent || 0)">
-                                {{ stats.memory_percent }}%
-                            </span>
+                            <span class="font-mono font-bold" :class="getStatusColor(stats.memory_percent || 0)"> {{ stats.memory_percent }}% </span>
                         </div>
                         <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                             <div
-                                class="h-full transition-all duration-500 rounded-full"
+                                class="h-full rounded-full transition-all duration-500"
                                 :class="[
-                                    (stats.memory_percent || 0) < 70 ? 'bg-emerald-500' : (stats.memory_percent || 0) < 90 ? 'bg-amber-500' : 'bg-rose-500'
+                                    (stats.memory_percent || 0) < 70
+                                        ? 'bg-emerald-500'
+                                        : (stats.memory_percent || 0) < 90
+                                          ? 'bg-amber-500'
+                                          : 'bg-rose-500',
                                 ]"
                                 :style="{ width: `${Math.min(100, Math.max(2, stats.memory_percent || 0))}%` }"
                             />
@@ -215,14 +204,14 @@ onUnmounted(() => {
                     <!-- Response Time & Server Uptime Grid -->
                     <div class="grid grid-cols-2 gap-2 pt-1">
                         <div class="rounded-xl border border-gray-100 bg-gray-50/70 p-2 text-left dark:border-gray-800 dark:bg-gray-800/50">
-                            <span class="block text-[10px] text-gray-400 font-medium">DB Ping</span>
+                            <span class="block text-[10px] font-medium text-gray-400">DB Ping</span>
                             <span class="font-mono text-xs font-bold" :class="getResponseTimeColor(stats.response_time || 0)">
                                 ⚡ {{ stats.response_time }}ms
                             </span>
                         </div>
                         <div class="rounded-xl border border-gray-100 bg-gray-50/70 p-2 text-left dark:border-gray-800 dark:bg-gray-800/50">
-                            <span class="block text-[10px] text-gray-400 font-medium">System Uptime</span>
-                            <span class="truncate block text-xs font-bold text-emerald-600 dark:text-emerald-400" :title="stats.uptime">
+                            <span class="block text-[10px] font-medium text-gray-400">System Uptime</span>
+                            <span class="block truncate text-xs font-bold text-emerald-600 dark:text-emerald-400" :title="stats.uptime">
                                 {{ stats.uptime || 'Active' }}
                             </span>
                         </div>

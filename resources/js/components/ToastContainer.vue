@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import StatusToast from './StatusToast.vue';
 import { globalToasts } from '@/composables/useToastNotifications';
+import StatusToast from './StatusToast.vue';
 
 const { toasts, removeToast } = globalToasts;
 </script>

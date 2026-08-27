@@ -51,16 +51,20 @@ const getStatusBadge = (isEnabled: boolean) => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div><strong class="text-gray-700 dark:text-gray-300">Name:</strong> {{ props.user.name }}</div>
                         <div><strong class="text-gray-700 dark:text-gray-300">Email:</strong> {{ props.user.email }}</div>
-                        <div><strong class="text-gray-700 dark:text-gray-300">Created:</strong> {{ new Date(props.user.created_at).toLocaleDateString() }}</div>
-                        <div><strong class="text-gray-700 dark:text-gray-300">Updated:</strong> {{ new Date(props.user.updated_at).toLocaleDateString() }}</div>
+                        <div>
+                            <strong class="text-gray-700 dark:text-gray-300">Created:</strong>
+                            {{ new Date(props.user.created_at).toLocaleDateString() }}
+                        </div>
+                        <div>
+                            <strong class="text-gray-700 dark:text-gray-300">Updated:</strong>
+                            {{ new Date(props.user.updated_at).toLocaleDateString() }}
+                        </div>
                     </div>
                 </div>
 
                 <!-- Monitors -->
                 <div class="mb-6 overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg dark:bg-gray-800">
-                    <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Monitors ({{ props.user.monitors?.length || 0 }})
-                    </h3>
+                    <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Monitors ({{ props.user.monitors?.length || 0 }})</h3>
                     <div v-if="props.user.monitors && props.user.monitors.length > 0" class="overflow-auto">
                         <Table>
                             <TableHeader>
@@ -92,9 +96,7 @@ const getStatusBadge = (isEnabled: boolean) => {
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        <span v-if="monitor.pivot.is_pinned" class="text-yellow-600 dark:text-yellow-400">
-                                            📌 Pinned
-                                        </span>
+                                        <span v-if="monitor.pivot.is_pinned" class="text-yellow-600 dark:text-yellow-400"> 📌 Pinned </span>
                                         <span v-else class="text-gray-500">-</span>
                                     </TableCell>
                                     <TableCell>{{ new Date(monitor.pivot.created_at).toLocaleDateString() }}</TableCell>
@@ -102,9 +104,7 @@ const getStatusBadge = (isEnabled: boolean) => {
                             </TableBody>
                         </Table>
                     </div>
-                    <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No monitors subscribed
-                    </div>
+                    <div v-else class="py-8 text-center text-gray-500 dark:text-gray-400">No monitors subscribed</div>
                 </div>
 
                 <!-- Status Pages -->
@@ -136,9 +136,7 @@ const getStatusBadge = (isEnabled: boolean) => {
                             </TableBody>
                         </Table>
                     </div>
-                    <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No status pages created
-                    </div>
+                    <div v-else class="py-8 text-center text-gray-500 dark:text-gray-400">No status pages created</div>
                 </div>
 
                 <!-- Notification Channels -->
@@ -159,7 +157,9 @@ const getStatusBadge = (isEnabled: boolean) => {
                             <TableBody>
                                 <TableRow v-for="channel in props.user.notification_channels" :key="channel.id">
                                     <TableCell>
-                                        <span class="rounded bg-blue-100 px-2 py-1 text-xs font-medium uppercase text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        <span
+                                            class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 uppercase dark:bg-blue-900 dark:text-blue-200"
+                                        >
                                             {{ channel.type }}
                                         </span>
                                     </TableCell>
@@ -174,9 +174,7 @@ const getStatusBadge = (isEnabled: boolean) => {
                             </TableBody>
                         </Table>
                     </div>
-                    <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No notification channels configured
-                    </div>
+                    <div v-else class="py-8 text-center text-gray-500 dark:text-gray-400">No notification channels configured</div>
                 </div>
             </div>
         </div>

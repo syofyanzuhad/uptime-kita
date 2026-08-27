@@ -49,7 +49,7 @@ const allNavItems: ExtendedNavItem[] = [
 ];
 
 const sidebarNavItems = computed(() => {
-    return allNavItems.filter(item => !item.adminOnly || isAdmin.value);
+    return allNavItems.filter((item) => !item.adminOnly || isAdmin.value);
 });
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';

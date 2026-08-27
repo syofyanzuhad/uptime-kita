@@ -25,8 +25,12 @@ export function useShare(url: string, text: string) {
         try {
             await navigator.clipboard.writeText(url);
             linkCopied.value = true;
-            setTimeout(() => { linkCopied.value = false; }, 1500);
-        } catch (e) { console.error('copy failed', e); }
+            setTimeout(() => {
+                linkCopied.value = false;
+            }, 1500);
+        } catch (e) {
+            console.error('copy failed', e);
+        }
     }
 
     return { linkCopied, shareUrl, shareText, shareToTwitter, shareToFacebook, shareToLinkedIn, shareToWhatsApp, copyLink };

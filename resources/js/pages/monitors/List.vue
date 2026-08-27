@@ -274,11 +274,11 @@ onUnmounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="pageTitle" />
 
-        <div class="max-w-7xl mx-auto px-4 py-6 md:px-6 w-full space-y-6">
+        <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
             <!-- Header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">{{ pageTitle }}</h1>
+                    <h1 class="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">{{ pageTitle }}</h1>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         <span v-if="type === 'pinned'">Your pinned monitors for quick access and live telemetry</span>
                         <span v-else-if="type === 'private'">Private monitors visible only to authenticated team members</span>
@@ -286,13 +286,15 @@ onUnmounted(() => {
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-xs backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-400">
-                        <span class="h-2 w-2 rounded-full bg-blue-500 animate-ping" />
+                    <span
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-xs backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-400"
+                    >
+                        <span class="h-2 w-2 animate-ping rounded-full bg-blue-500" />
                         <span>Auto-refresh: {{ countdown }}s</span>
                     </span>
                     <Link
                         href="/monitor/create"
-                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95"
+                        class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                     >
                         <Icon name="plus" class="h-4 w-4" />
                         <span>New Monitor</span>
@@ -305,13 +307,13 @@ onUnmounted(() => {
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <!-- Search -->
                     <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Search</label>
-                        <Input v-model="searchQuery" placeholder="Search monitors..." class="w-full h-10 rounded-2xl" />
+                        <label class="mb-1.5 block text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">Search</label>
+                        <Input v-model="searchQuery" placeholder="Search monitors..." class="h-10 w-full rounded-2xl" />
                     </div>
 
                     <!-- Status Filter -->
                     <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</label>
+                        <label class="mb-1.5 block text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">Status</label>
                         <Select
                             v-model="statusFilter"
                             :items="[
@@ -327,7 +329,7 @@ onUnmounted(() => {
 
                     <!-- Visibility Filter (only for non-type-specific views) -->
                     <div v-if="type !== 'private' && type !== 'public'">
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Visibility</label>
+                        <label class="mb-1.5 block text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">Visibility</label>
                         <Select
                             v-model="visibilityFilter"
                             :items="[
@@ -342,7 +344,7 @@ onUnmounted(() => {
 
                     <!-- Per Page -->
                     <div>
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Per Page</label>
+                        <label class="mb-1.5 block text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">Per Page</label>
                         <Select
                             v-model="perPage"
                             :items="[

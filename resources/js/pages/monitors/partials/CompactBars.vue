@@ -33,25 +33,17 @@ const getDomainFromUrl = (url: string) => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+    <div class="grid grid-cols-1 gap-2 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div
             v-for="monitor in monitors"
             :key="monitor.id"
             @click="emit('view', monitor)"
-            class="group relative flex items-center gap-3 overflow-hidden rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 cursor-pointer"
+            class="group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-gray-300 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
         >
-            <div
-                :class="getStatusColor(monitor.uptime_status)"
-                class="absolute left-0 top-0 h-full w-1 transition-all group-hover:w-1.5"
-            />
-            
-            <img
-                v-if="monitor.favicon"
-                :src="monitor.favicon"
-                alt=""
-                class="h-4 w-4 shrink-0 rounded-full"
-            />
-            
+            <div :class="getStatusColor(monitor.uptime_status)" class="absolute top-0 left-0 h-full w-1 transition-all group-hover:w-1.5" />
+
+            <img v-if="monitor.favicon" :src="monitor.favicon" alt="" class="h-4 w-4 shrink-0 rounded-full" />
+
             <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-2">
                     <span class="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">{{ getDomainFromUrl(monitor.url) }}</span>
@@ -68,10 +60,12 @@ const getDomainFromUrl = (url: string) => {
                     </div>
                     <span v-else class="text-[10px] font-bold text-gray-400">-</span>
                 </div>
-                <div class="flex items-center gap-3 mt-0.5 text-[9px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
+                <div class="mt-0.5 flex items-center gap-3 text-[9px] font-bold tracking-wider text-gray-400 uppercase dark:text-gray-500">
                     <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
-                    <span v-if="monitor.statistics?.incidents_24h > 0" class="text-red-400">{{ monitor.statistics.incidents_24h }} incidents</span>
-                    <button v-if="canEdit" @click.stop="emit('edit', monitor)" class="ml-auto text-blue-600 dark:text-blue-400 hover:underline">EDIT</button>
+                    <span v-if="(monitor.statistics?.incidents_24h ?? 0) > 0" class="text-red-400">{{ monitor.statistics?.incidents_24h }} incidents</span>
+                    <button v-if="canEdit" @click.stop="emit('edit', monitor)" class="ml-auto text-blue-600 hover:underline dark:text-blue-400">
+                        EDIT
+                    </button>
                 </div>
             </div>
         </div>

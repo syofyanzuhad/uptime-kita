@@ -1,37 +1,54 @@
 export function getStatusText(status?: string): string {
     switch (status) {
-        case 'up': return 'Operational';
-        case 'down': return 'Down';
-        case 'not yet checked': return 'Not Yet Checked';
-        case 'warning': return 'Degraded';
-        default: return 'Unknown';
+        case 'up':
+            return 'Operational';
+        case 'down':
+            return 'Down';
+        case 'not yet checked':
+            return 'Not Yet Checked';
+        case 'warning':
+            return 'Degraded';
+        default:
+            return 'Unknown';
     }
 }
 
 export function getStatusIcon(status?: string): string {
     switch (status) {
-        case 'up': return 'checkCircle';
-        case 'down': return 'xCircle';
-        case 'not yet checked': return 'clock';
-        default: return 'alertCircle';
+        case 'up':
+            return 'checkCircle';
+        case 'down':
+            return 'xCircle';
+        case 'not yet checked':
+            return 'clock';
+        default:
+            return 'alertCircle';
     }
 }
 
 export function getStatusColor(status?: string): string {
     switch (status?.toLowerCase()) {
-        case 'up': return 'bg-green-500';
-        case 'down': return 'bg-red-500';
-        case 'warning': return 'bg-yellow-500';
-        default: return 'bg-gray-400';
+        case 'up':
+            return 'bg-green-500';
+        case 'down':
+            return 'bg-red-500';
+        case 'warning':
+            return 'bg-yellow-500';
+        default:
+            return 'bg-gray-400';
     }
 }
 
 export function getStatusTextColor(status?: string): string {
     switch (status?.toLowerCase()) {
-        case 'up': return 'text-green-600';
-        case 'down': return 'text-red-600';
-        case 'warning': return 'text-yellow-600';
-        default: return 'text-gray-600';
+        case 'up':
+            return 'text-green-600';
+        case 'down':
+            return 'text-red-600';
+        case 'warning':
+            return 'text-yellow-600';
+        default:
+            return 'text-gray-600';
     }
 }
 
@@ -67,9 +84,18 @@ export function formatDuration(minutes: number): string {
 export function formatRelativeTime(dateString: string): string {
     const diff = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
     if (diff < 60) return 'just now';
-    if (diff < 3600) { const m = Math.floor(diff / 60); return `${m} minute${m > 1 ? 's' : ''} ago`; }
-    if (diff < 86400) { const h = Math.floor(diff / 3600); return `${h} hour${h > 1 ? 's' : ''} ago`; }
-    if (diff < 604800) { const d = Math.floor(diff / 86400); return `${d} day${d > 1 ? 's' : ''} ago`; }
+    if (diff < 3600) {
+        const m = Math.floor(diff / 60);
+        return `${m} minute${m > 1 ? 's' : ''} ago`;
+    }
+    if (diff < 86400) {
+        const h = Math.floor(diff / 3600);
+        return `${h} hour${h > 1 ? 's' : ''} ago`;
+    }
+    if (diff < 604800) {
+        const d = Math.floor(diff / 86400);
+        return `${d} day${d > 1 ? 's' : ''} ago`;
+    }
     return new Date(dateString).toLocaleDateString();
 }
 

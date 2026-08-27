@@ -80,7 +80,7 @@ describe('UptimesDailyController', function () {
 
         $response->assertOk();
         $data = $response->json();
-        // Since the relationship is restricted to 90 days in the model, 
+        // Since the relationship is restricted to 90 days in the model,
         // it should never exceed 90 records regardless of the data in DB.
         expect(count($data['uptimes_daily']))->toBe(90);
     });
@@ -105,7 +105,7 @@ describe('UptimesDailyController', function () {
 
         $response->assertOk();
         $data = $response->json();
-        
+
         // Ensure no record in the response is older than 90 days
         foreach ($data['uptimes_daily'] as $record) {
             expect(Carbon\Carbon::parse($record['date'])->isAfter(now()->subDays(91)))->toBeTrue();

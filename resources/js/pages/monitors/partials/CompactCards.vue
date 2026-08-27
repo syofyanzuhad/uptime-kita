@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Monitor } from '@/types/monitor';
 import Icon from '@/components/Icon.vue';
+import type { Monitor } from '@/types/monitor';
 
 defineProps<{
     monitors: Monitor[];
@@ -39,29 +39,24 @@ const getDomainFromUrl = (url: string) => {
             v-for="monitor in monitors"
             :key="monitor.id"
             @click="emit('view', monitor)"
-            class="group relative flex flex-col items-center gap-1 rounded-xl border border-gray-200 bg-white p-3 text-center transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 cursor-pointer"
+            class="group relative flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-gray-200 bg-white p-3 text-center transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
         >
             <button
                 v-if="canEdit"
                 @click.stop="emit('edit', monitor)"
-                class="absolute right-1 top-1 h-5 w-5 rounded-full bg-gray-100 text-blue-600 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700 dark:text-blue-400"
+                class="absolute top-1 right-1 h-5 w-5 rounded-full bg-gray-100 text-blue-600 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-700 dark:text-blue-400"
                 title="EDIT"
             >
                 <Icon name="edit" size="10" />
             </button>
-            
+
             <div class="relative mb-1">
-                <img
-                    v-if="monitor.favicon"
-                    :src="monitor.favicon"
-                    alt=""
-                    class="h-8 w-8 rounded-full"
-                />
+                <img v-if="monitor.favicon" :src="monitor.favicon" alt="" class="h-8 w-8 rounded-full" />
                 <div v-else class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-bold dark:bg-gray-700">
                     {{ getDomainFromUrl(monitor.url).charAt(0).toUpperCase() }}
                 </div>
-                
-                <div class="absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 dark:bg-gray-800">
+
+                <div class="absolute -right-1 -bottom-1 rounded-full bg-white p-0.5 dark:bg-gray-800">
                     <Icon
                         :name="getStatusIcon(monitor.uptime_status)"
                         :class="{
@@ -73,9 +68,9 @@ const getDomainFromUrl = (url: string) => {
                     />
                 </div>
             </div>
-            
+
             <div class="w-full">
-                <p class="truncate text-[10px] font-bold text-gray-900 dark:text-gray-100 sm:text-xs">
+                <p class="truncate text-[10px] font-bold text-gray-900 sm:text-xs dark:text-gray-100">
                     {{ getDomainFromUrl(monitor.url) }}
                 </p>
                 <div class="mt-1 space-y-0.5">
@@ -91,9 +86,11 @@ const getDomainFromUrl = (url: string) => {
                         {{ monitor.today_uptime_percentage }}%
                     </div>
                     <p v-else class="text-[10px] font-semibold text-gray-400">-</p>
-                    <div class="flex items-center justify-center gap-2 text-[8px] uppercase tracking-tighter font-bold text-gray-400 dark:text-gray-500">
+                    <div
+                        class="flex items-center justify-center gap-2 text-[8px] font-bold tracking-tighter text-gray-400 uppercase dark:text-gray-500"
+                    >
                         <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
-                        <span v-if="monitor.statistics?.incidents_24h > 0" class="text-red-400">{{ monitor.statistics.incidents_24h }}i</span>
+                        <span v-if="(monitor.statistics?.incidents_24h ?? 0) > 0" class="text-red-400">{{ monitor.statistics?.incidents_24h }}i</span>
                     </div>
                 </div>
             </div>

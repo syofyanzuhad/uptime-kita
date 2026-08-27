@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Icon from '@/components/Icon.vue';
 import type { ToastNotification } from '@/composables/useToastNotifications';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
     toast: ToastNotification;
@@ -78,10 +78,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div
-        class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-gray-800"
-        :class="containerClass"
-    >
+    <div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border bg-white shadow-lg dark:bg-gray-800" :class="containerClass">
         <div class="p-4">
             <div class="flex items-start">
                 <!-- Status Icon -->
@@ -109,7 +106,7 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="emit('close')"
-                        class="inline-flex rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2"
+                        class="inline-flex rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-none"
                         :class="closeButtonClass"
                     >
                         <span class="sr-only">Close</span>

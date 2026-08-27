@@ -252,7 +252,10 @@ const lineColor = computed(() => {
                 }"
             >
                 <div class="text-gray-500 dark:text-gray-400">{{ tooltipData.date }}</div>
-                <div class="mt-1 font-medium" :class="tooltipData.status === 'up' ? 'text-green-600' : tooltipData.status === 'down' ? 'text-red-600' : 'text-gray-500'">
+                <div
+                    class="mt-1 font-medium"
+                    :class="tooltipData.status === 'up' ? 'text-green-600' : tooltipData.status === 'down' ? 'text-red-600' : 'text-gray-500'"
+                >
                     {{ tooltipData.status === 'up' ? 'Operational' : tooltipData.status === 'down' ? 'Down' : 'No data' }}
                 </div>
                 <div v-if="tooltipData.responseTime !== null" class="text-gray-700 dark:text-gray-300">{{ tooltipData.responseTime }}ms</div>

@@ -72,9 +72,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
                             <Icon name="monitor" class="h-5 w-5" />
                             Browser Notifications
                         </CardTitle>
-                        <CardDescription>
-                            Receive real-time notifications directly on your desktop when a service status changes.
-                        </CardDescription>
+                        <CardDescription> Receive real-time notifications directly on your desktop when a service status changes. </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div v-if="!isSupported" class="rounded-md bg-yellow-50 p-4 dark:bg-yellow-900/20">

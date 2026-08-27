@@ -37,8 +37,8 @@ describe('Monitor History API', function () {
                     'message',
                     'created_at',
                     'checked_at',
-                ]
-            ]
+                ],
+            ],
         ]);
     });
 

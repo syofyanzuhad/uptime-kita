@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Monitor } from '@/types/monitor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { Monitor } from '@/types/monitor';
 
 defineProps<{
     monitors: Monitor[];
@@ -38,15 +38,12 @@ const getDomainFromUrl = (url: string) => {
                 <TooltipTrigger as-child>
                     <button
                         @click="emit('view', monitor)"
-                        :class="[
-                            'h-6 w-6 rounded-md transition-colors sm:h-8 sm:w-8 cursor-pointer',
-                            getStatusColor(monitor.uptime_status)
-                        ]"
+                        :class="['h-6 w-6 cursor-pointer rounded-md transition-colors sm:h-8 sm:w-8', getStatusColor(monitor.uptime_status)]"
                     />
                 </TooltipTrigger>
                 <TooltipContent>
-                    <div class="text-xs space-y-1">
-                        <div class="font-bold border-b border-white/20 pb-1 mb-1">{{ getDomainFromUrl(monitor.url) }}</div>
+                    <div class="space-y-1 text-xs">
+                        <div class="mb-1 border-b border-white/20 pb-1 font-bold">{{ getDomainFromUrl(monitor.url) }}</div>
                         <div class="flex justify-between gap-4">
                             <span class="opacity-70">Status:</span>
                             <span class="font-semibold capitalize">{{ monitor.uptime_status }}</span>

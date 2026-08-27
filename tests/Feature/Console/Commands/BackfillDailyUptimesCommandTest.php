@@ -4,6 +4,7 @@ use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use App\Models\MonitorUptimeDaily;
 use Illuminate\Support\Facades\Queue;
+
 use function Pest\Laravel\artisan;
 
 beforeEach(function () {
@@ -13,7 +14,7 @@ beforeEach(function () {
 describe('BackfillDailyUptimesCommand', function () {
     it('dispatches jobs for missing dates', function () {
         $monitor = Monitor::factory()->create(['uptime_check_enabled' => true]);
-        
+
         // Create one record for 2 days ago
         $twoDaysAgo = now()->subDays(2)->toDateString();
         MonitorUptimeDaily::create([
@@ -44,7 +45,7 @@ describe('BackfillDailyUptimesCommand', function () {
 
     it('dispatches jobs for all dates when force is used', function () {
         $monitor = Monitor::factory()->create(['uptime_check_enabled' => true]);
-        
+
         $yesterday = now()->subDay()->toDateString();
         MonitorUptimeDaily::create([
             'monitor_id' => $monitor->id,

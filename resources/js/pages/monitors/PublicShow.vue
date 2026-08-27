@@ -2,14 +2,14 @@
     <PublicLayout
         :title="pageTitle"
         :description="pageDescription"
-        :og-image="`${appUrl}/og/monitor/${encodeURIComponent(monitor.host)}.png`"
-        :canonical-url="`${appUrl}/m/${encodeURIComponent(monitor.host)}`"
-        :share-url="`${appUrl}/m/${encodeURIComponent(monitor.host)}`"
-        :share-text="`${monitor.host} uptime: ${uptimeStats['24h']}% (${getStatusText(monitor.uptime_status)})`"
+        :og-image="`${appUrl || ''}/og/monitor/${encodeURIComponent(monitor?.host || '')}.png`"
+        :canonical-url="`${appUrl || ''}/m/${encodeURIComponent(monitor?.host || '')}`"
+        :share-url="`${appUrl || ''}/m/${encodeURIComponent(monitor?.host || '')}`"
+        :share-text="`${monitor?.host || ''} uptime: ${uptimeStats['24h']}% (${getStatusText(monitor?.uptime_status)})`"
         :show-server-stats="true"
     >
         <template #header-left>
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex min-w-0 items-center gap-3">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger as-child>
@@ -24,7 +24,7 @@
                     </Tooltip>
                 </TooltipProvider>
 
-                <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex min-w-0 items-center gap-2.5">
                     <img
                         v-if="monitor.favicon && !faviconFailed"
                         :src="monitor.favicon"
@@ -36,12 +36,12 @@
                         v-else
                         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 font-mono text-xs font-bold text-blue-700 dark:from-blue-950 dark:to-indigo-900/50 dark:text-blue-300"
                     >
-                        {{ monitor.host.slice(0, 2).toUpperCase() }}
+                        {{ (monitor?.host || '').slice(0, 2).toUpperCase() }}
                     </div>
 
                     <div class="min-w-0">
                         <div class="flex items-center gap-2">
-                            <h1 class="truncate text-base font-extrabold text-gray-900 dark:text-white sm:text-xl">
+                            <h1 class="truncate text-base font-extrabold text-gray-900 sm:text-xl dark:text-white">
                                 {{ monitor.host }}
                             </h1>
                         </div>
@@ -77,9 +77,9 @@
                     class="h-2 w-2 rounded-full"
                     :class="[
                         monitor.uptime_status === 'up'
-                            ? 'bg-emerald-500 animate-pulse'
+                            ? 'animate-pulse bg-emerald-500'
                             : monitor.uptime_status === 'down'
-                              ? 'bg-rose-500 animate-ping'
+                              ? 'animate-ping bg-rose-500'
                               : 'bg-amber-500',
                     ]"
                 />
@@ -90,7 +90,7 @@
         <TooltipProvider>
             <!-- Hero Status Banner -->
             <div
-                class="mb-6 overflow-hidden rounded-3xl border p-6 sm:p-8 shadow-sm backdrop-blur-md transition-all duration-300"
+                class="mb-6 overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md transition-all duration-300 sm:p-8"
                 :class="[
                     monitor.uptime_status === 'up'
                         ? 'border-emerald-200/80 bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-gray-900 dark:to-gray-900'
@@ -115,11 +115,11 @@
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h2 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                                <h2 class="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
                                     {{ getStatusText(monitor.uptime_status) }}
                                 </h2>
                             </div>
-                            <p class="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
+                            <p class="mt-1 text-xs text-gray-600 sm:text-sm dark:text-gray-300">
                                 Checked every {{ monitor.uptime_check_interval }} minutes
                                 <span v-if="monitor.last_check_date">• Last checked {{ formatDate(monitor.last_check_date) }}</span>
                             </p>
@@ -128,36 +128,48 @@
 
                     <!-- Quick Metrics Chips -->
                     <div class="flex flex-wrap items-center gap-2.5 sm:justify-end">
-                        <div class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
+                        <div
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                        >
                             <span class="block text-lg font-extrabold text-gray-900 dark:text-white" :class="getUptimeColor(uptimeStats['24h'])">
                                 {{ uptimeStats['24h'] }}%
                             </span>
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">24h Uptime</span>
+                            <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">24h Uptime</span>
                         </div>
 
-                        <div class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
-                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white">
-                                {{ avgResponseTime }}ms
-                            </span>
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Avg Latency</span>
+                        <div
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                        >
+                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white"> {{ avgResponseTime }}ms </span>
+                            <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Avg Latency</span>
                         </div>
 
-                        <div v-if="monitor.certificate_check_enabled && monitor.certificate_status" class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90">
-                            <span class="flex items-center justify-center gap-1 text-base font-extrabold" :class="getCertificateColor(monitor.certificate_status)">
+                        <div
+                            v-if="monitor.certificate_check_enabled && monitor.certificate_status"
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                        >
+                            <span
+                                class="flex items-center justify-center gap-1 text-base font-extrabold"
+                                :class="getCertificateColor(monitor.certificate_status)"
+                            >
                                 <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-4 w-4" />
                                 <span>{{ getCertificateText(monitor.certificate_status) }}</span>
                             </span>
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">SSL Certificate</span>
+                            <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">SSL Certificate</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Latest 100 Minutes Timeline Card -->
-            <div class="mb-8 rounded-3xl border border-gray-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80 sm:p-6">
+            <div
+                class="mb-8 rounded-3xl border border-gray-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-sm sm:p-6 dark:border-gray-800/80 dark:bg-gray-900/80"
+            >
                 <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2">
-                        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                        <div
+                            class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                        >
                             <Icon name="activity" class="h-4 w-4" />
                         </div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white">Real-Time Inspection History (Last 100 Minutes)</h3>
@@ -239,7 +251,9 @@
                         <div class="flex items-center gap-4">
                             <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Operational</span>
                             <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-rose-500"></span>Downtime</span>
-                            <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></span>No check</span>
+                            <span class="inline-flex items-center gap-1.5"
+                                ><span class="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-700"></span>No check</span
+                            >
                         </div>
                         <span>Just now</span>
                     </div>
@@ -256,7 +270,9 @@
                 <!-- Left Column (2 Cols) -->
                 <div class="space-y-6 lg:col-span-2">
                     <!-- Uptime Historical Percentages Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="pb-2">
                             <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Uptime Availability Rates</CardTitle>
                         </CardHeader>
@@ -267,15 +283,17 @@
                                     :key="period"
                                     class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 text-center dark:border-gray-800 dark:bg-gray-800/40"
                                 >
-                                    <div class="text-2xl font-black sm:text-3xl" :class="getUptimeColor(value)">
-                                        {{ value }}%
-                                    </div>
+                                    <div class="text-2xl font-black sm:text-3xl" :class="getUptimeColor(value)">{{ value }}%</div>
                                     <div class="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
                                         {{ getPeriodLabel(period) }}
                                     </div>
                                     <span
                                         class="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold"
-                                        :class="value >= 99.5 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'"
+                                        :class="
+                                            value >= 99.5
+                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                        "
                                     >
                                         {{ value >= 99.5 ? 'Optimal' : value >= 95 ? 'Good' : 'Degraded' }}
                                     </span>
@@ -285,28 +303,30 @@
                     </Card>
 
                     <!-- Response Time Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="pb-2">
                             <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Response Latency (Last 24 Hours)</CardTitle>
                         </CardHeader>
                         <CardContent class="p-6 pt-2">
                             <div class="grid grid-cols-3 gap-3 text-center sm:gap-4">
                                 <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
-                                    <div class="text-2xl font-black text-blue-600 dark:text-blue-400 sm:text-3xl font-mono">
+                                    <div class="font-mono text-2xl font-black text-blue-600 sm:text-3xl dark:text-blue-400">
                                         {{ avgResponseTime }}ms
                                     </div>
                                     <div class="mt-1 text-xs font-semibold text-gray-500">Average Latency</div>
                                 </div>
 
                                 <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
-                                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:text-3xl font-mono">
+                                    <div class="font-mono text-2xl font-black text-emerald-600 sm:text-3xl dark:text-emerald-400">
                                         {{ minResponseTime }}ms
                                     </div>
                                     <div class="mt-1 text-xs font-semibold text-gray-500">Fastest (Min)</div>
                                 </div>
 
                                 <div class="rounded-2xl border border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/40">
-                                    <div class="text-2xl font-black text-purple-600 dark:text-purple-400 sm:text-3xl font-mono">
+                                    <div class="font-mono text-2xl font-black text-purple-600 sm:text-3xl dark:text-purple-400">
                                         {{ maxResponseTime }}ms
                                     </div>
                                     <div class="mt-1 text-xs font-semibold text-gray-500">Slowest (Max)</div>
@@ -316,7 +336,9 @@
                     </Card>
 
                     <!-- 90 Days Heatmap Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle class="text-base font-bold text-gray-900 dark:text-white">90-Day Uptime Heatmap</CardTitle>
                             <div class="flex items-center gap-1 rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/80">
@@ -324,7 +346,9 @@
                                     @click="setUptimeChartViewMode('bar')"
                                     :class="[
                                         'rounded-lg px-2 py-1 text-xs font-semibold transition-all',
-                                        uptimeChartViewMode === 'bar' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500',
+                                        uptimeChartViewMode === 'bar'
+                                            ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400'
+                                            : 'text-gray-500',
                                     ]"
                                 >
                                     Bars
@@ -333,7 +357,9 @@
                                     @click="setUptimeChartViewMode('line')"
                                     :class="[
                                         'rounded-lg px-2 py-1 text-xs font-semibold transition-all',
-                                        uptimeChartViewMode === 'line' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500',
+                                        uptimeChartViewMode === 'line'
+                                            ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400'
+                                            : 'text-gray-500',
                                     ]"
                                 >
                                     Trend
@@ -378,7 +404,9 @@
                     </Card>
 
                     <!-- Latest Incidents Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="pb-2">
                             <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Recent Incidents</CardTitle>
                         </CardHeader>
@@ -392,11 +420,15 @@
                                     <div class="flex items-center justify-between">
                                         <span
                                             class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold"
-                                            :class="incident.type === 'down' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'"
+                                            :class="
+                                                incident.type === 'down'
+                                                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                                            "
                                         >
                                             {{ incident.type === 'down' ? 'Outage' : 'Degraded' }}
                                         </span>
-                                        <span class="text-xs font-mono text-gray-400">{{ formatDuration(incident.duration_minutes || 0) }}</span>
+                                        <span class="font-mono text-xs text-gray-400">{{ formatDuration(incident.duration_minutes || 0) }}</span>
                                     </div>
                                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                         Started {{ formatDate(incident.started_at) }}
@@ -419,13 +451,18 @@
                 <!-- Right Column (1 Col) -->
                 <div class="space-y-6">
                     <!-- Security & Domain Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="pb-2">
                             <CardTitle class="text-base font-bold text-gray-900 dark:text-white">Domain & Security</CardTitle>
                         </CardHeader>
-                        <CardContent class="p-6 pt-2 space-y-4">
+                        <CardContent class="space-y-4 p-6 pt-2">
                             <!-- SSL Info -->
-                            <div v-if="monitor.certificate_check_enabled" class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                            <div
+                                v-if="monitor.certificate_check_enabled"
+                                class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40"
+                            >
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-semibold text-gray-500">SSL Certificate</span>
                                     <span class="flex items-center gap-1 text-xs font-bold" :class="getCertificateColor(monitor.certificate_status)">
@@ -439,12 +476,28 @@
                             </div>
 
                             <!-- Domain WHOIS Expiration -->
-                            <div v-if="monitor.domain_expiration_check_enabled" class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                            <div
+                                v-if="monitor.domain_expiration_check_enabled"
+                                class="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 dark:border-gray-800 dark:bg-gray-800/40"
+                            >
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-semibold text-gray-500">Domain Expiration</span>
-                                    <span v-if="monitor.domain_expiration_date" class="text-xs font-bold" :class="getDomainExpirationColor(monitor.domain_expiration_date)">
-                                        {{ formatDate(monitor.domain_expiration_date) }}
+                                    <span
+                                        v-if="monitor.domain_expiration_date"
+                                        class="text-xs font-bold"
+                                        :class="getDomainExpirationColor(monitor.domain_expiration_date)"
+                                    >
+                                        {{ getDomainDaysLeft(monitor.domain_expiration_date) }}
                                     </span>
+                                    <span v-else-if="monitor.domain_expiration_lookup_error" class="text-xs font-semibold text-rose-500">
+                                        Lookup error
+                                    </span>
+                                    <span v-else class="text-xs font-medium text-gray-400">
+                                        Checking...
+                                    </span>
+                                </div>
+                                <div v-if="monitor.domain_expiration_date" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                    Expires: {{ formatDate(monitor.domain_expiration_date) }}
                                 </div>
                             </div>
 
@@ -459,32 +512,42 @@
                     </Card>
 
                     <!-- Embed Badge Card -->
-                    <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                    <Card
+                        class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+                    >
                         <CardHeader class="pb-2">
                             <CardTitle class="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
                                 <Icon name="code" class="h-4 w-4 text-blue-500" />
                                 <span>Embed Status Badge</span>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent class="p-6 pt-2 space-y-4">
+                        <CardContent class="space-y-4 p-6 pt-2">
                             <!-- Live Preview -->
-                            <div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 mb-2">Live Preview</span>
+                            <div
+                                class="flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/60"
+                            >
+                                <span class="mb-2 text-[10px] font-bold text-gray-400 uppercase">Live Preview</span>
                                 <img :src="badgeUrl" :alt="`${monitor.host} uptime badge`" class="h-6 transition-all" />
                             </div>
 
                             <!-- Customization Controls -->
                             <div class="space-y-2.5">
                                 <div>
-                                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Time Range</label>
+                                    <label class="mb-1 block text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400"
+                                        >Time Range</label
+                                    >
                                     <div class="grid grid-cols-4 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
                                         <button
-                                            v-for="p in (['24h', '7d', '30d', '90d'] as const)"
+                                            v-for="p in ['24h', '7d', '30d', '90d'] as const"
                                             :key="p"
                                             type="button"
                                             @click="badgePeriod = p"
                                             class="rounded-lg py-1 text-xs font-bold transition-all"
-                                            :class="badgePeriod === p ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'"
+                                            :class="
+                                                badgePeriod === p
+                                                    ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white'
+                                                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'
+                                            "
                                         >
                                             {{ p }}
                                         </button>
@@ -492,8 +555,10 @@
                                 </div>
 
                                 <div>
-                                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Badge Style</label>
-                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+                                    <label class="mb-1 block text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400"
+                                        >Badge Style</label
+                                    >
+                                    <div class="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 sm:grid-cols-4 dark:bg-gray-800">
                                         <button
                                             v-for="s in [
                                                 { key: 'flat', label: 'Flat' },
@@ -505,7 +570,11 @@
                                             type="button"
                                             @click="badgeStyle = s.key"
                                             class="rounded-lg py-1 text-xs font-bold transition-all"
-                                            :class="badgeStyle === s.key ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'"
+                                            :class="
+                                                badgeStyle === s.key
+                                                    ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-white'
+                                                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400'
+                                            "
                                         >
                                             {{ s.label }}
                                         </button>
@@ -517,10 +586,13 @@
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-gray-500">Markdown (with Status Page Link)</label>
                                     <div class="relative">
-                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeMarkdown }}</code>
+                                        <code
+                                            class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 font-mono text-xs break-all dark:bg-gray-800"
+                                            >{{ badgeMarkdown }}</code
+                                        >
                                         <button
                                             @click="copyToClipboard(badgeMarkdown, 'markdown')"
-                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                            class="absolute top-1.5 right-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
                                         >
                                             <Icon :name="copiedType === 'markdown' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
                                         </button>
@@ -530,10 +602,13 @@
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-gray-500">HTML Embed</label>
                                     <div class="relative">
-                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeHtml }}</code>
+                                        <code
+                                            class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 font-mono text-xs break-all dark:bg-gray-800"
+                                            >{{ badgeHtml }}</code
+                                        >
                                         <button
                                             @click="copyToClipboard(badgeHtml, 'html')"
-                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                            class="absolute top-1.5 right-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
                                         >
                                             <Icon :name="copiedType === 'html' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
                                         </button>
@@ -543,10 +618,13 @@
                                 <div>
                                     <label class="mb-1 block text-xs font-semibold text-gray-500">Direct SVG URL</label>
                                     <div class="relative">
-                                        <code class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 text-xs font-mono break-all dark:bg-gray-800">{{ badgeUrl }}</code>
+                                        <code
+                                            class="block overflow-x-auto rounded-xl bg-gray-100 p-2.5 font-mono text-xs break-all dark:bg-gray-800"
+                                            >{{ badgeUrl }}</code
+                                        >
                                         <button
                                             @click="copyToClipboard(badgeUrl, 'url')"
-                                            class="absolute right-1.5 top-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+                                            class="absolute top-1.5 right-1.5 rounded-lg bg-white p-1 text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
                                         >
                                             <Icon :name="copiedType === 'url' ? 'check' : 'copy'" class="h-3.5 w-3.5" />
                                         </button>
@@ -565,14 +643,13 @@
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
 import ResponseTimeLineChart from '@/components/ResponseTimeLineChart.vue';
-import ShareButton from '@/components/ShareButton.vue';
 import UptimeLineChart from '@/components/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
 import { globalToasts } from '@/composables/useToastNotifications';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const faviconFailed = ref(false);
@@ -590,7 +667,10 @@ const monitor = computed(() => props.monitor.data);
 useMonitorStatusStream({ monitorIds: [props.monitor.data.id], enabled: true, onStatusChange: (change) => globalToasts.addStatusChangeToast(change) });
 const appUrl = computed(() => props.appUrl || window.location.origin);
 const pageTitle = computed(() => `${monitor.value.host} - ${props.uptimeStats['24h']}% Uptime | Uptime Kita`);
-const pageDescription = computed(() => `Real-time monitoring for ${monitor.value.host}. Status: ${monitor.value.uptime_status === 'up' ? 'Operational' : 'Down'}. 24h uptime: ${props.uptimeStats['24h']}%.`);
+const pageDescription = computed(
+    () =>
+        `Real-time monitoring for ${monitor.value.host}. Status: ${monitor.value.uptime_status === 'up' ? 'Operational' : 'Down'}. 24h uptime: ${props.uptimeStats['24h']}%.`,
+);
 
 // Latest incidents from props (MonitorIncident model)
 const latestIncidents = computed(() => props.latestIncidents || []);
@@ -615,7 +695,7 @@ const badgePeriod = ref<'24h' | '7d' | '30d' | '90d'>('24h');
 const badgeStyle = ref<'flat' | 'flat-square' | 'for-the-badge' | 'plastic'>('flat');
 
 const badgeUrl = computed(() => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (props.appUrl || 'https://uptime.syofyanzuhad.dev');
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : props.appUrl || 'https://uptime.syofyanzuhad.dev';
     const params = new URLSearchParams();
     if (badgePeriod.value !== '24h') params.append('period', badgePeriod.value);
     if (badgeStyle.value !== 'flat') params.append('style', badgeStyle.value);
@@ -624,7 +704,7 @@ const badgeUrl = computed(() => {
 });
 
 const monitorPageUrl = computed(() => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (props.appUrl || 'https://uptime.syofyanzuhad.dev');
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : props.appUrl || 'https://uptime.syofyanzuhad.dev';
     return `${baseUrl}/m/${monitor.value.host}`;
 });
 
@@ -671,17 +751,6 @@ const setChartViewMode = (mode: ChartViewMode) => {
 const setUptimeChartViewMode = (mode: ChartViewMode) => {
     uptimeChartViewMode.value = mode;
     localStorage.setItem('uptimeChartViewMode', mode);
-};
-
-const toggleTheme = () => {
-    isDark.value = !isDark.value;
-    if (isDark.value) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    }
 };
 
 // Refetch function
@@ -765,20 +834,6 @@ function getMinuteStatus(date: Date): MonitorHistory | null {
     const key = date.toISOString().slice(0, 16);
     return historyMinuteMap.value[key] || null;
 }
-
-const latestHistory = computed(() => {
-    // If monitor hasn't been checked yet, return empty array
-    if (monitor.value.uptime_status === 'not yet checked') {
-        return [];
-    }
-
-    // Get the last 100 minutes of history
-    const oneHundredMinutesAgo = new Date(Date.now() - 100 * 60 * 1000);
-    return props.histories
-        .filter((h) => new Date(h.created_at) > oneHundredMinutesAgo)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 100); // Limit to 100 entries
-});
 
 // Calculate response time stats for last 24 hours
 const last24HoursHistories = computed(() => {
@@ -907,9 +962,18 @@ const getCertificateText = (status: string | null): string => {
 const getDomainExpirationColor = (date: string | null | undefined): string => {
     if (!date) return 'text-gray-600';
     const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
-    if (daysLeft < 0) return 'text-red-600';
-    if (daysLeft <= 30) return 'text-yellow-600';
-    return 'text-green-600';
+    if (daysLeft < 0) return 'text-red-600 dark:text-red-400';
+    if (daysLeft <= 30) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-green-600 dark:text-green-400';
+};
+
+const getDomainDaysLeft = (date: string | null | undefined): string => {
+    if (!date) return '';
+    const daysLeft = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    if (daysLeft < 0) return 'Expired';
+    if (daysLeft === 0) return 'Expires today';
+    if (daysLeft === 1) return 'Expires tomorrow';
+    return `${daysLeft} days left`;
 };
 
 const getUptimeColor = (percentage: number): string => {

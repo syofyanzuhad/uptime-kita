@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookmarks } from '@/composables/useBookmarks';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Bookmark, ChevronDown, Plus, RefreshCw, Search } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+import { Bookmark, ChevronDown, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import MonitorCard from './MonitorCard.vue';
 import Button from './ui/button/Button.vue';
@@ -234,8 +233,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Card class="overflow-hidden rounded-3xl border-gray-200/80 bg-white/80 backdrop-blur-sm shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900/80">
-        <CardHeader class="pb-3 border-b border-gray-100 dark:border-gray-800">
+    <Card
+        class="overflow-hidden rounded-3xl border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900/80"
+    >
+        <CardHeader class="border-b border-gray-100 pb-3 dark:border-gray-800">
             <CardTitle class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
                     <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
@@ -243,11 +244,14 @@ onUnmounted(() => {
                     </div>
                     <div>
                         <span class="text-base font-bold text-gray-900 dark:text-white">Pinned Monitors</span>
-                        <span v-if="!loading && pinnedMonitors.length > 0" class="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                        <span
+                            v-if="!loading && pinnedMonitors.length > 0"
+                            class="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                        >
                             {{ filteredMonitors.length }}
                         </span>
                     </div>
-                    <div v-if="isPolling" class="ml-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div v-if="isPolling" class="text-muted-foreground ml-2 flex items-center gap-1.5 text-xs">
                         <div class="h-3 w-3 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
                         <span>Syncing...</span>
                     </div>
@@ -267,62 +271,60 @@ onUnmounted(() => {
         </CardHeader>
         <CardContent class="pt-4">
             <!-- Search / Filter Summary -->
-            <div v-if="!loading && !error && (props.searchQuery || props.statusFilter !== 'all')" class="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+            <div
+                v-if="!loading && !error && (props.searchQuery || props.statusFilter !== 'all')"
+                class="text-muted-foreground mb-3 flex items-center justify-between text-xs"
+            >
                 <span>Showing {{ filteredMonitors.length }} pinned monitor<span v-if="filteredMonitors.length !== 1">s</span></span>
             </div>
 
             <!-- Skeleton Loaders for Initial Load -->
             <div v-if="loading" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div
-                    v-for="i in 3"
-                    :key="i"
-                    class="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 animate-pulse"
-                >
+                <div v-for="i in 3" :key="i" class="border-border/60 bg-muted/20 flex animate-pulse flex-col gap-3 rounded-xl border p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
-                            <div class="h-7 w-7 rounded-lg bg-muted"></div>
+                            <div class="bg-muted h-7 w-7 rounded-lg"></div>
                             <div class="space-y-1.5">
-                                <div class="h-3.5 w-28 rounded bg-muted"></div>
-                                <div class="h-2.5 w-36 rounded bg-muted/60"></div>
+                                <div class="bg-muted h-3.5 w-28 rounded"></div>
+                                <div class="bg-muted/60 h-2.5 w-36 rounded"></div>
                             </div>
                         </div>
-                        <div class="h-5 w-16 rounded-full bg-muted"></div>
+                        <div class="bg-muted h-5 w-16 rounded-full"></div>
                     </div>
                     <div class="space-y-1.5 pt-2">
-                        <div class="h-2.5 w-full rounded bg-muted"></div>
-                        <div class="h-1.5 w-full rounded bg-muted"></div>
+                        <div class="bg-muted h-2.5 w-full rounded"></div>
+                        <div class="bg-muted h-1.5 w-full rounded"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Error State -->
-            <div v-else-if="error" class="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-center text-sm text-destructive">
+            <div v-else-if="error" class="border-destructive/20 bg-destructive/10 text-destructive rounded-xl border p-6 text-center text-sm">
                 <p class="font-medium">{{ error }}</p>
                 <Button size="sm" variant="outline" class="mt-3" @click="fetchPinnedMonitors(true)">Try Again</Button>
             </div>
 
             <!-- Empty State: No Pinned Monitors -->
-            <div v-else-if="pinnedMonitors.length === 0" class="rounded-xl border border-dashed border-border/80 py-10 text-center">
+            <div v-else-if="pinnedMonitors.length === 0" class="border-border/80 rounded-xl border border-dashed py-10 text-center">
                 <div class="mx-auto flex max-w-sm flex-col items-center gap-3">
                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
                         <Bookmark class="h-6 w-6" />
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-foreground">No pinned monitors</h4>
-                        <p class="mt-1 text-xs text-muted-foreground">Click the bookmark icon on any monitor card to pin it at the top for quick access.</p>
+                        <h4 class="text-foreground text-sm font-semibold">No pinned monitors</h4>
+                        <p class="text-muted-foreground mt-1 text-xs">
+                            Click the bookmark icon on any monitor card to pin it at the top for quick access.
+                        </p>
                     </div>
                 </div>
             </div>
 
             <!-- Empty State: Filter / Search Match None -->
-            <div
-                v-else-if="filteredMonitors.length === 0"
-                class="rounded-xl border border-dashed border-border/80 py-10 text-center"
-            >
+            <div v-else-if="filteredMonitors.length === 0" class="border-border/80 rounded-xl border border-dashed py-10 text-center">
                 <div class="mx-auto flex max-w-sm flex-col items-center gap-2">
-                    <Search class="h-8 w-8 text-muted-foreground/60" />
-                    <p class="text-sm font-medium text-foreground">No pinned monitors match your filter</p>
-                    <p class="text-xs text-muted-foreground">Try clearing your search query or selecting a different status.</p>
+                    <Search class="text-muted-foreground/60 h-8 w-8" />
+                    <p class="text-foreground text-sm font-medium">No pinned monitors match your filter</p>
+                    <p class="text-muted-foreground text-xs">Try clearing your search query or selecting a different status.</p>
                 </div>
             </div>
 
@@ -348,13 +350,11 @@ onUnmounted(() => {
             </div>
 
             <!-- Load More Action -->
-            <div v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)" class="mt-6 flex flex-col items-center gap-2">
-                <Button
-                    variant="outline"
-                    @click="loadMore"
-                    :disabled="loadingMore"
-                    class="gap-2"
-                >
+            <div
+                v-if="hasMorePages && !loading && !error && (!props.searchQuery || props.searchQuery.trim().length < 3)"
+                class="mt-6 flex flex-col items-center gap-2"
+            >
+                <Button variant="outline" @click="loadMore" :disabled="loadingMore" class="gap-2">
                     <ChevronDown class="h-4 w-4" :class="loadingMore ? 'animate-spin' : ''" />
                     <span v-if="loadingMore">Loading more...</span>
                     <span v-else>Load More Pinned Monitors ({{ pinnedMonitors.length }} of {{ totalMonitors }})</span>
@@ -363,4 +363,3 @@ onUnmounted(() => {
         </CardContent>
     </Card>
 </template>
-

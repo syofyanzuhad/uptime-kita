@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBookmarks } from '@/composables/useBookmarks';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    Activity,
-    Bookmark,
-    CheckCircle2,
-    Clock,
-    ExternalLink,
-    Globe,
-    Lock,
-    Minus,
-    Plus,
-    ShieldAlert,
-    ShieldCheck,
-    XCircle,
-} from 'lucide-vue-next';
+import { Bookmark, Clock, ExternalLink, Globe, Lock, Minus, Plus, ShieldAlert, ShieldCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import Button from './ui/button/Button.vue';
 
@@ -172,7 +158,9 @@ const handleUnsubscribe = () => {
                     </div>
 
                     <div class="min-w-0">
-                        <h3 class="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400">
+                        <h3
+                            class="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400"
+                        >
                             {{ getDomainFromUrl(monitor.url) }}
                         </h3>
                         <span
@@ -211,7 +199,7 @@ const handleUnsubscribe = () => {
                         v-else
                         class="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/80 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-400"
                     >
-                        <Clock class="h-3 w-3 text-amber-500 animate-spin" />
+                        <Clock class="h-3 w-3 animate-spin text-amber-500" />
                         Checking
                     </span>
 
@@ -243,10 +231,7 @@ const handleUnsubscribe = () => {
                                     class="rounded-lg p-1.5 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-gray-800"
                                     :class="isCurrentlyPinned ? 'text-amber-500' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
                                 >
-                                    <Bookmark
-                                        class="h-3.5 w-3.5"
-                                        :class="isCurrentlyPinned ? 'fill-amber-500 text-amber-500' : ''"
-                                    />
+                                    <Bookmark class="h-3.5 w-3.5" :class="isCurrentlyPinned ? 'fill-amber-500 text-amber-500' : ''" />
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -387,4 +372,3 @@ const handleUnsubscribe = () => {
         </div>
     </div>
 </template>
-

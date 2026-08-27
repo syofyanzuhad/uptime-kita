@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\MonitorHistory;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,7 @@ class CleanupDuplicateMonitorHistories extends Command
         $this->info("Total records before cleanup: {$totalBefore}");
 
         // Find all duplicate groups
-        $dateFormatter = \App\Models\MonitorHistory::getDateFormatterSql();
+        $dateFormatter = MonitorHistory::getDateFormatterSql();
         $duplicates = DB::select("
             SELECT 
                 monitor_id, 

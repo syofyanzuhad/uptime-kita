@@ -1,7 +1,7 @@
-import Debugbar from './Debugbar'
+import Debugbar from './Debugbar';
 
 const Barryvdh = {
     Debugbar: Object.assign(Debugbar, Debugbar),
-}
+};
 
-export default Barryvdh
+export default Barryvdh;

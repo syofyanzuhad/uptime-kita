@@ -4,7 +4,7 @@ import MonitorLink from '@/components/MonitorLink.vue';
 import { CardContent } from '@/components/ui/card';
 import Card from '@/components/ui/card/Card.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { getResponseTimeColorClass, getStatusIcon, getStatusText, getTagDisplayName } from '@/composables/useMonitorHelpers';
+import { getResponseTimeColorClass, getStatusText, getTagDisplayName } from '@/composables/useMonitorHelpers';
 import type { Monitor } from '@/types/monitor';
 import { computed, ref } from 'vue';
 
@@ -56,18 +56,12 @@ function sparkColor(pct: number | null): string {
             <!-- Top Status Accent Line -->
             <div
                 class="h-1 w-full transition-colors"
-                :class="[
-                    monitor.uptime_status === 'up'
-                        ? 'bg-emerald-500'
-                        : monitor.uptime_status === 'down'
-                          ? 'bg-rose-500'
-                          : 'bg-amber-500',
-                ]"
+                :class="[monitor.uptime_status === 'up' ? 'bg-emerald-500' : monitor.uptime_status === 'down' ? 'bg-rose-500' : 'bg-amber-500']"
             />
 
             <CardContent class="p-4 sm:p-5">
                 <div class="mb-3 flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="flex min-w-0 items-center gap-2.5">
                         <img
                             v-if="monitor.favicon && !faviconFailed"
                             :src="monitor.favicon"
@@ -103,9 +97,9 @@ function sparkColor(pct: number | null): string {
                             class="h-1.5 w-1.5 rounded-full"
                             :class="[
                                 monitor.uptime_status === 'up'
-                                    ? 'bg-emerald-500 animate-pulse'
+                                    ? 'animate-pulse bg-emerald-500'
                                     : monitor.uptime_status === 'down'
-                                      ? 'bg-rose-500 animate-ping'
+                                      ? 'animate-ping bg-rose-500'
                                       : 'bg-amber-500',
                             ]"
                         />
@@ -131,10 +125,7 @@ function sparkColor(pct: number | null): string {
                             {{ uptime7d }}%
                             <span class="ml-1 text-[10px] font-normal text-gray-400">7d</span>
                         </span>
-                        <span
-                            v-else-if="monitor.today_uptime_percentage"
-                            class="inline-flex items-center font-bold text-gray-900 dark:text-white"
-                        >
+                        <span v-else-if="monitor.today_uptime_percentage" class="inline-flex items-center font-bold text-gray-900 dark:text-white">
                             {{ monitor.today_uptime_percentage }}%
                             <span class="ml-1 text-[10px] font-normal text-gray-400">today</span>
                         </span>
@@ -163,10 +154,7 @@ function sparkColor(pct: number | null): string {
                     <div class="flex items-center gap-1" title="7-day uptime history">
                         <Tooltip v-for="(d, i) in sparklineData()" :key="i">
                             <TooltipTrigger as-child>
-                                <div
-                                    class="h-4 w-1.5 rounded-full transition-all hover:scale-125"
-                                    :class="sparkColor(d.pct)"
-                                />
+                                <div class="h-4 w-1.5 rounded-full transition-all hover:scale-125" :class="sparkColor(d.pct)" />
                             </TooltipTrigger>
                             <TooltipContent side="top" class="text-xs">
                                 <p class="font-medium">{{ d.date }}</p>
@@ -186,11 +174,9 @@ function sparkColor(pct: number | null): string {
                         >
                             #{{ getTagDisplayName(tag) }}
                         </span>
-                        <span v-if="(monitor.tags.length ?? 0) > 3" class="text-[10px] text-gray-400">
-                            +{{ monitor.tags.length - 3 }}
-                        </span>
+                        <span v-if="(monitor.tags.length ?? 0) > 3" class="text-[10px] text-gray-400"> +{{ monitor.tags.length - 3 }} </span>
                     </div>
-                    <div v-else class="text-gray-400 text-[11px]">
+                    <div v-else class="text-[11px] text-gray-400">
                         {{ monitor.last_check_date_human || 'Active' }}
                     </div>
 

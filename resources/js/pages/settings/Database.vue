@@ -66,15 +66,15 @@ const submitRestore = () => {
         onSuccess: () => {
             form.reset();
             selectedFileName.value = '';
-            if (fileInput.value?.$el) {
-                (fileInput.value.$el as HTMLInputElement).value = '';
+            if (fileInput.value) {
+                fileInput.value.value = '';
             }
         },
     });
 };
 
 const triggerFileInput = () => {
-    (fileInput.value?.$el as HTMLInputElement)?.click();
+    fileInput.value?.click();
 };
 </script>
 
@@ -94,26 +94,16 @@ const triggerFileInput = () => {
                                 <template v-if="databaseExists">
                                     {{ formatNumber(essentialRecordCount) }} records from {{ essentialTables.length }} tables
                                 </template>
-                                <template v-else>
-                                    No database found
-                                </template>
+                                <template v-else> No database found </template>
                             </p>
                         </div>
-                        <Button
-                            as="a"
-                            :href="route('database.download')"
-                            :disabled="!databaseExists"
-                        >
-                            Download backup
-                        </Button>
+                        <Button as="a" :href="route('database.download')" :disabled="!databaseExists"> Download backup </Button>
                     </div>
 
                     <Alert>
                         <AlertTitle>What's included in the backup?</AlertTitle>
                         <AlertDescription>
-                            <p class="mb-2">
-                                The backup includes only essential data that cannot be regenerated:
-                            </p>
+                            <p class="mb-2">The backup includes only essential data that cannot be regenerated:</p>
                             <ul class="text-muted-foreground list-inside list-disc text-sm">
                                 <li>Users and authentication data</li>
                                 <li>Monitors configuration</li>
@@ -141,8 +131,8 @@ const triggerFileInput = () => {
                 <Alert variant="warning">
                     <AlertTitle>Warning</AlertTitle>
                     <AlertDescription>
-                        Restoring will replace data in the backed-up tables. A temporary backup is created before restoring.
-                        You will need to log in again after restoring.
+                        Restoring will replace data in the backed-up tables. A temporary backup is created before restoring. You will need to log in
+                        again after restoring.
                     </AlertDescription>
                 </Alert>
 
@@ -166,28 +156,16 @@ const triggerFileInput = () => {
                                 class="flex-1 cursor-pointer"
                                 @click="triggerFileInput"
                             />
-                            <Button type="button" variant="outline" @click="triggerFileInput">
-                                Browse
-                            </Button>
+                            <Button type="button" variant="outline" @click="triggerFileInput"> Browse </Button>
                         </div>
-                        <p class="text-muted-foreground text-sm">
-                            Accepted formats: .sql (recommended), .sqlite, .sqlite3, .db (max 500MB)
-                        </p>
+                        <p class="text-muted-foreground text-sm">Accepted formats: .sql (recommended), .sqlite, .sqlite3, .db (max 500MB)</p>
                         <InputError :message="form.errors.database" />
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button
-                            type="submit"
-                            variant="destructive"
-                            :disabled="form.processing || !form.database"
-                        >
-                            <template v-if="form.processing">
-                                Restoring...
-                            </template>
-                            <template v-else>
-                                Restore database
-                            </template>
+                        <Button type="submit" variant="destructive" :disabled="form.processing || !form.database">
+                            <template v-if="form.processing"> Restoring... </template>
+                            <template v-else> Restore database </template>
                         </Button>
                     </div>
                 </form>

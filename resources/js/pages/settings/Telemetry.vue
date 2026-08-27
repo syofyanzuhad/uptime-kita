@@ -27,9 +27,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Telemetry', href: '/settings/telemetry' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Telemetry', href: '/settings/telemetry' }];
 
 const showPreview = ref(false);
 const sendingPing = ref(false);
@@ -102,21 +100,18 @@ async function regenerateId() {
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall
-                    title="Anonymous Telemetry"
-                    description="Help improve Uptime-Kita by sharing anonymous usage statistics"
-                />
+                <HeadingSmall title="Anonymous Telemetry" description="Help improve Uptime-Kita by sharing anonymous usage statistics" />
 
                 <!-- Privacy Notice -->
                 <Card class="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
                     <CardContent class="pt-4">
                         <div class="flex gap-3">
-                            <Icon name="Shield" class="h-5 w-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+                            <Icon name="Shield" class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
                             <div class="text-sm text-blue-800 dark:text-blue-200">
                                 <p class="mb-1 font-medium">Privacy First</p>
                                 <p>
-                                    We only collect anonymous, aggregate statistics. No URLs, email addresses, IP
-                                    addresses, or any personally identifiable information is ever transmitted.
+                                    We only collect anonymous, aggregate statistics. No URLs, email addresses, IP addresses, or any personally
+                                    identifiable information is ever transmitted.
                                 </p>
                             </div>
                         </div>
@@ -222,11 +217,7 @@ TELEMETRY_DEBUG=false</code></pre>
                     </CardHeader>
                     <CardContent>
                         <div class="flex flex-wrap gap-3">
-                            <Button
-                                variant="outline"
-                                @click="sendTestPing"
-                                :disabled="!settings.enabled || sendingPing"
-                            >
+                            <Button variant="outline" @click="sendTestPing" :disabled="!settings.enabled || sendingPing">
                                 <Icon name="Send" class="mr-2 h-4 w-4" />
                                 {{ sendingPing ? 'Sending...' : 'Send Test Ping' }}
                             </Button>
@@ -235,9 +226,7 @@ TELEMETRY_DEBUG=false</code></pre>
                                 {{ regenerating ? 'Regenerating...' : 'Regenerate Instance ID' }}
                             </Button>
                         </div>
-                        <p class="text-muted-foreground mt-3 text-xs">
-                            Note: Test ping only works when telemetry is enabled in your .env file.
-                        </p>
+                        <p class="text-muted-foreground mt-3 text-xs">Note: Test ping only works when telemetry is enabled in your .env file.</p>
                     </CardContent>
                 </Card>
             </div>

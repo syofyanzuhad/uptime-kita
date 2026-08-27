@@ -1,8 +1,8 @@
-import ProfileController from './ProfileController'
-import PasswordController from './PasswordController'
-import AppearanceController from './AppearanceController'
-import DatabaseBackupController from './DatabaseBackupController'
-import TelemetryController from './TelemetryController'
+import AppearanceController from './AppearanceController';
+import DatabaseBackupController from './DatabaseBackupController';
+import PasswordController from './PasswordController';
+import ProfileController from './ProfileController';
+import TelemetryController from './TelemetryController';
 
 const Settings = {
     ProfileController: Object.assign(ProfileController, ProfileController),
@@ -10,6 +10,6 @@ const Settings = {
     AppearanceController: Object.assign(AppearanceController, AppearanceController),
     DatabaseBackupController: Object.assign(DatabaseBackupController, DatabaseBackupController),
     TelemetryController: Object.assign(TelemetryController, TelemetryController),
-}
+};
 
-export default Settings
+export default Settings;
