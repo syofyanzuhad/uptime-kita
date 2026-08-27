@@ -290,8 +290,9 @@ describe('User CRUD Operations', function () {
         });
 
         it('cannot edit default admin user', function () {
-            // User with ID 1 is the first user created and is treated as default admin
-            $response = actingAs($this->admin)->get('/users/1/edit');
+            $defaultAdmin = User::find(1) ?? User::factory()->create(['id' => 1]);
+
+            $response = actingAs($this->admin)->get("/users/{$defaultAdmin->id}/edit");
 
             $response->assertRedirect('/users');
             $response->assertSessionHas('error', 'Cannot edit the default admin user.');
@@ -366,13 +367,14 @@ describe('User CRUD Operations', function () {
         });
 
         it('cannot update default admin user', function () {
-            // User with ID 1 is the first user created and is treated as default admin
+            $defaultAdmin = User::find(1) ?? User::factory()->create(['id' => 1]);
+
             $updateData = [
                 'name' => 'Hacked Admin',
                 'email' => 'hacked@example.com',
             ];
 
-            $response = actingAs($this->admin)->putJson('/users/1', $updateData);
+            $response = actingAs($this->admin)->putJson("/users/{$defaultAdmin->id}", $updateData);
 
             $response->assertRedirect('/users');
             $response->assertSessionHas('error', 'Cannot edit the default admin user.');
@@ -452,8 +454,9 @@ describe('User CRUD Operations', function () {
         });
 
         it('cannot delete default admin user', function () {
-            // User with ID 1 is the first user created and is treated as default admin
-            $response = actingAs($this->admin)->deleteJson('/users/1');
+            $defaultAdmin = User::find(1) ?? User::factory()->create(['id' => 1]);
+
+            $response = actingAs($this->admin)->deleteJson("/users/{$defaultAdmin->id}");
 
             $response->assertRedirect('/users');
             assertDatabaseHas('users', ['id' => 1]);

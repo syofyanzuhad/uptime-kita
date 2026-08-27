@@ -13,14 +13,25 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Hapus data duplikat — keep MAX(id) per (monitor_id, date)
-        // ponytail: JOIN delete avoids MySQL 1093 (can't specify target table in FROM)
-        DB::statement('
-            DELETE m1 FROM `monitor_uptime_dailies` m1
-            INNER JOIN `monitor_uptime_dailies` m2
-                ON m1.`monitor_id` = m2.`monitor_id`
-                AND m1.`date` = m2.`date`
-                AND m1.`id` < m2.`id`
-        ');
+        if (DB::getDriverName() === 'mysql' || DB::getDriverName() === 'mariadb') {
+            // ponytail: JOIN delete avoids MySQL 1093 (can't specify target table in FROM)
+            DB::statement('
+                DELETE m1 FROM `monitor_uptime_dailies` m1
+                INNER JOIN `monitor_uptime_dailies` m2
+                    ON m1.`monitor_id` = m2.`monitor_id`
+                    AND m1.`date` = m2.`date`
+                    AND m1.`id` < m2.`id`
+            ');
+        } else {
+            DB::statement('
+                DELETE FROM monitor_uptime_dailies
+                WHERE id NOT IN (
+                    SELECT MAX(id)
+                    FROM monitor_uptime_dailies
+                    GROUP BY monitor_id, date
+                )
+            ');
+        }
 
         Schema::table('monitor_uptime_dailies', function (Blueprint $table) {
             // 2. Hapus index lama jika ada (opsional, tergantung struktur Anda)
