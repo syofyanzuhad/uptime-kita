@@ -47,8 +47,8 @@ jobs:
       - name: Build Assets
         run: npm run build
 
-      - name: Tests (TIA + coverage)
-        run: ./vendor/bin/pest --tia --coverage --min=90 --coverage-clover=storage/coverage/coverage.xml
+      - name: Tests (coverage)
+        run: ./vendor/bin/pest --coverage --min=90 --coverage-clover=storage/coverage/coverage.xml
 
       - name: Show Coverage
         run: ls -lah ./storage/coverage
