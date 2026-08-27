@@ -177,6 +177,9 @@ const domainChecking = ref(false);
 const domainResult = ref<null | { url: string; host: string; status_code: number | null; ok: boolean; response_time_ms: number; error?: string }>(null);
 const domainError = ref('');
 const exampleDomains = ['google.com', 'github.com', 'cloudflare.com', 'laravel.com'];
+const showApiSnippet = ref(false);
+const copiedApi = ref(false);
+
 async function checkDomain() {
     const v = domainInput.value.trim();
     if (!v) { domainError.value = 'Enter a domain or URL to inspect.'; return; }
@@ -194,6 +197,16 @@ function monitorThisDomain() {
     if (!domainResult.value) return;
     router.visit(`/monitor/create?url=${encodeURIComponent('https://' + domainResult.value.host)}`);
 }
+
+function copyApiCommand(customHost?: string) {
+    const target = customHost || domainInput.value.trim() || 'example.com';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://uptime.syofyanzuhad.dev';
+    const cmd = `curl -X GET "${baseUrl}/api/v1/check?url=${encodeURIComponent(target)}"`;
+    navigator.clipboard.writeText(cmd);
+    copiedApi.value = true;
+    setTimeout(() => { copiedApi.value = false; }, 2000);
+}
+
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 // Phase 3: incidents collapsible + hero focus
@@ -263,18 +276,57 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     </button>
                 </form>
 
-                <!-- Compact Example Chips -->
-                <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-blue-100/80">
-                    <span class="font-medium">Try:</span>
+                <!-- Compact Example Chips & API Toggle -->
+                <div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-blue-100/80">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="font-medium">Try:</span>
+                        <button
+                            v-for="ex in exampleDomains"
+                            :key="ex"
+                            type="button"
+                            @click="tryExample(ex)"
+                            class="rounded-md border border-white/10 bg-white/10 px-2 py-0.5 font-medium text-white transition-colors hover:bg-white/20 active:scale-95"
+                        >
+                            {{ ex }}
+                        </button>
+                    </div>
+
                     <button
-                        v-for="ex in exampleDomains"
-                        :key="ex"
                         type="button"
-                        @click="tryExample(ex)"
-                        class="rounded-md border border-white/10 bg-white/10 px-2 py-0.5 font-medium text-white transition-colors hover:bg-white/20 active:scale-95"
+                        @click="showApiSnippet = !showApiSnippet"
+                        class="inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-0.5 font-bold text-white transition-all hover:bg-white/20 active:scale-95"
                     >
-                        {{ ex }}
+                        <Icon name="terminal" class="h-3 w-3 text-emerald-300" />
+                        <span>{{ showApiSnippet ? 'Hide API' : 'CLI / API' }}</span>
+                        <span class="rounded bg-emerald-400/30 px-1 text-[9px] font-extrabold uppercase text-emerald-200">v1</span>
                     </button>
+                </div>
+
+                <!-- Interactive API Code Drawer -->
+                <div
+                    v-if="showApiSnippet"
+                    class="mt-3 overflow-hidden rounded-2xl border border-white/15 bg-gray-950/90 p-3 text-left shadow-lg backdrop-blur-md"
+                >
+                    <div class="mb-2 flex items-center justify-between border-b border-white/10 pb-2 text-[11px] text-gray-400">
+                        <div class="flex items-center gap-2 font-sans font-bold text-white">
+                            <Icon name="code" class="h-3.5 w-3.5 text-emerald-400" />
+                            <span>Instant Uptime API</span>
+                            <span class="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[10px] font-extrabold text-emerald-300">30 req/min free</span>
+                        </div>
+                        <span class="font-mono text-[10px] text-gray-400">GET /api/v1/check</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 overflow-x-auto rounded-xl bg-black/60 p-2 font-mono text-xs text-emerald-400">
+                        <span class="truncate select-all text-gray-300">
+                            curl -X GET "https://uptime.syofyanzuhad.dev/api/v1/check?url={{ domainInput || 'example.com' }}"
+                        </span>
+                        <button
+                            type="button"
+                            @click="copyApiCommand(domainInput)"
+                            class="shrink-0 rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-sans font-bold text-white transition-all hover:bg-white/20 active:scale-95"
+                        >
+                            {{ copiedApi ? '✓ Copied' : 'Copy' }}
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Error message -->
@@ -348,105 +400,93 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         <!-- Metric Summary Cards -->
         <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             <button
+                v-for="s in [
+                    { key: 'all', label: 'Monitors Tracked', count: stats.total_public, color: 'text-gray-900 dark:text-white', activeClass: 'border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20' },
+                    { key: 'up', label: 'Operational', count: stats.up, color: 'text-emerald-600 dark:text-emerald-400', activeClass: 'border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20' },
+                    { key: 'down', label: 'Incidents Active', count: stats.down, color: 'text-rose-600 dark:text-rose-400', activeClass: 'border-rose-500/50 bg-rose-50/50 dark:bg-rose-950/20' },
+                    { key: 'overall', label: 'Network Uptime', count: null, color: 'text-blue-600 dark:text-blue-400', activeClass: '' },
+                ]"
+                :key="s.key"
                 type="button"
-                @click="filterByStatus('all')"
-                class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80"
-                :class="statusFilter === 'all' ? 'ring-2 ring-blue-500/20 border-blue-500' : ''"
+                @click="s.key !== 'overall' ? filterByStatus(s.key) : null"
+                class="group flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80 dark:hover:border-gray-700"
+                :class="statusFilter === s.key ? s.activeClass : ''"
             >
-                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
-                    <span>Total Tracked</span>
-                    <Icon name="globe" class="h-4 w-4 text-blue-500" />
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ s.label }}</span>
+                <div class="mt-3 flex items-baseline gap-2">
+                    <span v-if="s.key === 'overall'" class="text-2xl font-black tracking-tight" :class="s.color">
+                        {{ Math.round((stats.up / (stats.total_public || 1)) * 100) }}%
+                    </span>
+                    <span v-else class="text-2xl font-black tracking-tight" :class="s.color">
+                        {{ s.count }}
+                    </span>
                 </div>
-                <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
-                    {{ stats.total_public }}
-                </div>
-                <span class="text-[11px] text-gray-400">Public services</span>
             </button>
-
-            <button
-                type="button"
-                @click="filterByStatus('up')"
-                class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-emerald-400 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80"
-                :class="statusFilter === 'up' ? 'ring-2 ring-emerald-500/20 border-emerald-500' : ''"
-            >
-                <div class="flex items-center justify-between w-full text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                    <span>Operational</span>
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                </div>
-                <div class="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:text-3xl">
-                    {{ stats.up }}
-                </div>
-                <span class="text-[11px] text-emerald-500/80">Services online</span>
-            </button>
-
-            <div class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
-                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
-                    <span>Global Uptime</span>
-                    <Icon name="activity" class="h-4 w-4 text-indigo-500" />
-                </div>
-                <div class="mt-2 text-2xl font-black text-indigo-600 dark:text-indigo-400 sm:text-3xl">
-                    {{ Math.round((stats.up / (stats.total_public || 1)) * 100) }}%
-                </div>
-                <span class="text-[11px] text-gray-400">Network availability</span>
-            </div>
-
-            <div class="flex flex-col items-start rounded-2xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
-                <div class="flex items-center justify-between w-full text-xs font-medium text-gray-500 dark:text-gray-400">
-                    <span>24h Inspections</span>
-                    <Icon name="checkCircle" class="h-4 w-4 text-purple-500" />
-                </div>
-                <div class="mt-2 text-2xl font-black text-gray-900 dark:text-white sm:text-3xl">
-                    {{ formatChecksCount(stats.daily_checks || 0) }}
-                </div>
-                <span class="text-[11px] text-gray-400">Automated checks</span>
-            </div>
         </div>
 
-        <!-- Featured Status Page & Wallboard Spotlight Banner (Directly Visible Above Directory) -->
-        <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <!-- Featured Status Page, Wallboard & Developer API Spotlight Grid -->
+        <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
             <Link
                 href="/status/demo"
                 class="group flex items-center justify-between rounded-3xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white p-5 shadow-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-blue-900/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-gray-900"
             >
-                <div class="flex items-center gap-4 min-w-0">
-                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                        <Icon name="activity" class="h-6 w-6" />
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                        <Icon name="activity" class="h-5 w-5" />
                     </div>
                     <div class="min-w-0">
-                        <div class="flex items-center gap-2">
-                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white sm:text-base">Public Status Page</h3>
-                            <span class="rounded-full bg-blue-600/10 px-2 py-0.5 text-[10px] font-extrabold uppercase text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">Live Demo</span>
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">Status Page</h3>
+                            <span class="rounded-full bg-blue-600/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">Live Demo</span>
                         </div>
-                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">Clean 90-day uptime and component health for stakeholders.</p>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">90-day component health.</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 shrink-0 ml-2">
-                    <span class="hidden sm:inline">Explore</span>
-                    <Icon name="arrowRight" class="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
+                <Icon name="arrowRight" class="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:translate-x-1 transition-transform" />
             </Link>
 
             <Link
                 href="/monitors"
                 class="group flex items-center justify-between rounded-3xl border border-purple-200/80 bg-gradient-to-r from-purple-50/80 via-pink-50/40 to-white p-5 shadow-sm transition-all hover:border-purple-400 hover:shadow-md dark:border-purple-900/50 dark:from-purple-950/30 dark:via-purple-950/20 dark:to-gray-900"
             >
-                <div class="flex items-center gap-4 min-w-0">
-                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
-                        <Icon name="layoutGrid" class="h-6 w-6" />
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform">
+                        <Icon name="layoutGrid" class="h-5 w-5" />
                     </div>
                     <div class="min-w-0">
-                        <div class="flex items-center gap-2">
-                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white sm:text-base">NOC Status Wallboard</h3>
-                            <span class="rounded-full bg-purple-600/10 px-2 py-0.5 text-[10px] font-extrabold uppercase text-purple-600 dark:bg-purple-400/10 dark:text-purple-400">Kiosk View</span>
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">NOC Wallboard</h3>
+                            <span class="rounded-full bg-purple-600/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-purple-600 dark:bg-purple-400/10 dark:text-purple-400">Kiosk</span>
                         </div>
-                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">High-density live grid with dots, bars, and sound alerts.</p>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">High-density live grid.</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-1 font-bold text-xs text-purple-600 dark:text-purple-400 shrink-0 ml-2">
-                    <span class="hidden sm:inline">Open</span>
-                    <Icon name="arrowRight" class="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
+                <Icon name="arrowRight" class="h-4 w-4 text-purple-600 dark:text-purple-400 shrink-0 group-hover:translate-x-1 transition-transform" />
             </Link>
+
+            <!-- Developer API Spotlight Card with 1-Click Copy -->
+            <button
+                type="button"
+                @click="copyApiCommand('example.com')"
+                class="group flex items-center justify-between rounded-3xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white p-5 text-left shadow-sm transition-all hover:border-emerald-400 hover:shadow-md dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-gray-900 cursor-pointer"
+            >
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                        <Icon name="terminal" class="h-5 w-5" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">Health Check API</h3>
+                            <span class="rounded-full bg-emerald-600/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">30 req/min</span>
+                        </div>
+                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">Automate via curl / CI/CD.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 font-bold text-xs text-emerald-600 dark:text-emerald-400 shrink-0 ml-2">
+                    <span class="hidden sm:inline">{{ copiedApi ? 'Copied!' : 'Copy curl' }}</span>
+                    <Icon :name="copiedApi ? 'check' : 'copy'" class="h-4 w-4" />
+                </div>
+            </button>
         </div>
 
         <!-- Recent Incidents Alert Strip (if active) -->
