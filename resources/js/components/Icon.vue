@@ -78,6 +78,7 @@ import {
     Radio,
     Send,
     Database,
+    Terminal,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -172,6 +173,7 @@ const registry: Record<string, any> = {
     radio: Radio,
     send: Send,
     database: Database,
+    terminal: Terminal,
     // heroicons compat — map to closest lucide
     'heroicons:plus': Plus,
     'heroicons:exclamation-triangle': AlertTriangle,
