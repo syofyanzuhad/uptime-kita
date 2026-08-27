@@ -9,16 +9,23 @@ import { useTheme } from '@/composables/useTheme';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps<{
-    title: string;
-    description: string;
-    ogImage?: string;
-    canonicalUrl?: string;
-    shareUrl: string;
-    shareText: string;
-    showServerStats?: boolean;
-    jsonLd?: Record<string, any>;
-}>();
+const props = withDefaults(
+    defineProps<{
+        title: string;
+        description: string;
+        ogImage?: string;
+        canonicalUrl?: string;
+        shareUrl: string;
+        shareText: string;
+        showServerStats?: boolean;
+        jsonLd?: Record<string, any>;
+        containerClass?: string;
+    }>(),
+    {
+        containerClass: 'max-w-7xl',
+        showServerStats: true,
+    },
+);
 
 const { isDark, toggleTheme } = useTheme();
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -46,35 +53,58 @@ const jsonLdString = computed(() => props.jsonLd ? JSON.stringify(props.jsonLd) 
         <component :is="'script'" v-if="jsonLdString" type="application/ld+json" v-html="jsonLdString" />
     </Head>
 
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header class="sticky top-0 z-10 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col font-sans antialiased selection:bg-blue-500 selection:text-white">
+        <header class="sticky top-0 z-40 border-b border-gray-200/80 bg-white/80 backdrop-blur-md transition-colors dark:border-gray-800/80 dark:bg-gray-900/80">
+            <div class="mx-auto max-w-7xl px-4 py-3.5 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between gap-4">
                     <div class="flex min-w-0 flex-1 items-center gap-3">
                         <slot name="header-left">
-                            <Link href="/" class="flex h-8 w-8 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
-                                <img src="/images/uptime-kita.jpg" alt="Uptime Kita" class="h-6 w-6 rounded object-cover sm:h-8 sm:w-8" />
+                            <Link href="/" class="group flex items-center gap-2.5 transition-transform active:scale-95">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 shadow-sm shadow-blue-500/20">
+                                    <img src="/images/uptime-kita.jpg" alt="Uptime Kita" class="h-full w-full rounded-[10px] object-cover" />
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="truncate text-base font-bold tracking-tight text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 sm:text-lg">
+                                            {{ title }}
+                                        </span>
+                                    </div>
+                                    <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ description }}</p>
+                                </div>
                             </Link>
-                            <div class="min-w-0">
-                                <h1 class="truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl">{{ title }}</h1>
-                                <p class="truncate text-xs text-gray-500 dark:text-gray-400 sm:text-sm">{{ description }}</p>
-                            </div>
                         </slot>
                     </div>
-                    <div class="flex flex-shrink-0 items-center gap-2">
-                        <ServerStatsBadge v-if="showServerStats" class="hidden sm:block" />
+
+                    <div class="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                        <slot name="header-nav" />
+
+                        <ServerStatsBadge v-if="showServerStats" class="hidden md:block" />
+
                         <ShareDropdown :url="shareUrl" :text="shareText" />
-                        <button @click="toggleTheme" class="cursor-pointer rounded-full bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
-                            <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+
+                        <button
+                            @click="toggleTheme"
+                            class="cursor-pointer rounded-xl border border-gray-200/80 bg-white/80 p-2 text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                        >
+                            <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 transition-transform duration-300 rotate-0 dark:-rotate-12" />
                         </button>
-                        <Link href="/dashboard" class="rounded-full bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600" aria-label="Dashboard"><Icon name="home" class="h-4 w-4 text-gray-600 dark:text-gray-300" /></Link>
+
+                        <Link
+                            href="/dashboard"
+                            class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                        >
+                            <Icon name="home" class="h-3.5 w-3.5" />
+                            <span class="hidden sm:inline">Dashboard</span>
+                        </Link>
+
                         <slot name="header-actions" />
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <main :class="['mx-auto w-full flex-1 px-4 py-6 sm:px-6 lg:px-8', props.containerClass]">
             <slot />
         </main>
 
