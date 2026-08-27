@@ -85,8 +85,16 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Run tests (TIA)
-        run: ./vendor/bin/pest --tia
+      - name: Run tests (TIA + coverage)
+        run: ./vendor/bin/pest --tia --coverage --min=90 --coverage-clover=storage/coverage/coverage.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./storage/coverage/coverage.xml
+          flags: php
+          fail_ci_if_error: false
 
   type-check:
     name: TypeScript Type Check
