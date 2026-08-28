@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\MonitorResource;
+use App\Http\Resources\StatusPageMonitorResource;
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
 use Inertia\Inertia;
@@ -60,12 +60,23 @@ class PublicStatusPageController extends Controller
 
             return $statusPage->monitors()
                 ->where('uptime_check_enabled', true)
+                ->select([
+                    'monitors.id',
+                    'monitors.url',
+                    'monitors.display_name',
+                    'monitors.uptime_status',
+                    'monitors.uptime_last_check_date',
+                    'monitors.uptime_check_enabled',
+                    'monitors.certificate_check_enabled',
+                    'monitors.certificate_status',
+                    'monitors.domain_expiration_check_enabled',
+                    'monitors.domain_expiration_date',
+                    'status_page_monitor.order',
+                ])
                 ->with([
-                    'uptimeDaily',
-                    'tags',
-                    'statistics',
                     'uptimesDaily' => function ($query) {
-                        $query->where('date', '>=', now()->subDays(90)->toDateString())
+                        $query->select(['monitor_id', 'date', 'uptime_percentage'])
+                            ->where('date', '>=', now()->subDays(90)->toDateString())
                             ->orderBy('date', 'asc');
                     },
                 ])
@@ -77,7 +88,7 @@ class PublicStatusPageController extends Controller
         }
 
         return response()->json(
-            MonitorResource::collection($monitors)
+            StatusPageMonitorResource::collection($monitors)
         );
     }
 }

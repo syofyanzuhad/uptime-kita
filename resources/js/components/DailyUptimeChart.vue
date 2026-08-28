@@ -127,58 +127,55 @@ const toggleTooltip = (event: MouseEvent, data: TooltipData) => {
 
 <template>
     <div class="mt-2">
-        <template v-if="isAuthenticated">
-            <div v-if="isLoading" class="text-xs text-gray-400">Loading uptime history...</div>
-            <div v-else-if="error" class="text-xs text-red-400">{{ error }}</div>
-            <div v-else-if="uptimesDaily && uptimesDaily.length > 0">
-                <div
-                    ref="scrollContainer"
-                    class="flex h-auto w-full min-w-[320px] items-end overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-900"
-                >
-                    <template v-for="date in getLatest100Days()" :key="date">
-                        <template v-if="uptimesDaily.some((u) => u.date === date)">
+        <div v-if="isLoading" class="text-xs text-gray-400">Loading uptime history...</div>
+        <div v-else-if="error" class="text-xs text-red-400">{{ error }}</div>
+        <div v-else-if="uptimesDaily && uptimesDaily.length > 0">
+            <div
+                ref="scrollContainer"
+                class="flex h-auto w-full min-w-[320px] items-end overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-900"
+            >
+                <template v-for="date in getLatest100Days()" :key="date">
+                    <template v-if="uptimesDaily.some((u) => u.date === date)">
+                        <div
+                            v-for="uptime in uptimesDaily.filter((u) => u.date === date)"
+                            :key="uptime.date"
+                            class="mx-px flex min-w-1.5 flex-1 cursor-pointer flex-col items-center"
+                            @mouseover="showTooltip($event, uptime)"
+                            @mouseleave="hideTooltip"
+                            @click="toggleTooltip($event, uptime)"
+                        >
                             <div
-                                v-for="uptime in uptimesDaily.filter((u) => u.date === date)"
-                                :key="uptime.date"
-                                class="mx-px flex min-w-1.5 flex-1 cursor-pointer flex-col items-center"
-                                @mouseover="showTooltip($event, uptime)"
-                                @mouseleave="hideTooltip"
-                                @click="toggleTooltip($event, uptime)"
-                            >
-                                <div
-                                    :class="[
-                                        'h-8 w-full min-w-1.5 rounded transition-all duration-200',
-                                        'pointer-events-none',
-                                        uptime.uptime_percentage == 100
-                                            ? 'bg-green-500'
-                                            : uptime.uptime_percentage >= 99
-                                              ? 'bg-green-300'
-                                              : uptime.uptime_percentage >= 90
-                                                ? 'bg-yellow-400'
-                                                : 'bg-red-500',
-                                    ]"
-                                ></div>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div
-                                class="mx-px flex min-w-1.5 flex-1 cursor-pointer flex-col items-center"
-                                @mouseover="showTooltip($event, { date, uptime_percentage: null })"
-                                @mouseleave="hideTooltip"
-                                @click="toggleTooltip($event, { date, uptime_percentage: null })"
-                            >
-                                <div class="pointer-events-none h-8 w-full min-w-1.5 rounded bg-gray-300 dark:bg-gray-700"></div>
-                            </div>
-                        </template>
+                                :class="[
+                                    'h-8 w-full min-w-1.5 rounded transition-all duration-200',
+                                    'pointer-events-none',
+                                    uptime.uptime_percentage == 100
+                                        ? 'bg-green-500'
+                                        : uptime.uptime_percentage >= 99
+                                          ? 'bg-green-300'
+                                          : uptime.uptime_percentage >= 90
+                                            ? 'bg-yellow-400'
+                                            : 'bg-red-500',
+                                ]"
+                            ></div>
+                        </div>
                     </template>
-                </div>
-                <div class="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
-                    <span>{{ firstDay }}</span>
-                    <span>{{ lastDay }}</span>
-                </div>
+                    <template v-else>
+                        <div
+                            class="mx-px flex min-w-1.5 flex-1 cursor-pointer flex-col items-center"
+                            @mouseover="showTooltip($event, { date, uptime_percentage: null })"
+                            @mouseleave="hideTooltip"
+                            @click="toggleTooltip($event, { date, uptime_percentage: null })"
+                        >
+                            <div class="pointer-events-none h-8 w-full min-w-1.5 rounded bg-gray-300 dark:bg-gray-700"></div>
+                        </div>
+                    </template>
+                </template>
             </div>
-        </template>
-        <template v-else> </template>
+            <div class="mt-1 flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
+                <span>{{ firstDay }}</span>
+                <span>{{ lastDay }}</span>
+            </div>
+        </div>
 
         <Teleport to="body">
             <div
