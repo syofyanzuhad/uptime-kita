@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
 use Laravel\Nightwatch\Facades\Nightwatch;
+use Laravel\Nightwatch\Records\QueuedJob;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
 use Spatie\Health\Checks\Checks\CacheCheck;
@@ -63,10 +64,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        if (class_exists(Nightwatch::class)) {
-            // Nightwatch::rejectQueries(fn () => true);
-            // Nightwatch::rejectCacheEvents(fn () => true);
-        }
+        // Nightwatch::rejectQueries(fn () => true);
+        // Nightwatch::rejectCacheEvents(fn () => true);
+        Nightwatch::rejectQueuedJobs(function (QueuedJob $job) {
+            return $job->name === 'Laravel\Telescope\Jobs\ProcessPendingUpdates';
+        });
 
         LogViewer::auth(fn ($request) => auth()->id() === 1);
 
@@ -113,5 +115,6 @@ class AppServiceProvider extends ServiceProvider
             //     ->table('monitor_uptime_dailies', maxSizeInMb: 5_00)
             //     ->table('health_check_result_history_items', maxSizeInMb: 5_00),
         ]);
+
     }
 }
