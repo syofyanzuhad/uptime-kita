@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Health\Checks\MonitorCheckDriftCheck;
 use App\Listeners\BroadcastMonitorStatusChange;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
@@ -108,6 +109,9 @@ class AppServiceProvider extends ServiceProvider
                 ->failWhenLoadIsHigherInTheLast15Minutes(3.0),
             ScheduleCheck::new()
                 ->heartbeatMaxAgeInMinutes(2),
+            MonitorCheckDriftCheck::new()
+                ->warnWhenDriftExceedsMinutes(2)
+                ->failWhenDriftExceedsMinutes(5),
             QueueCheck::new(),
             // HorizonCheck::new(),
             // DatabaseSizeCheck::new()
