@@ -2,7 +2,6 @@
 
 use App\Console\Commands\CheckDomainExpiration;
 use App\Jobs\CalculateMonitorStatisticsJob;
-use App\Jobs\CalculateMonitorUptimeDailyJob;
 use App\Jobs\SendBatchedNotificationsJob;
 use App\Jobs\SendTelemetryPingJob;
 use App\Models\User;
@@ -80,7 +79,7 @@ if ($scheduleFrequency !== 'none') {
 
 Schedule::command(CheckCertificates::class)->twiceDailyAt(1, 13, 18); // Run the task daily at 1:18 & 13:18.
 Schedule::command(CheckDomainExpiration::class)->twiceDailyAt(1, 13, 18); // Run the task daily at 1:18 & 13:18.
-Schedule::job(new CalculateMonitorUptimeDailyJob)->everyThreeHours($minutes = 5)
+Schedule::command('uptime:calculate-daily')->everyThreeHours(5)
     ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
 // Cleanup expired one-time maintenance windows daily
 Schedule::command('monitor:update-maintenance-status --cleanup')->everySixHours($minutes = 10);
