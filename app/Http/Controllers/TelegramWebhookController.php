@@ -33,7 +33,6 @@ class TelegramWebhookController extends Controller
                     ->to($chatId)
                     ->options(['parse_mode' => 'Markdown'])
                     ->send();
-                info('send message success');
             }
         }
         // --- AKHIR BAGIAN YANG DIPERBAIKI ---

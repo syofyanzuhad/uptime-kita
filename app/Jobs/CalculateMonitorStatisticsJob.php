@@ -169,8 +169,6 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
                 'calculated_at' => $now,
             ]
         );
-
-        Log::debug("Statistics calculated for monitor {$monitor->id} ({$monitor->url})");
     }
 
     private function getRecentHistory(Monitor $monitor): array

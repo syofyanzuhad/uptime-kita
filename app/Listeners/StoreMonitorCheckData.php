@@ -5,12 +5,12 @@ namespace App\Listeners;
 use App\Models\MonitorHistory;
 use App\Models\MonitorIncident;
 use App\Services\MonitorPerformanceService;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 
-class StoreMonitorCheckData implements \Illuminate\Contracts\Queue\ShouldQueue
+class StoreMonitorCheckData implements ShouldQueue
 {
     protected MonitorPerformanceService $performanceService;
 
@@ -45,7 +45,7 @@ class StoreMonitorCheckData implements \Illuminate\Contracts\Queue\ShouldQueue
                     'status_code' => $statusCode,
                     'checked_at' => now()->format('Y-m-d H:i:s'),
                     'message' => $failureReason,
-                ]
+                ],
             ],
             ['monitor_id', 'created_at'], // Unique identifiers
             ['uptime_status', 'response_time', 'status_code', 'checked_at', 'message'] // Columns to update if exists
@@ -56,13 +56,6 @@ class StoreMonitorCheckData implements \Illuminate\Contracts\Queue\ShouldQueue
 
         // Handle incidents
         $this->handleIncident($monitor, $event, $responseTime, $statusCode);
-
-        Log::debug('Monitor check data stored', [
-            'monitor_id' => $monitor->id,
-            'status' => $status,
-            'response_time' => $responseTime,
-            'status_code' => $statusCode,
-        ]);
     }
 
     /**
