@@ -64,10 +64,8 @@ class PublicStatusPageController extends Controller
                     'uptimeDaily',
                     'tags',
                     'statistics',
-                    // Optimization: We don't need full uptimesDaily here if we use pre-calculated stats
-                    // But if the frontend needs the sparkline, we keep the last 7 days
                     'uptimesDaily' => function ($query) {
-                        $query->where('date', '>=', now()->subDays(7)->toDateString())
+                        $query->where('date', '>=', now()->subDays(90)->toDateString())
                             ->orderBy('date', 'asc');
                     },
                 ])
