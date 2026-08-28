@@ -190,20 +190,21 @@ return [
             'maxProcesses' => 1,
             'maxTime' => 3600,
             'maxJobs' => 0,
-            'memory' => 128,
+            'memory' => 64,
             'tries' => 3,
             'timeout' => 60,
             'nice' => 0,
         ],
         'supervisor-calculate' => [
             'connection' => 'redis',
-            'queue' => ['uptime-calculations'],
+            'queue' => ['calculate'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
-            'maxProcesses' => 1,
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
             'maxTime' => 3600,
             'maxJobs' => 0,
-            'memory' => 256,
+            'memory' => 128,
             'tries' => 3,
             'timeout' => 300,
             'nice' => 0,
@@ -214,10 +215,10 @@ return [
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'minProcesses' => 1,
-            'maxProcesses' => 6,
+            'maxProcesses' => 2,
             'maxTime' => 3600,
             'maxJobs' => 0,
-            'memory' => 512, // Statistics aggregations can be memory intensive
+            'memory' => 128, // Statistics aggregations can be memory intensive
             'tries' => 3,
             'timeout' => 900, // Increased to 15 mins to be safe for large aggregations
             'nice' => 10,
@@ -227,12 +228,12 @@ return [
     'environments' => [
         'production' => [
             'supervisor-default' => [
-                'maxProcesses' => 12,
+                'maxProcesses' => 2,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
             'supervisor-calculate' => [
-                'maxProcesses' => 6,
+                'maxProcesses' => 2,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
