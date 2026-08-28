@@ -91,13 +91,13 @@ return [
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.
          */
-        'concurrent_checks' => (int) env('UPTIME_CONCURRENT_CHECKS', 30),
+        'concurrent_checks' => (int) env('UPTIME_CONCURRENT_CHECKS', 50),
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => 10,
+        'timeout_per_site' => (int) env('UPTIME_TIMEOUT_PER_SITE', 10),
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
@@ -111,8 +111,8 @@ return [
          * passing custom options that will be used when making requests.
          */
         'guzzle_options' => [
-            'timeout' => 10,
-            'connect_timeout' => 5,
+            'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 10),
+            'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 5),
             'http_errors' => false,
             'stream' => true, // DO NOT BUFFER ENTIRE RESPONSE BODY IN MEMORY
             'allow_redirects' => [
@@ -198,6 +198,7 @@ return [
         'cron' => env('SCHEDULE_CRON'), // example: */10 * * * *
         'minute' => (int) env('SCHEDULE_MINUTE', 10),
         'time' => env('SCHEDULE_TIME', '02:30'),
+        'uptime_check_heartbeat_url' => env('UPTIME_CHECK_HEARTBEAT_URL', 'https://hc-ping.com/48755033-52c9-4470-a212-8acac2493f2f'),
     ],
 
     /*
