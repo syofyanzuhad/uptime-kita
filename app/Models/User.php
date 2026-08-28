@@ -75,4 +75,9 @@ class User extends Authenticatable
             $query->where('user_monitor.is_active', true);
         });
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->id === 1;
+    }
 }

@@ -6,8 +6,10 @@ use App\Listeners\BroadcastMonitorStatusChange;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
 use App\Listeners\StoreMonitorCheckData;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
@@ -116,5 +118,8 @@ class AppServiceProvider extends ServiceProvider
             //     ->table('health_check_result_history_items', maxSizeInMb: 5_00),
         ]);
 
+        Gate::define('viewPulse', function (User $user) {
+            return $user->isAdmin();
+        });
     }
 }

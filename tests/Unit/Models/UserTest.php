@@ -217,4 +217,20 @@ describe('User Model', function () {
             expect($this->user->updated_at)->not->toBeNull();
         });
     });
+
+    describe('isAdmin', function () {
+        it('returns true when user id is 1', function () {
+            $user = new User;
+            $user->id = 1;
+
+            expect($user->isAdmin())->toBeTrue();
+        });
+
+        it('returns false when user id is not 1', function () {
+            $user = new User;
+            $user->id = 2;
+
+            expect($user->isAdmin())->toBeFalse();
+        });
+    });
 });
