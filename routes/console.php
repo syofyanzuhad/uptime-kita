@@ -69,11 +69,11 @@ if ($scheduleFrequency !== 'none') {
 
     // System health & queue heartbeat checks
     // Schedule::command(RunHealthChecksCommand::class)
-    //     ->()
+    //     ->everyFiveMinutes()
     //     ->withoutOverlapping();
 
-    // Schedule::command(ScheduleCheckHeartbeatCommand::class)->();
-    // Schedule::command(DispatchQueueCheckJobsCommand::class)->();
+    // Schedule::command(ScheduleCheckHeartbeatCommand::class)->everyFiveMinutes();
+    // Schedule::command(DispatchQueueCheckJobsCommand::class)->everyFiveMinutes();
 
     // Heavy aggregation job: calculate stats every 15 minutes instead of every minute
     Schedule::job(new CalculateMonitorStatisticsJob)
@@ -90,7 +90,7 @@ Schedule::command('monitor:update-maintenance-status --cleanup')->everySixHours(
 
 // === LARAVEL HORIZON ===
 if (config('queue.default') === 'redis') {
-    Schedule::command('horizon:snapshot')->();
+    Schedule::command('horizon:snapshot')->everyFiveMinutes();
     Schedule::command('horizon:forget --all')->daily();
 }
 Schedule::command('queue:prune-batches')->daily();
