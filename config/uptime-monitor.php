@@ -190,6 +190,16 @@ return [
     'daily_lookback_days' => env('UPTIME_DAILY_LOOKBACK_DAYS', 30),
 
     /*
+     * Scheduling configuration for uptime checks and background jobs.
+     */
+    'schedule' => [
+        'frequency' => env('SCHEDULE_FREQUENCY', 'everyMinute'),
+        'cron' => env('SCHEDULE_CRON', '*/10 * * * *'),
+        'minute' => (int) env('SCHEDULE_MINUTE', 10),
+        'time' => env('SCHEDULE_TIME', '02:30'),
+    ],
+
+    /*
      * To add or modify behaviour to the Monitor model you can specify your
      * own model here. The only requirement is that it should extend
      * `Spatie\UptimeMonitor\Models\Monitor`.

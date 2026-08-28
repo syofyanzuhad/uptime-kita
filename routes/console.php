@@ -16,60 +16,66 @@ use Spatie\Health\Commands\ScheduleCheckHeartbeatCommand;
 use Spatie\Health\Models\HealthCheckResultHistoryItem;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
 
-$scheduleFrequency = env('SCHEDULE_FREQUENCY', 'everyMinute');
+$scheduleFrequency = config('uptime-monitor.schedule.frequency', 'everyMinute');
+$scheduleCron = config('uptime-monitor.schedule.cron');
+$scheduleMinute = (int) config('uptime-monitor.schedule.minute', 0);
+$scheduleTime = config('uptime-monitor.schedule.time', '00:00');
 
-if ($scheduleFrequency === 'hourly') {
-    // Staggered to avoid thundering herd at :00
-    Schedule::command('monitor:check-uptime')->hourlyAt(0)
-        ->withoutOverlapping(10)
-        ->runInBackground()
-        ->onSuccess(function () {
-            info('UPTIME-CHECK: SUCCESS');
-        })
-        ->onFailure(function () {
-            info('UPTIME-CHECK: FAILED');
-        })
-        ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+if ($scheduleFrequency !== 'none') {
+    $applySchedule = function ($event, int $minuteOffset = 0) use ($scheduleFrequency, $scheduleCron, $scheduleMinute, $scheduleTime) {
+        if (! empty($scheduleCron)) {
+            return $event->cron($scheduleCron);
+        }
 
-    Schedule::job(new SendBatchedNotificationsJob)->hourlyAt(5);
+        if ($scheduleFrequency === 'hourly') {
+            $minute = ($scheduleMinute + $minuteOffset) % 60;
 
-    Schedule::command(RunHealthChecksCommand::class)->hourlyAt(10)
-        ->withoutOverlapping()
-        ->runInBackground();
-    Schedule::command(ScheduleCheckHeartbeatCommand::class)->hourlyAt(12);
-    Schedule::command(DispatchQueueCheckJobsCommand::class)->hourlyAt(15);
+            return $event->hourlyAt($minute);
+        }
 
-    Schedule::command('monitor:update-maintenance-status')->hourlyAt(20);
+        if ($scheduleFrequency === 'daily') {
+            return $event->dailyAt($scheduleTime);
+        }
 
-    Schedule::job(new CalculateMonitorStatisticsJob)->hourlyAt(30)
-        ->withoutOverlapping(10);
-} elseif ($scheduleFrequency !== 'none') {
-    Schedule::command('monitor:check-uptime')->$scheduleFrequency()
-        ->withoutOverlapping(10)
-        ->runInBackground()
-        ->onSuccess(function () {
-            info('UPTIME-CHECK: SUCCESS');
-        })
-        ->onFailure(function () {
-            info('UPTIME-CHECK: FAILED');
-        })
-        ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b');
+        if (method_exists($event, $scheduleFrequency)) {
+            return $event->$scheduleFrequency();
+        }
 
-    // Schedule the notification batching job
-    Schedule::job(new SendBatchedNotificationsJob)->$scheduleFrequency();
+        return $event->everyMinute();
+    };
 
-    Schedule::command(RunHealthChecksCommand::class)->$scheduleFrequency()
-        ->withoutOverlapping()
-        ->runInBackground();
-    Schedule::command(ScheduleCheckHeartbeatCommand::class)->$scheduleFrequency();
-    Schedule::command(DispatchQueueCheckJobsCommand::class)->$scheduleFrequency();
+    $applySchedule(
+        Schedule::command('monitor:check-uptime')
+            ->withoutOverlapping(10)
+            ->runInBackground()
+            ->onSuccess(function () {
+                info('UPTIME-CHECK: SUCCESS');
+            })
+            ->onFailure(function () {
+                info('UPTIME-CHECK: FAILED');
+            })
+            ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b'),
+        0
+    );
 
-    // Update maintenance status for monitors
-    Schedule::command('monitor:update-maintenance-status')->$scheduleFrequency();
+    $applySchedule(Schedule::job(new SendBatchedNotificationsJob), 5);
 
-    Schedule::job(new CalculateMonitorStatisticsJob)
-        ->$scheduleFrequency()
-        ->withoutOverlapping(10);
+    $applySchedule(
+        Schedule::command(RunHealthChecksCommand::class)
+            ->withoutOverlapping()
+            ->runInBackground(),
+        10
+    );
+
+    $applySchedule(Schedule::command(ScheduleCheckHeartbeatCommand::class), 12);
+    $applySchedule(Schedule::command(DispatchQueueCheckJobsCommand::class), 15);
+    $applySchedule(Schedule::command('monitor:update-maintenance-status'), 20);
+
+    $applySchedule(
+        Schedule::job(new CalculateMonitorStatisticsJob)
+            ->withoutOverlapping(10),
+        30
+    );
 }
 
 Schedule::command(CheckCertificates::class)->daily();

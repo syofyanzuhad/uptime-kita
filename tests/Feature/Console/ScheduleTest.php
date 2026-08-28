@@ -42,3 +42,59 @@ it('does not schedule trace-replay:prune when trace-replay is disabled', functio
 
     expect(traceReplayPruneEvents())->toHaveCount(0);
 });
+
+it('schedules monitor:check-uptime with custom cron expression when configured', function () {
+    config([
+        'uptime-monitor.schedule.cron' => '*/15 * * * *',
+    ]);
+
+    $schedule = reloadApplicationSchedule();
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    expect($event)->not->toBeNull();
+    expect($event->expression)->toBe('*/15 * * * *');
+});
+
+it('schedules monitor:check-uptime hourly with custom minute offset', function () {
+    config([
+        'uptime-monitor.schedule.cron' => null,
+        'uptime-monitor.schedule.frequency' => 'hourly',
+        'uptime-monitor.schedule.minute' => 15,
+    ]);
+
+    $schedule = reloadApplicationSchedule();
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    expect($event)->not->toBeNull();
+    expect($event->expression)->toBe('15 * * * *');
+});
+
+it('schedules monitor:check-uptime daily with custom time', function () {
+    config([
+        'uptime-monitor.schedule.cron' => null,
+        'uptime-monitor.schedule.frequency' => 'daily',
+        'uptime-monitor.schedule.time' => '04:30',
+    ]);
+
+    $schedule = reloadApplicationSchedule();
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    expect($event)->not->toBeNull();
+    expect($event->expression)->toBe('30 4 * * *');
+});
+
+it('does not schedule monitor:check-uptime when frequency is none', function () {
+    config([
+        'uptime-monitor.schedule.cron' => null,
+        'uptime-monitor.schedule.frequency' => 'none',
+    ]);
+
+    $schedule = reloadApplicationSchedule();
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    expect($event)->toBeNull();
+});
