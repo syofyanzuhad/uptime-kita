@@ -340,8 +340,15 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function formatCompactNumber(num?: number): string {
+    if (!num) return '0';
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return num.toLocaleString();
+}
+
 // Phase 3: incidents collapsible + hero focus
-const incidentsExpanded = ref(false);
+const incidentsExpanded = ref(true);
 const heroInputRef = ref<HTMLInputElement | null>(null);
 </script>
 
@@ -548,45 +555,55 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         </div>
 
         <!-- Metric Summary Cards -->
-        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
             <button
                 v-for="s in [
                     {
                         key: 'all',
                         label: 'Monitors Tracked',
-                        count: stats.total_public,
+                        value: formatCompactNumber(stats.total_public),
                         color: 'text-gray-900 dark:text-white',
                         activeClass: 'border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20',
                     },
                     {
                         key: 'up',
                         label: 'Operational',
-                        count: stats.up,
+                        value: formatCompactNumber(stats.up),
                         color: 'text-emerald-600 dark:text-emerald-400',
                         activeClass: 'border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20',
                     },
                     {
                         key: 'down',
-                        label: 'Incidents Active',
-                        count: stats.down,
-                        color: 'text-rose-600 dark:text-rose-400',
+                        label: 'Active Incidents',
+                        value: String(stats.down),
+                        color: stats.down > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500 dark:text-gray-400',
                         activeClass: 'border-rose-500/50 bg-rose-50/50 dark:bg-rose-950/20',
                     },
-                    { key: 'overall', label: 'Network Uptime', count: null, color: 'text-blue-600 dark:text-blue-400', activeClass: '' },
+                    {
+                        key: 'checks',
+                        label: '24h Pings Checked',
+                        value: formatCompactNumber(stats.daily_checks || 0),
+                        color: 'text-indigo-600 dark:text-indigo-400',
+                        activeClass: '',
+                    },
+                    {
+                        key: 'overall',
+                        label: 'Network Uptime',
+                        value: Math.round((stats.up / (stats.total_public || 1)) * 100) + '%',
+                        color: 'text-blue-600 dark:text-blue-400',
+                        activeClass: '',
+                    },
                 ]"
                 :key="s.key"
                 type="button"
-                @click="s.key !== 'overall' ? filterByStatus(s.key) : null"
+                @click="s.key === 'all' || s.key === 'up' || s.key === 'down' ? filterByStatus(s.key) : null"
                 class="group flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80 dark:hover:border-gray-700"
                 :class="statusFilter === s.key ? s.activeClass : ''"
             >
                 <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">{{ s.label }}</span>
                 <div class="mt-3 flex items-baseline gap-2">
-                    <span v-if="s.key === 'overall'" class="text-2xl font-black tracking-tight" :class="s.color">
-                        {{ Math.round((stats.up / (stats.total_public || 1)) * 100) }}%
-                    </span>
-                    <span v-else class="text-2xl font-black tracking-tight" :class="s.color">
-                        {{ s.count }}
+                    <span class="text-2xl font-black tracking-tight" :class="s.color">
+                        {{ s.value }}
                     </span>
                 </div>
             </button>
@@ -682,17 +699,24 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <button type="button" @click="incidentsExpanded = !incidentsExpanded" class="flex w-full items-center justify-between text-left">
                         <div class="flex items-center gap-2.5">
                             <div
-                                class="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
+                                class="flex h-8 w-8 items-center justify-center rounded-xl"
+                                :class="stats.down > 0 ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 animate-pulse' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'"
                             >
-                                <Icon name="alertTriangle" class="h-4 w-4" />
+                                <Icon :name="stats.down > 0 ? 'alertTriangle' : 'activity'" class="h-4 w-4" />
                             </div>
                             <div>
-                                <h2 class="text-sm font-bold text-gray-900 sm:text-base dark:text-white">Recent Incident Activity</h2>
-                                <p class="text-xs text-gray-400">Latest detected service downtime and recovery events</p>
+                                <div class="flex items-center gap-2">
+                                    <h2 class="text-sm font-bold text-gray-900 sm:text-base dark:text-white">Recent Incident & Event Activity</h2>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                        Live Feed
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-400">Latest detected service downtime, outages, and recovery events</p>
                             </div>
                         </div>
                         <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                            <span>{{ incidentsExpanded ? 'Hide' : 'Show' }} ({{ props.latestIncidents.length }})</span>
+                            <span>{{ incidentsExpanded ? 'Collapse' : 'Expand' }} ({{ props.latestIncidents.length }})</span>
                             <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" />
                         </span>
                     </button>
