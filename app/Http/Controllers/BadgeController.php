@@ -67,39 +67,39 @@ class BadgeController extends Controller
         $hostname = parse_url(config('app.url'), PHP_URL_HOST);
         $referrer = $request->header('Referer', '');
 
-        dispatch(function () use ($domain, $hostname, $referrer) {
-            try {
-                $response = Http::timeout(5)
-                    ->withHeaders([
-                        'User-Agent' => 'Uptime-Kita/1.0 (Badge Tracker)',
-                    ])
-                    ->post('https://umami.syofyanzuhad.dev/api/send', [
-                        'payload' => [
-                            'hostname' => $hostname,
-                            'language' => 'en-US',
-                            'referrer' => $referrer,
-                            'screen' => '1920x1080',
-                            'title' => "Badge: {$domain}",
-                            'url' => "/badge/{$domain}",
-                            'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
-                            'name' => 'badge-view',
-                        ],
-                        'type' => 'event',
-                    ]);
+        // dispatch(function () use ($domain, $hostname, $referrer) {
+        //     try {
+        //         $response = Http::timeout(5)
+        //             ->withHeaders([
+        //                 'User-Agent' => 'Uptime-Kita/1.0 (Badge Tracker)',
+        //             ])
+        //             ->post('https://umami.syofyanzuhad.dev/api/send', [
+        //                 'payload' => [
+        //                     'hostname' => $hostname,
+        //                     'language' => 'en-US',
+        //                     'referrer' => $referrer,
+        //                     'screen' => '1920x1080',
+        //                     'title' => "Badge: {$domain}",
+        //                     'url' => "/badge/{$domain}",
+        //                     'website' => '803a4f91-04d8-43be-9302-82df6ff14481',
+        //                     'name' => 'badge-view',
+        //                 ],
+        //                 'type' => 'event',
+        //             ]);
 
-                Log::info('Umami badge tracking', [
-                    'domain' => $domain,
-                    'referrer' => $referrer,
-                    'status' => $response->status(),
-                    'success' => $response->successful(),
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('Umami badge tracking failed', [
-                    'domain' => $domain,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        })->afterResponse();
+        //         Log::info('Umami badge tracking', [
+        //             'domain' => $domain,
+        //             'referrer' => $referrer,
+        //             'status' => $response->status(),
+        //             'success' => $response->successful(),
+        //         ]);
+        //     } catch (\Exception $e) {
+        //         Log::warning('Umami badge tracking failed', [
+        //             'domain' => $domain,
+        //             'error' => $e->getMessage(),
+        //         ]);
+        //     }
+        // })->afterResponse();
     }
 
     /**
