@@ -112,18 +112,18 @@ return [
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
-         * to connect to a server in one uptime check. You can specify the time in
-         * milliseconds between each attempt.
+         * to connect to a server in one uptime check. Set to 0 to disable in-loop retries
+         * (recommended when background confirmation checks are enabled).
          */
-        'retry_connection_after_milliseconds' => 100,
+        'retry_connection_after_milliseconds' => (int) env('UPTIME_RETRY_CONNECTION_AFTER_MS', 0),
 
         /*
          * If you want to change the default Guzzle client behaviour, you can do so by
          * passing custom options that will be used when making requests.
          */
         'guzzle_options' => [
-            'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 5),
-            'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 3),
+            'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 3),
+            'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 2),
             'http_errors' => false,
             'stream' => true, // DO NOT BUFFER ENTIRE RESPONSE BODY IN MEMORY
             'allow_redirects' => [
@@ -136,6 +136,7 @@ return [
                 CURLOPT_TCP_NODELAY => true,
                 CURLOPT_TCP_FASTOPEN => true,
                 CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+                CURLOPT_DNS_CACHE_TIMEOUT => 300,
             ],
         ],
 
