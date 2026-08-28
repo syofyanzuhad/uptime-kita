@@ -78,8 +78,12 @@ if ($scheduleFrequency !== 'none') {
     );
 }
 
-Schedule::command(CheckCertificates::class)->daily();
-Schedule::command(CheckDomainExpiration::class)->daily();
+Schedule::command(CheckCertificates::class)->twiceDailyAt(1, 13, 18); // Run the task daily at 1:18 & 13:18.
+Schedule::command(CheckDomainExpiration::class)->twiceDailyAt(1, 13, 18); // Run the task daily at 1:18 & 13:18.
+Schedule::job(new CalculateMonitorUptimeDailyJob)->everyThreeHours($minutes = 5)
+    ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
+// Cleanup expired one-time maintenance windows daily
+Schedule::command('monitor:update-maintenance-status --cleanup')->everySixHours($minutes = 10);
 
 // === LARAVEL HORIZON ===
 if (config('queue.default') === 'redis') {
@@ -102,9 +106,6 @@ if (config('trace-replay.enabled')) {
 Schedule::command('model:prune')->daily();
 Schedule::command('model:prune', ['--model' => [HealthCheckResultHistoryItem::class]])->daily();
 
-Schedule::job(new CalculateMonitorUptimeDailyJob)->twiceDaily()
-    ->thenPing('https://ping.ohdear.app/f23d1683-f210-4ba9-8852-c933d8ca6f99');
-
 Schedule::command('sitemap:generate')->daily();
 
 if (config('database.default') === 'sqlite') {
@@ -124,9 +125,6 @@ if (config('telemetry.enabled')) {
         default => $telemetrySchedule->daily(),
     };
 }
-
-// Cleanup expired one-time maintenance windows daily
-Schedule::command('monitor:update-maintenance-status --cleanup')->daily();
 
 // === BACKUP DB ===
 Schedule::command('backup:clean')->daily()->at('01:00');
