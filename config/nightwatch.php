@@ -15,6 +15,7 @@ return [
         'commands' => env('NIGHTWATCH_COMMAND_SAMPLE_RATE', 0.0),
         'exceptions' => env('NIGHTWATCH_EXCEPTION_SAMPLE_RATE', 1.0),
         'scheduled_tasks' => env('NIGHTWATCH_SCHEDULED_TASK_SAMPLE_RATE', 0.0),
+        'calculate_monitor_statistics' => env('NIGHTWATCH_CALCULATE_MONITOR_STATISTICS_SAMPLE_RATE', null),
     ],
 
     'filtering' => [

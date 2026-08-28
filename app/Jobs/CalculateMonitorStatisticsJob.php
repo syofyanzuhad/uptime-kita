@@ -13,6 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Laravel\Nightwatch\Facades\Nightwatch;
 
 class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
 {
@@ -54,6 +55,11 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
      */
     public function handle(): void
     {
+        $sampleRate = config('nightwatch.sampling.calculate_monitor_statistics');
+        if ($sampleRate !== null && class_exists(Nightwatch::class)) {
+            Nightwatch::sample((float) $sampleRate);
+        }
+
         try {
             if ($this->monitorId) {
                 $monitor = Monitor::where('id', $this->monitorId)
