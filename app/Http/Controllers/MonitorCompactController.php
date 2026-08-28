@@ -15,11 +15,6 @@ class MonitorCompactController extends Controller
      */
     public function index(Request $request)
     {
-        // Ultimate safety net for huge datasets - 2GB for 54k records
-        if (config('app.env') !== 'local') {
-            ini_set('memory_limit', '2048M');
-        }
-
         $search = $request->search;
         $isGuest = ! auth()->check();
 
