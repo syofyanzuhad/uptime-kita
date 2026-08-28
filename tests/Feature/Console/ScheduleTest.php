@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Console\Scheduling\Schedule as ConsoleSchedule;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Rebuild the application schedule with the current config by re-running
@@ -109,4 +111,16 @@ it('configures heartbeat ping url for monitor:check-uptime schedule', function (
         ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
 
     expect($event)->not->toBeNull();
+    expect($event->runInBackground)->toBeTrue();
+});
+
+it('logs warning when monitor:check-uptime schedule is skipped due to overlap', function () {
+    Log::shouldReceive('warning')
+        ->once()
+        ->with('UPTIME-CHECK: SKIPPED due to overlapping previous run');
+
+    $event = collect(reloadApplicationSchedule()->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    event(new ScheduledTaskSkipped($event));
 });

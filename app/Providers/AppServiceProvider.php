@@ -8,9 +8,11 @@ use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
 use App\Listeners\StoreMonitorCheckData;
 use App\Models\User;
+use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
@@ -91,6 +93,13 @@ class AppServiceProvider extends ServiceProvider
         // Register SSE broadcast listener for public monitor status changes
         Event::listen(UptimeCheckFailed::class, BroadcastMonitorStatusChange::class);
         Event::listen(UptimeCheckRecovered::class, BroadcastMonitorStatusChange::class);
+
+        // Log when scheduled tasks are skipped due to overlapping
+        Event::listen(ScheduledTaskSkipped::class, function (ScheduledTaskSkipped $event) {
+            if ($event->task->command !== null && str_contains($event->task->command, 'monitor:check-uptime')) {
+                Log::warning('UPTIME-CHECK: SKIPPED due to overlapping previous run');
+            }
+        });
 
         Health::checks([
             CacheCheck::new(),

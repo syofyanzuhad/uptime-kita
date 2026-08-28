@@ -46,6 +46,10 @@ if ($scheduleFrequency !== 'none') {
     // Main uptime check - runs according to SCHEDULE_FREQUENCY (e.g. everyMinute)
     $uptimeCheckEvent = Schedule::command('monitor:check-uptime')
         ->withoutOverlapping(10)
+        ->runInBackground()
+        ->before(function () {
+            info('UPTIME-CHECK: STARTED');
+        })
         ->onSuccess(function () {
             info('UPTIME-CHECK: SUCCESS');
         })
@@ -55,7 +59,10 @@ if ($scheduleFrequency !== 'none') {
 
     $heartbeatUrl = config('uptime-monitor.schedule.uptime_check_heartbeat_url', 'https://hc-ping.com/48755033-52c9-4470-a212-8acac2493f2f');
     if (! empty($heartbeatUrl)) {
-        $uptimeCheckEvent->thenPing($heartbeatUrl);
+        $uptimeCheckEvent
+            ->pingBefore($heartbeatUrl.'/start')
+            ->pingOnSuccess($heartbeatUrl)
+            ->pingOnFailure($heartbeatUrl.'/fail');
     }
 
     $applySchedule(
