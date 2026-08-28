@@ -3,7 +3,6 @@
 use App\Console\Commands\MonitorCheckUptime;
 use App\Models\Monitor;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 describe('MonitorCheckUptime', function () {
     it('runs successfully', function () {
