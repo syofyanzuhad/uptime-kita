@@ -5,12 +5,11 @@ namespace App\Listeners;
 use App\Models\MonitorHistory;
 use App\Models\MonitorIncident;
 use App\Services\MonitorPerformanceService;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 
-class StoreMonitorCheckData implements ShouldQueue
+class StoreMonitorCheckData
 {
     protected MonitorPerformanceService $performanceService;
 
