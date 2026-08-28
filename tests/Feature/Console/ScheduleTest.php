@@ -111,7 +111,7 @@ it('configures heartbeat ping url for monitor:check-uptime schedule', function (
         ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
 
     expect($event)->not->toBeNull();
-    expect($event->runInBackground)->toBeTrue();
+    expect($event->runInBackground)->toBeFalse();
 });
 
 it('logs warning when monitor:check-uptime schedule is skipped due to overlap', function () {

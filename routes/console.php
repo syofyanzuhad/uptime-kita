@@ -46,7 +46,6 @@ if ($scheduleFrequency !== 'none') {
     // Main uptime check - runs according to SCHEDULE_FREQUENCY (e.g. everyMinute)
     $uptimeCheckEvent = Schedule::command('monitor:check-uptime')
         ->withoutOverlapping(2)
-        ->runInBackground()
         ->before(function () {
             info('UPTIME-CHECK: STARTED');
         })
