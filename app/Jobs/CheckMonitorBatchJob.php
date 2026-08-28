@@ -14,7 +14,7 @@ class CheckMonitorBatchJob implements ShouldQueue
 
     public int $tries = 1;
 
-    public int $timeout = 60;
+    public int $timeout = 120;
 
     /**
      * Create a new job instance.

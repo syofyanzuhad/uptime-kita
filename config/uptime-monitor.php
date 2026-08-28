@@ -102,13 +102,13 @@ return [
         /*
          * Number of monitors to assign to each queued batch job when queue dispatching is active.
          */
-        'batch_size' => (int) env('UPTIME_BATCH_SIZE', 100),
+        'batch_size' => (int) env('UPTIME_BATCH_SIZE', 50),
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => (int) env('UPTIME_TIMEOUT_PER_SITE', 5),
+        'timeout_per_site' => (int) env('UPTIME_TIMEOUT_PER_SITE', 3),
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
@@ -125,7 +125,6 @@ return [
             'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 3),
             'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 2),
             'http_errors' => false,
-            'stream' => true, // DO NOT BUFFER ENTIRE RESPONSE BODY IN MEMORY
             'allow_redirects' => [
                 'max' => 5,
                 'strict' => false,
