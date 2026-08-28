@@ -44,16 +44,22 @@ if ($scheduleFrequency !== 'none') {
     };
 
     // Main uptime check - runs according to SCHEDULE_FREQUENCY (e.g. everyMinute)
+    $uptimeCheckEvent = Schedule::command('monitor:check-uptime')
+        ->withoutOverlapping(10)
+        ->onSuccess(function () {
+            info('UPTIME-CHECK: SUCCESS');
+        })
+        ->onFailure(function () {
+            info('UPTIME-CHECK: FAILED');
+        });
+
+    $heartbeatUrl = config('uptime-monitor.schedule.uptime_check_heartbeat_url', 'https://hc-ping.com/48755033-52c9-4470-a212-8acac2493f2f');
+    if (! empty($heartbeatUrl)) {
+        $uptimeCheckEvent->thenPing($heartbeatUrl);
+    }
+
     $applySchedule(
-        Schedule::command('monitor:check-uptime')
-            ->withoutOverlapping(10)
-            ->onSuccess(function () {
-                info('UPTIME-CHECK: SUCCESS');
-            })
-            ->onFailure(function () {
-                info('UPTIME-CHECK: FAILED');
-            })
-            ->thenPing('https://ping.ohdear.app/c95a0d26-167b-4b51-b806-83529754132b'),
+        $uptimeCheckEvent,
         0
     );
 

@@ -98,3 +98,15 @@ it('does not schedule monitor:check-uptime when frequency is none', function () 
 
     expect($event)->toBeNull();
 });
+
+it('configures heartbeat ping url for monitor:check-uptime schedule', function () {
+    config([
+        'uptime-monitor.schedule.uptime_check_heartbeat_url' => 'https://hc-ping.com/48755033-52c9-4470-a212-8acac2493f2f',
+    ]);
+
+    $schedule = reloadApplicationSchedule();
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->command !== null && str_contains($e->command, 'monitor:check-uptime'));
+
+    expect($event)->not->toBeNull();
+});
