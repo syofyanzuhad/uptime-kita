@@ -194,7 +194,7 @@ return [
      */
     'schedule' => [
         'frequency' => env('SCHEDULE_FREQUENCY', 'everyMinute'),
-        'cron' => env('SCHEDULE_CRON', '*/10 * * * *'),
+        'cron' => env('SCHEDULE_CRON'), // example: */10 * * * *
         'minute' => (int) env('SCHEDULE_MINUTE', 10),
         'time' => env('SCHEDULE_TIME', '02:30'),
     ],
