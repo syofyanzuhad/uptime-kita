@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Monitor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Spatie\Tags\Tag;
 
 class MonitorSeeder extends Seeder
 {
@@ -13,50 +14,61 @@ class MonitorSeeder extends Seeder
      */
     public function run(): void
     {
-        $monitors = require database_path('seeders/monitors/monitors.php');
-        $collages = require database_path('seeders/monitors/collage.php');
-        $goverments = require database_path('seeders/monitors/goverments.php');
+        $categories = [
+            'Tech' => require database_path('seeders/monitors/tech.php'),
+            'University' => require database_path('seeders/monitors/universities.php'),
+            'Government' => require database_path('seeders/monitors/government.php'),
+            'Fintech' => require database_path('seeders/monitors/fintech.php'),
+            'E-Commerce' => require database_path('seeders/monitors/ecommerce.php'),
+            'News' => require database_path('seeders/monitors/news.php'),
+        ];
 
-        // merge monitors and collages
-        $allMonitors = array_merge($monitors, $collages, $goverments);
+        // 1. Prepare unique monitors for bulk upsert
+        $allMonitors = [];
+        foreach ($categories as $urls) {
+            foreach ($urls as $url) {
+                $allMonitors[$url] = [
+                    'url' => $url,
+                    'uptime_check_enabled' => 1,
+                    'certificate_check_enabled' => 1,
+                    'is_public' => 1,
+                    'uptime_check_interval_in_minutes' => 1,
+                ];
+            }
+        }
 
-        // create an array from monitor strings
-        // and convert them to an array of associative arrays
-        // with url, name, status, and uptime_check_interval_in_minutes
-        // map each monitor to an associative array
-        $allMonitors = array_map(function ($monitor) {
-            // If it's a string, treat as URL
-            return [
-                'url' => $monitor,
-                'uptime_check_enabled' => 1,
-                'certificate_check_enabled' => 1,
-                'is_public' => 1,
-                'uptime_check_interval_in_minutes' => 1,
-            ];
-        }, $allMonitors);
+        // 2. Fast bulk upsert monitors in chunks of 250
+        foreach (array_chunk(array_values($allMonitors), 250) as $chunk) {
+            DB::table('monitors')->upsert(
+                $chunk,
+                ['url'],
+                ['certificate_check_enabled', 'is_public', 'uptime_check_interval_in_minutes']
+            );
+        }
 
-        // add 5 minute key to each monitor
-        // $fiveMinuteMonitors = array_map(function ($monitor) {
-        //     $monitor['uptime_check_interval_in_minutes'] = 5;
-        //     return $monitor;
-        // }, $monitors);
+        // 3. Fetch all monitor IDs mapped by URL
+        $monitorsByUrl = Monitor::withoutGlobalScopes()->pluck('id', 'url');
+        $morphType = (new Monitor)->getMorphClass();
 
-        // $monitors = array_merge(
-        //     $oneMinuteMonitors,
-        //     // $fiveMinuteMonitors
-        // );
+        // 4. Bulk attach/sync tags to taggables
+        $taggables = [];
+        foreach ($categories as $tagName => $urls) {
+            $tag = Tag::findOrCreate($tagName);
 
-        // upsert
-        DB::table('monitors')->upsert(
-            $allMonitors,
-            [
-                'url',
-            ], // unique by url
-            [
-                'certificate_check_enabled',
-                'is_public',
-                'uptime_check_interval_in_minutes',
-            ]
-        );
+            foreach ($urls as $url) {
+                if (isset($monitorsByUrl[$url])) {
+                    $taggables[] = [
+                        'tag_id' => $tag->id,
+                        'taggable_type' => $morphType,
+                        'taggable_id' => $monitorsByUrl[$url],
+                    ];
+                }
+            }
+        }
+
+        // 5. Fast insert tag relationships in chunks
+        foreach (array_chunk($taggables, 250) as $chunk) {
+            DB::table('taggables')->insertOrIgnore($chunk);
+        }
     }
 }
