@@ -10,7 +10,7 @@ use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 use Spatie\UptimeMonitor\Events\UptimeCheckSucceeded;
 
-class StoreMonitorCheckData
+class StoreMonitorCheckData implements \Illuminate\Contracts\Queue\ShouldQueue
 {
     protected MonitorPerformanceService $performanceService;
 
@@ -34,18 +34,21 @@ class StoreMonitorCheckData
 
         // Store in monitor_histories with new fields
         // Round created_at to the minute to ensure uniqueness via updateOrCreate
-        MonitorHistory::updateOrCreate(
+        // Use upsert to reduce from 2 queries (SELECT + INSERT) to 1 query (INSERT ON DUPLICATE KEY UPDATE)
+        MonitorHistory::upsert(
             [
-                'monitor_id' => $monitor->id,
-                'created_at' => now()->copy()->setSeconds(0)->setMicroseconds(0),
+                [
+                    'monitor_id' => $monitor->id,
+                    'created_at' => now()->copy()->setSeconds(0)->setMicroseconds(0)->format('Y-m-d H:i:s'),
+                    'uptime_status' => $status,
+                    'response_time' => $responseTime,
+                    'status_code' => $statusCode,
+                    'checked_at' => now()->format('Y-m-d H:i:s'),
+                    'message' => $failureReason,
+                ]
             ],
-            [
-                'uptime_status' => $status,
-                'response_time' => $responseTime,
-                'status_code' => $statusCode,
-                'checked_at' => now(),
-                'message' => $failureReason,
-            ]
+            ['monitor_id', 'created_at'], // Unique identifiers
+            ['uptime_status', 'response_time', 'status_code', 'checked_at', 'message'] // Columns to update if exists
         );
 
         // Update hourly performance metrics
