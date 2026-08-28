@@ -149,6 +149,9 @@ class RunCronlessSchedulerCommand extends Command
                 // Continue running despite errors
             }
 
+            // Force garbage collection to prevent memory accumulation in the loop
+            gc_collect_cycles();
+
             // Sleep for frequency seconds
             sleep((int) $this->option('frequency'));
         }
