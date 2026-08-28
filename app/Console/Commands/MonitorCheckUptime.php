@@ -54,7 +54,8 @@ class MonitorCheckUptime extends SpatieCheckUptime
                 $monitorCollection->checkUptime();
             });
 
-            $this->info("All done! Checked {$totalCount} monitors in total.");
+            $peakMemory = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
+            $this->info("All done! Checked {$totalCount} monitors in total. (Peak memory: {$peakMemory} MB)");
 
             return self::SUCCESS;
         } catch (Throwable $e) {
