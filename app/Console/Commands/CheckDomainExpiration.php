@@ -27,20 +27,22 @@ class CheckDomainExpiration extends Command
      */
     public function handle(): void
     {
-        $monitors = Monitor::withoutGlobalScope('enabled')
-            ->where('domain_expiration_check_enabled', true)
-            ->get();
+        $count = 0;
 
-        if ($monitors->isEmpty()) {
+        Monitor::withoutGlobalScope('enabled')
+            ->where('domain_expiration_check_enabled', true)
+            ->lazy()
+            ->each(function (Monitor $monitor) use (&$count) {
+                CheckDomainExpirationJob::dispatch($monitor);
+                $count++;
+            });
+
+        if ($count === 0) {
             $this->info('No monitors with domain expiration checking enabled.');
 
             return;
         }
 
-        foreach ($monitors as $monitor) {
-            CheckDomainExpirationJob::dispatch($monitor);
-        }
-
-        $this->info("Dispatched domain expiration checks for {$monitors->count()} monitors.");
+        $this->info("Dispatched domain expiration checks for {$count} monitors.");
     }
 }
