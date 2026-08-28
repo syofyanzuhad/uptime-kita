@@ -42,11 +42,15 @@ class PublicMonitorShowController extends Controller
         // Dispatch job to increment page view count (non-blocking)
         IncrementMonitorPageViewJob::dispatch($monitor->id, $request->ip());
 
+        // Always get live 100-minute inspection history (cached for 30s for performance)
+        $histories = cache()->remember("public_monitor_{$monitor->id}_100m_histories", 30, function () use ($monitor) {
+            return $this->getLiveHistory($monitor);
+        });
+
         // Use pre-calculated statistics from the database if available
         $stats = $monitor->statistics;
 
         if ($stats) {
-            $histories = $stats->recent_history_100m ?? [];
             $uptimeStats = [
                 '24h' => (float) $stats->uptime_24h,
                 '7d' => (float) $stats->uptime_7d,
@@ -60,10 +64,6 @@ class PublicMonitorShowController extends Controller
             ];
         } else {
             // Fallback for monitors without statistics record
-            $histories = cache()->remember("public_monitor_{$monitor->id}_histories", 60, function () use ($monitor) {
-                return $this->getLiveHistory($monitor);
-            });
-
             $uptimeStats = cache()->remember("public_monitor_{$monitor->id}_uptime_stats", 60, function () use ($monitor) {
                 return $this->calculateUptimeStats($monitor);
             });
@@ -153,35 +153,17 @@ class PublicMonitorShowController extends Controller
     }
 
     /**
-     * Get live history data when cached version is not available
+     * Get live history data for the last 100 minutes.
      */
     private function getLiveHistory($monitor): array
     {
         $oneHundredMinutesAgo = now()->subMinutes(100);
-        $dateFormatter = MonitorHistory::getDateFormatterSql();
 
-        // Get unique history IDs using raw SQL to ensure only one record per minute
-        $sql = "
-            SELECT id FROM (
-                SELECT id, created_at, ROW_NUMBER() OVER (
-                    PARTITION BY monitor_id, {$dateFormatter}
-                    ORDER BY created_at DESC, id DESC
-                ) as rn
-                FROM monitor_histories
-                WHERE monitor_id = ?
-            ) ranked
-            WHERE rn = 1
-            ORDER BY created_at DESC
-            LIMIT 100
-        ";
-
-        $uniqueIds = \DB::select($sql, [$monitor->id]);
-        $ids = array_column($uniqueIds, 'id');
-
-        // Get unique histories and filter by time
-        $histories = MonitorHistory::whereIn('id', $ids)
+        $histories = MonitorHistory::where('monitor_id', $monitor->id)
             ->where('created_at', '>=', $oneHundredMinutesAgo)
             ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->select(['created_at', 'uptime_status', 'response_time', 'message'])
             ->get();
 
         // Transform to match the cached format
