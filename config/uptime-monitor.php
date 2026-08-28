@@ -91,13 +91,24 @@ return [
          * monitors concurrently. Set this to a lower value if you're getting weird errors
          * running the uptime check.
          */
-        'concurrent_checks' => (int) env('UPTIME_CONCURRENT_CHECKS', 50),
+        'concurrent_checks' => (int) env('UPTIME_CONCURRENT_CHECKS', 35),
+
+        /*
+         * When total monitors due for check exceed this threshold, the command automatically
+         * switches from in-process checking to dispatching batched jobs to the queue.
+         */
+        'queue_threshold' => (int) env('UPTIME_QUEUE_THRESHOLD', 500),
+
+        /*
+         * Number of monitors to assign to each queued batch job when queue dispatching is active.
+         */
+        'batch_size' => (int) env('UPTIME_BATCH_SIZE', 100),
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the
          * given number of seconds.
          */
-        'timeout_per_site' => (int) env('UPTIME_TIMEOUT_PER_SITE', 10),
+        'timeout_per_site' => (int) env('UPTIME_TIMEOUT_PER_SITE', 5),
 
         /*
          * Because networks can be a bit unreliable the package can make three attempts
@@ -111,8 +122,8 @@ return [
          * passing custom options that will be used when making requests.
          */
         'guzzle_options' => [
-            'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 10),
-            'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 5),
+            'timeout' => (int) env('UPTIME_TIMEOUT_PER_SITE', 5),
+            'connect_timeout' => (int) env('UPTIME_CONNECT_TIMEOUT', 3),
             'http_errors' => false,
             'stream' => true, // DO NOT BUFFER ENTIRE RESPONSE BODY IN MEMORY
             'allow_redirects' => [
