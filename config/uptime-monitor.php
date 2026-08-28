@@ -1,7 +1,7 @@
 <?php
 
+use App\Helpers\UptimeResponseCheckers\MemorySafeStringChecker;
 use App\Models\Monitor;
-use Spatie\UptimeMonitor\Helpers\UptimeResponseCheckers\LookForStringChecker;
 use Spatie\UptimeMonitor\Notifications\Notifiable;
 use Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckFailed;
 use Spatie\UptimeMonitor\Notifications\Notifications\CertificateCheckSucceeded;
@@ -68,7 +68,7 @@ return [
          *
          * You can use any implementation of Spatie\UptimeMonitor\Helpers\UptimeResponseCheckers\UptimeResponseChecker here.
          */
-        'response_checker' => LookForStringChecker::class,
+        'response_checker' => MemorySafeStringChecker::class,
 
         /*
          * An uptime check will be performed if the last check was performed more than the
@@ -114,6 +114,7 @@ return [
             'timeout' => 10,
             'connect_timeout' => 5,
             'http_errors' => false,
+            'stream' => true, // DO NOT BUFFER ENTIRE RESPONSE BODY IN MEMORY
             'allow_redirects' => [
                 'max' => 5,
                 'strict' => false,
