@@ -114,10 +114,34 @@ function getLast100Minutes() {
 const last100Minutes = ref(getLast100Minutes());
 
 // Map history by minute (YYYY-MM-DDTHH:MM) with null check
-const historyMinuteMap = ref(Object.fromEntries((histories.value || []).map((h) => [h.created_at.slice(0, 16), h])));
+function formatMinuteKey(dateInput: string | Date): string {
+    const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    return d.toISOString().slice(0, 16);
+}
+
+const historyMinuteMap = ref(
+    Object.fromEntries(
+        (histories.value || [])
+            .filter((h) => h && h.created_at)
+            .map((h) => [formatMinuteKey(h.created_at), h])
+    )
+);
+
+// Watch for prop changes in histories to keep historyMinuteMap in sync
+watch(
+    histories,
+    (newHistories) => {
+        historyMinuteMap.value = Object.fromEntries(
+            (newHistories || [])
+                .filter((h) => h && h.created_at)
+                .map((h) => [formatMinuteKey(h.created_at), h])
+        );
+    },
+    { deep: true }
+);
 
 function getMinuteStatus(date: Date) {
-    const key = date.toISOString().slice(0, 16);
+    const key = formatMinuteKey(date);
     const h = historyMinuteMap.value[key];
     if (!h) return null;
     return h;
@@ -128,7 +152,11 @@ async function updateHistoryData() {
     try {
         const response = await axios.get(route('monitor.history', { monitor: monitorData.value.id }));
         if (response.data.histories) {
-            historyMinuteMap.value = Object.fromEntries(response.data.histories.map((h: MonitorHistory) => [h.created_at.slice(0, 16), h]));
+            historyMinuteMap.value = Object.fromEntries(
+                response.data.histories
+                    .filter((h: MonitorHistory) => h && h.created_at)
+                    .map((h: MonitorHistory) => [formatMinuteKey(h.created_at), h])
+            );
         }
     } catch (error) {
         console.error('Failed to fetch history data:', error);
