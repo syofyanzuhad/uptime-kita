@@ -3,24 +3,13 @@
 namespace App\Listeners;
 
 use Carbon\Carbon;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 
-class BroadcastMonitorStatusChange implements ShouldQueue
+class BroadcastMonitorStatusChange
 {
-    use InteractsWithQueue;
-
-    /**
-     * The name of the queue the job should be sent to.
-     *
-     * @var string|null
-     */
-    public $queue = 'default';
-
     /**
      * Handle the event.
      *
