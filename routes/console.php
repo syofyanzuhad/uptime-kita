@@ -43,10 +43,10 @@ if ($scheduleFrequency !== 'none') {
         return $event->everyMinute();
     };
 
+    // Main uptime check - runs according to SCHEDULE_FREQUENCY (e.g. everyMinute)
     $applySchedule(
         Schedule::command('monitor:check-uptime')
             ->withoutOverlapping(10)
-            ->runInBackground()
             ->onSuccess(function () {
                 info('UPTIME-CHECK: SUCCESS');
             })
@@ -57,24 +57,22 @@ if ($scheduleFrequency !== 'none') {
         0
     );
 
+    // Maintenance windows update & batched notifications
+    $applySchedule(Schedule::command('monitor:update-maintenance-status'), 20);
     $applySchedule(Schedule::job(new SendBatchedNotificationsJob), 5);
 
-    $applySchedule(
-        Schedule::command(RunHealthChecksCommand::class)
-            ->withoutOverlapping()
-            ->runInBackground(),
-        10
-    );
+    // System health & queue heartbeat checks
+    Schedule::command(RunHealthChecksCommand::class)
+        ->everyFiveMinutes()
+        ->withoutOverlapping();
 
-    $applySchedule(Schedule::command(ScheduleCheckHeartbeatCommand::class), 12);
-    $applySchedule(Schedule::command(DispatchQueueCheckJobsCommand::class), 15);
-    $applySchedule(Schedule::command('monitor:update-maintenance-status'), 20);
+    Schedule::command(ScheduleCheckHeartbeatCommand::class)->everyFiveMinutes();
+    Schedule::command(DispatchQueueCheckJobsCommand::class)->everyFiveMinutes();
 
-    $applySchedule(
-        Schedule::job(new CalculateMonitorStatisticsJob)
-            ->withoutOverlapping(10),
-        30
-    );
+    // Heavy aggregation job: calculate stats every 15 minutes instead of every minute
+    Schedule::job(new CalculateMonitorStatisticsJob)
+        ->everyFifteenMinutes()
+        ->withoutOverlapping(10);
 }
 
 Schedule::command(CheckCertificates::class)->twiceDailyAt(1, 13, 18); // Run the task daily at 1:18 & 13:18.
