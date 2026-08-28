@@ -61,7 +61,7 @@ class Monitor extends SpatieMonitor
 
     public function getRawUrlAttribute(): string
     {
-        return (string) $this->url;
+        return (string) ($this->attributes['url'] ?? '');
     }
 
     public function getIsSubscribedAttribute(): bool
