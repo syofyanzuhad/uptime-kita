@@ -46,8 +46,11 @@ if ($scheduleFrequency !== 'none') {
     // Main uptime check - runs according to SCHEDULE_FREQUENCY (e.g. everyMinute)
     $uptimeCheckEvent = Schedule::command('monitor:check-uptime')
         ->withoutOverlapping(10)
+        ->onSuccess(function () {
+            info('UPTIME-CHECK: SUCCESS');
+        })
         ->onFailure(function () {
-            Log::error('UPTIME-CHECK: FAILED');
+            info('UPTIME-CHECK: FAILED');
         });
 
     $heartbeatUrl = config('uptime-monitor.schedule.uptime_check_heartbeat_url', 'https://hc-ping.com/48755033-52c9-4470-a212-8acac2493f2f');
@@ -129,8 +132,11 @@ if (config('telemetry.enabled')) {
 // === BACKUP DB ===
 Schedule::command('backup:clean')->daily()->at('01:00');
 Schedule::command('backup:run')->daily()->at('01:30')
+    ->onSuccess(function () {
+        info('BACKUP-DB: SUCCESS');
+    })
     ->onFailure(function () {
-        Log::error('BACKUP-DB: FAILED');
+        info('BACKUP-DB: FAILED');
     });
 
 /*
