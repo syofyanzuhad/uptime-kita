@@ -347,8 +347,9 @@ function formatCompactNumber(num?: number): string {
     return num.toLocaleString();
 }
 
-// Phase 3: incidents collapsible + hero focus
-const incidentsExpanded = ref(true);
+// Phase 3: incidents collapsible + hero focus + mobile compact mode
+const incidentsExpanded = ref(false);
+const showMobileChecker = ref(false);
 const heroInputRef = ref<HTMLInputElement | null>(null);
 </script>
 
@@ -363,9 +364,74 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         :show-server-stats="true"
         :json-ld="jsonLd"
     >
-        <!-- Hero: Sleek & Compact Website Health Checker -->
+        <!-- Mobile: Ultra-Compact 1-Tap Health Check Banner -->
+        <div class="sm:hidden mb-2.5">
+            <button
+                v-if="!showMobileChecker"
+                type="button"
+                @click="showMobileChecker = true"
+                class="flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 px-3 py-2 text-left text-xs font-bold text-white shadow-xs"
+            >
+                <div class="flex items-center gap-2">
+                    <Icon name="zap" class="h-3.5 w-3.5 text-amber-300" />
+                    <span>Instant Website Health Check</span>
+                </div>
+                <span class="rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-extrabold uppercase">Free Test</span>
+            </button>
+
+            <div
+                v-else
+                class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3 shadow-md"
+            >
+                <div class="mb-2 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-white">
+                        <Icon name="zap" class="h-3.5 w-3.5 text-amber-300" />
+                        <span>Instant Website Health Check</span>
+                    </div>
+                    <button
+                        type="button"
+                        @click="showMobileChecker = false"
+                        class="rounded-lg p-1 text-white/70 hover:bg-white/10 hover:text-white"
+                        aria-label="Close"
+                    >
+                        <Icon name="x" class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+
+                <form @submit.prevent="checkDomain" class="flex gap-1.5">
+                    <input
+                        v-model="domainInput"
+                        type="text"
+                        placeholder="Enter domain or URL..."
+                        class="w-full rounded-xl border-0 bg-white py-1.5 px-3 text-xs text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    />
+                    <button
+                        type="submit"
+                        :disabled="domainChecking"
+                        class="inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-blue-700 shadow-xs active:scale-95 disabled:opacity-60"
+                    >
+                        <Icon v-if="domainChecking" name="loader" class="h-3 w-3 animate-spin" />
+                        <span v-else>Check</span>
+                    </button>
+                </form>
+
+                <div v-if="domainResult" class="mt-2 rounded-xl bg-black/40 p-2 text-xs text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">{{ domainResult.domain }}</span>
+                        <span
+                            class="rounded px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
+                            :class="domainResult.status === 'up' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'"
+                        >
+                            {{ domainResult.status === 'up' ? 'Online' : 'Down' }} ({{ domainResult.status_code || 'Err' }})
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Hero: Sleek & Compact Website Health Checker -->
         <div
-            class="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3.5 shadow-md ring-1 ring-white/10 sm:p-4.5"
+            class="relative mb-4 hidden overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3.5 shadow-md ring-1 ring-white/10 sm:block sm:p-4.5"
         >
             <!-- Ambient Glow Accents -->
             <div class="pointer-events-none absolute -top-12 -left-12 h-36 w-36 rounded-full bg-blue-400/20 blur-2xl" />
@@ -478,84 +544,94 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         </span>
                         <button
                             type="button"
-                            @click="copyApiCommand(domainInput)"
-                            class="shrink-0 rounded bg-white/10 px-2 py-0.5 font-sans text-[10px] font-bold text-white transition-all hover:bg-white/20 active:scale-95"
+                            @click="copyApiCommand(domainInput || 'example.com')"
+                            class="shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white transition-colors hover:bg-white/20 active:scale-95"
                         >
-                            {{ copiedApi ? '✓ Copied' : 'Copy' }}
+                            {{ copiedApi ? 'Copied!' : 'Copy' }}
                         </button>
                     </div>
                 </div>
 
-                <!-- Error message -->
-                <p
-                    v-if="domainError"
-                    role="alert"
-                    class="mt-2.5 rounded-lg border border-rose-400/40 bg-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm"
-                >
-                    {{ domainError }}
-                </p>
-
-                <!-- Compact Result Card -->
+                <!-- Live Checker Result Banner -->
                 <div
                     v-if="domainResult"
-                    role="status"
-                    aria-live="polite"
-                    class="mt-2.5 overflow-hidden rounded-xl border border-white/20 bg-white/95 p-3 text-left shadow-lg backdrop-blur-md"
+                    class="mt-2.5 rounded-xl p-2.5 text-left shadow-sm backdrop-blur-sm transition-all"
+                    :class="
+                        domainResult.status === 'up'
+                            ? 'border border-emerald-400/40 bg-emerald-950/60 text-emerald-100'
+                            : 'border border-rose-400/40 bg-rose-950/60 text-rose-100'
+                    "
                 >
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex items-center gap-2.5">
                             <div
-                                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-bold text-white shadow-sm"
-                                :class="domainResult.ok ? 'bg-emerald-500' : 'bg-rose-500'"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg font-bold text-white"
+                                :class="domainResult.status === 'up' ? 'bg-emerald-500' : 'bg-rose-500'"
                             >
-                                <Icon :name="domainResult.ok ? 'check' : 'alertTriangle'" class="h-3.5 w-3.5" />
+                                <Icon :name="domainResult.status === 'up' ? 'check' : 'x'" class="h-4 w-4" />
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs font-bold text-gray-900 sm:text-sm">{{ domainResult.host }}</span>
+                                    <span class="text-xs font-bold">{{ domainResult.domain }}</span>
                                     <span
-                                        class="inline-flex items-center rounded-full px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
-                                        :class="domainResult.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                                        class="rounded-full px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
+                                        :class="domainResult.status === 'up' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-rose-500/30 text-rose-300'"
                                     >
-                                        {{ domainResult.ok ? 'Operational' : 'Unavailable' }}
+                                        {{ domainResult.status === 'up' ? 'Operational' : 'Down' }}
                                     </span>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-gray-500">
-                                    <span v-if="domainResult.status_code" class="font-mono"> HTTP {{ domainResult.status_code }} </span>
-                                    <span>•</span>
-                                    <span class="font-mono font-medium text-blue-600"> ⚡ {{ domainResult.response_time_ms }} ms </span>
+                                <div class="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-white/70">
+                                    <span v-if="domainResult.status_code">HTTP {{ domainResult.status_code }}</span>
+                                    <span v-if="domainResult.response_time">Latency: {{ domainResult.response_time }}ms</span>
+                                    <span v-if="domainResult.ip">IP: {{ domainResult.ip }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-1.5">
-                            <button
-                                v-if="domainResult.ok"
-                                type="button"
-                                @click="monitorThisDomain"
-                                class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
+                        <div class="flex items-center gap-1.5 self-end sm:self-auto">
+                            <Link
+                                v-if="domainResult.monitor_slug"
+                                :href="`/m/${domainResult.monitor_slug}`"
+                                class="rounded-lg bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/30"
                             >
-                                <span>Monitor 24/7</span>
-                                <Icon name="arrowRight" class="h-2.5 w-2.5" />
-                            </button>
-                            <button
-                                type="button"
-                                @click="domainResult = null"
-                                class="rounded-lg border border-gray-200 px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                                View Details
+                            </Link>
+                            <Link
+                                v-else
+                                :href="`/monitor/create?url=${encodeURIComponent(domainResult.url || 'https://' + domainResult.domain)}`"
+                                class="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-50"
                             >
-                                Dismiss
-                            </button>
+                                Track Uptime
+                            </Link>
                         </div>
                     </div>
-                    <p v-if="domainResult.error" class="mt-1.5 text-xs font-medium text-rose-600">
-                        {{ domainResult.error }}
-                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Metric Summary Cards: Compact 5-Column Grid -->
-        <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 sm:gap-3">
+        <!-- Mobile: Sleek Micro Horizontal Metric Ribbon -->
+        <div class="sm:hidden flex overflow-x-auto no-scrollbar gap-1.5 pb-1 mb-2.5">
+            <button
+                v-for="s in [
+                    { key: 'all', label: 'Total', value: stats.total_public, color: 'text-gray-900 dark:text-white', activeClass: 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40' },
+                    { key: 'up', label: 'Online', value: stats.up, color: 'text-emerald-600 dark:text-emerald-400', activeClass: 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40' },
+                    { key: 'down', label: 'Down', value: stats.down, color: stats.down > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500', activeClass: 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40' },
+                    { key: 'checks', label: '24h Pings', value: formatCompactNumber(stats.daily_checks || 0), color: 'text-indigo-600 dark:text-indigo-400', activeClass: '' },
+                    { key: 'overall', label: 'Uptime', value: Math.round((stats.up / (stats.total_public || 1)) * 100) + '%', color: 'text-blue-600 dark:text-blue-400', activeClass: '' },
+                ]"
+                :key="s.key"
+                type="button"
+                @click="s.key === 'all' || s.key === 'up' || s.key === 'down' ? filterByStatus(s.key) : null"
+                class="shrink-0 flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/90 px-2.5 py-1.5 text-xs shadow-2xs dark:border-gray-800/80 dark:bg-gray-900/90"
+                :class="statusFilter === s.key ? s.activeClass : ''"
+            >
+                <span class="text-[10px] font-bold text-gray-500 uppercase dark:text-gray-400">{{ s.label }}:</span>
+                <span class="font-extrabold" :class="s.color">{{ s.value }}</span>
+            </button>
+        </div>
+
+        <!-- Desktop Metric Summary Cards: Compact 5-Column Grid -->
+        <div class="mb-4 hidden grid-cols-2 gap-2 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-3">
             <button
                 v-for="s in [
                     {
@@ -609,8 +685,8 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
             </button>
         </div>
 
-        <!-- Featured Quick Action Links: Sleek Inline Strip -->
-        <div class="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+        <!-- Desktop Featured Quick Action Links: Sleek Inline Strip -->
+        <div class="mb-4 hidden sm:grid sm:grid-cols-3 sm:gap-3">
             <Link
                 href="/status/demo"
                 class="group flex items-center justify-between rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white px-3.5 py-2.5 shadow-xs transition-all hover:border-blue-400 hover:shadow-sm dark:border-blue-900/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-gray-900"
