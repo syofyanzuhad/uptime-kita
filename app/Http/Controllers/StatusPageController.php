@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreStatusPageRequest;
+use App\Http\Requests\UpdateStatusPageRequest;
 use App\Http\Resources\StatusPageCollection;
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,28 +43,9 @@ class StatusPageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreStatusPageRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
-            'icon' => 'required|string|max:255',
-            'path' => [
-                'nullable',
-                'string',
-                'max:255',
-                'unique:status_pages,path',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-            ],
-            'custom_domain' => [
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i',
-                'unique:status_pages,custom_domain',
-            ],
-            'force_https' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $statusPage = auth()->user()->statusPages()->create([
             'title' => $validated['title'],
@@ -123,22 +106,11 @@ class StatusPageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, StatusPage $statusPage)
+    public function update(UpdateStatusPageRequest $request, StatusPage $statusPage): RedirectResponse
     {
         $this->authorize('update', $statusPage);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
-            'icon' => 'required|string|max:255',
-            'path' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('status_pages', 'path')->ignore($statusPage->id),
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-            ],
-        ]);
+        $validated = $request->validated();
 
         $statusPage->update([
             'title' => $validated['title'],
@@ -154,7 +126,7 @@ class StatusPageController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StatusPage $statusPage)
+    public function destroy(StatusPage $statusPage): RedirectResponse
     {
         $this->authorize('delete', $statusPage);
 
