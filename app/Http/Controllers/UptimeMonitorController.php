@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Monitors\CreateMonitorAction;
+use App\Http\Requests\StoreMonitorRequest;
+use App\Http\Requests\UpdateMonitorRequest;
 use App\Http\Resources\MonitorCollection;
 use App\Http\Resources\MonitorResource;
 use App\Models\Monitor;
@@ -136,48 +138,29 @@ class UptimeMonitorController extends Controller
     /**
      * Store a newly created monitor in storage.
      */
-    public function store(Request $request)
+    public function store(StoreMonitorRequest $request, CreateMonitorAction $createAction)
     {
-        // sanitize url and enforce HTTPS
-        $url = rtrim(filter_var($request->url, FILTER_VALIDATE_URL), '/');
-
-        // Convert HTTP to HTTPS
-        if (str_starts_with($url, 'http://')) {
-            $url = 'https://'.substr($url, 7);
-        }
-
-        $request->merge(['url' => $url]);
+        $url = $request->validated('url');
         $monitor = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
             ->first();
+
         if ($monitor) {
-            // attach to user
             $monitor->users()->attach(auth()->id(), ['is_active' => true]);
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
         }
 
-        $request->validate([
-            'url' => ['required', 'url', 'unique:monitors,url'],
-            'uptime_check_enabled' => ['boolean'],
-            'certificate_check_enabled' => ['boolean'],
-            'domain_expiration_check_enabled' => ['boolean'],
-            'uptime_check_interval' => ['required', 'integer', 'min:1'],
-            'tags' => ['nullable', 'array'],
-            'tags.*' => ['string', 'max:255'],
-        ]);
-
         try {
-            $createAction = app(CreateMonitorAction::class);
             $createAction->execute(auth()->user(), [
                 'url' => $url,
                 'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'domain_expiration_check_enabled' => $request->boolean('domain_expiration_check_enabled'),
-                'uptime_check_interval' => $request->uptime_check_interval,
-                'tags' => $request->tags,
+                'uptime_check_interval' => $request->input('uptime_check_interval'),
+                'tags' => $request->input('tags'),
             ]);
 
             return redirect()->route('monitor.index')
@@ -203,61 +186,42 @@ class UptimeMonitorController extends Controller
     /**
      * Update the specified monitor in storage.
      */
-    public function update(Request $request, Monitor $monitor)
+    public function update(UpdateMonitorRequest $request, Monitor $monitor)
     {
         $this->authorize('update', $monitor);
 
-        $url = rtrim(filter_var($request->url, FILTER_VALIDATE_URL), '/');
-
-        // Convert HTTP to HTTPS
-        if (str_starts_with($url, 'http://')) {
-            $url = 'https://'.substr($url, 7);
-        }
+        $url = $request->validated('url');
         $monitorExists = Monitor::withoutGlobalScope('user')
             ->where('url', $url)
-            ->where('uptime_check_interval_in_minutes', $request->uptime_check_interval)
+            ->where('uptime_check_interval_in_minutes', $request->input('uptime_check_interval'))
             ->where('is_public', 0)
             ->whereDoesntHave('users', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->first();
+
         if ($monitorExists) {
-            // attach to user
             $monitorExists->users()->sync(auth()->id(), ['is_active' => true]);
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
         }
 
-        $request->validate([
-            'url' => ['required', 'url', 'unique:monitors,url,'.$monitor->id],
-            'uptime_check_enabled' => ['boolean'],
-            'certificate_check_enabled' => ['boolean'],
-            'domain_expiration_check_enabled' => ['boolean'],
-            'uptime_check_interval' => ['required', 'integer', 'min:1'],
-            'tags' => ['nullable', 'array'],
-            'tags.*' => ['string', 'max:255'],
-            'sensitivity' => ['nullable', 'string', 'in:low,medium,high'],
-            'confirmation_delay_seconds' => ['nullable', 'integer', 'min:5', 'max:300'],
-            'confirmation_retries' => ['nullable', 'integer', 'min:1', 'max:10'],
-        ]);
-
         try {
             $monitor->update([
-                'url' => $request->url,
+                'url' => $url,
                 'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'domain_expiration_check_enabled' => $request->boolean('domain_expiration_check_enabled'),
-                'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
+                'uptime_check_interval_in_minutes' => $request->input('uptime_check_interval'),
                 'sensitivity' => $request->input('sensitivity', 'medium'),
                 'confirmation_delay_seconds' => $request->input('confirmation_delay_seconds'),
                 'confirmation_retries' => $request->input('confirmation_retries'),
             ]);
 
-            // Sync tags
             if ($request->has('tags')) {
-                $monitor->syncTags($request->tags ?? []);
+                $monitor->syncTags($request->input('tags') ?? []);
             }
 
             return redirect()->route('monitor.index')
