@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\TagController::index
-* @see app/Http/Controllers/TagController.php:13
+* @see app/Http/Controllers/TagController.php:14
 * @route '/tags'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\TagController::index
-* @see app/Http/Controllers/TagController.php:13
+* @see app/Http/Controllers/TagController.php:14
 * @route '/tags'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TagController::index
-* @see app/Http/Controllers/TagController.php:13
+* @see app/Http/Controllers/TagController.php:14
 * @route '/tags'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\TagController::index
-* @see app/Http/Controllers/TagController.php:13
+* @see app/Http/Controllers/TagController.php:14
 * @route '/tags'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\TagController::search
-* @see app/Http/Controllers/TagController.php:31
+* @see app/Http/Controllers/TagController.php:30
 * @route '/tags/search'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\TagController::search
-* @see app/Http/Controllers/TagController.php:31
+* @see app/Http/Controllers/TagController.php:30
 * @route '/tags/search'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TagController::search
-* @see app/Http/Controllers/TagController.php:31
+* @see app/Http/Controllers/TagController.php:30
 * @route '/tags/search'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\TagController::search
-* @see app/Http/Controllers/TagController.php:31
+* @see app/Http/Controllers/TagController.php:30
 * @route '/tags/search'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

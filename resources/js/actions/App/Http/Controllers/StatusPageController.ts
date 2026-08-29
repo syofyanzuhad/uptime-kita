@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StatusPageController::index
-* @see app/Http/Controllers/StatusPageController.php:21
+* @see app/Http/Controllers/StatusPageController.php:23
 * @route '/status-pages'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::index
-* @see app/Http/Controllers/StatusPageController.php:21
+* @see app/Http/Controllers/StatusPageController.php:23
 * @route '/status-pages'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::index
-* @see app/Http/Controllers/StatusPageController.php:21
+* @see app/Http/Controllers/StatusPageController.php:23
 * @route '/status-pages'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StatusPageController::index
-* @see app/Http/Controllers/StatusPageController.php:21
+* @see app/Http/Controllers/StatusPageController.php:23
 * @route '/status-pages'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StatusPageController::create
-* @see app/Http/Controllers/StatusPageController.php:36
+* @see app/Http/Controllers/StatusPageController.php:38
 * @route '/status-pages/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::create
-* @see app/Http/Controllers/StatusPageController.php:36
+* @see app/Http/Controllers/StatusPageController.php:38
 * @route '/status-pages/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::create
-* @see app/Http/Controllers/StatusPageController.php:36
+* @see app/Http/Controllers/StatusPageController.php:38
 * @route '/status-pages/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StatusPageController::create
-* @see app/Http/Controllers/StatusPageController.php:36
+* @see app/Http/Controllers/StatusPageController.php:38
 * @route '/status-pages/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StatusPageController::store
-* @see app/Http/Controllers/StatusPageController.php:44
+* @see app/Http/Controllers/StatusPageController.php:46
 * @route '/status-pages'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::store
-* @see app/Http/Controllers/StatusPageController.php:44
+* @see app/Http/Controllers/StatusPageController.php:46
 * @route '/status-pages'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::store
-* @see app/Http/Controllers/StatusPageController.php:44
+* @see app/Http/Controllers/StatusPageController.php:46
 * @route '/status-pages'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StatusPageController::show
-* @see app/Http/Controllers/StatusPageController.php:88
+* @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
 export const show = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::show
-* @see app/Http/Controllers/StatusPageController.php:88
+* @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
 show.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -171,7 +171,7 @@ show.url = (args: { status_page: number | { id: number } } | [status_page: numbe
 
 /**
 * @see \App\Http\Controllers\StatusPageController::show
-* @see app/Http/Controllers/StatusPageController.php:88
+* @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
 show.get = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -181,7 +181,7 @@ show.get = (args: { status_page: number | { id: number } } | [status_page: numbe
 
 /**
 * @see \App\Http\Controllers\StatusPageController::show
-* @see app/Http/Controllers/StatusPageController.php:88
+* @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
 show.head = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -191,7 +191,7 @@ show.head = (args: { status_page: number | { id: number } } | [status_page: numb
 
 /**
 * @see \App\Http\Controllers\StatusPageController::edit
-* @see app/Http/Controllers/StatusPageController.php:105
+* @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
 export const edit = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -206,7 +206,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::edit
-* @see app/Http/Controllers/StatusPageController.php:105
+* @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
 edit.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -239,7 +239,7 @@ edit.url = (args: { status_page: number | { id: number } } | [status_page: numbe
 
 /**
 * @see \App\Http\Controllers\StatusPageController::edit
-* @see app/Http/Controllers/StatusPageController.php:105
+* @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
 edit.get = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -249,7 +249,7 @@ edit.get = (args: { status_page: number | { id: number } } | [status_page: numbe
 
 /**
 * @see \App\Http\Controllers\StatusPageController::edit
-* @see app/Http/Controllers/StatusPageController.php:105
+* @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
 edit.head = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -259,7 +259,7 @@ edit.head = (args: { status_page: number | { id: number } } | [status_page: numb
 
 /**
 * @see \App\Http\Controllers\StatusPageController::update
-* @see app/Http/Controllers/StatusPageController.php:126
+* @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
 export const update = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -274,7 +274,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::update
-* @see app/Http/Controllers/StatusPageController.php:126
+* @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
 update.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -307,7 +307,7 @@ update.url = (args: { status_page: number | { id: number } } | [status_page: num
 
 /**
 * @see \App\Http\Controllers\StatusPageController::update
-* @see app/Http/Controllers/StatusPageController.php:126
+* @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
 update.put = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -317,7 +317,7 @@ update.put = (args: { status_page: number | { id: number } } | [status_page: num
 
 /**
 * @see \App\Http\Controllers\StatusPageController::update
-* @see app/Http/Controllers/StatusPageController.php:126
+* @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
 update.patch = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -327,7 +327,7 @@ update.patch = (args: { status_page: number | { id: number } } | [status_page: n
 
 /**
 * @see \App\Http\Controllers\StatusPageController::destroy
-* @see app/Http/Controllers/StatusPageController.php:157
+* @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
 export const destroy = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -342,7 +342,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\StatusPageController::destroy
-* @see app/Http/Controllers/StatusPageController.php:157
+* @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
 destroy.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -375,7 +375,7 @@ destroy.url = (args: { status_page: number | { id: number } } | [status_page: nu
 
 /**
 * @see \App\Http\Controllers\StatusPageController::destroy
-* @see app/Http/Controllers/StatusPageController.php:157
+* @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
 destroy.delete = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

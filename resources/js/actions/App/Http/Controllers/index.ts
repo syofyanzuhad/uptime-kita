@@ -39,6 +39,7 @@ import TelemetryDashboardController from './TelemetryDashboardController'
 import Settings from './Settings'
 import ServerResourceController from './ServerResourceController'
 import NotificationController from './NotificationController'
+import ToggleNotificationChannelController from './ToggleNotificationChannelController'
 import Auth from './Auth'
 
 const Controllers = {
@@ -83,6 +84,7 @@ const Controllers = {
     Settings: Object.assign(Settings, Settings),
     ServerResourceController: Object.assign(ServerResourceController, ServerResourceController),
     NotificationController: Object.assign(NotificationController, NotificationController),
+    ToggleNotificationChannelController: Object.assign(ToggleNotificationChannelController, ToggleNotificationChannelController),
     Auth: Object.assign(Auth, Auth),
 }
 

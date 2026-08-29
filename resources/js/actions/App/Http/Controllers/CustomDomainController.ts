@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\CustomDomainController::update
-* @see app/Http/Controllers/CustomDomainController.php:14
+* @see app/Http/Controllers/CustomDomainController.php:18
 * @route '/status-pages/{statusPage}/custom-domain'
 */
 export const update = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::update
-* @see app/Http/Controllers/CustomDomainController.php:14
+* @see app/Http/Controllers/CustomDomainController.php:18
 * @route '/status-pages/{statusPage}/custom-domain'
 */
 update.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ update.url = (args: { statusPage: number | { id: number } } | [statusPage: numbe
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::update
-* @see app/Http/Controllers/CustomDomainController.php:14
+* @see app/Http/Controllers/CustomDomainController.php:18
 * @route '/status-pages/{statusPage}/custom-domain'
 */
 update.post = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ update.post = (args: { statusPage: number | { id: number } } | [statusPage: numb
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::verify
-* @see app/Http/Controllers/CustomDomainController.php:64
+* @see app/Http/Controllers/CustomDomainController.php:54
 * @route '/status-pages/{statusPage}/verify-domain'
 */
 export const verify = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -74,7 +74,7 @@ verify.definition = {
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::verify
-* @see app/Http/Controllers/CustomDomainController.php:64
+* @see app/Http/Controllers/CustomDomainController.php:54
 * @route '/status-pages/{statusPage}/verify-domain'
 */
 verify.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -107,7 +107,7 @@ verify.url = (args: { statusPage: number | { id: number } } | [statusPage: numbe
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::verify
-* @see app/Http/Controllers/CustomDomainController.php:64
+* @see app/Http/Controllers/CustomDomainController.php:54
 * @route '/status-pages/{statusPage}/verify-domain'
 */
 verify.post = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -117,7 +117,7 @@ verify.post = (args: { statusPage: number | { id: number } } | [statusPage: numb
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::dnsInstructions
-* @see app/Http/Controllers/CustomDomainController.php:99
+* @see app/Http/Controllers/CustomDomainController.php:86
 * @route '/status-pages/{statusPage}/dns-instructions'
 */
 export const dnsInstructions = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -132,7 +132,7 @@ dnsInstructions.definition = {
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::dnsInstructions
-* @see app/Http/Controllers/CustomDomainController.php:99
+* @see app/Http/Controllers/CustomDomainController.php:86
 * @route '/status-pages/{statusPage}/dns-instructions'
 */
 dnsInstructions.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ dnsInstructions.url = (args: { statusPage: number | { id: number } } | [statusPa
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::dnsInstructions
-* @see app/Http/Controllers/CustomDomainController.php:99
+* @see app/Http/Controllers/CustomDomainController.php:86
 * @route '/status-pages/{statusPage}/dns-instructions'
 */
 dnsInstructions.get = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,7 +175,7 @@ dnsInstructions.get = (args: { statusPage: number | { id: number } } | [statusPa
 
 /**
 * @see \App\Http\Controllers\CustomDomainController::dnsInstructions
-* @see app/Http/Controllers/CustomDomainController.php:99
+* @see app/Http/Controllers/CustomDomainController.php:86
 * @route '/status-pages/{statusPage}/dns-instructions'
 */
 dnsInstructions.head = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

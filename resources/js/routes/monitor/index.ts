@@ -345,7 +345,7 @@ privateMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::index
-* @see app/Http/Controllers/UptimeMonitorController.php:22
+* @see app/Http/Controllers/UptimeMonitorController.php:24
 * @route '/monitor'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -360,7 +360,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::index
-* @see app/Http/Controllers/UptimeMonitorController.php:22
+* @see app/Http/Controllers/UptimeMonitorController.php:24
 * @route '/monitor'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -369,7 +369,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::index
-* @see app/Http/Controllers/UptimeMonitorController.php:22
+* @see app/Http/Controllers/UptimeMonitorController.php:24
 * @route '/monitor'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -379,7 +379,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::index
-* @see app/Http/Controllers/UptimeMonitorController.php:22
+* @see app/Http/Controllers/UptimeMonitorController.php:24
 * @route '/monitor'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -389,7 +389,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::create
-* @see app/Http/Controllers/UptimeMonitorController.php:129
+* @see app/Http/Controllers/UptimeMonitorController.php:131
 * @route '/monitor/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -404,7 +404,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::create
-* @see app/Http/Controllers/UptimeMonitorController.php:129
+* @see app/Http/Controllers/UptimeMonitorController.php:131
 * @route '/monitor/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -413,7 +413,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::create
-* @see app/Http/Controllers/UptimeMonitorController.php:129
+* @see app/Http/Controllers/UptimeMonitorController.php:131
 * @route '/monitor/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -423,7 +423,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::create
-* @see app/Http/Controllers/UptimeMonitorController.php:129
+* @see app/Http/Controllers/UptimeMonitorController.php:131
 * @route '/monitor/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -433,7 +433,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::store
-* @see app/Http/Controllers/UptimeMonitorController.php:139
+* @see app/Http/Controllers/UptimeMonitorController.php:141
 * @route '/monitor'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -448,7 +448,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::store
-* @see app/Http/Controllers/UptimeMonitorController.php:139
+* @see app/Http/Controllers/UptimeMonitorController.php:141
 * @route '/monitor'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -457,7 +457,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::store
-* @see app/Http/Controllers/UptimeMonitorController.php:139
+* @see app/Http/Controllers/UptimeMonitorController.php:141
 * @route '/monitor'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -467,7 +467,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::show
-* @see app/Http/Controllers/UptimeMonitorController.php:88
+* @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
 export const show = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -482,7 +482,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::show
-* @see app/Http/Controllers/UptimeMonitorController.php:88
+* @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
 show.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -515,7 +515,7 @@ show.url = (args: { monitor: number | { id: number } } | [monitor: number | { id
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::show
-* @see app/Http/Controllers/UptimeMonitorController.php:88
+* @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
 show.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -525,7 +525,7 @@ show.get = (args: { monitor: number | { id: number } } | [monitor: number | { id
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::show
-* @see app/Http/Controllers/UptimeMonitorController.php:88
+* @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
 show.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -535,7 +535,7 @@ show.head = (args: { monitor: number | { id: number } } | [monitor: number | { i
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::edit
-* @see app/Http/Controllers/UptimeMonitorController.php:196
+* @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
 export const edit = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -550,7 +550,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::edit
-* @see app/Http/Controllers/UptimeMonitorController.php:196
+* @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
 edit.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -583,7 +583,7 @@ edit.url = (args: { monitor: number | { id: number } } | [monitor: number | { id
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::edit
-* @see app/Http/Controllers/UptimeMonitorController.php:196
+* @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
 edit.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -593,7 +593,7 @@ edit.get = (args: { monitor: number | { id: number } } | [monitor: number | { id
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::edit
-* @see app/Http/Controllers/UptimeMonitorController.php:196
+* @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
 edit.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -603,7 +603,7 @@ edit.head = (args: { monitor: number | { id: number } } | [monitor: number | { i
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::update
-* @see app/Http/Controllers/UptimeMonitorController.php:206
+* @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
 export const update = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -618,7 +618,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::update
-* @see app/Http/Controllers/UptimeMonitorController.php:206
+* @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
 update.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -651,7 +651,7 @@ update.url = (args: { monitor: number | { id: number } } | [monitor: number | { 
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::update
-* @see app/Http/Controllers/UptimeMonitorController.php:206
+* @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
 update.put = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -661,7 +661,7 @@ update.put = (args: { monitor: number | { id: number } } | [monitor: number | { 
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::update
-* @see app/Http/Controllers/UptimeMonitorController.php:206
+* @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
 update.patch = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -671,7 +671,7 @@ update.patch = (args: { monitor: number | { id: number } } | [monitor: number | 
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::destroy
-* @see app/Http/Controllers/UptimeMonitorController.php:276
+* @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
 export const destroy = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -686,7 +686,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::destroy
-* @see app/Http/Controllers/UptimeMonitorController.php:276
+* @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
 destroy.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -719,7 +719,7 @@ destroy.url = (args: { monitor: number | { id: number } } | [monitor: number | {
 
 /**
 * @see \App\Http\Controllers\UptimeMonitorController::destroy
-* @see app/Http/Controllers/UptimeMonitorController.php:276
+* @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
 destroy.delete = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
