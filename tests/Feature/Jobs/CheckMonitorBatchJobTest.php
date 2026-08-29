@@ -34,7 +34,15 @@ test('check monitor batch job filters monitors and executes checks', function ()
 });
 
 test('check monitor batch job catches and logs exceptions without failing job', function () {
-    $job = new CheckMonitorBatchJob([99999999]);
+    $monitor = Monitor::factory()->create([
+        'uptime_check_enabled' => true,
+        'uptime_status' => 'not yet checked',
+    ]);
+
+    DB::shouldReceive('disableQueryLog')->andThrow(new Exception('Simulated DB failure'));
+    Log::shouldReceive('warning')->once();
+
+    $job = new CheckMonitorBatchJob([$monitor->id]);
     $job->handle();
 
     expect(true)->toBeTrue();
