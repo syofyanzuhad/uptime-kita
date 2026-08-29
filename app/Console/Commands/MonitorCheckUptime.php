@@ -19,6 +19,7 @@ class MonitorCheckUptime extends SpatieCheckUptime
     public function handle(): int
     {
         try {
+            $startTime = microtime(true);
             DB::disableQueryLog();
 
             $url = $this->option('url');
@@ -83,6 +84,9 @@ class MonitorCheckUptime extends SpatieCheckUptime
             });
 
             $peakMemory = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
+            $elapsedSeconds = round(microtime(true) - $startTime, 2);
+
+            Log::info("Uptime check summary: {$totalCount} monitors processed in {$elapsedSeconds}s (Peak RAM: {$peakMemory} MB)");
             $this->info("All done! Checked {$totalCount} monitors in total. (Peak memory: {$peakMemory} MB)");
 
             return self::SUCCESS;

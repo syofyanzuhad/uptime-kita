@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 use Spatie\UptimeMonitor\Events\UptimeCheckRecovered;
 
@@ -44,12 +43,6 @@ class BroadcastMonitorStatusChange
             'favicon' => $monitor->favicon,
             'status_page_ids' => $monitor->statusPages()->pluck('status_pages.id')->toArray(),
         ];
-
-        Log::debug('BroadcastMonitorStatusChange: Broadcasting status change', [
-            'monitor_id' => $monitor->id,
-            'old_status' => $oldStatus,
-            'new_status' => $newStatus,
-        ]);
 
         // Store in cache with TTL of 5 minutes
         $cacheKey = 'monitor_status_changes';

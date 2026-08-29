@@ -31,7 +31,7 @@ class SendBatchedNotificationsJob implements ShouldQueue
             return;
         }
 
-        Log::info('Processing batched notifications', ['count' => count($pendingEvents)]);
+        $eventCount = count($pendingEvents);
 
         // Group events by user_id
         $userEvents = [];
@@ -51,15 +51,15 @@ class SendBatchedNotificationsJob implements ShouldQueue
             $query->where('is_enabled', true);
         }])->whereIn('id', $userIds)->get()->keyBy('id');
 
+        $deliveredCount = 0;
+
         // Send batched notifications to each user
         foreach ($userEvents as $userId => $events) {
             $user = $users->get($userId);
             if ($user) {
                 try {
-                    // Note: BatchedMonitorStatusChanged uses $notifiable->notificationChannels()
-                    // which is now eager-loaded.
                     Notification::send($user, new BatchedMonitorStatusChanged($events));
-                    Log::debug("Sent batched notification to user {$userId}", ['event_count' => count($events)]);
+                    $deliveredCount++;
                 } catch (\Exception $e) {
                     Log::error("Failed to send batched notification to user {$userId}", ['error' => $e->getMessage()]);
                 }
@@ -67,5 +67,7 @@ class SendBatchedNotificationsJob implements ShouldQueue
                 Log::warning('SendBatchedNotificationsJob: User not found', ['user_id' => $userId]);
             }
         }
+
+        Log::info("Batched notifications summary: {$eventCount} events processed ({$deliveredCount} delivered).");
     }
 }

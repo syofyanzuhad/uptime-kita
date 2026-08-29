@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 
-use Illuminate\Support\Facades\Log;
 use Spatie\UptimeMonitor\Events\UptimeCheckFailed;
 
 class SendCustomMonitorNotification
@@ -22,37 +21,15 @@ class SendCustomMonitorNotification
     {
         $monitor = $event->monitor;
 
-        Log::debug('SendCustomMonitorNotification: Event received', [
-            'event_type' => get_class($event),
-            'monitor_id' => $monitor->id,
-            'monitor_url' => $monitor->url,
-        ]);
-
         // Skip notification if monitor is in maintenance window
         if ($monitor->isInMaintenance()) {
-            Log::debug('SendCustomMonitorNotification: Skipping notification - monitor is in maintenance window', [
-                'monitor_id' => $monitor->id,
-                'monitor_url' => (string) $monitor->url,
-                'maintenance_ends_at' => $monitor->maintenance_ends_at,
-            ]);
-
             return;
         }
 
         // Get all users associated with this monitor
         $users = $monitor->users()->where('user_monitor.is_active', true)->get();
 
-        Log::debug('SendCustomMonitorNotification: Found users for monitor', [
-            'monitor_id' => $monitor->id,
-            'user_count' => $users->count(),
-        ]);
-
         if ($users->isEmpty()) {
-            Log::warning('SendCustomMonitorNotification: No active users found for monitor', [
-                'monitor_id' => $monitor->id,
-                'monitor_url' => $monitor->url,
-            ]);
-
             return;
         }
 
@@ -76,11 +53,5 @@ class SendCustomMonitorNotification
 
             cache()->put($cacheKey, $pending, now()->addMinutes(10));
         });
-
-        Log::debug('SendCustomMonitorNotification: Event buffered for batching', [
-            'monitor_id' => $monitor->id,
-            'status' => $status,
-            'user_count' => $users->count(),
-        ]);
     }
 }
