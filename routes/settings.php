@@ -7,6 +7,7 @@ use App\Http\Controllers\Settings\DatabaseBackupController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TelemetryController;
+use App\Http\Controllers\ToggleNotificationChannelController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('settings', '/settings/profile');
@@ -39,7 +40,7 @@ Route::middleware('auth')
         });
 
         Route::resource('notifications', NotificationController::class);
-        Route::patch('notifications/{notification}/toggle', [NotificationController::class, 'toggle'])->name('notifications.toggle');
+        Route::patch('notifications/{notification}/toggle', ToggleNotificationChannelController::class)->name('notifications.toggle');
     });
 
 // API route for server resources polling (authenticated)

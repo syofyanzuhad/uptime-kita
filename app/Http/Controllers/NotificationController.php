@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreNotificationChannelRequest;
+use App\Http\Requests\UpdateNotificationChannelRequest;
 use App\Models\NotificationChannel;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class NotificationController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the notification channels.
+     */
+    public function index(): Response
     {
         $channels = Auth::user()->notificationChannels()->latest()->get();
 
@@ -19,7 +25,10 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function create()
+    /**
+     * Show the form for creating a new notification channel.
+     */
+    public function create(): Response
     {
         return Inertia::render('settings/Notifications', [
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
@@ -28,23 +37,24 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Store a newly created notification channel in storage.
+     */
+    public function store(StoreNotificationChannelRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'type' => 'required|string',
-            'destination' => 'required|string',
-            'is_enabled' => 'boolean',
-            'metadata' => 'nullable|array',
-        ]);
-
+        $validated = $request->validated();
         $validated['user_id'] = Auth::id();
+
         NotificationChannel::create($validated);
 
         return Redirect::route('notifications.index')
             ->with('success', 'Notification channel created successfully.');
     }
 
-    public function show($id)
+    /**
+     * Display the specified notification channel.
+     */
+    public function show(int $id): Response
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
 
@@ -56,7 +66,10 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function edit($id)
+    /**
+     * Show the form for editing the specified notification channel.
+     */
+    public function edit(int $id): Response
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
 
@@ -68,37 +81,27 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update the specified notification channel in storage.
+     */
+    public function update(UpdateNotificationChannelRequest $request, int $id): RedirectResponse
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
-        $validated = $request->validate([
-            'type' => 'required|string',
-            'destination' => 'required|string',
-            'is_enabled' => 'boolean',
-            'metadata' => 'nullable|array',
-        ]);
-
-        $channel->update($validated);
+        $channel->update($request->validated());
 
         return Redirect::route('notifications.index')
             ->with('success', 'Notification channel updated successfully.');
     }
 
-    public function destroy($id)
+    /**
+     * Remove the specified notification channel from storage.
+     */
+    public function destroy(int $id): RedirectResponse
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
         $channel->delete();
 
         return Redirect::route('notifications.index')
             ->with('success', 'Notification channel deleted successfully.');
-    }
-
-    public function toggle($id)
-    {
-        $channel = Auth::user()->notificationChannels()->findOrFail($id);
-        $channel->update(['is_enabled' => ! $channel->is_enabled]);
-
-        return Redirect::route('notifications.index')
-            ->with('success', 'Notification channel '.($channel->is_enabled ? 'enabled' : 'disabled').' successfully.');
     }
 }
