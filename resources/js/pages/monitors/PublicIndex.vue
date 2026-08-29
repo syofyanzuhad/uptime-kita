@@ -363,24 +363,24 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         :show-server-stats="true"
         :json-ld="jsonLd"
     >
-        <!-- Hero: Compact Free Website Checker -->
+        <!-- Hero: Sleek & Compact Website Health Checker -->
         <div
-            class="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-4 shadow-lg ring-1 ring-white/10 sm:p-6"
+            class="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3.5 shadow-md ring-1 ring-white/10 sm:p-4.5"
         >
             <!-- Ambient Glow Accents -->
-            <div class="pointer-events-none absolute -top-16 -left-16 h-48 w-48 rounded-full bg-blue-400/20 blur-2xl" />
-            <div class="pointer-events-none absolute -right-16 -bottom-16 h-48 w-48 rounded-full bg-indigo-500/20 blur-2xl" />
+            <div class="pointer-events-none absolute -top-12 -left-12 h-36 w-36 rounded-full bg-blue-400/20 blur-2xl" />
+            <div class="pointer-events-none absolute -right-12 -bottom-12 h-36 w-36 rounded-full bg-indigo-500/20 blur-2xl" />
 
             <div class="relative mx-auto max-w-3xl">
-                <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2">
-                        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm">
-                            <Icon name="zap" class="h-4 w-4 text-amber-300" />
+                        <div class="flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm">
+                            <Icon name="zap" class="h-3.5 w-3.5 text-amber-300" />
                         </div>
-                        <h2 class="text-base font-extrabold text-white sm:text-lg">Instant Website Health Check</h2>
+                        <h2 class="text-sm font-extrabold text-white sm:text-base">Instant Website Health Check</h2>
                     </div>
                     <span
-                        class="inline-flex items-center gap-1.5 self-start rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold text-blue-100 backdrop-blur-sm sm:self-auto"
+                        class="inline-flex items-center gap-1.5 self-start rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-blue-100 backdrop-blur-sm sm:self-auto"
                     >
                         <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
                         <span>Free & No Sign-up</span>
@@ -391,7 +391,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 <form @submit.prevent="checkDomain" class="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <label for="hero-domain-input" class="sr-only">Domain or URL to check</label>
                     <div class="relative flex-1">
-                        <Icon name="globe" class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Icon name="globe" class="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                         <input
                             ref="heroInputRef"
                             id="hero-domain-input"
@@ -400,7 +400,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                             placeholder="Enter any domain or URL (e.g. google.com, myapp.io)..."
                             autocomplete="off"
                             aria-label="Domain or URL to check"
-                            class="w-full rounded-2xl border-0 bg-white/95 py-2.5 pr-9 pl-10 text-sm text-gray-900 placeholder-gray-400 shadow-inner backdrop-blur-sm transition-all focus:bg-white focus:ring-2 focus:ring-white/80 focus:outline-none"
+                            class="w-full rounded-xl border-0 bg-white/95 py-2 pr-8 pl-9 text-xs text-gray-900 placeholder-gray-400 shadow-inner backdrop-blur-sm transition-all focus:bg-white focus:ring-2 focus:ring-white/80 focus:outline-none sm:text-sm"
                             @keydown.escape="
                                 domainResult = null;
                                 domainError = '';
@@ -414,33 +414,33 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                                 domainResult = null;
                                 domainError = '';
                             "
-                            class="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                         >
-                            <Icon name="x" class="h-3.5 w-3.5" />
+                            <Icon name="x" class="h-3 w-3" />
                         </button>
                     </div>
 
                     <button
                         type="submit"
                         :disabled="domainChecking"
-                        class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-white px-5 py-2.5 text-xs font-bold text-blue-700 shadow-md transition-all hover:bg-blue-50 active:scale-95 disabled:opacity-70"
+                        class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-bold text-blue-700 shadow-sm transition-all hover:bg-blue-50 active:scale-95 disabled:opacity-70"
                     >
-                        <Icon v-if="domainChecking" name="loader" class="h-3.5 w-3.5 animate-spin" />
-                        <Icon v-else name="zap" class="h-3.5 w-3.5 text-blue-600" />
+                        <Icon v-if="domainChecking" name="loader" class="h-3 w-3 animate-spin" />
+                        <Icon v-else name="zap" class="h-3 w-3 text-blue-600" />
                         <span>{{ domainChecking ? 'Checking…' : 'Check Now' }}</span>
                     </button>
                 </form>
 
                 <!-- Compact Example Chips & API Toggle -->
-                <div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-blue-100/80">
+                <div class="mt-2 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-blue-100/80">
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <span class="font-medium">Try:</span>
+                        <span class="font-medium text-[10px]">Try:</span>
                         <button
                             v-for="ex in exampleDomains"
                             :key="ex"
                             type="button"
                             @click="tryExample(ex)"
-                            class="rounded-md border border-white/10 bg-white/10 px-2 py-0.5 font-medium text-white transition-colors hover:bg-white/20 active:scale-95"
+                            class="rounded border border-white/10 bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-white transition-colors hover:bg-white/20 active:scale-95"
                         >
                             {{ ex }}
                         </button>
@@ -449,29 +449,29 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <button
                         type="button"
                         @click="showApiSnippet = !showApiSnippet"
-                        class="inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-0.5 font-bold text-white transition-all hover:bg-white/20 active:scale-95"
+                        class="inline-flex items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-white transition-all hover:bg-white/20 active:scale-95"
                     >
-                        <Icon name="terminal" class="h-3 w-3 text-emerald-300" />
+                        <Icon name="terminal" class="h-2.5 w-2.5 text-emerald-300" />
                         <span>{{ showApiSnippet ? 'Hide API' : 'CLI / API' }}</span>
-                        <span class="rounded bg-emerald-400/30 px-1 text-[9px] font-extrabold text-emerald-200 uppercase">v1</span>
+                        <span class="rounded bg-emerald-400/30 px-1 text-[8px] font-extrabold text-emerald-200 uppercase">v1</span>
                     </button>
                 </div>
 
                 <!-- Interactive API Code Drawer -->
                 <div
                     v-if="showApiSnippet"
-                    class="mt-3 overflow-hidden rounded-2xl border border-white/15 bg-gray-950/90 p-3 text-left shadow-lg backdrop-blur-md"
+                    class="mt-2.5 overflow-hidden rounded-xl border border-white/15 bg-gray-950/90 p-2.5 text-left shadow-lg backdrop-blur-md"
                 >
-                    <div class="mb-2 flex items-center justify-between border-b border-white/10 pb-2 text-[11px] text-gray-400">
-                        <div class="flex items-center gap-2 font-sans font-bold text-white">
-                            <Icon name="code" class="h-3.5 w-3.5 text-emerald-400" />
+                    <div class="mb-1.5 flex items-center justify-between border-b border-white/10 pb-1.5 text-[10px] text-gray-400">
+                        <div class="flex items-center gap-1.5 font-sans font-bold text-white">
+                            <Icon name="code" class="h-3 w-3 text-emerald-400" />
                             <span>Instant Uptime API</span>
-                            <span class="py-0.2 rounded bg-emerald-500/20 px-1.5 text-[10px] font-extrabold text-emerald-300">30 req/min free</span>
+                            <span class="rounded bg-emerald-500/20 px-1 py-0.2 text-[9px] font-extrabold text-emerald-300">30 req/min free</span>
                         </div>
-                        <span class="font-mono text-[10px] text-gray-400">GET /api/v1/check</span>
+                        <span class="font-mono text-[9px] text-gray-400">GET /api/v1/check</span>
                     </div>
                     <div
-                        class="flex items-center justify-between gap-2 overflow-x-auto rounded-xl bg-black/60 p-2 font-mono text-xs text-emerald-400"
+                        class="flex items-center justify-between gap-2 overflow-x-auto rounded-lg bg-black/60 p-2 font-mono text-[11px] text-emerald-400"
                     >
                         <span class="truncate text-gray-300 select-all">
                             curl -X GET "https://uptime.syofyanzuhad.dev/api/v1/check?url={{ domainInput || 'example.com' }}"
@@ -479,7 +479,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         <button
                             type="button"
                             @click="copyApiCommand(domainInput)"
-                            class="shrink-0 rounded-lg bg-white/10 px-2.5 py-1 font-sans text-[11px] font-bold text-white transition-all hover:bg-white/20 active:scale-95"
+                            class="shrink-0 rounded bg-white/10 px-2 py-0.5 font-sans text-[10px] font-bold text-white transition-all hover:bg-white/20 active:scale-95"
                         >
                             {{ copiedApi ? '✓ Copied' : 'Copy' }}
                         </button>
@@ -490,7 +490,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 <p
                     v-if="domainError"
                     role="alert"
-                    class="mt-3 rounded-xl border border-rose-400/40 bg-rose-500/30 px-3 py-2 text-xs font-medium text-white backdrop-blur-sm"
+                    class="mt-2.5 rounded-lg border border-rose-400/40 bg-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm"
                 >
                     {{ domainError }}
                 </p>
@@ -500,62 +500,62 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     v-if="domainResult"
                     role="status"
                     aria-live="polite"
-                    class="mt-3.5 overflow-hidden rounded-2xl border border-white/20 bg-white/95 p-3.5 text-left shadow-lg backdrop-blur-md"
+                    class="mt-2.5 overflow-hidden rounded-xl border border-white/20 bg-white/95 p-3 text-left shadow-lg backdrop-blur-md"
                 >
-                    <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-3">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-center gap-2.5">
                             <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white shadow-sm"
+                                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-bold text-white shadow-sm"
                                 :class="domainResult.ok ? 'bg-emerald-500' : 'bg-rose-500'"
                             >
-                                <Icon :name="domainResult.ok ? 'check' : 'alertTriangle'" class="h-4 w-4" />
+                                <Icon :name="domainResult.ok ? 'check' : 'alertTriangle'" class="h-3.5 w-3.5" />
                             </div>
                             <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold text-gray-900">{{ domainResult.host }}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-gray-900 sm:text-sm">{{ domainResult.host }}</span>
                                     <span
-                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase"
+                                        class="inline-flex items-center rounded-full px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
                                         :class="domainResult.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
                                     >
                                         {{ domainResult.ok ? 'Operational' : 'Unavailable' }}
                                     </span>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                    <span v-if="domainResult.status_code" class="font-mono font-medium"> HTTP {{ domainResult.status_code }} </span>
+                                <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-gray-500">
+                                    <span v-if="domainResult.status_code" class="font-mono"> HTTP {{ domainResult.status_code }} </span>
                                     <span>•</span>
                                     <span class="font-mono font-medium text-blue-600"> ⚡ {{ domainResult.response_time_ms }} ms </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5">
                             <button
                                 v-if="domainResult.ok"
                                 type="button"
                                 @click="monitorThisDomain"
-                                class="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
+                                class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
                             >
                                 <span>Monitor 24/7</span>
-                                <Icon name="arrowRight" class="h-3 w-3" />
+                                <Icon name="arrowRight" class="h-2.5 w-2.5" />
                             </button>
                             <button
                                 type="button"
                                 @click="domainResult = null"
-                                class="rounded-xl border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                                class="rounded-lg border border-gray-200 px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50"
                             >
                                 Dismiss
                             </button>
                         </div>
                     </div>
-                    <p v-if="domainResult.error" class="mt-2 text-xs font-medium text-rose-600">
+                    <p v-if="domainResult.error" class="mt-1.5 text-xs font-medium text-rose-600">
                         {{ domainResult.error }}
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Metric Summary Cards -->
-        <div class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+        <!-- Metric Summary Cards: Compact 5-Column Grid -->
+        <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 sm:gap-3">
             <button
                 v-for="s in [
                     {
@@ -597,68 +597,62 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 :key="s.key"
                 type="button"
                 @click="s.key === 'all' || s.key === 'up' || s.key === 'down' ? filterByStatus(s.key) : null"
-                class="group flex flex-col justify-between rounded-3xl border border-gray-200/80 bg-white/80 p-4 text-left shadow-sm backdrop-blur-sm transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-800/80 dark:bg-gray-900/80 dark:hover:border-gray-700"
+                class="group flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white/80 p-2.5 text-left shadow-xs backdrop-blur-sm transition-all hover:border-gray-300 hover:shadow-sm sm:p-3 dark:border-gray-800/80 dark:bg-gray-900/80 dark:hover:border-gray-700"
                 :class="statusFilter === s.key ? s.activeClass : ''"
             >
-                <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">{{ s.label }}</span>
-                <div class="mt-3 flex items-baseline gap-2">
-                    <span class="text-2xl font-black tracking-tight" :class="s.color">
+                <span class="text-[10px] font-bold tracking-wider text-gray-500 uppercase sm:text-[11px] dark:text-gray-400">{{ s.label }}</span>
+                <div class="mt-1.5 flex items-baseline gap-1.5">
+                    <span class="text-lg font-black tracking-tight sm:text-xl" :class="s.color">
                         {{ s.value }}
                     </span>
                 </div>
             </button>
         </div>
 
-        <!-- Featured Status Page, Wallboard & Developer API Spotlight Grid -->
-        <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <!-- Featured Quick Action Links: Sleek Inline Strip -->
+        <div class="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
             <Link
                 href="/status/demo"
-                class="group flex items-center justify-between rounded-3xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white p-5 shadow-sm transition-all hover:border-blue-400 hover:shadow-md dark:border-blue-900/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-gray-900"
+                class="group flex items-center justify-between rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white px-3.5 py-2.5 shadow-xs transition-all hover:border-blue-400 hover:shadow-sm dark:border-blue-900/50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-gray-900"
             >
-                <div class="flex min-w-0 items-center gap-3.5">
+                <div class="flex min-w-0 items-center gap-2.5">
                     <div
-                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 transition-transform group-hover:scale-105"
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs transition-transform group-hover:scale-105"
                     >
-                        <Icon name="activity" class="h-5 w-5" />
+                        <Icon name="activity" class="h-3.5 w-3.5" />
                     </div>
                     <div class="min-w-0">
-                        <div class="flex items-center gap-1.5">
-                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">Status Page</h3>
-                            <span
-                                class="rounded-full bg-blue-600/10 px-2 py-0.5 text-[9px] font-extrabold text-blue-600 uppercase dark:bg-blue-400/10 dark:text-blue-400"
-                                >Live Demo</span
-                            >
+                        <div class="flex items-center gap-1">
+                            <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">Status Page</h3>
+                            <span class="rounded bg-blue-600/10 px-1 py-0.2 text-[8px] font-extrabold text-blue-600 uppercase dark:bg-blue-400/10 dark:text-blue-400">Demo</span>
                         </div>
-                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">90-day component health.</p>
+                        <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">90-day component health</p>
                     </div>
                 </div>
-                <Icon name="arrowRight" class="h-4 w-4 shrink-0 text-blue-600 transition-transform group-hover:translate-x-1 dark:text-blue-400" />
+                <Icon name="arrowRight" class="h-3.5 w-3.5 shrink-0 text-blue-600 transition-transform group-hover:translate-x-0.5 dark:text-blue-400" />
             </Link>
 
             <Link
                 href="/monitors"
-                class="group flex items-center justify-between rounded-3xl border border-purple-200/80 bg-gradient-to-r from-purple-50/80 via-pink-50/40 to-white p-5 shadow-sm transition-all hover:border-purple-400 hover:shadow-md dark:border-purple-900/50 dark:from-purple-950/30 dark:via-purple-950/20 dark:to-gray-900"
+                class="group flex items-center justify-between rounded-2xl border border-purple-200/80 bg-gradient-to-r from-purple-50/80 via-pink-50/40 to-white px-3.5 py-2.5 shadow-xs transition-all hover:border-purple-400 hover:shadow-sm dark:border-purple-900/50 dark:from-purple-950/30 dark:via-purple-950/20 dark:to-gray-900"
             >
-                <div class="flex min-w-0 items-center gap-3.5">
+                <div class="flex min-w-0 items-center gap-2.5">
                     <div
-                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-purple-600 text-white shadow-md shadow-purple-500/20 transition-transform group-hover:scale-105"
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white shadow-xs transition-transform group-hover:scale-105"
                     >
-                        <Icon name="layoutGrid" class="h-5 w-5" />
+                        <Icon name="layoutGrid" class="h-3.5 w-3.5" />
                     </div>
                     <div class="min-w-0">
-                        <div class="flex items-center gap-1.5">
-                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">NOC Wallboard</h3>
-                            <span
-                                class="rounded-full bg-purple-600/10 px-2 py-0.5 text-[9px] font-extrabold text-purple-600 uppercase dark:bg-purple-400/10 dark:text-purple-400"
-                                >Kiosk</span
-                            >
+                        <div class="flex items-center gap-1">
+                            <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">NOC Wallboard</h3>
+                            <span class="rounded bg-purple-600/10 px-1 py-0.2 text-[8px] font-extrabold text-purple-600 uppercase dark:bg-purple-400/10 dark:text-purple-400">Kiosk</span>
                         </div>
-                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">High-density live grid.</p>
+                        <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">High-density live grid</p>
                     </div>
                 </div>
                 <Icon
                     name="arrowRight"
-                    class="h-4 w-4 shrink-0 text-purple-600 transition-transform group-hover:translate-x-1 dark:text-purple-400"
+                    class="h-3.5 w-3.5 shrink-0 text-purple-600 transition-transform group-hover:translate-x-0.5 dark:text-purple-400"
                 />
             </Link>
 
@@ -666,94 +660,90 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
             <button
                 type="button"
                 @click="copyApiCommand('example.com')"
-                class="group flex cursor-pointer items-center justify-between rounded-3xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white p-5 text-left shadow-sm transition-all hover:border-emerald-400 hover:shadow-md dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-gray-900"
+                class="group flex cursor-pointer items-center justify-between rounded-2xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white px-3.5 py-2.5 text-left shadow-xs transition-all hover:border-emerald-400 hover:shadow-sm dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-gray-900"
             >
-                <div class="flex min-w-0 items-center gap-3.5">
+                <div class="flex min-w-0 items-center gap-2.5">
                     <div
-                        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-500/20 transition-transform group-hover:scale-105"
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs transition-transform group-hover:scale-105"
                     >
-                        <Icon name="terminal" class="h-5 w-5" />
+                        <Icon name="terminal" class="h-3.5 w-3.5" />
                     </div>
                     <div class="min-w-0">
-                        <div class="flex items-center gap-1.5">
-                            <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white">Health Check API</h3>
-                            <span
-                                class="rounded-full bg-emerald-600/10 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 uppercase dark:bg-emerald-400/10 dark:text-emerald-400"
-                                >30 req/min</span
-                            >
+                        <div class="flex items-center gap-1">
+                            <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">Health Check API</h3>
+                            <span class="rounded bg-emerald-600/10 px-1 py-0.2 text-[8px] font-extrabold text-emerald-600 uppercase dark:bg-emerald-400/10 dark:text-emerald-400">Free</span>
                         </div>
-                        <p class="truncate text-xs text-gray-500 dark:text-gray-400">Automate via curl / CI/CD.</p>
+                        <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">cURL / CI/CD automation</p>
                     </div>
                 </div>
-                <div class="ml-2 flex shrink-0 items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    <span class="hidden sm:inline">{{ copiedApi ? 'Copied!' : 'Copy curl' }}</span>
-                    <Icon :name="copiedApi ? 'check' : 'copy'" class="h-4 w-4" />
+                <div class="ml-2 flex shrink-0 items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span class="hidden sm:inline text-[10px]">{{ copiedApi ? 'Copied!' : 'Copy' }}</span>
+                    <Icon :name="copiedApi ? 'check' : 'copy'" class="h-3 w-3" />
                 </div>
             </button>
         </div>
 
         <!-- Recent Incidents Alert Strip (if active) -->
-        <div v-if="props.latestIncidents?.length" class="mb-8">
-            <Card class="rounded-3xl border border-gray-200/80 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
-                <CardContent class="p-5 sm:p-6">
+        <div v-if="props.latestIncidents?.length" class="mb-4">
+            <Card class="rounded-2xl border border-gray-200/80 bg-white/80 shadow-xs backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80">
+                <CardContent class="p-3 sm:p-3.5">
                     <button type="button" @click="incidentsExpanded = !incidentsExpanded" class="flex w-full items-center justify-between text-left">
-                        <div class="flex items-center gap-2.5">
+                        <div class="flex items-center gap-2">
                             <div
-                                class="flex h-8 w-8 items-center justify-center rounded-xl"
+                                class="flex h-6 w-6 items-center justify-center rounded-lg"
                                 :class="stats.down > 0 ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 animate-pulse' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'"
                             >
-                                <Icon :name="stats.down > 0 ? 'alertTriangle' : 'activity'" class="h-4 w-4" />
+                                <Icon :name="stats.down > 0 ? 'alertTriangle' : 'activity'" class="h-3.5 w-3.5" />
                             </div>
                             <div>
-                                <div class="flex items-center gap-2">
-                                    <h2 class="text-sm font-bold text-gray-900 sm:text-base dark:text-white">Recent Incident & Event Activity</h2>
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                                <div class="flex items-center gap-1.5">
+                                    <h2 class="text-xs font-bold text-gray-900 sm:text-sm dark:text-white">Recent Incident & Event Activity</h2>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        <span class="h-1 w-1 rounded-full bg-emerald-500 animate-ping"></span>
                                         Live Feed
                                     </span>
                                 </div>
-                                <p class="text-xs text-gray-400">Latest detected service downtime, outages, and recovery events</p>
                             </div>
                         </div>
-                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500">
                             <span>{{ incidentsExpanded ? 'Collapse' : 'Expand' }} ({{ props.latestIncidents.length }})</span>
-                            <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" />
+                            <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-3.5 w-3.5" />
                         </span>
                     </button>
 
-                    <div v-if="incidentsExpanded" class="mt-4 space-y-2.5 border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <div v-if="incidentsExpanded" class="mt-2.5 space-y-1.5 border-t border-gray-100 pt-2.5 dark:border-gray-800">
                         <div
-                            v-for="inc in props.latestIncidents.slice(0, 5)"
+                            v-for="inc in props.latestIncidents.slice(0, 4)"
                             :key="inc.id"
-                            class="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 transition-colors hover:bg-gray-100/80 dark:border-gray-800 dark:bg-gray-800/40 dark:hover:bg-gray-800/80"
+                            class="flex cursor-pointer items-center justify-between gap-2.5 rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 transition-colors hover:bg-gray-100/80 dark:border-gray-800 dark:bg-gray-800/40 dark:hover:bg-gray-800/80"
                             @click="viewIncidentMonitor(inc)"
                         >
-                            <div class="flex min-w-0 items-start gap-3">
+                            <div class="flex min-w-0 items-center gap-2.5">
                                 <div
-                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg"
                                     :class="
                                         inc.ended_at
                                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                                             : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                                     "
                                 >
-                                    <Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" class="h-4 w-4" />
+                                    <Icon :name="inc.ended_at ? 'checkCircle' : 'alertCircle'" class="h-3.5 w-3.5" />
                                 </div>
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-bold text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
-                                    <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                        <span v-if="inc.status_code" class="font-mono">HTTP {{ inc.status_code }} • </span>
-                                        <span>Started {{ formatRelativeTime(inc.started_at) }}</span>
-                                        <span v-if="inc.duration_minutes"> • Lasted {{ formatDuration(inc.duration_minutes) }}</span>
-                                    </p>
-                                    <p v-if="inc.reason" class="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                                        {{ inc.reason }}
+                                    <div class="flex items-center gap-2">
+                                        <p class="truncate text-xs font-bold text-gray-900 dark:text-white">{{ inc.monitor.raw_url }}</p>
+                                        <span v-if="inc.status_code" class="font-mono text-[10px] text-gray-400">HTTP {{ inc.status_code }}</span>
+                                    </div>
+                                    <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">
+                                        <span>{{ formatRelativeTime(inc.started_at) }}</span>
+                                        <span v-if="inc.duration_minutes"> • {{ formatDuration(inc.duration_minutes) }}</span>
+                                        <span v-if="inc.reason" class="ml-1 text-gray-400">({{ inc.reason }})</span>
                                     </p>
                                 </div>
                             </div>
 
                             <span
-                                class="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                                class="shrink-0 rounded-full px-2 py-0.2 text-[10px] font-bold"
                                 :class="
                                     inc.ended_at
                                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
@@ -768,37 +758,37 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
             </Card>
         </div>
 
-        <!-- Filter & Search Toolbar -->
+        <!-- Filter & Search Toolbar: Sleek Compact Bar -->
         <div
-            class="mb-6 rounded-3xl border border-gray-200/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
+            class="mb-4 rounded-2xl border border-gray-200/80 bg-white/80 p-3 shadow-xs backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/80"
         >
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div class="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                 <!-- Search Input with Keyboard Shortcut Indicator -->
                 <div class="relative flex-1">
                     <label for="search-monitors" class="sr-only">Search monitors</label>
-                    <Icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Icon name="search" class="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                     <input
                         ref="searchInputRef"
                         id="search-monitors"
                         v-model="searchQuery"
                         type="text"
                         placeholder="Search public monitors (e.g. google, api, blog)..."
-                        class="w-full rounded-xl border border-gray-200/80 bg-gray-50/50 py-2.5 pr-16 pl-10 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-white dark:focus:bg-gray-800"
+                        class="w-full rounded-xl border border-gray-200/80 bg-gray-50/50 py-1.5 pr-14 pl-9 text-xs text-gray-900 placeholder-gray-400 transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-white dark:focus:bg-gray-800"
                         @input="debounceSearch"
                     />
-                    <div class="absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1">
+                    <div class="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
                         <button
                             v-if="searchQuery"
                             type="button"
                             @click="clearSearch"
-                            class="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700"
+                            class="rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700"
                             aria-label="Clear search"
                         >
-                            <Icon name="x" class="h-3.5 w-3.5" />
+                            <Icon name="x" class="h-3 w-3" />
                         </button>
                         <kbd
                             v-else
-                            class="hidden items-center rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[10px] text-gray-500 sm:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                            class="hidden items-center rounded border border-gray-200 bg-gray-100 px-1 font-mono text-[9px] text-gray-500 sm:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                         >
                             /
                         </kbd>
@@ -806,14 +796,14 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 </div>
 
                 <!-- Status Segmented Pills -->
-                <div class="flex items-center rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                <div class="flex items-center rounded-lg bg-gray-100/80 p-0.5 dark:bg-gray-800/80">
                     <button
                         type="button"
                         @click="filterByStatus('all')"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        class="rounded-md px-2.5 py-1 text-xs font-semibold transition-all"
                         :class="
                             statusFilter === 'all'
-                                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                                ? 'bg-white text-gray-900 shadow-xs dark:bg-gray-700 dark:text-white'
                                 : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'
                         "
                     >
@@ -822,10 +812,10 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <button
                         type="button"
                         @click="filterByStatus('up')"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        class="rounded-md px-2.5 py-1 text-xs font-semibold transition-all"
                         :class="
                             statusFilter === 'up'
-                                ? 'bg-white text-emerald-600 shadow-sm dark:bg-gray-700 dark:text-emerald-400'
+                                ? 'bg-white text-emerald-600 shadow-xs dark:bg-gray-700 dark:text-emerald-400'
                                 : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'
                         "
                     >
@@ -834,10 +824,10 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <button
                         type="button"
                         @click="filterByStatus('down')"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        class="rounded-md px-2.5 py-1 text-xs font-semibold transition-all"
                         :class="
                             statusFilter === 'down'
-                                ? 'bg-white text-rose-600 shadow-sm dark:bg-gray-700 dark:text-rose-400'
+                                ? 'bg-white text-rose-600 shadow-xs dark:bg-gray-700 dark:text-rose-400'
                                 : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'
                         "
                     >
@@ -846,13 +836,13 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 </div>
 
                 <!-- Dropdowns: Sort and Tags -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
                     <label for="sort-by" class="sr-only">Sort by</label>
                     <select
                         id="sort-by"
                         v-model="sortBy"
                         @change="applyFilters"
-                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-3 py-2 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
+                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-2.5 py-1.5 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
                     >
                         <option v-for="o in sortOptions" :key="o.value" :value="o.value">Sort: {{ o.label }}</option>
                     </select>
@@ -862,7 +852,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         id="tag-filter"
                         v-model="tagFilter"
                         @change="applyFilters"
-                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-3 py-2 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
+                        class="rounded-xl border border-gray-200/80 bg-gray-50/50 px-2.5 py-1.5 text-xs font-semibold text-gray-700 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700/80 dark:bg-gray-800/50 dark:text-gray-200 dark:focus:bg-gray-800"
                     >
                         <option value="">All Tags</option>
                         <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name.en">#{{ tag.name.en }}</option>
@@ -870,10 +860,10 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
 
                     <button
                         @click="router.visit('/monitor/create')"
-                        class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
+                        class="inline-flex shrink-0 items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95"
                     >
-                        <Icon name="plus" class="h-3.5 w-3.5" />
-                        <span>Add Monitor</span>
+                        <Icon name="plus" class="h-3 w-3" />
+                        <span>Add</span>
                     </button>
                 </div>
             </div>
@@ -881,14 +871,14 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
             <!-- Active Pills Row -->
             <div
                 v-if="showingText || activePills.length"
-                class="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 text-xs dark:border-gray-800"
+                class="mt-2 flex flex-wrap items-center gap-1.5 border-t border-gray-100 pt-2 text-[11px] dark:border-gray-800"
             >
                 <span v-if="showingText" class="font-medium text-gray-500 dark:text-gray-400">{{ showingText }}</span>
                 <span v-if="showingText && activePills.length" class="text-gray-300 dark:text-gray-700">•</span>
                 <span
                     v-for="pill in activePills"
                     :key="pill.key"
-                    class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700 ring-1 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-300"
+                    class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 font-semibold text-blue-700 ring-1 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-300"
                 >
                     {{ pill.label }}
                     <button
@@ -897,7 +887,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         class="rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
                         :aria-label="`Remove ${pill.key} filter`"
                     >
-                        <Icon name="x" class="h-3 w-3" />
+                        <Icon name="x" class="h-2.5 w-2.5" />
                     </button>
                 </span>
                 <button
