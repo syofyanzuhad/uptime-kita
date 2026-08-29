@@ -65,7 +65,7 @@ if ($scheduleFrequency !== 'none') {
 
     // Heavy aggregation job: calculate stats every 15 minutes
     Schedule::job(new CalculateMonitorStatisticsJob)
-        ->everyFifteenMinutes()
+        ->hourlyAt(5)
         ->withoutOverlapping(10);
 }
 
