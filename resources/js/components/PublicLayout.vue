@@ -109,6 +109,14 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         </button>
 
                         <Link
+                            href="/tools"
+                            class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                        >
+                            <Icon name="zap" class="h-3.5 w-3.5 text-amber-500" />
+                            <span class="hidden sm:inline">Tools</span>
+                        </Link>
+
+                        <Link
                             href="/dashboard"
                             class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                         >

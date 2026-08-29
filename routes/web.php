@@ -20,6 +20,7 @@ use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicMonitorShowController;
 use App\Http\Controllers\PublicServerStatsController;
 use App\Http\Controllers\PublicStatusPageController;
+use App\Http\Controllers\PublicToolsController;
 use App\Http\Controllers\StatisticMonitorController;
 use App\Http\Controllers\StatusPageAssociateMonitorController;
 use App\Http\Controllers\StatusPageAvailableMonitorsController;
@@ -43,6 +44,22 @@ use Spatie\Health\Http\Controllers\HealthCheckResultsController;
 use Spatie\Health\Http\Controllers\SimpleHealthCheckController;
 
 Route::get('/', [PublicMonitorController::class, 'index'])->name('home');
+
+// Public Free Tools Suite
+Route::prefix('tools')->name('tools.')->group(function () {
+    Route::get('/', [PublicToolsController::class, 'index'])->name('index');
+    Route::get('/ssl-checker', [PublicToolsController::class, 'sslChecker'])->name('ssl-checker');
+    Route::get('/dns-lookup', [PublicToolsController::class, 'dnsLookup'])->name('dns-lookup');
+    Route::get('/headers-checker', [PublicToolsController::class, 'headersChecker'])->name('headers-checker');
+    Route::get('/badge-generator', [PublicToolsController::class, 'badgeGenerator'])->name('badge-generator');
+});
+
+// Tools API endpoints
+Route::prefix('api/tools')->name('api.tools.')->middleware('throttle:30,1')->group(function () {
+    Route::post('/ssl-check', [PublicToolsController::class, 'apiCheckSsl'])->name('ssl-check');
+    Route::post('/dns-lookup', [PublicToolsController::class, 'apiLookupDns'])->name('dns-lookup');
+    Route::post('/headers-check', [PublicToolsController::class, 'apiCheckHeaders'])->name('headers-check');
+});
 
 Route::get('/api/check-domain', DomainCheckController::class)
     ->middleware('throttle:20,1')

@@ -11,6 +11,7 @@
                     </div>
                     <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500 md:justify-start dark:text-gray-400">
                         <Link href="/public-monitors" class="transition-colors hover:text-blue-600 dark:hover:text-blue-400">Public Monitors</Link>
+                        <Link href="/tools" class="transition-colors hover:text-blue-600 dark:hover:text-blue-400">Free Tools</Link>
                         <Link href="/monitors" class="transition-colors hover:text-blue-600 dark:hover:text-blue-400">Wallboard</Link>
                         <Link href="/status/demo" class="transition-colors hover:text-blue-600 dark:hover:text-blue-400">Demo Status Page</Link>
                         <a
