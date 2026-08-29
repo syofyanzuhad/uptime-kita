@@ -205,7 +205,7 @@ onMounted(() => {
                 </div>
                 <div class="min-w-0">
                     <h1 class="truncate text-base font-extrabold text-gray-900 sm:text-xl dark:text-white">{{ statusPage.title }}</h1>
-                    <p class="line-clamp-1 text-xs text-gray-500 dark:text-gray-400" :title="statusPage.description">{{ statusPage.description }}</p>
+                    <p class="hidden md:block line-clamp-1 text-xs text-gray-500 dark:text-gray-400" :title="statusPage.description">{{ statusPage.description }}</p>
                 </div>
             </div>
         </template>

@@ -13,6 +13,7 @@ const props = withDefaults(
     defineProps<{
         title: string;
         description: string;
+        brandTitle?: string;
         ogImage?: string;
         canonicalUrl?: string;
         shareUrl: string;
@@ -22,6 +23,7 @@ const props = withDefaults(
         containerClass?: string;
     }>(),
     {
+        brandTitle: 'Uptime Kita',
         containerClass: 'max-w-7xl',
         showServerStats: true,
     },
@@ -75,19 +77,21 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         <slot name="header-left">
                             <Link href="/" class="group flex items-center gap-2.5 transition-transform active:scale-95">
                                 <div
-                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 shadow-sm shadow-blue-500/20"
+                                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 shadow-sm shadow-blue-500/20 sm:h-9 sm:w-9"
                                 >
                                     <img src="/images/uptime-kita.jpg" alt="Uptime Kita" class="h-full w-full rounded-[10px] object-cover" />
                                 </div>
                                 <div class="min-w-0">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
                                         <span
-                                            class="truncate text-base font-bold tracking-tight text-gray-900 group-hover:text-blue-600 sm:text-lg dark:text-white dark:group-hover:text-blue-400"
+                                            class="truncate text-sm font-black tracking-tight text-gray-900 group-hover:text-blue-600 sm:text-base dark:text-white dark:group-hover:text-blue-400"
                                         >
-                                            {{ title }}
+                                            {{ brandTitle }}
                                         </span>
                                     </div>
-                                    <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ description }}</p>
+                                    <p class="hidden truncate text-xs text-gray-500 md:block md:max-w-xs lg:max-w-md dark:text-gray-400">
+                                        {{ description }}
+                                    </p>
                                 </div>
                             </Link>
                         </slot>
