@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $query = User::query()
             ->withCount('monitors')
@@ -19,7 +23,7 @@ class UserController extends Controller
             ->withCount('notificationChannels');
 
         // Search functionality
-        if ($request->filled('search') && strlen($request->search) >= 3) {
+        if ($request->filled('search') && strlen((string) $request->search) >= 3) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
                     ->orWhere('email', 'like', '%'.$request->search.'%');
@@ -44,7 +48,7 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('users/Create');
     }
@@ -52,13 +56,9 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $validated = $request->validated();
 
         User::create([
             'name' => $validated['name'],
@@ -72,7 +72,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user): Response
     {
         $user->load([
             'monitors' => function ($query) {
@@ -95,7 +95,7 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(User $user): Response|RedirectResponse
     {
         // Ensure the user is not the default admin user
         if ($user->id === 1) {
@@ -110,17 +110,14 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         // Ensure the user is not the default admin user
         if ($user->id === 1) {
             return redirect()->route('users.index')->with('error', 'Cannot edit the default admin user.');
         }
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
+
+        $validated = $request->validated();
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
@@ -135,7 +132,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         $errorMessage = null;
 
