@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\StreamedEvent;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\Response;
 
 class MonitorStatusStreamController extends Controller
 {
@@ -16,7 +17,7 @@ class MonitorStatusStreamController extends Controller
      * - status_page_id: watch all monitors on a specific status page (optional)
      * - last_event_id: ID of last received event for resuming (optional)
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): Response
     {
         $monitorIds = $request->query('monitor_ids')
             ? array_map('intval', explode(',', $request->query('monitor_ids')))

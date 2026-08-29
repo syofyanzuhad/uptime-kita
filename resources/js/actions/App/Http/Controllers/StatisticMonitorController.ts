@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 const StatisticMonitorController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ StatisticMonitorController.definition = {
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 StatisticMonitorController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ StatisticMonitorController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 StatisticMonitorController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ StatisticMonitorController.get = (options?: RouteQueryOptions): RouteDefinition<
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 StatisticMonitorController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

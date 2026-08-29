@@ -6,13 +6,14 @@ use App\Http\Resources\MonitorCollection;
 use App\Models\Monitor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MonitorListController extends Controller
 {
     /**
      * Display dynamic monitor listing based on type.
      */
-    public function index(Request $request, string $type)
+    public function index(Request $request, string $type): Response
     {
         // Validate the type parameter
         if (! in_array($type, ['pinned', 'private', 'public'])) {

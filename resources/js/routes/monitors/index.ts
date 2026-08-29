@@ -45,7 +45,7 @@ expiration.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorListController::list
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 export const list = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ list.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorListController::list
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 list.url = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ list.url = (args: { type: string | number } | [type: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\MonitorListController::list
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 list.get = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ list.get = (args: { type: string | number } | [type: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\MonitorListController::list
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 list.head = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

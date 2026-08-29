@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\StatusPageMonitorResource;
 use App\Http\Resources\StatusPageResource;
 use App\Models\StatusPage;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,7 +49,7 @@ class PublicStatusPageController extends Controller
     /**
      * Return monitors for a public status page as JSON.
      */
-    public function monitors(string $path)
+    public function monitors(string $path): JsonResponse
     {
         $monitors = cache()->remember('public_status_page_monitors_'.$path, 60, function () use ($path) {
             // Find the status page first

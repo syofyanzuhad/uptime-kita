@@ -5,7 +5,7 @@ import importMethod from './import'
 import exportMethod from './export'
 /**
 * @see \App\Http\Controllers\PublicMonitorController::publicMethod
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 export const publicMethod = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -20,7 +20,7 @@ publicMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::publicMethod
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 publicMethod.url = (options?: RouteQueryOptions) => {
@@ -29,7 +29,7 @@ publicMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::publicMethod
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 publicMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -39,7 +39,7 @@ publicMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::publicMethod
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 publicMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -49,7 +49,7 @@ publicMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 export const statistic = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -64,7 +64,7 @@ statistic.definition = {
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 statistic.url = (options?: RouteQueryOptions) => {
@@ -73,7 +73,7 @@ statistic.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 statistic.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -83,7 +83,7 @@ statistic.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StatisticMonitorController::__invoke
-* @see app/Http/Controllers/StatisticMonitorController.php:15
+* @see app/Http/Controllers/StatisticMonitorController.php:16
 * @route '/statistic-monitor'
 */
 statistic.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ latestHistory.head = (args: { monitor: number | { id: number } } | [monitor: num
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 export const compact = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -176,7 +176,7 @@ compact.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 compact.url = (options?: RouteQueryOptions) => {
@@ -185,7 +185,7 @@ compact.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 compact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -195,7 +195,7 @@ compact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::compact
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 compact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

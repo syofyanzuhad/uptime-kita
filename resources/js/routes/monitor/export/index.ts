@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorExportController::csv
-* @see app/Http/Controllers/MonitorExportController.php:16
+* @see app/Http/Controllers/MonitorExportController.php:17
 * @route '/monitor/export/csv'
 */
 export const csv = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ csv.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::csv
-* @see app/Http/Controllers/MonitorExportController.php:16
+* @see app/Http/Controllers/MonitorExportController.php:17
 * @route '/monitor/export/csv'
 */
 csv.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ csv.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::csv
-* @see app/Http/Controllers/MonitorExportController.php:16
+* @see app/Http/Controllers/MonitorExportController.php:17
 * @route '/monitor/export/csv'
 */
 csv.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ csv.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::csv
-* @see app/Http/Controllers/MonitorExportController.php:16
+* @see app/Http/Controllers/MonitorExportController.php:17
 * @route '/monitor/export/csv'
 */
 csv.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ csv.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::json
-* @see app/Http/Controllers/MonitorExportController.php:28
+* @see app/Http/Controllers/MonitorExportController.php:29
 * @route '/monitor/export/json'
 */
 export const json = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ json.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::json
-* @see app/Http/Controllers/MonitorExportController.php:28
+* @see app/Http/Controllers/MonitorExportController.php:29
 * @route '/monitor/export/json'
 */
 json.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ json.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::json
-* @see app/Http/Controllers/MonitorExportController.php:28
+* @see app/Http/Controllers/MonitorExportController.php:29
 * @route '/monitor/export/json'
 */
 json.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ json.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorExportController::json
-* @see app/Http/Controllers/MonitorExportController.php:28
+* @see app/Http/Controllers/MonitorExportController.php:29
 * @route '/monitor/export/json'
 */
 json.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

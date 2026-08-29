@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ImportMonitorFileRequest;
 use App\Http\Requests\ProcessMonitorImportRequest;
 use App\Services\MonitorImportService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MonitorImportController extends Controller
 {
@@ -16,7 +20,7 @@ class MonitorImportController extends Controller
     /**
      * Show the import page
      */
-    public function index()
+    public function index(): Response
     {
         return Inertia::render('uptime/Import');
     }
@@ -24,7 +28,7 @@ class MonitorImportController extends Controller
     /**
      * Parse uploaded file and return preview data
      */
-    public function preview(ImportMonitorFileRequest $request)
+    public function preview(ImportMonitorFileRequest $request): JsonResponse
     {
         $file = $request->file('import_file');
         $format = $request->input('format') ?? $this->importService->detectFormat($file);
@@ -37,7 +41,7 @@ class MonitorImportController extends Controller
     /**
      * Process the import with user's duplicate resolution choices
      */
-    public function process(ProcessMonitorImportRequest $request)
+    public function process(ProcessMonitorImportRequest $request): RedirectResponse
     {
         try {
             $result = $this->importService->import(
@@ -71,7 +75,7 @@ class MonitorImportController extends Controller
     /**
      * Download sample CSV template
      */
-    public function sampleCsv()
+    public function sampleCsv(): StreamedResponse
     {
         return response()->streamDownload(function () {
             echo $this->importService->generateSampleCsv();
@@ -83,7 +87,7 @@ class MonitorImportController extends Controller
     /**
      * Download sample JSON template
      */
-    public function sampleJson()
+    public function sampleJson(): StreamedResponse
     {
         return response()->streamDownload(function () {
             echo $this->importService->generateSampleJson();

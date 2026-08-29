@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import sample from './sample'
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 export const preview = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -61,7 +61,7 @@ preview.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 preview.url = (options?: RouteQueryOptions) => {
@@ -70,7 +70,7 @@ preview.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 preview.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -80,7 +80,7 @@ preview.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 export const process = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -95,7 +95,7 @@ process.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 process.url = (options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ process.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 process.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

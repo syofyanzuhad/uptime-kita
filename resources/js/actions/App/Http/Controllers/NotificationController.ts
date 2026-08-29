@@ -126,7 +126,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/NotificationController.php:57
 * @route '/settings/notifications/{notification}'
 */
-export const show = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -141,13 +141,9 @@ show.definition = {
 * @see app/Http/Controllers/NotificationController.php:57
 * @route '/settings/notifications/{notification}'
 */
-show.url = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { notification: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { notification: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -159,9 +155,7 @@ show.url = (args: { notification: number | { id: number } } | [notification: num
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        notification: typeof args.notification === 'object'
-        ? args.notification.id
-        : args.notification,
+        notification: args.notification,
     }
 
     return show.definition.url
@@ -174,7 +168,7 @@ show.url = (args: { notification: number | { id: number } } | [notification: num
 * @see app/Http/Controllers/NotificationController.php:57
 * @route '/settings/notifications/{notification}'
 */
-show.get = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -184,17 +178,17 @@ show.get = (args: { notification: number | { id: number } } | [notification: num
 * @see app/Http/Controllers/NotificationController.php:57
 * @route '/settings/notifications/{notification}'
 */
-show.head = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
 /**
 * @see \App\Http\Controllers\NotificationController::edit
-* @see app/Http/Controllers/NotificationController.php:74
+* @see app/Http/Controllers/NotificationController.php:72
 * @route '/settings/notifications/{notification}/edit'
 */
-export const edit = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -206,16 +200,12 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\NotificationController::edit
-* @see app/Http/Controllers/NotificationController.php:74
+* @see app/Http/Controllers/NotificationController.php:72
 * @route '/settings/notifications/{notification}/edit'
 */
-edit.url = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { notification: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { notification: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -227,9 +217,7 @@ edit.url = (args: { notification: number | { id: number } } | [notification: num
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        notification: typeof args.notification === 'object'
-        ? args.notification.id
-        : args.notification,
+        notification: args.notification,
     }
 
     return edit.definition.url
@@ -239,30 +227,30 @@ edit.url = (args: { notification: number | { id: number } } | [notification: num
 
 /**
 * @see \App\Http\Controllers\NotificationController::edit
-* @see app/Http/Controllers/NotificationController.php:74
+* @see app/Http/Controllers/NotificationController.php:72
 * @route '/settings/notifications/{notification}/edit'
 */
-edit.get = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\NotificationController::edit
-* @see app/Http/Controllers/NotificationController.php:74
+* @see app/Http/Controllers/NotificationController.php:72
 * @route '/settings/notifications/{notification}/edit'
 */
-edit.head = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
 
 /**
 * @see \App\Http\Controllers\NotificationController::update
-* @see app/Http/Controllers/NotificationController.php:91
+* @see app/Http/Controllers/NotificationController.php:87
 * @route '/settings/notifications/{notification}'
 */
-export const update = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -274,16 +262,12 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\NotificationController::update
-* @see app/Http/Controllers/NotificationController.php:91
+* @see app/Http/Controllers/NotificationController.php:87
 * @route '/settings/notifications/{notification}'
 */
-update.url = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { notification: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { notification: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -295,9 +279,7 @@ update.url = (args: { notification: number | { id: number } } | [notification: n
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        notification: typeof args.notification === 'object'
-        ? args.notification.id
-        : args.notification,
+        notification: args.notification,
     }
 
     return update.definition.url
@@ -307,30 +289,30 @@ update.url = (args: { notification: number | { id: number } } | [notification: n
 
 /**
 * @see \App\Http\Controllers\NotificationController::update
-* @see app/Http/Controllers/NotificationController.php:91
+* @see app/Http/Controllers/NotificationController.php:87
 * @route '/settings/notifications/{notification}'
 */
-update.put = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\NotificationController::update
-* @see app/Http/Controllers/NotificationController.php:91
+* @see app/Http/Controllers/NotificationController.php:87
 * @route '/settings/notifications/{notification}'
 */
-update.patch = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
 * @see \App\Http\Controllers\NotificationController::destroy
-* @see app/Http/Controllers/NotificationController.php:106
+* @see app/Http/Controllers/NotificationController.php:99
 * @route '/settings/notifications/{notification}'
 */
-export const destroy = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -342,16 +324,12 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\NotificationController::destroy
-* @see app/Http/Controllers/NotificationController.php:106
+* @see app/Http/Controllers/NotificationController.php:99
 * @route '/settings/notifications/{notification}'
 */
-destroy.url = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { notification: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { notification: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -363,9 +341,7 @@ destroy.url = (args: { notification: number | { id: number } } | [notification: 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        notification: typeof args.notification === 'object'
-        ? args.notification.id
-        : args.notification,
+        notification: args.notification,
     }
 
     return destroy.definition.url
@@ -375,10 +351,10 @@ destroy.url = (args: { notification: number | { id: number } } | [notification: 
 
 /**
 * @see \App\Http\Controllers\NotificationController::destroy
-* @see app/Http/Controllers/NotificationController.php:106
+* @see app/Http/Controllers/NotificationController.php:99
 * @route '/settings/notifications/{notification}'
 */
-destroy.delete = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })

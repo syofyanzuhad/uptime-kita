@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslCheck
-* @see app/Http/Controllers/PublicToolsController.php:113
+* @see app/Http/Controllers/PublicToolsController.php:116
 * @route '/api/tools/ssl-check'
 */
 export const sslCheck = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ sslCheck.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslCheck
-* @see app/Http/Controllers/PublicToolsController.php:113
+* @see app/Http/Controllers/PublicToolsController.php:116
 * @route '/api/tools/ssl-check'
 */
 sslCheck.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ sslCheck.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslCheck
-* @see app/Http/Controllers/PublicToolsController.php:113
+* @see app/Http/Controllers/PublicToolsController.php:116
 * @route '/api/tools/ssl-check'
 */
 sslCheck.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ sslCheck.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:148
+* @see app/Http/Controllers/PublicToolsController.php:147
 * @route '/api/tools/dns-lookup'
 */
 export const dnsLookup = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ dnsLookup.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:148
+* @see app/Http/Controllers/PublicToolsController.php:147
 * @route '/api/tools/dns-lookup'
 */
 dnsLookup.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ dnsLookup.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:148
+* @see app/Http/Controllers/PublicToolsController.php:147
 * @route '/api/tools/dns-lookup'
 */
 dnsLookup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -69,7 +69,7 @@ dnsLookup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersCheck
-* @see app/Http/Controllers/PublicToolsController.php:185
+* @see app/Http/Controllers/PublicToolsController.php:179
 * @route '/api/tools/headers-check'
 */
 export const headersCheck = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -84,7 +84,7 @@ headersCheck.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersCheck
-* @see app/Http/Controllers/PublicToolsController.php:185
+* @see app/Http/Controllers/PublicToolsController.php:179
 * @route '/api/tools/headers-check'
 */
 headersCheck.url = (options?: RouteQueryOptions) => {
@@ -93,7 +93,7 @@ headersCheck.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersCheck
-* @see app/Http/Controllers/PublicToolsController.php:185
+* @see app/Http/Controllers/PublicToolsController.php:179
 * @route '/api/tools/headers-check'
 */
 headersCheck.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

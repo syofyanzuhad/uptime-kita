@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::index
-* @see app/Http/Controllers/MonitorImportController.php:19
+* @see app/Http/Controllers/MonitorImportController.php:23
 * @route '/monitor/import'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 export const preview = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ preview.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 preview.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ preview.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::preview
-* @see app/Http/Controllers/MonitorImportController.php:27
+* @see app/Http/Controllers/MonitorImportController.php:31
 * @route '/monitor/import/preview'
 */
 preview.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ preview.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 export const process = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ process.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 process.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ process.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::process
-* @see app/Http/Controllers/MonitorImportController.php:40
+* @see app/Http/Controllers/MonitorImportController.php:44
 * @route '/monitor/import/process'
 */
 process.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ process.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleCsv
-* @see app/Http/Controllers/MonitorImportController.php:74
+* @see app/Http/Controllers/MonitorImportController.php:78
 * @route '/monitor/import/sample/csv'
 */
 export const sampleCsv = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -128,7 +128,7 @@ sampleCsv.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleCsv
-* @see app/Http/Controllers/MonitorImportController.php:74
+* @see app/Http/Controllers/MonitorImportController.php:78
 * @route '/monitor/import/sample/csv'
 */
 sampleCsv.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ sampleCsv.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleCsv
-* @see app/Http/Controllers/MonitorImportController.php:74
+* @see app/Http/Controllers/MonitorImportController.php:78
 * @route '/monitor/import/sample/csv'
 */
 sampleCsv.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -147,7 +147,7 @@ sampleCsv.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleCsv
-* @see app/Http/Controllers/MonitorImportController.php:74
+* @see app/Http/Controllers/MonitorImportController.php:78
 * @route '/monitor/import/sample/csv'
 */
 sampleCsv.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -157,7 +157,7 @@ sampleCsv.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleJson
-* @see app/Http/Controllers/MonitorImportController.php:86
+* @see app/Http/Controllers/MonitorImportController.php:90
 * @route '/monitor/import/sample/json'
 */
 export const sampleJson = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +172,7 @@ sampleJson.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleJson
-* @see app/Http/Controllers/MonitorImportController.php:86
+* @see app/Http/Controllers/MonitorImportController.php:90
 * @route '/monitor/import/sample/json'
 */
 sampleJson.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ sampleJson.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleJson
-* @see app/Http/Controllers/MonitorImportController.php:86
+* @see app/Http/Controllers/MonitorImportController.php:90
 * @route '/monitor/import/sample/json'
 */
 sampleJson.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ sampleJson.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorImportController::sampleJson
-* @see app/Http/Controllers/MonitorImportController.php:86
+* @see app/Http/Controllers/MonitorImportController.php:90
 * @route '/monitor/import/sample/json'
 */
 sampleJson.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

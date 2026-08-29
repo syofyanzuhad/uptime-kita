@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicToolsController::index
-* @see app/Http/Controllers/PublicToolsController.php:20
+* @see app/Http/Controllers/PublicToolsController.php:23
 * @route '/tools'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::index
-* @see app/Http/Controllers/PublicToolsController.php:20
+* @see app/Http/Controllers/PublicToolsController.php:23
 * @route '/tools'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::index
-* @see app/Http/Controllers/PublicToolsController.php:20
+* @see app/Http/Controllers/PublicToolsController.php:23
 * @route '/tools'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::index
-* @see app/Http/Controllers/PublicToolsController.php:20
+* @see app/Http/Controllers/PublicToolsController.php:23
 * @route '/tools'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::websiteChecker
-* @see app/Http/Controllers/PublicToolsController.php:81
+* @see app/Http/Controllers/PublicToolsController.php:84
 * @route '/tools/website-checker'
 */
 export const websiteChecker = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ websiteChecker.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::websiteChecker
-* @see app/Http/Controllers/PublicToolsController.php:81
+* @see app/Http/Controllers/PublicToolsController.php:84
 * @route '/tools/website-checker'
 */
 websiteChecker.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ websiteChecker.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::websiteChecker
-* @see app/Http/Controllers/PublicToolsController.php:81
+* @see app/Http/Controllers/PublicToolsController.php:84
 * @route '/tools/website-checker'
 */
 websiteChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ websiteChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::websiteChecker
-* @see app/Http/Controllers/PublicToolsController.php:81
+* @see app/Http/Controllers/PublicToolsController.php:84
 * @route '/tools/website-checker'
 */
 websiteChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ websiteChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslChecker
-* @see app/Http/Controllers/PublicToolsController.php:94
+* @see app/Http/Controllers/PublicToolsController.php:97
 * @route '/tools/ssl-checker'
 */
 export const sslChecker = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ sslChecker.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslChecker
-* @see app/Http/Controllers/PublicToolsController.php:94
+* @see app/Http/Controllers/PublicToolsController.php:97
 * @route '/tools/ssl-checker'
 */
 sslChecker.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ sslChecker.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslChecker
-* @see app/Http/Controllers/PublicToolsController.php:94
+* @see app/Http/Controllers/PublicToolsController.php:97
 * @route '/tools/ssl-checker'
 */
 sslChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ sslChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::sslChecker
-* @see app/Http/Controllers/PublicToolsController.php:94
+* @see app/Http/Controllers/PublicToolsController.php:97
 * @route '/tools/ssl-checker'
 */
 sslChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ sslChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:127
+* @see app/Http/Controllers/PublicToolsController.php:126
 * @route '/tools/dns-lookup'
 */
 export const dnsLookup = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +148,7 @@ dnsLookup.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:127
+* @see app/Http/Controllers/PublicToolsController.php:126
 * @route '/tools/dns-lookup'
 */
 dnsLookup.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ dnsLookup.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:127
+* @see app/Http/Controllers/PublicToolsController.php:126
 * @route '/tools/dns-lookup'
 */
 dnsLookup.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ dnsLookup.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::dnsLookup
-* @see app/Http/Controllers/PublicToolsController.php:127
+* @see app/Http/Controllers/PublicToolsController.php:126
 * @route '/tools/dns-lookup'
 */
 dnsLookup.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +177,7 @@ dnsLookup.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersChecker
-* @see app/Http/Controllers/PublicToolsController.php:166
+* @see app/Http/Controllers/PublicToolsController.php:160
 * @route '/tools/headers-checker'
 */
 export const headersChecker = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +192,7 @@ headersChecker.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersChecker
-* @see app/Http/Controllers/PublicToolsController.php:166
+* @see app/Http/Controllers/PublicToolsController.php:160
 * @route '/tools/headers-checker'
 */
 headersChecker.url = (options?: RouteQueryOptions) => {
@@ -201,7 +201,7 @@ headersChecker.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersChecker
-* @see app/Http/Controllers/PublicToolsController.php:166
+* @see app/Http/Controllers/PublicToolsController.php:160
 * @route '/tools/headers-checker'
 */
 headersChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +211,7 @@ headersChecker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::headersChecker
-* @see app/Http/Controllers/PublicToolsController.php:166
+* @see app/Http/Controllers/PublicToolsController.php:160
 * @route '/tools/headers-checker'
 */
 headersChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -221,7 +221,7 @@ headersChecker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::badgeGenerator
-* @see app/Http/Controllers/PublicToolsController.php:199
+* @see app/Http/Controllers/PublicToolsController.php:189
 * @route '/tools/badge-generator'
 */
 export const badgeGenerator = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -236,7 +236,7 @@ badgeGenerator.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::badgeGenerator
-* @see app/Http/Controllers/PublicToolsController.php:199
+* @see app/Http/Controllers/PublicToolsController.php:189
 * @route '/tools/badge-generator'
 */
 badgeGenerator.url = (options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ badgeGenerator.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::badgeGenerator
-* @see app/Http/Controllers/PublicToolsController.php:199
+* @see app/Http/Controllers/PublicToolsController.php:189
 * @route '/tools/badge-generator'
 */
 badgeGenerator.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -255,7 +255,7 @@ badgeGenerator.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicToolsController::badgeGenerator
-* @see app/Http/Controllers/PublicToolsController.php:199
+* @see app/Http/Controllers/PublicToolsController.php:189
 * @route '/tools/badge-generator'
 */
 badgeGenerator.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorCompactController::alias
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 export const alias = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ alias.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::alias
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 alias.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ alias.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::alias
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::alias
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 alias.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

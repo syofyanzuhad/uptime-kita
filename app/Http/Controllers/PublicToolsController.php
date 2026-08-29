@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PublicDnsLookupRequest;
+use App\Http\Requests\PublicHeadersCheckRequest;
+use App\Http\Requests\PublicSslCheckRequest;
 use App\Services\PublicToolsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -110,13 +113,9 @@ class PublicToolsController extends Controller
     /**
      * API for SSL Checker.
      */
-    public function apiCheckSsl(Request $request): JsonResponse
+    public function apiCheckSsl(PublicSslCheckRequest $request): JsonResponse
     {
-        $request->validate([
-            'domain' => ['required', 'string', 'max:255'],
-        ]);
-
-        $result = $this->toolsService->checkSsl($request->input('domain'));
+        $result = $this->toolsService->checkSsl($request->validated('domain'));
 
         return response()->json($result);
     }
@@ -145,15 +144,10 @@ class PublicToolsController extends Controller
     /**
      * API for DNS Lookup.
      */
-    public function apiLookupDns(Request $request): JsonResponse
+    public function apiLookupDns(PublicDnsLookupRequest $request): JsonResponse
     {
-        $request->validate([
-            'domain' => ['required', 'string', 'max:255'],
-            'type' => ['nullable', 'string', 'in:ALL,A,AAAA,MX,TXT,CNAME,NS,SOA'],
-        ]);
-
         $result = $this->toolsService->lookupDns(
-            $request->input('domain'),
+            $request->validated('domain'),
             $request->input('type', 'ALL')
         );
 
@@ -182,13 +176,9 @@ class PublicToolsController extends Controller
     /**
      * API for Headers Checker.
      */
-    public function apiCheckHeaders(Request $request): JsonResponse
+    public function apiCheckHeaders(PublicHeadersCheckRequest $request): JsonResponse
     {
-        $request->validate([
-            'url' => ['required', 'string', 'max:255'],
-        ]);
-
-        $result = $this->toolsService->checkHeaders($request->input('url'));
+        $result = $this->toolsService->checkHeaders($request->validated('url'));
 
         return response()->json($result);
     }

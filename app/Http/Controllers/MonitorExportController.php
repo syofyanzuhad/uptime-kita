@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\MonitorImportService;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MonitorExportController extends Controller
 {
@@ -13,7 +14,7 @@ class MonitorExportController extends Controller
     /**
      * Export monitors to CSV
      */
-    public function csv()
+    public function csv(): StreamedResponse
     {
         return response()->streamDownload(function () {
             echo $this->importService->exportCsv();
@@ -25,7 +26,7 @@ class MonitorExportController extends Controller
     /**
      * Export monitors to JSON
      */
-    public function json()
+    public function json(): StreamedResponse
     {
         return response()->streamDownload(function () {
             echo $this->importService->exportJson();

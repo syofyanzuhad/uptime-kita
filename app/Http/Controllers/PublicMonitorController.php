@@ -7,9 +7,11 @@ use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorIncident;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\Tags\Tag;
 
 class PublicMonitorController extends Controller
@@ -19,7 +21,7 @@ class PublicMonitorController extends Controller
     /**
      * Display the public monitors page (Inertia).
      */
-    public function index(Request $request)
+    public function index(Request $request): Response|JsonResponse
     {
         $filters = $this->getFilters($request);
         $cacheKey = $this->cacheKey($filters, 'inertia');
@@ -88,7 +90,7 @@ class PublicMonitorController extends Controller
     /**
      * Handle the incoming request for JSON API.
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $filters = $this->getFilters($request);
         $cacheKey = $this->cacheKey($filters, 'api');

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorListController::index
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 export const index = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorListController::index
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 index.url = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ index.url = (args: { type: string | number } | [type: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\MonitorListController::index
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 index.get = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ index.get = (args: { type: string | number } | [type: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\MonitorListController::index
-* @see app/Http/Controllers/MonitorListController.php:15
+* @see app/Http/Controllers/MonitorListController.php:16
 * @route '/monitors/{type}'
 */
 index.head = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

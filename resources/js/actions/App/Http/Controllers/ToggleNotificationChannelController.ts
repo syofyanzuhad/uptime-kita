@@ -1,10 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ToggleNotificationChannelController::__invoke
-* @see app/Http/Controllers/ToggleNotificationChannelController.php:15
+* @see app/Http/Controllers/ToggleNotificationChannelController.php:14
 * @route '/settings/notifications/{notification}/toggle'
 */
-const ToggleNotificationChannelController = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+const ToggleNotificationChannelController = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: ToggleNotificationChannelController.url(args, options),
     method: 'patch',
 })
@@ -16,16 +16,12 @@ ToggleNotificationChannelController.definition = {
 
 /**
 * @see \App\Http\Controllers\ToggleNotificationChannelController::__invoke
-* @see app/Http/Controllers/ToggleNotificationChannelController.php:15
+* @see app/Http/Controllers/ToggleNotificationChannelController.php:14
 * @route '/settings/notifications/{notification}/toggle'
 */
-ToggleNotificationChannelController.url = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+ToggleNotificationChannelController.url = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { notification: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { notification: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -37,9 +33,7 @@ ToggleNotificationChannelController.url = (args: { notification: number | { id: 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        notification: typeof args.notification === 'object'
-        ? args.notification.id
-        : args.notification,
+        notification: args.notification,
     }
 
     return ToggleNotificationChannelController.definition.url
@@ -49,10 +43,10 @@ ToggleNotificationChannelController.url = (args: { notification: number | { id: 
 
 /**
 * @see \App\Http\Controllers\ToggleNotificationChannelController::__invoke
-* @see app/Http/Controllers/ToggleNotificationChannelController.php:15
+* @see app/Http/Controllers/ToggleNotificationChannelController.php:14
 * @route '/settings/notifications/{notification}/toggle'
 */
-ToggleNotificationChannelController.patch = (args: { notification: number | { id: number } } | [notification: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+ToggleNotificationChannelController.patch = (args: { notification: string | number } | [notification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: ToggleNotificationChannelController.url(args, options),
     method: 'patch',
 })

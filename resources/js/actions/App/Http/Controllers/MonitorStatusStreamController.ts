@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorStatusStreamController::__invoke
-* @see app/Http/Controllers/MonitorStatusStreamController.php:19
+* @see app/Http/Controllers/MonitorStatusStreamController.php:20
 * @route '/api/monitor-status-stream'
 */
 const MonitorStatusStreamController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ MonitorStatusStreamController.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorStatusStreamController::__invoke
-* @see app/Http/Controllers/MonitorStatusStreamController.php:19
+* @see app/Http/Controllers/MonitorStatusStreamController.php:20
 * @route '/api/monitor-status-stream'
 */
 MonitorStatusStreamController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ MonitorStatusStreamController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorStatusStreamController::__invoke
-* @see app/Http/Controllers/MonitorStatusStreamController.php:19
+* @see app/Http/Controllers/MonitorStatusStreamController.php:20
 * @route '/api/monitor-status-stream'
 */
 MonitorStatusStreamController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ MonitorStatusStreamController.get = (options?: RouteQueryOptions): RouteDefiniti
 
 /**
 * @see \App\Http\Controllers\MonitorStatusStreamController::__invoke
-* @see app/Http/Controllers/MonitorStatusStreamController.php:19
+* @see app/Http/Controllers/MonitorStatusStreamController.php:20
 * @route '/api/monitor-status-stream'
 */
 MonitorStatusStreamController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

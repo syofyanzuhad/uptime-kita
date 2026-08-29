@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::monitors
-* @see app/Http/Controllers/PublicStatusPageController.php:51
+* @see app/Http/Controllers/PublicStatusPageController.php:52
 * @route '/status/{path}/monitors'
 */
 export const monitors = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ monitors.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::monitors
-* @see app/Http/Controllers/PublicStatusPageController.php:51
+* @see app/Http/Controllers/PublicStatusPageController.php:52
 * @route '/status/{path}/monitors'
 */
 monitors.url = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ monitors.url = (args: { path: string | number } | [path: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::monitors
-* @see app/Http/Controllers/PublicStatusPageController.php:51
+* @see app/Http/Controllers/PublicStatusPageController.php:52
 * @route '/status/{path}/monitors'
 */
 monitors.get = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ monitors.get = (args: { path: string | number } | [path: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::monitors
-* @see app/Http/Controllers/PublicStatusPageController.php:51
+* @see app/Http/Controllers/PublicStatusPageController.php:52
 * @route '/status/{path}/monitors'
 */
 monitors.head = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

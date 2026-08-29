@@ -41,7 +41,7 @@ pulse.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::home
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::home
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -65,7 +65,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::home
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -75,7 +75,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::home
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -85,7 +85,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:10
+* @see app/Http/Controllers/DashboardController.php:11
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -100,7 +100,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:10
+* @see app/Http/Controllers/DashboardController.php:11
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -109,7 +109,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:10
+* @see app/Http/Controllers/DashboardController.php:11
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -119,7 +119,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:10
+* @see app/Http/Controllers/DashboardController.php:11
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

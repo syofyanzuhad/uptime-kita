@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 const index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors'
 */
 index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index4d9ff2a9ee3fbf5d0b1b4e5f9b3dd351.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 const indexb3dd224135898e01b6529dd9369583d9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ indexb3dd224135898e01b6529dd9369583d9.definition = {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 indexb3dd224135898e01b6529dd9369583d9.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ indexb3dd224135898e01b6529dd9369583d9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 indexb3dd224135898e01b6529dd9369583d9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ indexb3dd224135898e01b6529dd9369583d9.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\MonitorCompactController::index
-* @see app/Http/Controllers/MonitorCompactController.php:16
+* @see app/Http/Controllers/MonitorCompactController.php:17
 * @route '/monitors/compact'
 */
 indexb3dd224135898e01b6529dd9369583d9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

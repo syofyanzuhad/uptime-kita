@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import publicMethodC5d39d from './public'
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::publicMethod
-* @see app/Http/Controllers/PublicStatusPageController.php:16
+* @see app/Http/Controllers/PublicStatusPageController.php:17
 * @route '/status/{path}'
 */
 export const publicMethod = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ publicMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::publicMethod
-* @see app/Http/Controllers/PublicStatusPageController.php:16
+* @see app/Http/Controllers/PublicStatusPageController.php:17
 * @route '/status/{path}'
 */
 publicMethod.url = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ publicMethod.url = (args: { path: string | number } | [path: string | number ] |
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::publicMethod
-* @see app/Http/Controllers/PublicStatusPageController.php:16
+* @see app/Http/Controllers/PublicStatusPageController.php:17
 * @route '/status/{path}'
 */
 publicMethod.get = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ publicMethod.get = (args: { path: string | number } | [path: string | number ] |
 
 /**
 * @see \App\Http\Controllers\PublicStatusPageController::publicMethod
-* @see app/Http/Controllers/PublicStatusPageController.php:16
+* @see app/Http/Controllers/PublicStatusPageController.php:17
 * @route '/status/{path}'
 */
 publicMethod.head = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

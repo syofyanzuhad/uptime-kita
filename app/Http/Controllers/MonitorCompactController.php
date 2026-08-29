@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MonitorCompactController extends Controller
 {
     /**
      * Display a compact listing of all monitors.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $search = $request->search;
         $isGuest = ! auth()->check();

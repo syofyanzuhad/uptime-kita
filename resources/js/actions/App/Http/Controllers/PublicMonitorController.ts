@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 const index980bb49ee7ae63891f1d891d2fbcf1c9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index980bb49ee7ae63891f1d891d2fbcf1c9.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 index980bb49ee7ae63891f1d891d2fbcf1c9.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index980bb49ee7ae63891f1d891d2fbcf1c9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 index980bb49ee7ae63891f1d891d2fbcf1c9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index980bb49ee7ae63891f1d891d2fbcf1c9.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/'
 */
 index980bb49ee7ae63891f1d891d2fbcf1c9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index980bb49ee7ae63891f1d891d2fbcf1c9.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 const indexc50b27167f310089cd51bd16c2529933 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ indexc50b27167f310089cd51bd16c2529933.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 indexc50b27167f310089cd51bd16c2529933.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ indexc50b27167f310089cd51bd16c2529933.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 indexc50b27167f310089cd51bd16c2529933.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ indexc50b27167f310089cd51bd16c2529933.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\PublicMonitorController::index
-* @see app/Http/Controllers/PublicMonitorController.php:22
+* @see app/Http/Controllers/PublicMonitorController.php:24
 * @route '/public-monitors'
 */
 indexc50b27167f310089cd51bd16c2529933.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
