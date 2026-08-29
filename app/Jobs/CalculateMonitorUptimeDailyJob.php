@@ -30,7 +30,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
      */
     public function __construct()
     {
-        $this->onQueue('low');
+        $this->onQueue('default');
     }
 
     /**
@@ -75,7 +75,7 @@ class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
 
                     foreach ($dateStrings as $dateString) {
                         if ($dateString === $yesterday || ! in_array($dateString, $existingDates, true)) {
-                            dispatch(new CalculateSingleMonitorUptimeJob($monitorId, $dateString))->onQueue('low');
+                            dispatch(new CalculateSingleMonitorUptimeJob($monitorId, $dateString))->onQueue('default');
                             $totalJobs++;
                         }
                     }

@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorStatistic;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Nightwatch\Facades\Nightwatch;
 
-class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
+class CalculateMonitorStatisticsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,28 +25,25 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
     public $backoff = [30, 60, 120];
 
     /**
-     * The number of seconds after which the job's unique lock will be released.
+     * @var array<int>|null
      */
-    public $uniqueFor = 300;
-
-    protected ?int $monitorId;
+    protected ?array $monitorIds = null;
 
     /**
      * Create a new job instance.
+     *
+     * @param  array<int>|int|null  $monitorIds
      */
-    public function __construct(?int $monitorId = null)
+    public function __construct(array|int|null $monitorIds = null)
     {
-        $this->monitorId = $monitorId;
-        $this->timeout = $monitorId ? 60 : 120;
-        $this->onQueue('default');
-    }
+        if (is_int($monitorIds)) {
+            $this->monitorIds = [$monitorIds];
+        } else {
+            $this->monitorIds = $monitorIds;
+        }
 
-    /**
-     * Get the unique ID for the job.
-     */
-    public function uniqueId(): string
-    {
-        return $this->monitorId ? 'monitor-'.$this->monitorId : 'all-monitors';
+        $this->timeout = $this->monitorIds ? 60 : 120;
+        $this->onQueue('default');
     }
 
     /**
@@ -61,34 +57,32 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
         }
 
         try {
-            if ($this->monitorId) {
-                $monitor = Monitor::where('id', $this->monitorId)
-                    ->where('is_public', true)
-                    ->first();
-
-                if (! $monitor) {
+            if ($this->monitorIds !== null) {
+                if (empty($this->monitorIds)) {
                     return;
                 }
 
-                $this->calculateStatistics($monitor);
+                $monitors = Monitor::whereIn('id', $this->monitorIds)
+                    ->where('is_public', true)
+                    ->get();
+
+                foreach ($monitors as $monitor) {
+                    $this->calculateStatistics($monitor);
+                }
 
                 return;
             }
 
-            // Dispatcher path: fan out one child job per monitor (parallelizable, short-lived).
-            $ids = Monitor::where('is_public', true)
+            // Dispatcher path: fan out in batches of 25 monitors to minimize queue overhead.
+            $chunkSize = (int) config('uptime-monitor.statistics_batch_size', 25);
+
+            Monitor::where('is_public', true)
                 ->where('uptime_check_enabled', true)
-                ->pluck('id');
-
-            if ($ids->isEmpty()) {
-                return;
-            }
-
-            foreach ($ids as $id) {
-                dispatch(new static($id));
-            }
-
-            Log::info("Dispatched statistics jobs for {$ids->count()} monitor(s).");
+                ->select('id')
+                ->chunkById($chunkSize, function ($monitors) {
+                    $ids = $monitors->pluck('id')->all();
+                    dispatch(new static($ids))->onQueue('default');
+                });
         } catch (\Throwable $e) {
             report($e);
             throw $e;
@@ -200,7 +194,7 @@ class CalculateMonitorStatisticsJob implements ShouldBeUnique, ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('CalculateMonitorStatisticsJob failed', [
-            'monitor_id' => $this->monitorId,
+            'monitor_ids' => $this->monitorIds,
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString(),
         ]);

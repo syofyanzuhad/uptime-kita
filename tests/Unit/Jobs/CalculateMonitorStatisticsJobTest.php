@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Queue;
 
 describe('CalculateMonitorStatisticsJob', function () {
     describe('handle', function () {
-        it('processes all public monitors sequentially', function () {
+        it('processes all public monitors sequentially in batches', function () {
             Queue::fake();
 
             $monitor = Monitor::factory()->create([
@@ -31,7 +31,9 @@ describe('CalculateMonitorStatisticsJob', function () {
             $job->handle();
 
             Queue::assertPushed(CalculateMonitorStatisticsJob::class, function ($pushed) use ($monitor) {
-                return (new ReflectionProperty($pushed, 'monitorId'))->getValue($pushed) === $monitor->id;
+                $ids = (new ReflectionProperty($pushed, 'monitorIds'))->getValue($pushed);
+
+                return is_array($ids) && in_array($monitor->id, $ids, true);
             });
         });
 
@@ -61,6 +63,43 @@ describe('CalculateMonitorStatisticsJob', function () {
 
             $this->assertDatabaseHas('monitor_statistics', ['monitor_id' => $monitor1->id]);
             $this->assertDatabaseMissing('monitor_statistics', ['monitor_id' => $monitor2->id]);
+        });
+
+        it('calculates statistics for a batch of monitors', function () {
+            $monitor1 = Monitor::factory()->create([
+                'is_public' => true,
+                'uptime_check_enabled' => true,
+            ]);
+            $monitor2 = Monitor::factory()->create([
+                'is_public' => true,
+                'uptime_check_enabled' => true,
+            ]);
+
+            MonitorHistory::factory()->create([
+                'monitor_id' => $monitor1->id,
+                'uptime_status' => 'up',
+                'created_at' => now(),
+            ]);
+            MonitorHistory::factory()->create([
+                'monitor_id' => $monitor2->id,
+                'uptime_status' => 'up',
+                'created_at' => now(),
+            ]);
+
+            MonitorUptimeDaily::updateOrInsert(
+                ['monitor_id' => $monitor1->id, 'date' => now()->toDateString()],
+                ['uptime_percentage' => 100, 'total_checks' => 1, 'failed_checks' => 0]
+            );
+            MonitorUptimeDaily::updateOrInsert(
+                ['monitor_id' => $monitor2->id, 'date' => now()->toDateString()],
+                ['uptime_percentage' => 100, 'total_checks' => 1, 'failed_checks' => 0]
+            );
+
+            $job = new CalculateMonitorStatisticsJob([$monitor1->id, $monitor2->id]);
+            $job->handle();
+
+            $this->assertDatabaseHas('monitor_statistics', ['monitor_id' => $monitor1->id]);
+            $this->assertDatabaseHas('monitor_statistics', ['monitor_id' => $monitor2->id]);
         });
 
         it('only processes public monitors', function () {
