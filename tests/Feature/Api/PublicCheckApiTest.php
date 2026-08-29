@@ -90,3 +90,36 @@ test('it blocks SSRF attempts against private and local IPs', function (string $
     '172.16.0.1',
     '169.254.169.254',
 ]);
+
+test('it handles network exceptions gracefully', function () {
+    Http::fake([
+        'https://unreachable.org*' => function () {
+            throw new Exception('cURL error 28: Operation timed out');
+        },
+    ]);
+
+    $response = getJson('/api/v1/check?url=unreachable.org');
+
+    $response->assertOk()
+        ->assertJson([
+            'ok' => false,
+            'status' => 'down',
+        ]);
+});
+
+test('it handles generic exceptions gracefully', function () {
+    Http::fake([
+        'https://generic-fail.org*' => function () {
+            throw new Exception('Connection reset by peer');
+        },
+    ]);
+
+    $response = getJson('/api/v1/check?url=generic-fail.org');
+
+    $response->assertOk()
+        ->assertJson([
+            'ok' => false,
+            'status' => 'down',
+            'error' => 'Connection reset by peer',
+        ]);
+});
