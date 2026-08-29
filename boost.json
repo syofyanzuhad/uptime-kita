@@ -6,6 +6,7 @@
         "cursor",
         "gemini"
     ],
+    "cloud": false,
     "editors": [
         "claude_code",
         "codex",
@@ -13,9 +14,19 @@
         "gemini",
         "vscode"
     ],
-    "guidelines": [
-        "inertiajs/inertia-laravel",
-        "laravel/wayfinder"
-    ],
-    "herd_mcp": true
+    "guidelines": true,
+    "herd_mcp": true,
+    "skills": [
+        "infer-conventions",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "configuring-horizon",
+        "configure-nightwatch",
+        "pulse-development",
+        "socialite-development",
+        "wayfinder-development",
+        "inertia-vue-development",
+        "tailwindcss-development",
+        "laravel-patterns"
+    ]
 }
