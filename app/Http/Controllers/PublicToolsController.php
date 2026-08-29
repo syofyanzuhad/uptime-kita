@@ -23,6 +23,15 @@ class PublicToolsController extends Controller
 
         $tools = [
             [
+                'slug' => 'website-checker',
+                'title' => 'Instant Website & Uptime Checker',
+                'description' => 'Verify website uptime, HTTP status code, latency, and global response time breakdown.',
+                'icon' => 'zap',
+                'color' => 'from-blue-600 to-indigo-600',
+                'badge' => 'Instant Uptime',
+                'href' => route('tools.website-checker'),
+            ],
+            [
                 'slug' => 'ssl-checker',
                 'title' => 'SSL Certificate Checker',
                 'description' => 'Verify SSL certificate validity, issuer, days to expiration, and SAN domains in real time.',
@@ -63,6 +72,19 @@ class PublicToolsController extends Controller
         return Inertia::render('tools/Index', [
             'tools' => $tools,
             'appUrl' => $appUrl,
+        ]);
+    }
+
+    /**
+     * Display the Website Checker tool page.
+     */
+    public function websiteChecker(Request $request): Response
+    {
+        $url = $request->query('url', '');
+
+        return Inertia::render('tools/WebsiteChecker', [
+            'initialUrl' => $url,
+            'appUrl' => config('app.url'),
         ]);
     }
 

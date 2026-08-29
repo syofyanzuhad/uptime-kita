@@ -9,7 +9,16 @@ test('tools index page renders successfully', function () {
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/Index')
-        ->has('tools', 4)
+        ->has('tools', 5)
+    );
+});
+
+test('website checker page renders successfully', function () {
+    $response = $this->get('/tools/website-checker');
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('tools/WebsiteChecker')
     );
 });
 
