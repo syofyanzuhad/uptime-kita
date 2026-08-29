@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Health\Checks\MonitorCheckDriftCheck;
+use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Listeners\BroadcastMonitorStatusChange;
 use App\Listeners\DispatchConfirmationCheck;
 use App\Listeners\SendCustomMonitorNotification;
@@ -89,7 +90,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Nightwatch::rejectQueuedJobs(function (QueuedJob $job) {
-            return $job->name === 'Laravel\Telescope\Jobs\ProcessPendingUpdates';
+            if ($job->name === 'Laravel\Telescope\Jobs\ProcessPendingUpdates') {
+                return true;
+            }
+
+            if ($job->name === CalculateMonitorStatisticsJob::class) {
+                // Drop 95% of CalculateMonitorStatisticsJob executions (keep 5% sample)
+                return random_int(1, 100) > 5;
+            }
+
+            return false;
         });
 
         LogViewer::auth(fn ($request) => auth()->id() === 1);
