@@ -492,9 +492,7 @@
                                     <span v-else-if="monitor.domain_expiration_lookup_error" class="text-xs font-semibold text-rose-500">
                                         Lookup error
                                     </span>
-                                    <span v-else class="text-xs font-medium text-gray-400">
-                                        Checking...
-                                    </span>
+                                    <span v-else class="text-xs font-medium text-gray-400"> Checking... </span>
                                 </div>
                                 <div v-if="monitor.domain_expiration_date" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                     Expires: {{ formatDate(monitor.domain_expiration_date) }}

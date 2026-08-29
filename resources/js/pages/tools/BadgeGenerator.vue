@@ -13,7 +13,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const domainInput = ref(props.initialDomain || 'google.com');
-const badgeStyle = ref('flat');
 const copiedMarkdown = ref(false);
 const copiedHtml = ref(false);
 const copiedUrl = ref(false);
@@ -51,13 +50,7 @@ function copy(text: string, type: 'md' | 'html' | 'url') {
 </script>
 
 <template>
-    <PublicLayout
-        :title="pageTitle"
-        :description="pageDescription"
-        :share-url="shareUrl"
-        :share-text="shareText"
-        container-class="max-w-4xl"
-    >
+    <PublicLayout :title="pageTitle" :description="pageDescription" :share-url="shareUrl" :share-text="shareText" container-class="max-w-4xl">
         <!-- Breadcrumb -->
         <div class="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
             <Link href="/tools" class="hover:text-blue-600 dark:hover:text-blue-400">Free Tools</Link>
@@ -67,12 +60,12 @@ function copy(text: string, type: 'md' | 'html' | 'url') {
 
         <!-- Header -->
         <div class="mb-6 text-center sm:mb-8">
-            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+            <div
+                class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md"
+            >
                 <Icon name="tag" class="h-6 w-6" />
             </div>
-            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
-                README Status Badge Generator
-            </h1>
+            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">README Status Badge Generator</h1>
             <p class="mx-auto mt-1.5 max-w-xl text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                 Embed live SVG uptime status badges into your GitHub repositories, documentation, and websites.
             </p>
@@ -83,9 +76,7 @@ function copy(text: string, type: 'md' | 'html' | 'url') {
             <CardContent class="p-4 sm:p-6">
                 <div class="space-y-4">
                     <div>
-                        <label for="badge-domain" class="block text-xs font-bold text-gray-700 dark:text-gray-300">
-                            Domain Name to Monitor
-                        </label>
+                        <label for="badge-domain" class="block text-xs font-bold text-gray-700 dark:text-gray-300"> Domain Name to Monitor </label>
                         <div class="relative mt-1.5">
                             <Icon name="globe" class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <input
@@ -124,7 +115,9 @@ function copy(text: string, type: 'md' | 'html' | 'url') {
                             {{ copiedMarkdown ? '✓ Copied' : 'Copy Markdown' }}
                         </button>
                     </div>
-                    <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-3 font-mono text-xs text-emerald-400"><code>{{ markdownCode }}</code></pre>
+                    <pre
+                        class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-3 font-mono text-xs text-emerald-400"
+                    ><code>{{ markdownCode }}</code></pre>
                 </CardContent>
             </Card>
 

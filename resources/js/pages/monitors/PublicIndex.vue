@@ -320,10 +320,6 @@ function tryExample(domain: string) {
     domainInput.value = domain;
     checkDomain();
 }
-function monitorThisDomain() {
-    if (!domainResult.value) return;
-    router.visit(`/monitor/create?url=${encodeURIComponent('https://' + domainResult.value.host)}`);
-}
 
 function copyApiCommand(customHost?: string) {
     const target = customHost || domainInput.value.trim() || 'example.com';
@@ -365,7 +361,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         :json-ld="jsonLd"
     >
         <!-- Mobile: Ultra-Compact 1-Tap Health Check Banner -->
-        <div class="sm:hidden mb-2.5">
+        <div class="mb-2.5 sm:hidden">
             <button
                 v-if="!showMobileChecker"
                 type="button"
@@ -379,10 +375,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 <span class="rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-extrabold uppercase">Free Test</span>
             </button>
 
-            <div
-                v-else
-                class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3 shadow-md"
-            >
+            <div v-else class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-3 shadow-md">
                 <div class="mb-2 flex items-center justify-between">
                     <div class="flex items-center gap-1.5 text-xs font-bold text-white">
                         <Icon name="zap" class="h-3.5 w-3.5 text-amber-300" />
@@ -403,7 +396,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         v-model="domainInput"
                         type="text"
                         placeholder="Enter domain or URL..."
-                        class="w-full rounded-xl border-0 bg-white py-1.5 px-3 text-xs text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                        class="w-full rounded-xl border-0 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:outline-none"
                     />
                     <button
                         type="submit"
@@ -417,12 +410,12 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
 
                 <div v-if="domainResult" class="mt-2 rounded-xl bg-black/40 p-2 text-xs text-white">
                     <div class="flex items-center justify-between">
-                        <span class="font-bold">{{ domainResult.domain }}</span>
+                        <span class="font-bold">{{ domainResult.host }}</span>
                         <span
-                            class="rounded px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
-                            :class="domainResult.status === 'up' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'"
+                            class="py-0.2 rounded px-1.5 text-[9px] font-extrabold uppercase"
+                            :class="domainResult.ok ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'"
                         >
-                            {{ domainResult.status === 'up' ? 'Online' : 'Down' }} ({{ domainResult.status_code || 'Err' }})
+                            {{ domainResult.ok ? 'Online' : 'Down' }} ({{ domainResult.status_code || 'Err' }})
                         </span>
                     </div>
                 </div>
@@ -500,7 +493,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                 <!-- Compact Example Chips & API Toggle -->
                 <div class="mt-2 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-blue-100/80">
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <span class="font-medium text-[10px]">Try:</span>
+                        <span class="text-[10px] font-medium">Try:</span>
                         <button
                             v-for="ex in exampleDomains"
                             :key="ex"
@@ -532,7 +525,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         <div class="flex items-center gap-1.5 font-sans font-bold text-white">
                             <Icon name="code" class="h-3 w-3 text-emerald-400" />
                             <span>Instant Uptime API</span>
-                            <span class="rounded bg-emerald-500/20 px-1 py-0.2 text-[9px] font-extrabold text-emerald-300">30 req/min free</span>
+                            <span class="py-0.2 rounded bg-emerald-500/20 px-1 text-[9px] font-extrabold text-emerald-300">30 req/min free</span>
                         </div>
                         <span class="font-mono text-[9px] text-gray-400">GET /api/v1/check</span>
                     </div>
@@ -557,7 +550,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     v-if="domainResult"
                     class="mt-2.5 rounded-xl p-2.5 text-left shadow-sm backdrop-blur-sm transition-all"
                     :class="
-                        domainResult.status === 'up'
+                        domainResult.ok
                             ? 'border border-emerald-400/40 bg-emerald-950/60 text-emerald-100'
                             : 'border border-rose-400/40 bg-rose-950/60 text-rose-100'
                     "
@@ -566,39 +559,30 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         <div class="flex items-center gap-2.5">
                             <div
                                 class="flex h-7 w-7 items-center justify-center rounded-lg font-bold text-white"
-                                :class="domainResult.status === 'up' ? 'bg-emerald-500' : 'bg-rose-500'"
+                                :class="domainResult.ok ? 'bg-emerald-500' : 'bg-rose-500'"
                             >
-                                <Icon :name="domainResult.status === 'up' ? 'check' : 'x'" class="h-4 w-4" />
+                                <Icon :name="domainResult.ok ? 'check' : 'x'" class="h-4 w-4" />
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs font-bold">{{ domainResult.domain }}</span>
+                                    <span class="text-xs font-bold">{{ domainResult.host }}</span>
                                     <span
-                                        class="rounded-full px-1.5 py-0.2 text-[9px] font-extrabold uppercase"
-                                        :class="domainResult.status === 'up' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-rose-500/30 text-rose-300'"
+                                        class="py-0.2 rounded-full px-1.5 text-[9px] font-extrabold uppercase"
+                                        :class="domainResult.ok ? 'bg-emerald-500/30 text-emerald-300' : 'bg-rose-500/30 text-rose-300'"
                                     >
-                                        {{ domainResult.status === 'up' ? 'Operational' : 'Down' }}
+                                        {{ domainResult.ok ? 'Operational' : 'Down' }}
                                     </span>
                                 </div>
                                 <div class="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] text-white/70">
                                     <span v-if="domainResult.status_code">HTTP {{ domainResult.status_code }}</span>
-                                    <span v-if="domainResult.response_time">Latency: {{ domainResult.response_time }}ms</span>
-                                    <span v-if="domainResult.ip">IP: {{ domainResult.ip }}</span>
+                                    <span v-if="domainResult.response_time_ms">Latency: {{ domainResult.response_time_ms }}ms</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-1.5 self-end sm:self-auto">
                             <Link
-                                v-if="domainResult.monitor_slug"
-                                :href="`/m/${domainResult.monitor_slug}`"
-                                class="rounded-lg bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-white/30"
-                            >
-                                View Details
-                            </Link>
-                            <Link
-                                v-else
-                                :href="`/monitor/create?url=${encodeURIComponent(domainResult.url || 'https://' + domainResult.domain)}`"
+                                :href="`/monitor/create?url=${encodeURIComponent(domainResult.url || 'https://' + domainResult.host)}`"
                                 class="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-50"
                             >
                                 Track Uptime
@@ -610,19 +594,49 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         </div>
 
         <!-- Mobile: Sleek Micro Horizontal Metric Ribbon -->
-        <div class="sm:hidden flex overflow-x-auto no-scrollbar gap-1.5 pb-1 mb-2.5">
+        <div class="no-scrollbar mb-2.5 flex gap-1.5 overflow-x-auto pb-1 sm:hidden">
             <button
                 v-for="s in [
-                    { key: 'all', label: 'Total', value: stats.total_public, color: 'text-gray-900 dark:text-white', activeClass: 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40' },
-                    { key: 'up', label: 'Online', value: stats.up, color: 'text-emerald-600 dark:text-emerald-400', activeClass: 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40' },
-                    { key: 'down', label: 'Down', value: stats.down, color: stats.down > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500', activeClass: 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40' },
-                    { key: 'checks', label: '24h Pings', value: formatCompactNumber(stats.daily_checks || 0), color: 'text-indigo-600 dark:text-indigo-400', activeClass: '' },
-                    { key: 'overall', label: 'Uptime', value: Math.round((stats.up / (stats.total_public || 1)) * 100) + '%', color: 'text-blue-600 dark:text-blue-400', activeClass: '' },
+                    {
+                        key: 'all',
+                        label: 'Total',
+                        value: stats.total_public,
+                        color: 'text-gray-900 dark:text-white',
+                        activeClass: 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40',
+                    },
+                    {
+                        key: 'up',
+                        label: 'Online',
+                        value: stats.up,
+                        color: 'text-emerald-600 dark:text-emerald-400',
+                        activeClass: 'border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/40',
+                    },
+                    {
+                        key: 'down',
+                        label: 'Down',
+                        value: stats.down,
+                        color: stats.down > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-500',
+                        activeClass: 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40',
+                    },
+                    {
+                        key: 'checks',
+                        label: '24h Pings',
+                        value: formatCompactNumber(stats.daily_checks || 0),
+                        color: 'text-indigo-600 dark:text-indigo-400',
+                        activeClass: '',
+                    },
+                    {
+                        key: 'overall',
+                        label: 'Uptime',
+                        value: Math.round((stats.up / (stats.total_public || 1)) * 100) + '%',
+                        color: 'text-blue-600 dark:text-blue-400',
+                        activeClass: '',
+                    },
                 ]"
                 :key="s.key"
                 type="button"
                 @click="s.key === 'all' || s.key === 'up' || s.key === 'down' ? filterByStatus(s.key) : null"
-                class="shrink-0 flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/90 px-2.5 py-1.5 text-xs shadow-2xs dark:border-gray-800/80 dark:bg-gray-900/90"
+                class="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/90 px-2.5 py-1.5 text-xs shadow-2xs dark:border-gray-800/80 dark:bg-gray-900/90"
                 :class="statusFilter === s.key ? s.activeClass : ''"
             >
                 <span class="text-[10px] font-bold text-gray-500 uppercase dark:text-gray-400">{{ s.label }}:</span>
@@ -631,7 +645,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
         </div>
 
         <!-- Desktop Metric Summary Cards: Compact 5-Column Grid -->
-        <div class="mb-4 hidden grid-cols-2 gap-2 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-3">
+        <div class="mb-4 hidden grid-cols-2 gap-2 sm:grid sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
             <button
                 v-for="s in [
                     {
@@ -700,12 +714,18 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <div class="min-w-0">
                         <div class="flex items-center gap-1">
                             <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">Status Page</h3>
-                            <span class="rounded bg-blue-600/10 px-1 py-0.2 text-[8px] font-extrabold text-blue-600 uppercase dark:bg-blue-400/10 dark:text-blue-400">Demo</span>
+                            <span
+                                class="py-0.2 rounded bg-blue-600/10 px-1 text-[8px] font-extrabold text-blue-600 uppercase dark:bg-blue-400/10 dark:text-blue-400"
+                                >Demo</span
+                            >
                         </div>
                         <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">90-day component health</p>
                     </div>
                 </div>
-                <Icon name="arrowRight" class="h-3.5 w-3.5 shrink-0 text-blue-600 transition-transform group-hover:translate-x-0.5 dark:text-blue-400" />
+                <Icon
+                    name="arrowRight"
+                    class="h-3.5 w-3.5 shrink-0 text-blue-600 transition-transform group-hover:translate-x-0.5 dark:text-blue-400"
+                />
             </Link>
 
             <Link
@@ -721,7 +741,10 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <div class="min-w-0">
                         <div class="flex items-center gap-1">
                             <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">NOC Wallboard</h3>
-                            <span class="rounded bg-purple-600/10 px-1 py-0.2 text-[8px] font-extrabold text-purple-600 uppercase dark:bg-purple-400/10 dark:text-purple-400">Kiosk</span>
+                            <span
+                                class="py-0.2 rounded bg-purple-600/10 px-1 text-[8px] font-extrabold text-purple-600 uppercase dark:bg-purple-400/10 dark:text-purple-400"
+                                >Kiosk</span
+                            >
                         </div>
                         <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">High-density live grid</p>
                     </div>
@@ -747,13 +770,16 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                     <div class="min-w-0">
                         <div class="flex items-center gap-1">
                             <h3 class="truncate text-xs font-bold text-gray-900 dark:text-white">Health Check API</h3>
-                            <span class="rounded bg-emerald-600/10 px-1 py-0.2 text-[8px] font-extrabold text-emerald-600 uppercase dark:bg-emerald-400/10 dark:text-emerald-400">Free</span>
+                            <span
+                                class="py-0.2 rounded bg-emerald-600/10 px-1 text-[8px] font-extrabold text-emerald-600 uppercase dark:bg-emerald-400/10 dark:text-emerald-400"
+                                >Free</span
+                            >
                         </div>
                         <p class="truncate text-[10px] text-gray-500 dark:text-gray-400">cURL / CI/CD automation</p>
                     </div>
                 </div>
                 <div class="ml-2 flex shrink-0 items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                    <span class="hidden sm:inline text-[10px]">{{ copiedApi ? 'Copied!' : 'Copy' }}</span>
+                    <span class="hidden text-[10px] sm:inline">{{ copiedApi ? 'Copied!' : 'Copy' }}</span>
                     <Icon :name="copiedApi ? 'check' : 'copy'" class="h-3 w-3" />
                 </div>
             </button>
@@ -767,15 +793,21 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                         <div class="flex items-center gap-2">
                             <div
                                 class="flex h-6 w-6 items-center justify-center rounded-lg"
-                                :class="stats.down > 0 ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 animate-pulse' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'"
+                                :class="
+                                    stats.down > 0
+                                        ? 'animate-pulse bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
+                                        : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                "
                             >
                                 <Icon :name="stats.down > 0 ? 'alertTriangle' : 'activity'" class="h-3.5 w-3.5" />
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
                                     <h2 class="text-xs font-bold text-gray-900 sm:text-sm dark:text-white">Recent Incident & Event Activity</h2>
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
-                                        <span class="h-1 w-1 rounded-full bg-emerald-500 animate-ping"></span>
+                                    <span
+                                        class="py-0.2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400"
+                                    >
+                                        <span class="h-1 w-1 animate-ping rounded-full bg-emerald-500"></span>
                                         Live Feed
                                     </span>
                                 </div>
@@ -819,7 +851,7 @@ const heroInputRef = ref<HTMLInputElement | null>(null);
                             </div>
 
                             <span
-                                class="shrink-0 rounded-full px-2 py-0.2 text-[10px] font-bold"
+                                class="py-0.2 shrink-0 rounded-full px-2 text-[10px] font-bold"
                                 :class="
                                     inc.ended_at
                                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'

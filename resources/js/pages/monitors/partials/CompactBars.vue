@@ -62,7 +62,9 @@ const getDomainFromUrl = (url: string) => {
                 </div>
                 <div class="mt-0.5 flex items-center gap-3 text-[9px] font-bold tracking-wider text-gray-400 uppercase dark:text-gray-500">
                     <span v-if="monitor.statistics?.avg_response_time_24h">{{ monitor.statistics.avg_response_time_24h }}ms</span>
-                    <span v-if="(monitor.statistics?.incidents_24h ?? 0) > 0" class="text-red-400">{{ monitor.statistics?.incidents_24h }} incidents</span>
+                    <span v-if="(monitor.statistics?.incidents_24h ?? 0) > 0" class="text-red-400"
+                        >{{ monitor.statistics?.incidents_24h }} incidents</span
+                    >
                     <button v-if="canEdit" @click.stop="emit('edit', monitor)" class="ml-auto text-blue-600 hover:underline dark:text-blue-400">
                         EDIT
                     </button>

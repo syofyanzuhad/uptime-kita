@@ -59,7 +59,7 @@ async function lookupDns() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({ domain: d, type: typeFilter.value }),
@@ -91,13 +91,7 @@ function copyRecord(target: string, index: number) {
 </script>
 
 <template>
-    <PublicLayout
-        :title="pageTitle"
-        :description="pageDescription"
-        :share-url="shareUrl"
-        :share-text="shareText"
-        container-class="max-w-4xl"
-    >
+    <PublicLayout :title="pageTitle" :description="pageDescription" :share-url="shareUrl" :share-text="shareText" container-class="max-w-4xl">
         <!-- Breadcrumb -->
         <div class="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
             <Link href="/tools" class="hover:text-blue-600 dark:hover:text-blue-400">Free Tools</Link>
@@ -107,12 +101,12 @@ function copyRecord(target: string, index: number) {
 
         <!-- Header -->
         <div class="mb-6 text-center sm:mb-8">
-            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md">
+            <div
+                class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md"
+            >
                 <Icon name="globe" class="h-6 w-6" />
             </div>
-            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
-                DNS Record Lookup
-            </h1>
+            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">DNS Record Lookup</h1>
             <p class="mx-auto mt-1.5 max-w-xl text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                 Inspect public DNS records (A, AAAA, MX, TXT, CNAME, NS, SOA) and verify nameservers.
             </p>
@@ -152,12 +146,15 @@ function copyRecord(target: string, index: number) {
 
                 <!-- Sample Domains -->
                 <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <span class="font-medium text-[11px]">Popular:</span>
+                    <span class="text-[11px] font-medium">Popular:</span>
                     <button
                         v-for="d in ['google.com', 'microsoft.com', 'apple.com', 'laravel.com']"
                         :key="d"
                         type="button"
-                        @click="domainInput = d; lookupDns()"
+                        @click="
+                            domainInput = d;
+                            lookupDns();
+                        "
                         class="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                         {{ d }}
@@ -167,7 +164,10 @@ function copyRecord(target: string, index: number) {
         </Card>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300">
+        <div
+            v-if="errorMessage"
+            class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300"
+        >
             <div class="flex items-center gap-2">
                 <Icon name="alertTriangle" class="h-4 w-4 shrink-0" />
                 <span>{{ errorMessage }}</span>
@@ -178,9 +178,7 @@ function copyRecord(target: string, index: number) {
         <div v-if="result && result.ok" class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-black text-gray-900 dark:text-white">
-                        {{ result.domain }} ({{ result.count }} records)
-                    </h2>
+                    <h2 class="text-base font-black text-gray-900 dark:text-white">{{ result.domain }} ({{ result.count }} records)</h2>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Resolved in {{ result.elapsed_ms }}ms</p>
                 </div>
             </div>
@@ -201,18 +199,28 @@ function copyRecord(target: string, index: number) {
                                         'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300': rec.type === 'A' || rec.type === 'AAAA',
                                         'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300': rec.type === 'MX',
                                         'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300': rec.type === 'TXT',
-                                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300': rec.type === 'CNAME' || rec.type === 'NS',
-                                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300': !['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS'].includes(rec.type),
+                                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300':
+                                            rec.type === 'CNAME' || rec.type === 'NS',
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300': ![
+                                            'A',
+                                            'AAAA',
+                                            'MX',
+                                            'TXT',
+                                            'CNAME',
+                                            'NS',
+                                        ].includes(rec.type),
                                     }"
                                 >
                                     {{ rec.type }}
                                 </span>
                                 <div class="min-w-0 flex-1">
-                                    <p class="font-mono text-xs font-bold text-gray-900 break-all dark:text-white">
+                                    <p class="font-mono text-xs font-bold break-all text-gray-900 dark:text-white">
                                         {{ rec.target }}
                                     </p>
                                     <div class="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
-                                        <span>Host: <strong class="text-gray-700 dark:text-gray-300">{{ rec.host }}</strong></span>
+                                        <span
+                                            >Host: <strong class="text-gray-700 dark:text-gray-300">{{ rec.host }}</strong></span
+                                        >
                                         <span>•</span>
                                         <span>TTL: {{ rec.ttl }}s</span>
                                         <span v-if="rec.pri !== null && rec.pri !== undefined">• Priority: {{ rec.pri }}</span>

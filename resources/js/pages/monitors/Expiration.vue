@@ -45,13 +45,7 @@ const tagFilter = ref(props.tagFilter || '');
 const perPage = ref(props.perPage || 50);
 
 const hasActiveFilters = computed(() => {
-    return (
-        searchQuery.value !== '' ||
-        statusFilter.value !== 'all' ||
-        uptimeFilter.value !== 'all' ||
-        tagFilter.value !== '' ||
-        perPage.value !== 50
-    );
+    return searchQuery.value !== '' || statusFilter.value !== 'all' || uptimeFilter.value !== 'all' || tagFilter.value !== '' || perPage.value !== 50;
 });
 
 const applyFilters = () => {
@@ -192,7 +186,7 @@ const tagOptions = computed(() => [
                     :key="card.label"
                     type="button"
                     @click="filterByStat(card.key)"
-                    class="flex items-center gap-4 rounded-3xl border p-5 text-left shadow-sm transition-all backdrop-blur-sm hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    class="flex cursor-pointer items-center gap-4 rounded-3xl border p-5 text-left shadow-sm backdrop-blur-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
                     :class="
                         card.active
                             ? 'border-blue-500/80 bg-blue-50/40 ring-2 ring-blue-500/30 dark:border-blue-500/80 dark:bg-blue-950/20'
@@ -252,24 +246,17 @@ const tagOptions = computed(() => [
                     <!-- Tag Filter -->
                     <div>
                         <label class="mb-1.5 block text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">Tag</label>
-                        <Select
-                            v-model="tagFilter"
-                            :items="tagOptions"
-                            placeholder="All tags"
-                            class="h-10 rounded-2xl"
-                        />
+                        <Select v-model="tagFilter" :items="tagOptions" placeholder="All tags" class="h-10 rounded-2xl" />
                     </div>
                 </div>
 
                 <!-- Active Filter Reset Bar -->
                 <div v-if="hasActiveFilters" class="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-800">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                        Filtering active results
-                    </span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400"> Filtering active results </span>
                     <button
                         type="button"
                         @click="resetFilters"
-                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer"
+                        class="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                         <Icon name="x" class="h-3.5 w-3.5" />
                         <span>Clear all filters</span>
@@ -285,7 +272,8 @@ const tagOptions = computed(() => [
                     <div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white">Active Domain Trackers</h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ props.monitors.meta.total }} monitor{{ props.monitors.meta.total === 1 ? '' : 's' }} &middot; Sorted by soonest expiration date
+                            {{ props.monitors.meta.total }} monitor{{ props.monitors.meta.total === 1 ? '' : 's' }} &middot; Sorted by soonest
+                            expiration date
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -308,13 +296,11 @@ const tagOptions = computed(() => [
                     </div>
                     <template v-if="hasActiveFilters">
                         <p class="mt-3 text-base font-bold text-gray-900 dark:text-white">No matching monitors found</p>
-                        <p class="mx-auto mt-1 max-w-sm text-xs">
-                            No domain expiration monitors match your current search or filter criteria.
-                        </p>
+                        <p class="mx-auto mt-1 max-w-sm text-xs">No domain expiration monitors match your current search or filter criteria.</p>
                         <button
                             type="button"
                             @click="resetFilters"
-                            class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                            class="mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                         >
                             <span>Clear filters</span>
                         </button>
@@ -424,4 +410,3 @@ const tagOptions = computed(() => [
         </div>
     </AppLayout>
 </template>
-

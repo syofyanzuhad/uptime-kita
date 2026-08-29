@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
-import { Card, CardContent } from '@/components/ui/card';
-import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 
 interface Tool {
     slug: string;
@@ -23,28 +21,23 @@ interface Props {
 const props = defineProps<Props>();
 
 const pageTitle = 'Free Developer & Uptime Tools - Uptime Kita';
-const pageDescription = 'Free, instant web diagnostic tools for developers and sysadmins. Check SSL certificates, DNS records, security headers, and generate live status badges.';
+const pageDescription =
+    'Free, instant web diagnostic tools for developers and sysadmins. Check SSL certificates, DNS records, security headers, and generate live status badges.';
 const shareUrl = `${props.appUrl}/tools`;
 const shareText = 'Explore free developer diagnostic tools on Uptime Kita (SSL Checker, DNS Lookup, Security Headers, and Badges).';
 </script>
 
 <template>
-    <PublicLayout
-        :title="pageTitle"
-        :description="pageDescription"
-        :share-url="shareUrl"
-        :share-text="shareText"
-        container-class="max-w-6xl"
-    >
+    <PublicLayout :title="pageTitle" :description="pageDescription" :share-url="shareUrl" :share-text="shareText" container-class="max-w-6xl">
         <!-- Header Banner -->
         <div class="mb-8 text-center sm:mb-10">
-            <div class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-300">
+            <div
+                class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-300"
+            >
                 <Icon name="zap" class="h-3.5 w-3.5 text-amber-500" />
                 <span>100% Free & No Sign-up Required</span>
             </div>
-            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-4xl dark:text-white">
-                Web Diagnostic & Developer Tools
-            </h1>
+            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-4xl dark:text-white">Web Diagnostic & Developer Tools</h1>
             <p class="mx-auto mt-2 max-w-2xl text-sm text-gray-500 sm:text-base dark:text-gray-400">
                 Fast, real-time diagnostic utilities to check your infrastructure, SSL certificates, DNS propagation, and web security.
             </p>
@@ -87,10 +80,13 @@ const shareText = 'Explore free developer diagnostic tools on Uptime Kita (SSL C
         </div>
 
         <!-- CTA Callout -->
-        <div class="mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-6 text-center text-white shadow-lg sm:p-8">
+        <div
+            class="mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 p-6 text-center text-white shadow-lg sm:p-8"
+        >
             <h3 class="text-lg font-bold sm:text-2xl">Need continuous automated monitoring?</h3>
             <p class="mx-auto mt-2 max-w-xl text-xs text-blue-100 sm:text-sm">
-                Get alerted the second your website or API goes down. Track 24/7 uptime, SSL expiration, response times, and create public status pages.
+                Get alerted the second your website or API goes down. Track 24/7 uptime, SSL expiration, response times, and create public status
+                pages.
             </p>
             <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
                 <Link

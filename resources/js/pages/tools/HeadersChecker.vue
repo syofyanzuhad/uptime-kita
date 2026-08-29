@@ -55,7 +55,7 @@ async function checkHeaders() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({ url: u }),
@@ -79,13 +79,7 @@ async function checkHeaders() {
 </script>
 
 <template>
-    <PublicLayout
-        :title="pageTitle"
-        :description="pageDescription"
-        :share-url="shareUrl"
-        :share-text="shareText"
-        container-class="max-w-4xl"
-    >
+    <PublicLayout :title="pageTitle" :description="pageDescription" :share-url="shareUrl" :share-text="shareText" container-class="max-w-4xl">
         <!-- Breadcrumb -->
         <div class="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
             <Link href="/tools" class="hover:text-blue-600 dark:hover:text-blue-400">Free Tools</Link>
@@ -95,12 +89,12 @@ async function checkHeaders() {
 
         <!-- Header -->
         <div class="mb-6 text-center sm:mb-8">
-            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md">
+            <div
+                class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md"
+            >
                 <Icon name="shield" class="h-6 w-6" />
             </div>
-            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
-                HTTP Security Headers Analyzer
-            </h1>
+            <h1 class="mt-3 text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">HTTP Security Headers Analyzer</h1>
             <p class="mx-auto mt-1.5 max-w-xl text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                 Audit crucial security headers (HSTS, CSP, X-Frame-Options, nosniff) to protect users from XSS and clickjacking.
             </p>
@@ -132,12 +126,15 @@ async function checkHeaders() {
 
                 <!-- Sample URLs -->
                 <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <span class="font-medium text-[11px]">Popular:</span>
+                    <span class="text-[11px] font-medium">Popular:</span>
                     <button
                         v-for="d in ['github.com', 'stripe.com', 'cloudflare.com', 'mozilla.org']"
                         :key="d"
                         type="button"
-                        @click="urlInput = d; checkHeaders()"
+                        @click="
+                            urlInput = d;
+                            checkHeaders();
+                        "
                         class="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                         {{ d }}
@@ -147,7 +144,10 @@ async function checkHeaders() {
         </Card>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300">
+        <div
+            v-if="errorMessage"
+            class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300"
+        >
             <div class="flex items-center gap-2">
                 <Icon name="alertTriangle" class="h-4 w-4 shrink-0" />
                 <span>{{ errorMessage }}</span>
@@ -157,7 +157,9 @@ async function checkHeaders() {
         <!-- Result Section -->
         <div v-if="result && result.ok" class="space-y-4">
             <!-- Score Banner -->
-            <div class="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900">
+            <div
+                class="flex flex-col gap-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900"
+            >
                 <div class="flex items-center gap-3.5">
                     <div
                         class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-sm"
@@ -172,9 +174,7 @@ async function checkHeaders() {
                     </div>
                     <div>
                         <h2 class="text-base font-black text-gray-900 sm:text-lg dark:text-white">{{ result.url }}</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            HTTP {{ result.status_code }} • Responded in {{ result.elapsed_ms }}ms
-                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">HTTP {{ result.status_code }} • Responded in {{ result.elapsed_ms }}ms</p>
                     </div>
                 </div>
 
@@ -193,7 +193,11 @@ async function checkHeaders() {
                     v-for="(sh, headerName) in result.security_headers"
                     :key="headerName"
                     class="rounded-2xl border transition-all dark:bg-gray-900/80"
-                    :class="sh.present ? 'border-emerald-200/80 bg-white/80 dark:border-emerald-900/30' : 'border-gray-200/80 bg-white/80 dark:border-gray-800/80'"
+                    :class="
+                        sh.present
+                            ? 'border-emerald-200/80 bg-white/80 dark:border-emerald-900/30'
+                            : 'border-gray-200/80 bg-white/80 dark:border-gray-800/80'
+                    "
                 >
                     <CardContent class="p-3.5 sm:p-4">
                         <div class="flex items-start justify-between gap-3">
@@ -208,14 +212,21 @@ async function checkHeaders() {
                                     <div class="flex items-center gap-2">
                                         <h3 class="font-mono text-xs font-bold text-gray-900 dark:text-white">{{ headerName }}</h3>
                                         <span
-                                            class="rounded-full px-2 py-0.2 text-[9px] font-extrabold uppercase"
-                                            :class="sh.present ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'"
+                                            class="py-0.2 rounded-full px-2 text-[9px] font-extrabold uppercase"
+                                            :class="
+                                                sh.present
+                                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                                    : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                            "
                                         >
                                             {{ sh.present ? 'Enabled' : 'Missing' }}
                                         </span>
                                     </div>
                                     <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{{ sh.recommendation }}</p>
-                                    <p v-if="sh.value" class="mt-1.5 rounded-lg bg-gray-50 p-2 font-mono text-[11px] text-gray-700 break-all dark:bg-gray-800/70 dark:text-gray-300">
+                                    <p
+                                        v-if="sh.value"
+                                        class="mt-1.5 rounded-lg bg-gray-50 p-2 font-mono text-[11px] break-all text-gray-700 dark:bg-gray-800/70 dark:text-gray-300"
+                                    >
                                         {{ sh.value }}
                                     </p>
                                 </div>
@@ -226,17 +237,20 @@ async function checkHeaders() {
             </div>
 
             <!-- Raw Headers Drawer -->
-            <Card v-if="showRawHeaders && result.all_headers" class="rounded-3xl border border-gray-200/80 bg-white/80 dark:border-gray-800/80 dark:bg-gray-900/80">
+            <Card
+                v-if="showRawHeaders && result.all_headers"
+                class="rounded-3xl border border-gray-200/80 bg-white/80 dark:border-gray-800/80 dark:bg-gray-900/80"
+            >
                 <CardContent class="p-4 sm:p-5">
                     <h3 class="mb-3 text-xs font-bold tracking-wider text-gray-400 uppercase">All Response Headers</h3>
                     <div class="space-y-1.5 font-mono text-xs">
                         <div
                             v-for="(val, key) in result.all_headers"
                             :key="key"
-                            class="flex flex-col sm:flex-row sm:items-baseline gap-1 border-b border-gray-100 pb-1 dark:border-gray-800"
+                            class="flex flex-col gap-1 border-b border-gray-100 pb-1 sm:flex-row sm:items-baseline dark:border-gray-800"
                         >
                             <span class="font-bold text-gray-900 sm:w-1/3 dark:text-white">{{ key }}:</span>
-                            <span class="text-gray-600 sm:w-2/3 break-all dark:text-gray-400">{{ val }}</span>
+                            <span class="break-all text-gray-600 sm:w-2/3 dark:text-gray-400">{{ val }}</span>
                         </div>
                     </div>
                 </CardContent>

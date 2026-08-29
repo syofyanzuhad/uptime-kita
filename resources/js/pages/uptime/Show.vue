@@ -120,11 +120,7 @@ function formatMinuteKey(dateInput: string | Date): string {
 }
 
 const historyMinuteMap = ref(
-    Object.fromEntries(
-        (histories.value || [])
-            .filter((h) => h && h.created_at)
-            .map((h) => [formatMinuteKey(h.created_at), h])
-    )
+    Object.fromEntries((histories.value || []).filter((h) => h && h.created_at).map((h) => [formatMinuteKey(h.created_at), h])),
 );
 
 // Watch for prop changes in histories to keep historyMinuteMap in sync
@@ -132,12 +128,10 @@ watch(
     histories,
     (newHistories) => {
         historyMinuteMap.value = Object.fromEntries(
-            (newHistories || [])
-                .filter((h) => h && h.created_at)
-                .map((h) => [formatMinuteKey(h.created_at), h])
+            (newHistories || []).filter((h) => h && h.created_at).map((h) => [formatMinuteKey(h.created_at), h]),
         );
     },
-    { deep: true }
+    { deep: true },
 );
 
 function getMinuteStatus(date: Date) {
@@ -155,7 +149,7 @@ async function updateHistoryData() {
             historyMinuteMap.value = Object.fromEntries(
                 response.data.histories
                     .filter((h: MonitorHistory) => h && h.created_at)
-                    .map((h: MonitorHistory) => [formatMinuteKey(h.created_at), h])
+                    .map((h: MonitorHistory) => [formatMinuteKey(h.created_at), h]),
             );
         }
     } catch (error) {

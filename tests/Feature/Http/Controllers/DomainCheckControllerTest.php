@@ -126,7 +126,7 @@ describe('DomainCheckController', function () {
 
     it('handles unreachable host with exception', function () {
         Http::fake(function () {
-            throw new \Exception('cURL error 6: Could not resolve host: unreachable.invalid');
+            throw new Exception('cURL error 6: Could not resolve host: unreachable.invalid');
         });
 
         $response = $this->getJson('/api/check-domain?url='.urlencode('https://unreachable.invalid'))
@@ -140,7 +140,7 @@ describe('DomainCheckController', function () {
 
     it('returns exception message for non-curl errors', function () {
         Http::fake(function () {
-            throw new \Exception('Connection timed out');
+            throw new Exception('Connection timed out');
         });
 
         $response = $this->getJson('/api/check-domain?url='.urlencode('https://example.com'))
