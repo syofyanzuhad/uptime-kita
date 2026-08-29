@@ -2,32 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateCustomDomainRequest;
 use App\Models\StatusPage;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class CustomDomainController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Update or set a custom domain for a status page.
      */
-    public function update(Request $request, StatusPage $statusPage)
+    public function update(UpdateCustomDomainRequest $request, StatusPage $statusPage): RedirectResponse
     {
-        // Ensure user owns this status page
-        if ($statusPage->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        $validated = $request->validate([
-            'custom_domain' => [
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i',
-                Rule::unique('status_pages')->ignore($statusPage->id),
-            ],
-            'force_https' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         // If domain is being changed, reset verification
         if ($statusPage->custom_domain !== $validated['custom_domain']) {
@@ -61,12 +51,9 @@ class CustomDomainController extends Controller
     /**
      * Verify custom domain DNS settings.
      */
-    public function verify(StatusPage $statusPage)
+    public function verify(StatusPage $statusPage): RedirectResponse
     {
-        // Ensure user owns this status page
-        if ($statusPage->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorize('update', $statusPage);
 
         if (! $statusPage->custom_domain) {
             return back()->with('flash', [
@@ -96,12 +83,9 @@ class CustomDomainController extends Controller
     /**
      * Get DNS instructions for domain verification.
      */
-    public function dnsInstructions(StatusPage $statusPage)
+    public function dnsInstructions(StatusPage $statusPage): JsonResponse
     {
-        // Ensure user owns this status page
-        if ($statusPage->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorize('view', $statusPage);
 
         if (! $statusPage->custom_domain) {
             return response()->json([
@@ -127,7 +111,7 @@ class CustomDomainController extends Controller
                 [
                     'type' => 'CNAME',
                     'name' => $statusPage->custom_domain,
-                    'value' => parse_url(config('app.url'), PHP_URL_HOST),
+                    'value' => parse_url((string) config('app.url'), PHP_URL_HOST),
                     'ttl' => 3600,
                     'note' => 'Point your domain to our servers',
                 ],
