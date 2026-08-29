@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Spatie\Tags\Tag;
 
@@ -10,25 +11,23 @@ class TagController extends Controller
     /**
      * Get all available tags for monitors
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $tags = Tag::all(['id', 'name', 'type']);
 
         return response()->json([
-            'tags' => $tags->map(function ($tag) {
-                return [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
-                    'type' => $tag->type,
-                ];
-            }),
+            'tags' => $tags->map(fn (Tag $tag) => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'type' => $tag->type,
+            ]),
         ]);
     }
 
     /**
      * Search tags by name
      */
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         $search = $request->input('search', '');
 
@@ -37,13 +36,11 @@ class TagController extends Controller
             ->get(['id', 'name', 'type']);
 
         return response()->json([
-            'tags' => $tags->map(function ($tag) {
-                return [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
-                    'type' => $tag->type,
-                ];
-            }),
+            'tags' => $tags->map(fn (Tag $tag) => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'type' => $tag->type,
+            ]),
         ]);
     }
 }
