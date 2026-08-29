@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Monitors\CreateMonitorAction;
 use App\Http\Resources\MonitorCollection;
 use App\Http\Resources\MonitorHistoryResource;
 use App\Http\Resources\MonitorResource;
@@ -9,7 +10,6 @@ use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 use Spatie\Tags\Tag;
 
@@ -204,27 +204,16 @@ class UptimeMonitorController extends Controller
         ]);
 
         try {
-            $monitor = Monitor::create([
+            $createAction = app(CreateMonitorAction::class);
+            $createAction->execute(auth()->user(), [
                 'url' => $url,
                 'is_public' => $request->boolean('is_public', false),
                 'uptime_check_enabled' => $request->boolean('uptime_check_enabled'),
                 'certificate_check_enabled' => $request->boolean('certificate_check_enabled'),
                 'domain_expiration_check_enabled' => $request->boolean('domain_expiration_check_enabled'),
-                'uptime_check_interval_in_minutes' => $request->uptime_check_interval,
+                'uptime_check_interval' => $request->uptime_check_interval,
+                'tags' => $request->tags,
             ]);
-
-            // Attach tags if provided
-            if ($request->filled('tags')) {
-                $monitor->attachTags($request->tags);
-            }
-
-            // check certificate using command
-            Artisan::call('monitor:check-certificate', [
-                '--url' => $monitor->url,
-            ]);
-
-            // remove cache index
-            cache()->forget('monitor_list_page_1_per_page_15_user_'.auth()->id());
 
             return redirect()->route('monitor.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);

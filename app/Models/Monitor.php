@@ -45,6 +45,50 @@ class Monitor extends SpatieMonitor
             ->where('uptime_check_enabled', true);
     }
 
+    /**
+     * Scope for public listings with lightweight column selection.
+     */
+    public function scopeForPublicList($query)
+    {
+        return $query->select([
+            'monitors.id',
+            'monitors.url',
+            'monitors.display_name',
+            'monitors.uptime_status',
+            'monitors.uptime_check_enabled',
+            'monitors.uptime_check_interval_in_minutes',
+            'monitors.uptime_last_check_date',
+            'monitors.uptime_status_last_change_date',
+            'monitors.is_public',
+            'monitors.page_views_count',
+            'monitors.created_at',
+        ])->where('monitors.is_public', true);
+    }
+
+    /**
+     * Scope for user monitor listings with lightweight column selection.
+     */
+    public function scopeForUserList($query)
+    {
+        return $query->select([
+            'monitors.id',
+            'monitors.url',
+            'monitors.display_name',
+            'monitors.uptime_status',
+            'monitors.uptime_check_enabled',
+            'monitors.certificate_check_enabled',
+            'monitors.certificate_status',
+            'monitors.certificate_expiration_date',
+            'monitors.domain_expiration_check_enabled',
+            'monitors.domain_expiration_date',
+            'monitors.uptime_check_interval_in_minutes',
+            'monitors.uptime_last_check_date',
+            'monitors.uptime_status_last_change_date',
+            'monitors.is_public',
+            'monitors.created_at',
+        ]);
+    }
+
     public function getUrlAttribute(): ?Url
     {
         if (! isset($this->attributes['url'])) {
