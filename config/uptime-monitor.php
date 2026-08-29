@@ -97,12 +97,12 @@ return [
          * When total monitors due for check exceed this threshold, the command automatically
          * switches from in-process checking to dispatching batched jobs to the queue.
          */
-        'queue_threshold' => (int) env('UPTIME_QUEUE_THRESHOLD', 500),
+        'queue_threshold' => (int) env('UPTIME_QUEUE_THRESHOLD', 5000),
 
         /*
          * Number of monitors to assign to each queued batch job when queue dispatching is active.
          */
-        'batch_size' => (int) env('UPTIME_BATCH_SIZE', 50),
+        'batch_size' => (int) env('UPTIME_BATCH_SIZE', 25),
 
         /*
          * The uptime check for a monitor will fail if the url does not respond after the

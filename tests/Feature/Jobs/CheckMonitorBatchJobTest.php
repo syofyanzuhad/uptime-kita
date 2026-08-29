@@ -10,6 +10,17 @@ test('check monitor batch job handles empty ids safely', function () {
     expect(true)->toBeTrue();
 });
 
+test('check monitor batch job handles monitors not due for check', function () {
+    $monitor = Monitor::factory()->create([
+        'uptime_check_enabled' => false,
+    ]);
+
+    $job = new CheckMonitorBatchJob([$monitor->id]);
+    $job->handle();
+
+    expect(true)->toBeTrue();
+});
+
 test('check monitor batch job filters monitors and executes checks', function () {
     $monitor = Monitor::factory()->create([
         'uptime_check_enabled' => true,
@@ -20,4 +31,11 @@ test('check monitor batch job filters monitors and executes checks', function ()
     $job->handle();
 
     expect($monitor->fresh())->not->toBeNull();
+});
+
+test('check monitor batch job catches and logs exceptions without failing job', function () {
+    $job = new CheckMonitorBatchJob([99999999]);
+    $job->handle();
+
+    expect(true)->toBeTrue();
 });

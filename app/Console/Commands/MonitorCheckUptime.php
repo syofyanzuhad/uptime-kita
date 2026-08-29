@@ -72,7 +72,7 @@ class MonitorCheckUptime extends SpatieCheckUptime
             }
 
             // Otherwise, process directly in this process using lightweight chunks
-            $monitorsToPing->chunk(150)->each(function ($chunk) {
+            $monitorsToPing->chunk(100)->each(function ($chunk) {
                 $this->comment('Checking uptime of '.$chunk->count().' monitors in this chunk...');
 
                 $monitorCollection = MonitorCollection::make($chunk);
