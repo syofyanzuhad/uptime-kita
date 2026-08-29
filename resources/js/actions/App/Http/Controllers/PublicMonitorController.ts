@@ -1,97 +1,102 @@
-import { queryParams, type RouteDefinition, type RouteQueryOptions } from './../../../../wayfinder';
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/'
+*/
 const index980bb49ee7ae63891f1d891d2fbcf1c9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index980bb49ee7ae63891f1d891d2fbcf1c9.url(options),
     method: 'get',
-});
+})
 
 index980bb49ee7ae63891f1d891d2fbcf1c9.definition = {
-    methods: ['get', 'head'],
+    methods: ["get","head"],
     url: '/',
-} satisfies RouteDefinition<['get', 'head']>;
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/'
+*/
 index980bb49ee7ae63891f1d891d2fbcf1c9.url = (options?: RouteQueryOptions) => {
-    return index980bb49ee7ae63891f1d891d2fbcf1c9.definition.url + queryParams(options);
-};
+    return index980bb49ee7ae63891f1d891d2fbcf1c9.definition.url + queryParams(options)
+}
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/'
+*/
 index980bb49ee7ae63891f1d891d2fbcf1c9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index980bb49ee7ae63891f1d891d2fbcf1c9.url(options),
     method: 'get',
-});
+})
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/'
+*/
 index980bb49ee7ae63891f1d891d2fbcf1c9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index980bb49ee7ae63891f1d891d2fbcf1c9.url(options),
     method: 'head',
-});
+})
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/public-monitors'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/public-monitors'
+*/
 const indexc50b27167f310089cd51bd16c2529933 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexc50b27167f310089cd51bd16c2529933.url(options),
     method: 'get',
-});
+})
 
 indexc50b27167f310089cd51bd16c2529933.definition = {
-    methods: ['get', 'head'],
+    methods: ["get","head"],
     url: '/public-monitors',
-} satisfies RouteDefinition<['get', 'head']>;
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/public-monitors'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/public-monitors'
+*/
 indexc50b27167f310089cd51bd16c2529933.url = (options?: RouteQueryOptions) => {
-    return indexc50b27167f310089cd51bd16c2529933.definition.url + queryParams(options);
-};
+    return indexc50b27167f310089cd51bd16c2529933.definition.url + queryParams(options)
+}
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/public-monitors'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/public-monitors'
+*/
 indexc50b27167f310089cd51bd16c2529933.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexc50b27167f310089cd51bd16c2529933.url(options),
     method: 'get',
-});
+})
 
 /**
- * @see \App\Http\Controllers\PublicMonitorController::index
- * @see app/Http/Controllers/PublicMonitorController.php:18
- * @route '/public-monitors'
- */
+* @see \App\Http\Controllers\PublicMonitorController::index
+* @see app/Http/Controllers/PublicMonitorController.php:22
+* @route '/public-monitors'
+*/
 indexc50b27167f310089cd51bd16c2529933.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: indexc50b27167f310089cd51bd16c2529933.url(options),
     method: 'head',
-});
+})
 
+/**
+* Multiple routes resolve to \App\Http\Controllers\PublicMonitorController::index, so this export is a
+* dictionary keyed by URI rather than a callable. Call a specific route with `index['<uri>'](...)`,
+* or import the route by name from your generated `routes/` directory.
+*/
 export const index = {
     '/': index980bb49ee7ae63891f1d891d2fbcf1c9,
     '/public-monitors': indexc50b27167f310089cd51bd16c2529933,
-};
+}
 
-const PublicMonitorController = { index };
+const PublicMonitorController = { index }
 
-export default PublicMonitorController;
+export default PublicMonitorController
