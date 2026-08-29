@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
 use Laravel\Nightwatch\Facades\Nightwatch;
+use Laravel\Nightwatch\Records\Query;
 use Laravel\Nightwatch\Records\QueuedJob;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\CpuLoadHealthCheck\CpuLoadCheck;
@@ -69,8 +70,24 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Nightwatch::rejectQueries(fn () => true);
-        // Nightwatch::rejectCacheEvents(fn () => true);
+        Nightwatch::rejectQueries(function (Query $query) {
+            $highVolumePatterns = [
+                'monitor_histories',
+                'monitor_performance_hourly',
+                'uptime_last_check_date',
+                'uptime_check_enabled',
+            ];
+
+            foreach ($highVolumePatterns as $pattern) {
+                if (str_contains($query->sql, $pattern)) {
+                    // Drop 95% of these high-volume monitoring queries (keep 5% sample)
+                    return random_int(1, 100) > 5;
+                }
+            }
+
+            return false;
+        });
+
         Nightwatch::rejectQueuedJobs(function (QueuedJob $job) {
             return $job->name === 'Laravel\Telescope\Jobs\ProcessPendingUpdates';
         });
