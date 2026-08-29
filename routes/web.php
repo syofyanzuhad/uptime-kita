@@ -10,6 +10,7 @@ use App\Http\Controllers\LatestHistoryController;
 use App\Http\Controllers\MonitorCompactController;
 use App\Http\Controllers\MonitorExpirationController;
 use App\Http\Controllers\MonitorExportController;
+use App\Http\Controllers\MonitorHistoryController;
 use App\Http\Controllers\MonitorImportController;
 use App\Http\Controllers\MonitorListController;
 use App\Http\Controllers\MonitorStatusStreamController;
@@ -156,7 +157,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/monitor/{monitorId}/toggle-active', ToggleMonitorActiveController::class)->name('monitor.toggle-active');
 
     // Get monitor history
-    Route::get('/monitor/{monitor}/history', [UptimeMonitorController::class, 'getHistory'])->name('monitor.history');
+    Route::get('/monitor/{monitor}/history', MonitorHistoryController::class)->name('monitor.history');
     Route::get('/monitor/{monitor}/uptimes-daily', UptimesDailyController::class)->name('monitor.uptimes-daily');
 
     // Status page management routes
