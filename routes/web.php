@@ -50,6 +50,7 @@ Route::get('/', [PublicMonitorController::class, 'index'])->name('home');
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::get('/', [PublicToolsController::class, 'index'])->name('index');
     Route::get('/website-checker', [PublicToolsController::class, 'websiteChecker'])->name('website-checker');
+    Route::get('/domain-expiration', [PublicToolsController::class, 'domainExpiration'])->name('domain-expiration');
     Route::get('/ssl-checker', [PublicToolsController::class, 'sslChecker'])->name('ssl-checker');
     Route::get('/dns-lookup', [PublicToolsController::class, 'dnsLookup'])->name('dns-lookup');
     Route::get('/headers-checker', [PublicToolsController::class, 'headersChecker'])->name('headers-checker');
@@ -58,6 +59,7 @@ Route::prefix('tools')->name('tools.')->group(function () {
 
 // Tools API endpoints
 Route::prefix('api/tools')->name('api.tools.')->middleware('throttle:30,1')->group(function () {
+    Route::post('/domain-expiration', [PublicToolsController::class, 'apiCheckDomainExpiration'])->name('domain-expiration');
     Route::post('/ssl-check', [PublicToolsController::class, 'apiCheckSsl'])->name('ssl-check');
     Route::post('/dns-lookup', [PublicToolsController::class, 'apiLookupDns'])->name('dns-lookup');
     Route::post('/headers-check', [PublicToolsController::class, 'apiCheckHeaders'])->name('headers-check');

@@ -9,7 +9,16 @@ test('tools index page renders successfully', function () {
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/Index')
-        ->has('tools', 5)
+        ->has('tools', 6)
+    );
+});
+
+test('domain expiration checker page renders successfully', function () {
+    $response = $this->get('/tools/domain-expiration');
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('tools/DomainExpirationChecker')
     );
 });
 
@@ -137,5 +146,33 @@ test('api headers check returns valid schema', function () {
         'ok' => true,
         'url' => 'https://google.com',
         'score' => 'A',
+    ]);
+});
+
+test('api domain expiration check returns valid schema', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('checkDomainExpiration')
+            ->once()
+            ->with('google.com')
+            ->andReturn([
+                'ok' => true,
+                'domain' => 'google.com',
+                'expires_at' => '2028-09-14T04:00:00.000000Z',
+                'expires_at_formatted' => '2028-09-14 04:00:00 UTC',
+                'days_remaining' => 745,
+                'is_expired' => false,
+            ]);
+    });
+
+    $response = $this->postJson('/api/tools/domain-expiration', [
+        'domain' => 'google.com',
+    ]);
+
+    $response->assertSuccessful();
+    $response->assertJson([
+        'ok' => true,
+        'domain' => 'google.com',
+        'is_expired' => false,
+        'days_remaining' => 745,
     ]);
 });

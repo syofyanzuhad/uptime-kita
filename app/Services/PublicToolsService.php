@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Http;
 
 class PublicToolsService
 {
+    public function __construct(
+        private readonly ?DomainExpirationService $domainExpirationService = null
+    ) {}
+
     /**
      * Inspect SSL Certificate for a domain.
      *
@@ -251,6 +255,51 @@ class PublicToolsService
                 'error' => 'Connection failed: '.$e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Inspect Domain Registration & Expiration for a domain.
+     *
+     * @return array<string, mixed>
+     */
+    public function checkDomainExpiration(string $input): array
+    {
+        $domain = $this->cleanDomain($input);
+        if (empty($domain)) {
+            return [
+                'ok' => false,
+                'domain' => $input,
+                'error' => 'Invalid domain name.',
+            ];
+        }
+
+        $start = microtime(true);
+        $service = $this->domainExpirationService ?? app(DomainExpirationService::class);
+        $expirationDate = $service->lookupExpirationDate($domain);
+        $elapsedMs = round((microtime(true) - $start) * 1000, 1);
+
+        if (! $expirationDate) {
+            return [
+                'ok' => false,
+                'domain' => $domain,
+                'error' => "Could not retrieve WHOIS/RDAP expiration date for {$domain}.",
+                'elapsed_ms' => $elapsedMs,
+            ];
+        }
+
+        $now = now();
+        $daysRemaining = (int) $now->diffInDays($expirationDate, false);
+        $isExpired = $daysRemaining < 0;
+
+        return [
+            'ok' => true,
+            'domain' => $domain,
+            'expires_at' => $expirationDate->toIso8601String(),
+            'expires_at_formatted' => $expirationDate->format('Y-m-d H:i:s T'),
+            'days_remaining' => max(0, $daysRemaining),
+            'is_expired' => $isExpired,
+            'elapsed_ms' => $elapsedMs,
+        ];
     }
 
     private function cleanDomain(string $input): string

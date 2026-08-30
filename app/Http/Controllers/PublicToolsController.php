@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PublicDnsLookupRequest;
+use App\Http\Requests\PublicDomainExpirationCheckRequest;
 use App\Http\Requests\PublicHeadersCheckRequest;
 use App\Http\Requests\PublicSslCheckRequest;
 use App\Services\PublicToolsService;
@@ -33,6 +34,15 @@ class PublicToolsController extends Controller
                 'color' => 'from-blue-600 to-indigo-600',
                 'badge' => 'Instant Uptime',
                 'href' => route('tools.website-checker'),
+            ],
+            [
+                'slug' => 'domain-expiration',
+                'title' => 'Domain Expiration & WHOIS Checker',
+                'description' => 'Check domain expiration date, days remaining, registrar details, and WHOIS/RDAP info.',
+                'icon' => 'calendarClock',
+                'color' => 'from-violet-500 to-purple-600',
+                'badge' => 'WHOIS / RDAP',
+                'href' => route('tools.domain-expiration'),
             ],
             [
                 'slug' => 'ssl-checker',
@@ -76,6 +86,35 @@ class PublicToolsController extends Controller
             'tools' => $tools,
             'appUrl' => $appUrl,
         ]);
+    }
+
+    /**
+     * Display the Domain Expiration Checker tool page.
+     */
+    public function domainExpiration(Request $request): Response
+    {
+        $domain = $request->query('domain', '');
+        $initialResult = null;
+
+        if (! empty($domain)) {
+            $initialResult = $this->toolsService->checkDomainExpiration($domain);
+        }
+
+        return Inertia::render('tools/DomainExpirationChecker', [
+            'initialDomain' => $domain,
+            'initialResult' => $initialResult,
+            'appUrl' => config('app.url'),
+        ]);
+    }
+
+    /**
+     * API for Domain Expiration Checker.
+     */
+    public function apiCheckDomainExpiration(PublicDomainExpirationCheckRequest $request): JsonResponse
+    {
+        $result = $this->toolsService->checkDomainExpiration($request->validated('domain'));
+
+        return response()->json($result);
     }
 
     /**
