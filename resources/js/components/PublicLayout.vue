@@ -6,7 +6,8 @@ import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import ShareDropdown from '@/components/ShareDropdown.vue';
 import ToastContainer from '@/components/ToastContainer.vue';
 import { useTheme } from '@/composables/useTheme';
-import { Head, Link } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = withDefaults(
@@ -28,6 +29,9 @@ const props = withDefaults(
         showServerStats: true,
     },
 );
+
+const page = usePage<SharedData>();
+const isAuthenticated = computed(() => !!page.props.auth?.user);
 
 const { isDark, toggleTheme } = useTheme();
 const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -71,8 +75,9 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
         <header
             class="sticky top-0 z-40 border-b border-gray-200/80 bg-white/80 backdrop-blur-md transition-colors dark:border-gray-800/80 dark:bg-gray-900/80"
         >
-            <div class="mx-auto max-w-7xl px-4 py-3.5 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between gap-4">
+                    <!-- Brand / Title slot -->
                     <div class="flex min-w-0 flex-1 items-center gap-3">
                         <slot name="header-left">
                             <Link href="/" class="group flex items-center gap-2.5 transition-transform active:scale-95">
@@ -97,38 +102,55 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         </slot>
                     </div>
 
-                    <div class="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                    <!-- Right Navigation & Actions -->
+                    <div class="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+                        <!-- Custom Page Nav/Action Slots -->
                         <slot name="header-nav" />
 
-                        <ServerStatsBadge v-if="showServerStats" class="hidden md:block" />
+                        <!-- Main Nav Links -->
+                        <nav class="flex items-center gap-1">
+                            <Link
+                                href="/tools"
+                                class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                            >
+                                Tools
+                            </Link>
 
-                        <ShareDropdown :url="shareUrl" :text="shareText" />
-
-                        <button
-                            @click="toggleTheme"
-                            class="cursor-pointer rounded-xl border border-gray-200/80 bg-white/80 p-2 text-gray-600 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-                        >
-                            <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 rotate-0 transition-transform duration-300 dark:-rotate-12" />
-                        </button>
-
-                        <Link
-                            href="/tools"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                        >
-                            <Icon name="zap" class="h-3.5 w-3.5 text-amber-500" />
-                            <span class="hidden sm:inline">Tools</span>
-                        </Link>
-
-                        <Link
-                            href="/dashboard"
-                            class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                        >
-                            <Icon name="home" class="h-3.5 w-3.5" />
-                            <span class="hidden sm:inline">Dashboard</span>
-                        </Link>
+                            <Link
+                                v-if="isAuthenticated"
+                                href="/dashboard"
+                                class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                            >
+                                Dashboard
+                            </Link>
+                            <Link
+                                v-else
+                                href="/login"
+                                class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                            >
+                                Log in
+                            </Link>
+                        </nav>
 
                         <slot name="header-actions" />
+
+                        <!-- Divider -->
+                        <div class="hidden h-4 w-px bg-gray-200 sm:block dark:bg-gray-800" />
+
+                        <!-- Utility Icons Group -->
+                        <div class="flex items-center gap-0.5">
+                            <ServerStatsBadge v-if="showServerStats" class="hidden md:block" />
+
+                            <ShareDropdown :url="shareUrl" :text="shareText" />
+
+                            <button
+                                @click="toggleTheme"
+                                class="cursor-pointer rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                                :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                            >
+                                <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 rotate-0 transition-transform duration-300 dark:-rotate-12" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

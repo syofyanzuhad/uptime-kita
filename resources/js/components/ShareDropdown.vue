@@ -51,10 +51,11 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside));
     <div ref="root" class="relative">
         <button
             @click.stop="open = !open"
-            class="cursor-pointer rounded-full bg-gray-100 p-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+            class="cursor-pointer rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
             title="Share"
+            aria-label="Share"
         >
-            <Icon name="share2" class="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            <Icon name="share2" class="h-4 w-4" />
         </button>
         <div
             v-if="open"
