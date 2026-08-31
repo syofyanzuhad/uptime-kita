@@ -96,7 +96,7 @@ statistic.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-export const latestHistory = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const latestHistory = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: latestHistory.url(args, options),
     method: 'get',
 })
@@ -111,7 +111,7 @@ latestHistory.definition = {
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-latestHistory.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+latestHistory.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -144,7 +144,7 @@ latestHistory.url = (args: { monitor: number | { id: number } } | [monitor: numb
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-latestHistory.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+latestHistory.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: latestHistory.url(args, options),
     method: 'get',
 })
@@ -154,7 +154,7 @@ latestHistory.get = (args: { monitor: number | { id: number } } | [monitor: numb
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-latestHistory.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+latestHistory.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: latestHistory.url(args, options),
     method: 'head',
 })
@@ -470,7 +470,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
-export const show = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -485,7 +485,7 @@ show.definition = {
 * @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
-show.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -518,7 +518,7 @@ show.url = (args: { monitor: number | { id: number } } | [monitor: number | { id
 * @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
-show.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -528,7 +528,7 @@ show.get = (args: { monitor: number | { id: number } } | [monitor: number | { id
 * @see app/Http/Controllers/UptimeMonitorController.php:90
 * @route '/monitor/{monitor}'
 */
-show.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -538,7 +538,7 @@ show.head = (args: { monitor: number | { id: number } } | [monitor: number | { i
 * @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
-export const edit = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -553,7 +553,7 @@ edit.definition = {
 * @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
-edit.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -586,7 +586,7 @@ edit.url = (args: { monitor: number | { id: number } } | [monitor: number | { id
 * @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
-edit.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -596,7 +596,7 @@ edit.get = (args: { monitor: number | { id: number } } | [monitor: number | { id
 * @see app/Http/Controllers/UptimeMonitorController.php:179
 * @route '/monitor/{monitor}/edit'
 */
-edit.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -606,7 +606,7 @@ edit.head = (args: { monitor: number | { id: number } } | [monitor: number | { i
 * @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
-export const update = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -621,7 +621,7 @@ update.definition = {
 * @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
-update.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -654,7 +654,7 @@ update.url = (args: { monitor: number | { id: number } } | [monitor: number | { 
 * @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
-update.put = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -664,7 +664,7 @@ update.put = (args: { monitor: number | { id: number } } | [monitor: number | { 
 * @see app/Http/Controllers/UptimeMonitorController.php:189
 * @route '/monitor/{monitor}'
 */
-update.patch = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -674,7 +674,7 @@ update.patch = (args: { monitor: number | { id: number } } | [monitor: number | 
 * @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
-export const destroy = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -689,7 +689,7 @@ destroy.definition = {
 * @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
-destroy.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -722,7 +722,7 @@ destroy.url = (args: { monitor: number | { id: number } } | [monitor: number | {
 * @see app/Http/Controllers/UptimeMonitorController.php:240
 * @route '/monitor/{monitor}'
 */
-destroy.delete = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -888,7 +888,7 @@ toggleActive.post = (args: { monitorId: string | number } | [monitorId: string |
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-export const history = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const history = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: history.url(args, options),
     method: 'get',
 })
@@ -903,7 +903,7 @@ history.definition = {
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-history.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+history.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -936,7 +936,7 @@ history.url = (args: { monitor: number | { id: number } } | [monitor: number | {
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-history.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+history.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: history.url(args, options),
     method: 'get',
 })
@@ -946,7 +946,7 @@ history.get = (args: { monitor: number | { id: number } } | [monitor: number | {
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-history.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+history.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: history.url(args, options),
     method: 'head',
 })
@@ -956,7 +956,7 @@ history.head = (args: { monitor: number | { id: number } } | [monitor: number | 
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-export const uptimesDaily = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const uptimesDaily = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: uptimesDaily.url(args, options),
     method: 'get',
 })
@@ -971,7 +971,7 @@ uptimesDaily.definition = {
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-uptimesDaily.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+uptimesDaily.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -1004,7 +1004,7 @@ uptimesDaily.url = (args: { monitor: number | { id: number } } | [monitor: numbe
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-uptimesDaily.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+uptimesDaily.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: uptimesDaily.url(args, options),
     method: 'get',
 })
@@ -1014,7 +1014,7 @@ uptimesDaily.get = (args: { monitor: number | { id: number } } | [monitor: numbe
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-uptimesDaily.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+uptimesDaily.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: uptimesDaily.url(args, options),
     method: 'head',
 })

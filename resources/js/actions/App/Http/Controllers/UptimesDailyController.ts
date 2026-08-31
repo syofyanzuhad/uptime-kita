@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-const UptimesDailyController = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+const UptimesDailyController = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: UptimesDailyController.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ UptimesDailyController.definition = {
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-UptimesDailyController.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+UptimesDailyController.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -52,7 +52,7 @@ UptimesDailyController.url = (args: { monitor: number | { id: number } } | [moni
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-UptimesDailyController.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+UptimesDailyController.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: UptimesDailyController.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ UptimesDailyController.get = (args: { monitor: number | { id: number } } | [moni
 * @see app/Http/Controllers/UptimesDailyController.php:13
 * @route '/monitor/{monitor}/uptimes-daily'
 */
-UptimesDailyController.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+UptimesDailyController.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: UptimesDailyController.url(args, options),
     method: 'head',
 })

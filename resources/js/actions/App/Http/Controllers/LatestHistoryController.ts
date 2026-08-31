@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-const LatestHistoryController = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+const LatestHistoryController = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: LatestHistoryController.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ LatestHistoryController.definition = {
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-LatestHistoryController.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+LatestHistoryController.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -52,7 +52,7 @@ LatestHistoryController.url = (args: { monitor: number | { id: number } } | [mon
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-LatestHistoryController.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+LatestHistoryController.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: LatestHistoryController.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ LatestHistoryController.get = (args: { monitor: number | { id: number } } | [mon
 * @see app/Http/Controllers/LatestHistoryController.php:14
 * @route '/monitor/{monitor}/latest-history'
 */
-LatestHistoryController.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+LatestHistoryController.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: LatestHistoryController.url(args, options),
     method: 'head',
 })

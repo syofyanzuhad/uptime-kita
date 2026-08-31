@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-const StatusPageAssociateMonitorController = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+const StatusPageAssociateMonitorController = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: StatusPageAssociateMonitorController.url(args, options),
     method: 'post',
 })
@@ -19,7 +19,7 @@ StatusPageAssociateMonitorController.definition = {
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-StatusPageAssociateMonitorController.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+StatusPageAssociateMonitorController.url = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { statusPage: args }
     }
@@ -52,7 +52,7 @@ StatusPageAssociateMonitorController.url = (args: { statusPage: number | { id: n
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-StatusPageAssociateMonitorController.post = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+StatusPageAssociateMonitorController.post = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: StatusPageAssociateMonitorController.url(args, options),
     method: 'post',
 })

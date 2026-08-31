@@ -126,7 +126,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
-export const show = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -141,7 +141,7 @@ show.definition = {
 * @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
-show.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { status_page: args }
     }
@@ -174,7 +174,7 @@ show.url = (args: { status_page: number | { id: number } } | [status_page: numbe
 * @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
-show.get = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -184,7 +184,7 @@ show.get = (args: { status_page: number | { id: number } } | [status_page: numbe
 * @see app/Http/Controllers/StatusPageController.php:71
 * @route '/status-pages/{status_page}'
 */
-show.head = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -194,7 +194,7 @@ show.head = (args: { status_page: number | { id: number } } | [status_page: numb
 * @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
-export const edit = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -209,7 +209,7 @@ edit.definition = {
 * @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
-edit.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { status_page: args }
     }
@@ -242,7 +242,7 @@ edit.url = (args: { status_page: number | { id: number } } | [status_page: numbe
 * @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
-edit.get = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -252,7 +252,7 @@ edit.get = (args: { status_page: number | { id: number } } | [status_page: numbe
 * @see app/Http/Controllers/StatusPageController.php:88
 * @route '/status-pages/{status_page}/edit'
 */
-edit.head = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -262,7 +262,7 @@ edit.head = (args: { status_page: number | { id: number } } | [status_page: numb
 * @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
-export const update = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -277,7 +277,7 @@ update.definition = {
 * @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
-update.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { status_page: args }
     }
@@ -310,7 +310,7 @@ update.url = (args: { status_page: number | { id: number } } | [status_page: num
 * @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
-update.put = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -320,7 +320,7 @@ update.put = (args: { status_page: number | { id: number } } | [status_page: num
 * @see app/Http/Controllers/StatusPageController.php:109
 * @route '/status-pages/{status_page}'
 */
-update.patch = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -330,7 +330,7 @@ update.patch = (args: { status_page: number | { id: number } } | [status_page: n
 * @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
-export const destroy = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -345,7 +345,7 @@ destroy.definition = {
 * @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
-destroy.url = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { status_page: args }
     }
@@ -378,7 +378,7 @@ destroy.url = (args: { status_page: number | { id: number } } | [status_page: nu
 * @see app/Http/Controllers/StatusPageController.php:129
 * @route '/status-pages/{status_page}'
 */
-destroy.delete = (args: { status_page: number | { id: number } } | [status_page: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { status_page: string | number | { id: string | number } } | [status_page: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })

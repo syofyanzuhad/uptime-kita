@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-const StatusPageDisassociateMonitorController = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+const StatusPageDisassociateMonitorController = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: StatusPageDisassociateMonitorController.url(args, options),
     method: 'delete',
 })
@@ -19,7 +19,7 @@ StatusPageDisassociateMonitorController.definition = {
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-StatusPageDisassociateMonitorController.url = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions) => {
+StatusPageDisassociateMonitorController.url = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             statusPage: args[0],
@@ -49,7 +49,7 @@ StatusPageDisassociateMonitorController.url = (args: { statusPage: number | { id
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-StatusPageDisassociateMonitorController.delete = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+StatusPageDisassociateMonitorController.delete = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: StatusPageDisassociateMonitorController.url(args, options),
     method: 'delete',
 })

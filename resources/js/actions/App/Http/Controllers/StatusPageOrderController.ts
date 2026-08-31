@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/StatusPageOrderController.php:11
 * @route '/status-page-monitor/reorder/{statusPage}'
 */
-const StatusPageOrderController = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+const StatusPageOrderController = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: StatusPageOrderController.url(args, options),
     method: 'post',
 })
@@ -19,7 +19,7 @@ StatusPageOrderController.definition = {
 * @see app/Http/Controllers/StatusPageOrderController.php:11
 * @route '/status-page-monitor/reorder/{statusPage}'
 */
-StatusPageOrderController.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+StatusPageOrderController.url = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { statusPage: args }
     }
@@ -52,7 +52,7 @@ StatusPageOrderController.url = (args: { statusPage: number | { id: number } } |
 * @see app/Http/Controllers/StatusPageOrderController.php:11
 * @route '/status-page-monitor/reorder/{statusPage}'
 */
-StatusPageOrderController.post = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+StatusPageOrderController.post = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: StatusPageOrderController.url(args, options),
     method: 'post',
 })

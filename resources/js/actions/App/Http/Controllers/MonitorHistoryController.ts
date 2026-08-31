@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-const MonitorHistoryController = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+const MonitorHistoryController = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: MonitorHistoryController.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ MonitorHistoryController.definition = {
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-MonitorHistoryController.url = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+MonitorHistoryController.url = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { monitor: args }
     }
@@ -52,7 +52,7 @@ MonitorHistoryController.url = (args: { monitor: number | { id: number } } | [mo
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-MonitorHistoryController.get = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+MonitorHistoryController.get = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: MonitorHistoryController.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ MonitorHistoryController.get = (args: { monitor: number | { id: number } } | [mo
 * @see app/Http/Controllers/MonitorHistoryController.php:17
 * @route '/monitor/{monitor}/history'
 */
-MonitorHistoryController.head = (args: { monitor: number | { id: number } } | [monitor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+MonitorHistoryController.head = (args: { monitor: string | number | { id: string | number } } | [monitor: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: MonitorHistoryController.url(args, options),
     method: 'head',
 })

@@ -10,6 +10,9 @@ import PublicMonitorShowController from './PublicMonitorShowController'
 import BadgeController from './BadgeController'
 import OgImageController from './OgImageController'
 import PublicStatusPageController from './PublicStatusPageController'
+import SubscribeStatusPageController from './SubscribeStatusPageController'
+import VerifyStatusPageSubscriptionController from './VerifyStatusPageSubscriptionController'
+import UnsubscribeStatusPageController from './UnsubscribeStatusPageController'
 import LatestHistoryController from './LatestHistoryController'
 import MonitorCompactController from './MonitorCompactController'
 import PinnedMonitorController from './PinnedMonitorController'
@@ -55,6 +58,9 @@ const Controllers = {
     BadgeController: Object.assign(BadgeController, BadgeController),
     OgImageController: Object.assign(OgImageController, OgImageController),
     PublicStatusPageController: Object.assign(PublicStatusPageController, PublicStatusPageController),
+    SubscribeStatusPageController: Object.assign(SubscribeStatusPageController, SubscribeStatusPageController),
+    VerifyStatusPageSubscriptionController: Object.assign(VerifyStatusPageSubscriptionController, VerifyStatusPageSubscriptionController),
+    UnsubscribeStatusPageController: Object.assign(UnsubscribeStatusPageController, UnsubscribeStatusPageController),
     LatestHistoryController: Object.assign(LatestHistoryController, LatestHistoryController),
     MonitorCompactController: Object.assign(MonitorCompactController, MonitorCompactController),
     PinnedMonitorController: Object.assign(PinnedMonitorController, PinnedMonitorController),

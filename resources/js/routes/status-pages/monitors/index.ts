@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-export const associate = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const associate = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: associate.url(args, options),
     method: 'post',
 })
@@ -19,7 +19,7 @@ associate.definition = {
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-associate.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+associate.url = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { statusPage: args }
     }
@@ -52,7 +52,7 @@ associate.url = (args: { statusPage: number | { id: number } } | [statusPage: nu
 * @see app/Http/Controllers/StatusPageAssociateMonitorController.php:13
 * @route '/status-pages/{statusPage}/monitors'
 */
-associate.post = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+associate.post = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: associate.url(args, options),
     method: 'post',
 })
@@ -62,7 +62,7 @@ associate.post = (args: { statusPage: number | { id: number } } | [statusPage: n
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-export const disassociate = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const disassociate = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: disassociate.url(args, options),
     method: 'delete',
 })
@@ -77,7 +77,7 @@ disassociate.definition = {
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-disassociate.url = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions) => {
+disassociate.url = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             statusPage: args[0],
@@ -107,7 +107,7 @@ disassociate.url = (args: { statusPage: number | { id: number }, monitor: number
 * @see app/Http/Controllers/StatusPageDisassociateMonitorController.php:14
 * @route '/status-pages/{statusPage}/monitors/{monitor}'
 */
-disassociate.delete = (args: { statusPage: number | { id: number }, monitor: number | { id: number } } | [statusPage: number | { id: number }, monitor: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+disassociate.delete = (args: { statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number }, monitor: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: disassociate.url(args, options),
     method: 'delete',
 })
@@ -117,7 +117,7 @@ disassociate.delete = (args: { statusPage: number | { id: number }, monitor: num
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-export const available = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const available = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: available.url(args, options),
     method: 'get',
 })
@@ -132,7 +132,7 @@ available.definition = {
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-available.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+available.url = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { statusPage: args }
     }
@@ -165,7 +165,7 @@ available.url = (args: { statusPage: number | { id: number } } | [statusPage: nu
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-available.get = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+available.get = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: available.url(args, options),
     method: 'get',
 })
@@ -175,7 +175,7 @@ available.get = (args: { statusPage: number | { id: number } } | [statusPage: nu
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-available.head = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+available.head = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: available.url(args, options),
     method: 'head',
 })

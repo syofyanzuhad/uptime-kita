@@ -29,15 +29,18 @@ use App\Http\Controllers\StatusPageController;
 use App\Http\Controllers\StatusPageDisassociateMonitorController;
 use App\Http\Controllers\StatusPageOrderController;
 use App\Http\Controllers\SubscribeMonitorController;
+use App\Http\Controllers\SubscribeStatusPageController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\TelemetryDashboardController;
 use App\Http\Controllers\TestFlashController;
 use App\Http\Controllers\ToggleMonitorActiveController;
 use App\Http\Controllers\UnsubscribeMonitorController;
+use App\Http\Controllers\UnsubscribeStatusPageController;
 use App\Http\Controllers\UptimeMonitorController;
 use App\Http\Controllers\UptimesDailyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VerifyStatusPageSubscriptionController;
 use App\Http\Middleware\VerifyTelegramWebhook;
 use Illuminate\Support\Facades\Route;
 use Spatie\Health\Http\Controllers\HealthCheckJsonResultsController;
@@ -105,6 +108,9 @@ Route::prefix('og')->name('og.')->middleware('throttle:60,1')->group(function ()
 // Public status page route
 Route::get('/status/{path}', [PublicStatusPageController::class, 'show'])->name('status-page.public');
 Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monitors'])->name('status-page.public.monitors');
+Route::post('/status/{path}/subscribe', SubscribeStatusPageController::class)->name('status-page.subscribe');
+Route::get('/status-subscription/verify/{token}', VerifyStatusPageSubscriptionController::class)->name('status-page.subscription.verify');
+Route::get('/status-subscription/unsubscribe/{token}', UnsubscribeStatusPageController::class)->name('status-page.subscription.unsubscribe');
 Route::get('/monitor/{monitor}/latest-history', LatestHistoryController::class)->name('monitor.latest-history');
 Route::get('/monitors', [MonitorCompactController::class, 'index'])->name('monitor.compact');
 Route::get('/monitors/compact', [MonitorCompactController::class, 'index'])->name('monitor.compact.alias');

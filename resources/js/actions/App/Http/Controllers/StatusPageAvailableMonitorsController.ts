@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-const StatusPageAvailableMonitorsController = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+const StatusPageAvailableMonitorsController = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: StatusPageAvailableMonitorsController.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ StatusPageAvailableMonitorsController.definition = {
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-StatusPageAvailableMonitorsController.url = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+StatusPageAvailableMonitorsController.url = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { statusPage: args }
     }
@@ -52,7 +52,7 @@ StatusPageAvailableMonitorsController.url = (args: { statusPage: number | { id: 
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-StatusPageAvailableMonitorsController.get = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+StatusPageAvailableMonitorsController.get = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: StatusPageAvailableMonitorsController.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ StatusPageAvailableMonitorsController.get = (args: { statusPage: number | { id: 
 * @see app/Http/Controllers/StatusPageAvailableMonitorsController.php:15
 * @route '/status-pages/{statusPage}/available-monitors'
 */
-StatusPageAvailableMonitorsController.head = (args: { statusPage: number | { id: number } } | [statusPage: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+StatusPageAvailableMonitorsController.head = (args: { statusPage: string | number | { id: string | number } } | [statusPage: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: StatusPageAvailableMonitorsController.url(args, options),
     method: 'head',
 })
