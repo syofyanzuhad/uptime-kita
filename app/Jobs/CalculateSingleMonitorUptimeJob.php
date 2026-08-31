@@ -158,7 +158,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
         ]);
 
         // Handle case where no checks found
-        if (! $result || $result->total_checks === 0) {
+        if (! $result || (int) $result->total_checks === 0) {
             Log::debug('No monitor history found for date', [
                 'monitor_id' => $this->monitorId,
                 'date' => $this->date,
@@ -168,7 +168,7 @@ class CalculateSingleMonitorUptimeJob implements ShouldBeUnique, ShouldQueue
             return;
         }
 
-        $uptimePercentage = ($result->up_checks / $result->total_checks) * 100;
+        $uptimePercentage = ((int) $result->up_checks / (int) $result->total_checks) * 100;
 
         // Calculate response time metrics
         $performanceService = app(MonitorPerformanceService::class);

@@ -44,8 +44,11 @@ it('scopes first seen between date range', function () {
 });
 
 it('computes statistics', function () {
-    TelemetryPing::create(['instance_id' => 'a', 'first_seen_at' => now()->startOfMonth(), 'last_ping_at' => now()->subDay()]);
-    TelemetryPing::create(['instance_id' => 'b', 'first_seen_at' => now()->subMonths(2), 'last_ping_at' => now()->subMonths(2)]);
+    $now = Carbon::parse('2026-08-15 12:00:00');
+    Carbon::setTestNow($now);
+
+    TelemetryPing::create(['instance_id' => 'a', 'first_seen_at' => $now->copy()->startOfMonth(), 'last_ping_at' => $now->copy()->subDay()]);
+    TelemetryPing::create(['instance_id' => 'b', 'first_seen_at' => $now->copy()->subMonths(2), 'last_ping_at' => $now->copy()->subMonths(2)]);
 
     $stats = TelemetryPing::getStatistics();
 
@@ -54,6 +57,8 @@ it('computes statistics', function () {
     expect($stats['active_last_30_days'])->toBe(1);
     expect($stats['new_this_month'])->toBe(1);
     expect($stats['new_last_month'])->toBe(0);
+
+    Carbon::setTestNow(null);
 });
 
 it('computes version distribution', function () {
