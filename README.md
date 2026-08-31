@@ -430,13 +430,7 @@ The feature uses **Server-Sent Events (SSE)** for efficient real-time updates:
 
 ## ⭐️ Star History
 
-<a href="https://www.star-history.com/#syofyanzuhad/uptime-kita&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=syofyanzuhad/uptime-kita&type=Date" />
- </picture>
-</a>
+[![Star History Chart](https://api.star-history.com/chart?repos=syofyanzuhad/uptime-kita&type=date&legend=top-left&sealed_token=cHWl8kym7j3Qyl0xU5iEhAEzcd1U4e2mta5ietO5F1gUfqAb2KeG-I_Im_zSDtk3ZYbEtVupdRJ2flvBZFkD1OE6sfZjGIKUtYwA5Qg7eOSvojLLh5eWXA)](https://www.star-history.com/?repos=syofyanzuhad%2Fuptime-kita&type=date&legend=top-left)
 
 ---
 
