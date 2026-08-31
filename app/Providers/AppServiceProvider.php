@@ -6,6 +6,7 @@ use App\Health\Checks\MonitorCheckDriftCheck;
 use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Listeners\BroadcastMonitorStatusChange;
 use App\Listeners\DispatchConfirmationCheck;
+use App\Listeners\NotifyStatusPageSubscribersOnStatusChange;
 use App\Listeners\SendCustomMonitorNotification;
 use App\Listeners\StoreMonitorCheckData;
 use App\Models\User;
@@ -120,6 +121,10 @@ class AppServiceProvider extends ServiceProvider
         // Register SSE broadcast listener for public monitor status changes
         Event::listen(UptimeCheckFailed::class, BroadcastMonitorStatusChange::class);
         Event::listen(UptimeCheckRecovered::class, BroadcastMonitorStatusChange::class);
+
+        // Register status page subscriber notifications
+        Event::listen(UptimeCheckFailed::class, NotifyStatusPageSubscribersOnStatusChange::class);
+        Event::listen(UptimeCheckRecovered::class, NotifyStatusPageSubscribersOnStatusChange::class);
 
         // Log when scheduled tasks are skipped due to overlapping
         Event::listen(ScheduledTaskSkipped::class, function (ScheduledTaskSkipped $event) {
