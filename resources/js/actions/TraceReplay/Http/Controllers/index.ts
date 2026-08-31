@@ -1,9 +1,9 @@
-import DashboardController from './DashboardController'
-import Api from './Api'
+import Api from './Api';
+import DashboardController from './DashboardController';
 
 const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
     Api: Object.assign(Api, Api),
-}
+};
 
-export default Controllers
+export default Controllers;

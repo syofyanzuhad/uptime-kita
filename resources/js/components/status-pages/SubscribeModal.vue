@@ -63,7 +63,9 @@ function submit() {
                     <!-- Header -->
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+                            >
                                 <Icon name="bell" class="h-5 w-5" />
                             </div>
                             <div>
@@ -81,7 +83,10 @@ function submit() {
                     </div>
 
                     <!-- Success State -->
-                    <div v-if="successMessage" class="mt-5 rounded-2xl bg-emerald-50 p-4 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    <div
+                        v-if="successMessage"
+                        class="mt-5 rounded-2xl bg-emerald-50 p-4 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    >
                         <div class="flex items-start gap-3">
                             <Icon name="checkCircle" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             <div class="text-xs font-medium">
@@ -103,14 +108,14 @@ function submit() {
                     <form v-else @submit.prevent="submit" class="mt-5 space-y-4">
                         <div>
                             <label for="subscriber-email" class="block text-xs font-semibold text-gray-700 dark:text-gray-300"> Email Address </label>
-                            <div class="mt-1.5 relative">
+                            <div class="relative mt-1.5">
                                 <input
                                     id="subscriber-email"
                                     v-model="form.email"
                                     type="email"
                                     required
                                     placeholder="you@example.com"
-                                    class="w-full rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                    class="w-full rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                                 />
                             </div>
                             <p v-if="form.errors.email" class="mt-1.5 text-xs text-rose-500">

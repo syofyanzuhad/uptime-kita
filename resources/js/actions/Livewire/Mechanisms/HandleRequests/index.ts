@@ -1,7 +1,7 @@
-import HandleRequests from './HandleRequests'
+import HandleRequests from './HandleRequests';
 
 const HandleRequestsNamespace = {
     HandleRequests: Object.assign(HandleRequests, HandleRequests),
-}
+};
 
-export default HandleRequestsNamespace
+export default HandleRequestsNamespace;

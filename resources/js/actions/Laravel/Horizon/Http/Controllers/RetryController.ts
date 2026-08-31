@@ -1,56 +1,57 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
+import { applyUrlDefaults, queryParams, type RouteDefinition, type RouteQueryOptions } from './../../../../../wayfinder';
 /**
-* @see \Laravel\Horizon\Http\Controllers\RetryController::store
-* @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
-* @route '/horizon/api/jobs/retry/{id}'
-*/
-export const store = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+ * @see \Laravel\Horizon\Http\Controllers\RetryController::store
+ * @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
+ * @route '/horizon/api/jobs/retry/{id}'
+ */
+export const store = (
+    args: { id: string | number } | [id: string | number] | string | number,
+    options?: RouteQueryOptions,
+): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
-})
+});
 
 store.definition = {
-    methods: ["post"],
+    methods: ['post'],
     url: '/horizon/api/jobs/retry/{id}',
-} satisfies RouteDefinition<["post"]>
+} satisfies RouteDefinition<['post']>;
 
 /**
-* @see \Laravel\Horizon\Http\Controllers\RetryController::store
-* @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
-* @route '/horizon/api/jobs/retry/{id}'
-*/
-store.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+ * @see \Laravel\Horizon\Http\Controllers\RetryController::store
+ * @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
+ * @route '/horizon/api/jobs/retry/{id}'
+ */
+store.url = (args: { id: string | number } | [id: string | number] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { id: args }
+        args = { id: args };
     }
 
     if (Array.isArray(args)) {
         args = {
             id: args[0],
-        }
+        };
     }
 
-    args = applyUrlDefaults(args)
+    args = applyUrlDefaults(args);
 
     const parsedArgs = {
         id: args.id,
-    }
+    };
 
-    return store.definition.url
-            .replace('{id}', parsedArgs.id.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
+    return store.definition.url.replace('{id}', parsedArgs.id.toString()).replace(/\/+$/, '') + queryParams(options);
+};
 
 /**
-* @see \Laravel\Horizon\Http\Controllers\RetryController::store
-* @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
-* @route '/horizon/api/jobs/retry/{id}'
-*/
-store.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+ * @see \Laravel\Horizon\Http\Controllers\RetryController::store
+ * @see vendor/laravel/horizon/src/Http/Controllers/RetryController.php:15
+ * @route '/horizon/api/jobs/retry/{id}'
+ */
+store.post = (args: { id: string | number } | [id: string | number] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
-})
+});
 
-const RetryController = { store }
+const RetryController = { store };
 
-export default RetryController
+export default RetryController;

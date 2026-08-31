@@ -1,12 +1,12 @@
-import RegisteredUserController from './RegisteredUserController'
-import AuthenticatedSessionController from './AuthenticatedSessionController'
-import PasswordResetLinkController from './PasswordResetLinkController'
-import NewPasswordController from './NewPasswordController'
-import SocialiteController from './SocialiteController'
-import EmailVerificationPromptController from './EmailVerificationPromptController'
-import VerifyEmailController from './VerifyEmailController'
-import EmailVerificationNotificationController from './EmailVerificationNotificationController'
-import ConfirmablePasswordController from './ConfirmablePasswordController'
+import AuthenticatedSessionController from './AuthenticatedSessionController';
+import ConfirmablePasswordController from './ConfirmablePasswordController';
+import EmailVerificationNotificationController from './EmailVerificationNotificationController';
+import EmailVerificationPromptController from './EmailVerificationPromptController';
+import NewPasswordController from './NewPasswordController';
+import PasswordResetLinkController from './PasswordResetLinkController';
+import RegisteredUserController from './RegisteredUserController';
+import SocialiteController from './SocialiteController';
+import VerifyEmailController from './VerifyEmailController';
 
 const Auth = {
     RegisteredUserController: Object.assign(RegisteredUserController, RegisteredUserController),
@@ -18,6 +18,6 @@ const Auth = {
     VerifyEmailController: Object.assign(VerifyEmailController, VerifyEmailController),
     EmailVerificationNotificationController: Object.assign(EmailVerificationNotificationController, EmailVerificationNotificationController),
     ConfirmablePasswordController: Object.assign(ConfirmablePasswordController, ConfirmablePasswordController),
-}
+};
 
-export default Auth
+export default Auth;

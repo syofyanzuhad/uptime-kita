@@ -1,11 +1,11 @@
-import SimpleHealthCheckController from './SimpleHealthCheckController'
-import HealthCheckJsonResultsController from './HealthCheckJsonResultsController'
-import HealthCheckResultsController from './HealthCheckResultsController'
+import HealthCheckJsonResultsController from './HealthCheckJsonResultsController';
+import HealthCheckResultsController from './HealthCheckResultsController';
+import SimpleHealthCheckController from './SimpleHealthCheckController';
 
 const Controllers = {
     SimpleHealthCheckController: Object.assign(SimpleHealthCheckController, SimpleHealthCheckController),
     HealthCheckJsonResultsController: Object.assign(HealthCheckJsonResultsController, HealthCheckJsonResultsController),
     HealthCheckResultsController: Object.assign(HealthCheckResultsController, HealthCheckResultsController),
-}
+};
 
-export default Controllers
+export default Controllers;

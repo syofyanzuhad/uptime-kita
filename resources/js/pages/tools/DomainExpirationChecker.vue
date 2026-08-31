@@ -193,8 +193,8 @@ async function checkDomain() {
                                 (result.days_remaining ?? 0) > 30
                                     ? 'text-emerald-600 dark:text-emerald-400'
                                     : (result.days_remaining ?? 0) > 7
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-rose-600 dark:text-rose-400'
+                                      ? 'text-amber-600 dark:text-amber-400'
+                                      : 'text-rose-600 dark:text-rose-400'
                             "
                         >
                             {{ result.days_remaining }} days
