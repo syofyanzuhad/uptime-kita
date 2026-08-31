@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Str;
 
 class StatusPage extends Model
@@ -44,6 +45,14 @@ class StatusPage extends Model
     public function monitors()
     {
         return $this->belongsToMany(Monitor::class, 'status_page_monitor');
+    }
+
+    /**
+     * Get the subscribers for this status page.
+     */
+    public function subscribers(): HasMany
+    {
+        return $this->hasMany(StatusPageSubscriber::class);
     }
 
     /**
