@@ -2,6 +2,7 @@
 import DailyUptimeChart from '@/components/DailyUptimeChart.vue';
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
+import SubscribeModal from '@/components/status-pages/SubscribeModal.vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getStatusText, getStatusTextColor } from '@/composables/useMonitorHelpers';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
@@ -210,6 +211,10 @@ onMounted(() => {
                     </p>
                 </div>
             </div>
+        </template>
+
+        <template #header-nav>
+            <SubscribeModal :status-page-path="statusPage.path" :status-page-title="statusPage.title" />
         </template>
 
         <template #header-actions>
