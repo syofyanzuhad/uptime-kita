@@ -1,7 +1,7 @@
-import SupportFileUploads from './SupportFileUploads'
+import SupportFileUploads from './SupportFileUploads';
 
 const Features = {
     SupportFileUploads: Object.assign(SupportFileUploads, SupportFileUploads),
-}
+};
 
-export default Features
+export default Features;

@@ -1,17 +1,17 @@
-import DashboardStatsController from './DashboardStatsController'
-import WorkloadController from './WorkloadController'
-import MasterSupervisorController from './MasterSupervisorController'
-import MonitoringController from './MonitoringController'
-import JobMetricsController from './JobMetricsController'
-import QueueMetricsController from './QueueMetricsController'
-import BatchesController from './BatchesController'
-import PendingJobsController from './PendingJobsController'
-import CompletedJobsController from './CompletedJobsController'
-import SilencedJobsController from './SilencedJobsController'
-import FailedJobsController from './FailedJobsController'
-import RetryController from './RetryController'
-import JobsController from './JobsController'
-import HomeController from './HomeController'
+import BatchesController from './BatchesController';
+import CompletedJobsController from './CompletedJobsController';
+import DashboardStatsController from './DashboardStatsController';
+import FailedJobsController from './FailedJobsController';
+import HomeController from './HomeController';
+import JobMetricsController from './JobMetricsController';
+import JobsController from './JobsController';
+import MasterSupervisorController from './MasterSupervisorController';
+import MonitoringController from './MonitoringController';
+import PendingJobsController from './PendingJobsController';
+import QueueMetricsController from './QueueMetricsController';
+import RetryController from './RetryController';
+import SilencedJobsController from './SilencedJobsController';
+import WorkloadController from './WorkloadController';
 
 const Controllers = {
     DashboardStatsController: Object.assign(DashboardStatsController, DashboardStatsController),
@@ -28,6 +28,6 @@ const Controllers = {
     RetryController: Object.assign(RetryController, RetryController),
     JobsController: Object.assign(JobsController, JobsController),
     HomeController: Object.assign(HomeController, HomeController),
-}
+};
 
-export default Controllers
+export default Controllers;
