@@ -66,10 +66,15 @@ test('database download includes essential table data', function () {
     $content = $response->streamedContent();
 
     expect($content)->toContain('-- Uptime Kita Database Backup');
-    expect($content)->toContain('PRAGMA foreign_keys = OFF;');
+    if (DB::getDriverName() === 'sqlite') {
+        expect($content)->toContain('PRAGMA foreign_keys = OFF;');
+        expect($content)->toContain('PRAGMA foreign_keys = ON;');
+    } else {
+        expect($content)->toContain('SET FOREIGN_KEY_CHECKS = 0;');
+        expect($content)->toContain('SET FOREIGN_KEY_CHECKS = 1;');
+    }
     expect($content)->toContain('-- Table: users');
     expect($content)->toContain('-- Table: migrations');
-    expect($content)->toContain('PRAGMA foreign_keys = ON;');
 });
 
 test('database download escapes string values', function () {
@@ -81,7 +86,11 @@ test('database download escapes string values', function () {
 
     $content = $response->streamedContent();
 
-    expect($content)->toContain("O''Reilly");
+    if (DB::getDriverName() === 'sqlite') {
+        expect($content)->toContain("O''Reilly");
+    } else {
+        expect($content)->toContain("O\\'Reilly");
+    }
 });
 
 test('database download marks empty tables', function () {

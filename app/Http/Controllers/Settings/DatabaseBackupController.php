@@ -252,6 +252,8 @@ class DatabaseBackupController extends Controller
 
     private function restoreFromSql(string $sqlFilePath): void
     {
+        @set_time_limit(300);
+
         // Read and execute the SQL file
         $sql = file_get_contents($sqlFilePath);
 
@@ -267,21 +269,44 @@ class DatabaseBackupController extends Controller
 
         $statements = $this->parseSqlStatements($sql);
 
-        Schema::withoutForeignKeyConstraints(function () use ($statements) {
-            foreach ($statements as $statement) {
-                $statement = trim($statement);
-                if (empty($statement) || str_starts_with($statement, '--')) {
-                    continue;
-                }
-
-                // Skip vendor-specific foreign key statements that might conflict across database engines
-                $upper = strtoupper($statement);
-                if (str_starts_with($upper, 'PRAGMA FOREIGN_KEYS') || str_starts_with($upper, 'SET FOREIGN_KEY_CHECKS')) {
-                    continue;
-                }
-
-                DB::unprepared($statement);
+        // Filter and collect valid executable statements
+        $executableStatements = [];
+        foreach ($statements as $statement) {
+            $statement = trim($statement);
+            if (empty($statement) || str_starts_with($statement, '--')) {
+                continue;
             }
+
+            // Skip vendor-specific foreign key statements that might conflict across database engines
+            $upper = strtoupper($statement);
+            if (str_starts_with($upper, 'PRAGMA FOREIGN_KEYS') || str_starts_with($upper, 'SET FOREIGN_KEY_CHECKS')) {
+                continue;
+            }
+
+            $executableStatements[] = $statement;
+        }
+
+        Schema::withoutForeignKeyConstraints(function () use ($executableStatements) {
+            DB::transaction(function () use ($executableStatements) {
+                $batch = '';
+                $count = 0;
+
+                foreach ($executableStatements as $statement) {
+                    $batch .= $statement."\n";
+                    $count++;
+
+                    // Send queries in batches of 100 to minimize network roundtrips and avoid gateway timeouts
+                    if ($count >= 100) {
+                        DB::unprepared($batch);
+                        $batch = '';
+                        $count = 0;
+                    }
+                }
+
+                if (! empty(trim($batch))) {
+                    DB::unprepared($batch);
+                }
+            });
         });
     }
 
