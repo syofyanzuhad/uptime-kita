@@ -17,7 +17,6 @@
         "inertiajs/inertia-laravel": "^2.0",
         "intervention/image": "^3.11",
         "io-developer/php-whois": "^4.1",
-        "larabug/larabug": "^3.3",
         "laravel-notification-channels/telegram": "^7.0",
         "laravel-notification-channels/twitter": "^9.1",
         "laravel/framework": "^13.0",

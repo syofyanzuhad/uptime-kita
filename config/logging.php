@@ -126,10 +126,6 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
-
-        'larabug' => [
-            'driver' => 'larabug',
-        ],
     ],
 
 ];

@@ -1,7 +1,7 @@
-import telemetry from './telemetry';
+import telemetry from './telemetry'
 
 const admin = {
     telemetry: Object.assign(telemetry, telemetry),
-};
+}
 
-export default admin;
+export default admin

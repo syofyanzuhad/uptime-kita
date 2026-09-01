@@ -1,7 +1,7 @@
-import Laravel from './Laravel';
+import Laravel from './Laravel'
 
 const Resend = {
     Laravel: Object.assign(Laravel, Laravel),
-};
+}
 
-export default Resend;
+export default Resend

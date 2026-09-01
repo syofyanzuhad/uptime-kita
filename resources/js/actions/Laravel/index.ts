@@ -1,7 +1,7 @@
-import Horizon from './Horizon';
+import Horizon from './Horizon'
 
 const Laravel = {
     Horizon: Object.assign(Horizon, Horizon),
-};
+}
 
-export default Laravel;
+export default Laravel

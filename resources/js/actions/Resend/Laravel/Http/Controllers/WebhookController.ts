@@ -1,38 +1,38 @@
-import { queryParams, type RouteDefinition, type RouteQueryOptions } from './../../../../../wayfinder';
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
- * @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
- * @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
- * @route '/resend/webhook'
- */
+* @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
+* @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
+* @route '/resend/webhook'
+*/
 export const handleWebhook = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: handleWebhook.url(options),
     method: 'post',
-});
+})
 
 handleWebhook.definition = {
-    methods: ['post'],
+    methods: ["post"],
     url: '/resend/webhook',
-} satisfies RouteDefinition<['post']>;
+} satisfies RouteDefinition<["post"]>
 
 /**
- * @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
- * @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
- * @route '/resend/webhook'
- */
+* @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
+* @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
+* @route '/resend/webhook'
+*/
 handleWebhook.url = (options?: RouteQueryOptions) => {
-    return handleWebhook.definition.url + queryParams(options);
-};
+    return handleWebhook.definition.url + queryParams(options)
+}
 
 /**
- * @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
- * @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
- * @route '/resend/webhook'
- */
+* @see \Resend\Laravel\Http\Controllers\WebhookController::handleWebhook
+* @see vendor/resend/resend-laravel/src/Http/Controllers/WebhookController.php:42
+* @route '/resend/webhook'
+*/
 handleWebhook.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: handleWebhook.url(options),
     method: 'post',
-});
+})
 
-const WebhookController = { handleWebhook };
+const WebhookController = { handleWebhook }
 
-export default WebhookController;
+export default WebhookController
