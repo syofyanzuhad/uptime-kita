@@ -128,6 +128,13 @@ const triggerFileInput = () => {
             <div class="flex flex-col space-y-6">
                 <HeadingSmall title="Restore database" description="Upload a backup file to restore your data" />
 
+                <Alert v-if="form.errors.database" variant="destructive">
+                    <AlertTitle>Restore failed</AlertTitle>
+                    <AlertDescription class="break-words whitespace-pre-wrap">
+                        {{ form.errors.database }}
+                    </AlertDescription>
+                </Alert>
+
                 <Alert variant="warning">
                     <AlertTitle>Warning</AlertTitle>
                     <AlertDescription>
