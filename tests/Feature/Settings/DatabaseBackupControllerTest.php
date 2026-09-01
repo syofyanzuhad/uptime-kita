@@ -141,8 +141,8 @@ test('database restore validates file size', function () {
 test('database restore accepts sql files', function () {
     $user = User::factory()->create();
 
-    // Create a valid SQL backup file with PRAGMA and SET FOREIGN_KEY_CHECKS statements
-    $sqlContent = "-- Uptime Kita Database Backup\nPRAGMA foreign_keys = OFF;\nSET FOREIGN_KEY_CHECKS = 0;\nPRAGMA foreign_keys = ON;\nSET FOREIGN_KEY_CHECKS = 1;\n";
+    // Create a valid SQL backup file with double-quoted identifiers and PRAGMA / SET FOREIGN_KEY_CHECKS statements
+    $sqlContent = "-- Uptime Kita Database Backup\nPRAGMA foreign_keys = OFF;\nSET FOREIGN_KEY_CHECKS = 0;\nDELETE FROM \"tags\";\nPRAGMA foreign_keys = ON;\nSET FOREIGN_KEY_CHECKS = 1;\n";
     $file = UploadedFile::fake()->createWithContent('backup.sql', $sqlContent);
 
     $response = $this

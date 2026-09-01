@@ -259,6 +259,12 @@ class DatabaseBackupController extends Controller
             throw new \RuntimeException('Failed to read SQL file');
         }
 
+        $driver = DB::getDriverName();
+        if (in_array($driver, ['mysql', 'mariadb'])) {
+            // Enable ANSI_QUOTES so MySQL/MariaDB treats double quotes as identifier quotes (ANSI SQL compatible)
+            DB::statement("SET SESSION sql_mode = CONCAT_WS(',', @@SESSION.sql_mode, 'ANSI_QUOTES')");
+        }
+
         $statements = $this->parseSqlStatements($sql);
 
         Schema::withoutForeignKeyConstraints(function () use ($statements) {
