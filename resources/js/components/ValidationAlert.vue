@@ -2,8 +2,10 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { computed } from 'vue';
 
+type ErrorValue = string | string[] | Record<string, any>;
+
 interface ValidationErrors {
-    [key: string]: string[];
+    [key: string]: ErrorValue;
 }
 
 interface Props {
@@ -18,13 +20,38 @@ const props = withDefaults(defineProps<Props>(), {
     show: true,
 });
 
+const normalizedErrors = computed<Record<string, string[]>>(() => {
+    if (!props.errors || typeof props.errors !== 'object') {
+        return {};
+    }
+
+    const result: Record<string, string[]> = {};
+
+    for (const [field, value] of Object.entries(props.errors)) {
+        if (value === null || value === undefined || value === '') {
+            continue;
+        }
+
+        if (Array.isArray(value)) {
+            result[field] = value.map((v) => String(v));
+        } else if (typeof value === 'string') {
+            result[field] = [value];
+        } else if (typeof value === 'object') {
+            result[field] = Object.values(value).map((v) => String(v));
+        } else {
+            result[field] = [String(value)];
+        }
+    }
+
+    return result;
+});
+
 const hasErrors = computed(() => {
-    return props.errors && Object.keys(props.errors).length > 0;
+    return Object.keys(normalizedErrors.value).length > 0;
 });
 
 const errorCount = computed(() => {
-    if (!props.errors) return 0;
-    return Object.values(props.errors).flat().length;
+    return Object.values(normalizedErrors.value).reduce((total, errs) => total + errs.length, 0);
 });
 </script>
 
@@ -35,10 +62,10 @@ const errorCount = computed(() => {
             <div class="mt-2">
                 <p class="mb-2 text-sm">{{ errorCount }} error{{ errorCount !== 1 ? 's' : '' }} found:</p>
                 <ul class="list-inside list-disc space-y-1 text-sm">
-                    <li v-for="(errors, field) in errors" :key="field" class="mb-2">
+                    <li v-for="(fieldErrors, field) in normalizedErrors" :key="field" class="mb-2">
                         <span class="font-medium capitalize">{{ String(field).replace(/_/g, ' ') }}:</span>
                         <ul class="mt-1 ml-4 list-inside list-disc">
-                            <li v-for="error in errors" :key="error" class="text-sm">
+                            <li v-for="(error, idx) in fieldErrors" :key="idx" class="text-sm break-words whitespace-pre-wrap">
                                 {{ error }}
                             </li>
                         </ul>
@@ -48,3 +75,4 @@ const errorCount = computed(() => {
         </AlertDescription>
     </Alert>
 </template>
+
