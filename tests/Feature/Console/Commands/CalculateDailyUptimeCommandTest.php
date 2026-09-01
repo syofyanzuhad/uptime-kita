@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\CalculateMonitorBatchUptimeJob;
 use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use Carbon\Carbon;
@@ -46,8 +47,8 @@ describe('CalculateDailyUptimeCommand', function () {
             $this->artisan('uptime:calculate-daily')
                 ->assertSuccessful();
 
-            // Should dispatch one job per monitor
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 3);
+            // Should dispatch batch job containing monitors
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 1);
         });
 
         it('dispatches job for specific monitor when monitor ID provided', function () {
@@ -106,8 +107,8 @@ describe('CalculateDailyUptimeCommand', function () {
             $this->artisan('uptime:calculate-daily', ['date' => $customDate])
                 ->assertSuccessful();
 
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitor, $customDate) {
-                return $job->monitorId === $monitor->id && $job->date === $customDate;
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, function ($job) use ($monitor, $customDate) {
+                return in_array($monitor->id, $job->monitorIds) && $job->date === $customDate;
             });
         });
     });

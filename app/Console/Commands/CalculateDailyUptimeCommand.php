@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\CalculateMonitorBatchUptimeJob;
 use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use Carbon\Carbon;
@@ -175,13 +176,14 @@ class CalculateDailyUptimeCommand extends Command
 
         $this->info('Processing '.count($monitorsToProcess).' monitors');
 
-        // Dispatch jobs for each monitor
-        foreach ($monitorsToProcess as $monitorId) {
-            $job = new CalculateSingleMonitorUptimeJob($monitorId, $date);
-            dispatch($job);
+        // Dispatch jobs for monitors in chunks of 50
+        $jobCount = 0;
+        foreach (array_chunk($monitorsToProcess, 50) as $chunk) {
+            dispatch(new CalculateMonitorBatchUptimeJob($chunk, $date));
+            $jobCount++;
         }
 
-        $this->info('Dispatched '.count($monitorsToProcess).' calculation jobs');
+        $this->info("Dispatched {$jobCount} chunk calculation jobs for ".count($monitorsToProcess).' monitors');
 
         return count($monitorsToProcess);
     }

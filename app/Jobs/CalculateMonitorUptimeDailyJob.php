@@ -60,24 +60,32 @@ class CalculateMonitorUptimeDailyJob implements ShouldBeUnique, ShouldQueue
             }
             $yesterday = now()->subDay()->toDateString();
 
-            // Chunk 50 keeps existingRecords query small. Dispatch individually
-            // (Bus::batch needs job_batches table not present on sqlite_queue :memory: tests).
+            // Group calculations by date and dispatch in chunks to avoid queue flood
             $totalJobs = 0;
-            foreach (array_chunk($monitorIds, 50) as $monitorChunk) {
+            $chunkSize = (int) config('uptime-monitor.daily_uptime_chunk_size', 50);
+
+            foreach (array_chunk($monitorIds, $chunkSize) as $monitorChunk) {
                 $existingRecords = MonitorUptimeDaily::whereIn('monitor_id', $monitorChunk)
                     ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
                     ->get(['monitor_id', 'date'])
                     ->groupBy('monitor_id')
                     ->map(fn ($records) => $records->pluck('date')->map(fn ($d) => Carbon::parse($d)->toDateString())->all());
 
+                $dateMonitors = [];
                 foreach ($monitorChunk as $monitorId) {
                     $existingDates = $existingRecords->get($monitorId, []);
 
                     foreach ($dateStrings as $dateString) {
                         if ($dateString === $yesterday || ! in_array($dateString, $existingDates, true)) {
-                            dispatch(new CalculateSingleMonitorUptimeJob($monitorId, $dateString))->onQueue('default');
-                            $totalJobs++;
+                            $dateMonitors[$dateString][] = $monitorId;
                         }
+                    }
+                }
+
+                foreach ($dateMonitors as $dateString => $ids) {
+                    if (! empty($ids)) {
+                        dispatch(new CalculateMonitorBatchUptimeJob($ids, $dateString))->onQueue('default');
+                        $totalJobs++;
                     }
                 }
             }

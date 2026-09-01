@@ -202,6 +202,11 @@ return [
     'daily_lookback_days' => env('UPTIME_DAILY_LOOKBACK_DAYS', 30),
 
     /*
+     * Chunk size when dispatching daily uptime calculation jobs to the queue.
+     */
+    'daily_uptime_chunk_size' => (int) env('UPTIME_DAILY_CHUNK_SIZE', 50),
+
+    /*
      * Scheduling configuration for uptime checks and background jobs.
      */
     'schedule' => [

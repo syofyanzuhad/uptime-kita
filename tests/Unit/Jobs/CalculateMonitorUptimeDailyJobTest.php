@@ -1,7 +1,5 @@
-<?php
-
+use App\Jobs\CalculateMonitorBatchUptimeJob;
 use App\Jobs\CalculateMonitorUptimeDailyJob;
-use App\Jobs\CalculateSingleMonitorUptimeJob;
 use App\Models\Monitor;
 use App\Models\MonitorUptimeDaily;
 use Illuminate\Support\Facades\Queue;
@@ -12,7 +10,7 @@ beforeEach(function () {
 
 describe('CalculateMonitorUptimeDailyJob', function () {
     describe('handle', function () {
-        it('dispatches jobs for yesterday and missing days for monitors', function () {
+        it('dispatches batch jobs for yesterday and missing days for monitors', function () {
             // Set lookback days to 3 for this test
             config()->set('uptime-monitor.daily_lookback_days', 3);
 
@@ -34,27 +32,23 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             $yesterday = now()->subDay()->toDateString();
             $threeDaysAgo = now()->subDays(3)->toDateString();
 
-            // Monitor 0: missing D3, existing D2 (skipped), and D1 (yesterday, always computed) -> 2 jobs
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitors, $yesterday) {
-                return $job->monitorId === $monitors[0]->id && $job->date === $yesterday;
-            });
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitors, $threeDaysAgo) {
-                return $job->monitorId === $monitors[0]->id && $job->date === $threeDaysAgo;
+            // Yesterday batch includes both monitors
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, function ($job) use ($monitors, $yesterday) {
+                return $job->date === $yesterday && in_array($monitors[0]->id, $job->monitorIds) && in_array($monitors[1]->id, $job->monitorIds);
             });
 
-            // Monitor 1: missing D3, D2, and D1 -> 3 jobs
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitors, $yesterday) {
-                return $job->monitorId === $monitors[1]->id && $job->date === $yesterday;
-            });
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitors, $twoDaysAgo) {
-                return $job->monitorId === $monitors[1]->id && $job->date === $twoDaysAgo;
-            });
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, function ($job) use ($monitors, $threeDaysAgo) {
-                return $job->monitorId === $monitors[1]->id && $job->date === $threeDaysAgo;
+            // 3 days ago batch includes both monitors
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, function ($job) use ($monitors, $threeDaysAgo) {
+                return $job->date === $threeDaysAgo && in_array($monitors[0]->id, $job->monitorIds) && in_array($monitors[1]->id, $job->monitorIds);
             });
 
-            // Total 5 jobs dispatched (2 for monitor 0 + 3 for monitor 1)
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 5);
+            // 2 days ago batch includes only monitor 1 (since monitor 0 already exists)
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, function ($job) use ($monitors, $twoDaysAgo) {
+                return $job->date === $twoDaysAgo && ! in_array($monitors[0]->id, $job->monitorIds) && in_array($monitors[1]->id, $job->monitorIds);
+            });
+
+            // Total 3 batch jobs dispatched (1 per date)
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 3);
         });
 
         it('handles empty monitor list gracefully', function () {
@@ -63,14 +57,15 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             $job->handle();
 
             // Should not dispatch any jobs
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 0);
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 0);
         });
 
-        it('chunks monitors into smaller batches', function () {
+        it('chunks monitors into smaller batches based on config', function () {
             // Set lookback to 1 day (yesterday)
             config()->set('uptime-monitor.daily_lookback_days', 1);
+            config()->set('uptime-monitor.daily_uptime_chunk_size', 10);
 
-            // Create 25 monitors (more than chunk size of 10)
+            // Create 25 monitors (chunk size 10 -> ceil(25/10) = 3 jobs)
             Monitor::factory()->count(25)->create([
                 'uptime_check_enabled' => true,
             ]);
@@ -78,15 +73,16 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
-            // Should dispatch 25 jobs
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 25);
+            // Should dispatch 3 chunk jobs
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 3);
         });
 
-        it('dispatches jobs for large number of monitors', function () {
+        it('dispatches jobs for large number of monitors in chunks', function () {
             // Set lookback to 1 day (yesterday)
             config()->set('uptime-monitor.daily_lookback_days', 1);
+            config()->set('uptime-monitor.daily_uptime_chunk_size', 20);
 
-            // Create 50 monitors to test chunking behavior
+            // Create 50 monitors (chunk size 20 -> ceil(50/20) = 3 jobs)
             Monitor::factory()->count(50)->create([
                 'uptime_check_enabled' => true,
             ]);
@@ -94,7 +90,7 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             $job = new CalculateMonitorUptimeDailyJob;
             $job->handle();
 
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 50);
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 3);
         });
 
         it('logs appropriate messages during execution', function () {
@@ -110,8 +106,8 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             // Test that the job completes without error (logging happens internally)
             $job->handle();
 
-            // Verify the expected jobs were dispatched
-            Queue::assertPushed(CalculateSingleMonitorUptimeJob::class, 5);
+            // Verify the expected batch job was dispatched
+            Queue::assertPushed(CalculateMonitorBatchUptimeJob::class, 1);
         });
 
         it('re-throws exceptions for proper error handling', function () {
