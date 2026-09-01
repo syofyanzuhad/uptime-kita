@@ -7,6 +7,7 @@ use App\Http\Requests\Settings\RestoreDatabaseRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -48,10 +49,37 @@ class DatabaseBackupController extends Controller
 
     public function index(): Response
     {
-        $databasePath = config('database.connections.sqlite.database');
-        $isFileBased = $databasePath !== ':memory:' && ! str_starts_with($databasePath, ':memory:');
-        $databaseExists = $isFileBased && file_exists($databasePath);
-        $databaseSize = $databaseExists ? filesize($databasePath) : 0;
+        $driver = DB::getDriverName();
+        $databaseSize = 0;
+        $isFileBased = false;
+        $databaseExists = true;
+
+        if ($driver === 'sqlite') {
+            $databasePath = config('database.connections.sqlite.database');
+            $isFileBased = $databasePath !== ':memory:' && ! str_starts_with((string) $databasePath, ':memory:');
+            $databaseExists = $isFileBased && file_exists((string) $databasePath);
+            $databaseSize = $databaseExists ? filesize((string) $databasePath) : 0;
+        } elseif (in_array($driver, ['mysql', 'mariadb'])) {
+            $databaseName = DB::getDatabaseName();
+            try {
+                $size = DB::selectOne('
+                    SELECT SUM(data_length + index_length) AS size 
+                    FROM information_schema.TABLES 
+                    WHERE table_schema = ?
+                ', [$databaseName]);
+                $databaseSize = (int) ($size->size ?? 0);
+            } catch (\Throwable) {
+                $databaseSize = 0;
+            }
+        } elseif ($driver === 'pgsql') {
+            $databaseName = DB::getDatabaseName();
+            try {
+                $size = DB::selectOne('SELECT pg_database_size(?) AS size', [$databaseName]);
+                $databaseSize = (int) ($size->size ?? 0);
+            } catch (\Throwable) {
+                $databaseSize = 0;
+            }
+        }
 
         // Calculate essential data size estimate
         $essentialRecordCount = 0;
@@ -59,7 +87,7 @@ class DatabaseBackupController extends Controller
             foreach (self::ESSENTIAL_TABLES as $table) {
                 try {
                     $essentialRecordCount += DB::table($table)->count();
-                } catch (\Exception) {
+                } catch (\Throwable) {
                     // Table might not exist
                 }
             }
@@ -88,15 +116,25 @@ class DatabaseBackupController extends Controller
 
     private function generateSqlBackup(): void
     {
+        $driver = DB::getDriverName();
+
         // Output header
         echo "-- Uptime Kita Database Backup\n";
         echo '-- Generated: '.now()->toIso8601String()."\n";
         echo "-- Essential data only (excludes monitoring history and cache)\n";
         echo "--\n";
-        echo "-- To restore: sqlite3 database.sqlite < backup.sql\n";
+        if ($driver === 'sqlite') {
+            echo "-- To restore: sqlite3 database.sqlite < backup.sql\n";
+        } elseif (in_array($driver, ['mysql', 'mariadb'])) {
+            echo "-- To restore: mysql -u user -p database < backup.sql\n";
+        }
         echo "--\n\n";
 
-        echo "PRAGMA foreign_keys = OFF;\n\n";
+        if ($driver === 'sqlite') {
+            echo "PRAGMA foreign_keys = OFF;\n\n";
+        } elseif (in_array($driver, ['mysql', 'mariadb'])) {
+            echo "SET FOREIGN_KEY_CHECKS = 0;\n\n";
+        }
 
         // Export migrations table first (important for schema version)
         $this->exportTable('migrations');
@@ -106,7 +144,11 @@ class DatabaseBackupController extends Controller
             $this->exportTable($table);
         }
 
-        echo "PRAGMA foreign_keys = ON;\n";
+        if ($driver === 'sqlite') {
+            echo "PRAGMA foreign_keys = ON;\n";
+        } elseif (in_array($driver, ['mysql', 'mariadb'])) {
+            echo "SET FOREIGN_KEY_CHECKS = 1;\n";
+        }
     }
 
     private function exportTable(string $table): void
@@ -120,8 +162,11 @@ class DatabaseBackupController extends Controller
                 return;
             }
 
+            $grammar = DB::getQueryGrammar();
+            $wrappedTable = $grammar->wrapTable($table);
+
             echo "-- Table: {$table} ({$rows->count()} rows)\n";
-            echo "DELETE FROM \"{$table}\";\n";
+            echo "DELETE FROM {$wrappedTable};\n";
 
             foreach ($rows as $row) {
                 $columns = array_keys((array) $row);
@@ -133,20 +178,24 @@ class DatabaseBackupController extends Controller
                         return $value ? '1' : '0';
                     }
                     if (is_int($value) || is_float($value)) {
-                        return $value;
+                        return (string) $value;
                     }
 
-                    return "'".str_replace("'", "''", (string) $value)."'";
+                    try {
+                        return DB::getPdo()->quote((string) $value);
+                    } catch (\Throwable) {
+                        return "'".str_replace("'", "''", (string) $value)."'";
+                    }
                 }, array_values((array) $row));
 
-                $columnList = '"'.implode('", "', $columns).'"';
+                $columnList = implode(', ', array_map([$grammar, 'wrap'], $columns));
                 $valueList = implode(', ', $values);
 
-                echo "INSERT INTO \"{$table}\" ({$columnList}) VALUES ({$valueList});\n";
+                echo "INSERT INTO {$wrappedTable} ({$columnList}) VALUES ({$valueList});\n";
             }
 
             echo "\n";
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             echo "-- Error exporting table '{$table}': {$e->getMessage()}\n\n";
         }
     }
@@ -155,35 +204,45 @@ class DatabaseBackupController extends Controller
     {
         $uploadedFile = $request->file('database');
         $extension = strtolower($uploadedFile->getClientOriginalExtension());
-        $databasePath = config('database.connections.sqlite.database');
+        $driver = DB::getDriverName();
+        $databasePath = $driver === 'sqlite' ? config('database.connections.sqlite.database') : null;
+        $isFileBasedSqlite = $driver === 'sqlite' && $databasePath && $databasePath !== ':memory:' && ! str_starts_with((string) $databasePath, ':memory:');
 
-        // Create a backup of the current database before restoring
-        $backupPath = $databasePath.'.backup-'.now()->format('Y-m-d-His');
-        if (file_exists($databasePath)) {
-            copy($databasePath, $backupPath);
+        if ($extension !== 'sql' && ! $isFileBasedSqlite) {
+            return back()->withErrors([
+                'database' => 'Binary SQLite database files (.'.$extension.') can only be restored when using a file-based SQLite database. Please upload a .sql file instead.',
+            ]);
+        }
+
+        // Create a backup of the current database before restoring (for file-based SQLite)
+        $backupPath = $isFileBasedSqlite && file_exists((string) $databasePath)
+            ? $databasePath.'.backup-'.now()->format('Y-m-d-His')
+            : null;
+
+        if ($backupPath) {
+            copy((string) $databasePath, $backupPath);
         }
 
         try {
             if ($extension === 'sql') {
-                $this->restoreFromSql($uploadedFile->getRealPath(), $databasePath);
+                $this->restoreFromSql($uploadedFile->getRealPath());
             } else {
-                $this->restoreFromSqlite($uploadedFile, $databasePath);
+                $this->restoreFromSqlite($uploadedFile, (string) $databasePath);
             }
 
             // Clean up the backup file on success
-            if (file_exists($backupPath)) {
+            if ($backupPath && file_exists($backupPath)) {
                 unlink($backupPath);
             }
 
             return back()->with('success', 'Database restored successfully. Please log in again.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Restore the backup on failure
-            if (file_exists($backupPath)) {
-                copy($backupPath, $databasePath);
+            if ($backupPath && file_exists($backupPath)) {
+                copy($backupPath, (string) $databasePath);
                 unlink($backupPath);
+                DB::reconnect('sqlite');
             }
-
-            DB::reconnect('sqlite');
 
             return back()->withErrors([
                 'database' => 'Failed to restore database: '.$e->getMessage(),
@@ -191,7 +250,7 @@ class DatabaseBackupController extends Controller
         }
     }
 
-    private function restoreFromSql(string $sqlFilePath, string $databasePath): void
+    private function restoreFromSql(string $sqlFilePath): void
     {
         // Read and execute the SQL file
         $sql = file_get_contents($sqlFilePath);
@@ -200,25 +259,24 @@ class DatabaseBackupController extends Controller
             throw new \RuntimeException('Failed to read SQL file');
         }
 
-        // Disable foreign keys temporarily
-        DB::statement('PRAGMA foreign_keys = OFF');
-
-        // Split SQL into statements and execute each
         $statements = $this->parseSqlStatements($sql);
 
-        foreach ($statements as $statement) {
-            $statement = trim($statement);
-            if (! empty($statement) && ! str_starts_with($statement, '--')) {
+        Schema::withoutForeignKeyConstraints(function () use ($statements) {
+            foreach ($statements as $statement) {
+                $statement = trim($statement);
+                if (empty($statement) || str_starts_with($statement, '--')) {
+                    continue;
+                }
+
+                // Skip vendor-specific foreign key statements that might conflict across database engines
+                $upper = strtoupper($statement);
+                if (str_starts_with($upper, 'PRAGMA FOREIGN_KEYS') || str_starts_with($upper, 'SET FOREIGN_KEY_CHECKS')) {
+                    continue;
+                }
+
                 DB::unprepared($statement);
             }
-        }
-
-        // Re-enable foreign keys
-        DB::statement('PRAGMA foreign_keys = ON');
-
-        // Reconnect to ensure changes are applied
-        DB::reconnect('sqlite');
-        DB::connection('sqlite')->getPdo();
+        });
     }
 
     private function parseSqlStatements(string $sql): array

@@ -139,16 +139,10 @@ test('database restore validates file size', function () {
 });
 
 test('database restore accepts sql files', function () {
-    // Skip when using in-memory database because restore operations
-    // break the RefreshDatabase transaction isolation
-    if (config('database.connections.sqlite.database') === ':memory:') {
-        $this->markTestSkipped('Database restore requires file-based SQLite database');
-    }
-
     $user = User::factory()->create();
 
-    // Create a valid SQL backup file
-    $sqlContent = "-- Uptime Kita Database Backup\nPRAGMA foreign_keys = OFF;\nPRAGMA foreign_keys = ON;\n";
+    // Create a valid SQL backup file with PRAGMA and SET FOREIGN_KEY_CHECKS statements
+    $sqlContent = "-- Uptime Kita Database Backup\nPRAGMA foreign_keys = OFF;\nSET FOREIGN_KEY_CHECKS = 0;\nPRAGMA foreign_keys = ON;\nSET FOREIGN_KEY_CHECKS = 1;\n";
     $file = UploadedFile::fake()->createWithContent('backup.sql', $sqlContent);
 
     $response = $this
@@ -158,8 +152,8 @@ test('database restore accepts sql files', function () {
             'database' => $file,
         ]);
 
-    // Should not have validation errors for the file type
     $response->assertSessionDoesntHaveErrors('database');
+    $response->assertSessionHas('success');
 });
 
 test('database restore rejects invalid file types', function () {
@@ -176,4 +170,20 @@ test('database restore rejects invalid file types', function () {
         ]);
 
     $response->assertSessionHasErrors('database');
+});
+
+test('database restore rejects binary sqlite file on memory database', function () {
+    $user = User::factory()->create();
+
+    $file = UploadedFile::fake()->create('backup.sqlite', 100);
+
+    $response = $this
+        ->actingAs($user)
+        ->from('/settings/database')
+        ->post('/settings/database/restore', [
+            'database' => $file,
+        ]);
+
+    $response->assertSessionHasErrors('database');
+    expect(session('errors')->first('database'))->toContain('Binary SQLite database files');
 });
