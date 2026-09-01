@@ -140,7 +140,7 @@ const triggerFileInput = () => {
                     <div class="grid gap-2">
                         <Label for="database">Database file</Label>
                         <div class="flex gap-2">
-                            <Input
+                            <input
                                 ref="fileInput"
                                 id="database"
                                 type="file"
