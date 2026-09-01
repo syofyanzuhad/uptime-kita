@@ -123,5 +123,10 @@ describe('CalculateMonitorUptimeDailyJob', function () {
             expect(fn () => $job->handle())
                 ->toThrow(Exception::class, 'Database error');
         });
+
+        it('returns unique id for queue locking', function () {
+            $job = new CalculateMonitorUptimeDailyJob;
+            expect($job->uniqueId())->toBe('uptime-daily-dispatcher');
+        });
     });
 });

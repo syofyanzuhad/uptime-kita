@@ -4,6 +4,7 @@ use App\Jobs\CalculateMonitorBatchUptimeJob;
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\MonitorUptimeDaily;
+use App\Services\MonitorPerformanceService;
 
 describe('CalculateMonitorBatchUptimeJob', function () {
     it('calculates and upserts daily uptime for multiple monitors in a batch', function () {
@@ -107,5 +108,29 @@ describe('CalculateMonitorBatchUptimeJob', function () {
         app()->call([$job, 'handle']);
 
         expect(true)->toBeTrue();
+    });
+
+    it('logs error and continues when exception occurs for a monitor', function () {
+        $date = now()->subDay()->toDateString();
+        $monitor = Monitor::factory()->create();
+
+        $mockService = mock(MonitorPerformanceService::class);
+        $mockService->shouldReceive('aggregateDailyMetrics')
+            ->andThrow(new RuntimeException('Service failure'));
+
+        MonitorHistory::create([
+            'monitor_id' => $monitor->id,
+            'uptime_status' => 'up',
+            'response_time' => 100,
+            'status_code' => 200,
+            'created_at' => now()->subDay()->setHour(10),
+            'checked_at' => now()->subDay()->setHour(10),
+        ]);
+
+        $job = new CalculateMonitorBatchUptimeJob([$monitor->id], $date);
+        $job->handle($mockService);
+
+        $daily = MonitorUptimeDaily::where('monitor_id', $monitor->id)->where('date', $date)->first();
+        expect($daily)->toBeNull();
     });
 });
