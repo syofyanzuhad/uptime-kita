@@ -56,7 +56,7 @@ class MonitorCheckUptime extends SpatieCheckUptime
 
             $totalCount = $monitorsToPing->count();
             $queueThreshold = (int) config('uptime-monitor.uptime_check.queue_threshold', 500);
-            $batchSize = (int) config('uptime-monitor.uptime_check.batch_size', 100);
+            $batchSize = (int) config('uptime-monitor.uptime_check.batch_size', 25);
 
             // Adaptive: If total monitors exceed threshold, dispatch in batches to managed queue
             if ($totalCount > $queueThreshold) {
