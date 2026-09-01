@@ -60,7 +60,7 @@ if ($scheduleFrequency !== 'none') {
     $applySchedule($uptimeCheckEvent, 0);
 
     // Maintenance windows update & batched notifications
-    $applySchedule(Schedule::command('monitor:update-maintenance-status'), 20);
+    $applySchedule(Schedule::command('monitor:update-maintenance-status'), 10);
     $applySchedule(Schedule::job(new SendBatchedNotificationsJob), 5);
 
     // Heavy aggregation job: calculate stats every 15 minutes
@@ -69,8 +69,8 @@ if ($scheduleFrequency !== 'none') {
         ->withoutOverlapping(10);
 }
 
-Schedule::command(CheckCertificates::class)->twiceDailyAt(1, 13, 18);
-Schedule::command(CheckDomainExpiration::class)->twiceDailyAt(1, 13, 18);
+Schedule::command(CheckCertificates::class)->twiceDailyAt(1, 13, 15);
+Schedule::command(CheckDomainExpiration::class)->twiceDailyAt(1, 13, 15);
 Schedule::command('uptime:calculate-daily')->everyThreeHours(5);
 Schedule::command('monitor:update-maintenance-status --cleanup')->everySixHours(10);
 
