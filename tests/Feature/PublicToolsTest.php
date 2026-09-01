@@ -22,39 +22,86 @@ test('domain expiration checker page renders successfully', function () {
     );
 });
 
+test('domain expiration checker page renders with domain query parameter', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('checkDomainExpiration')
+            ->once()
+            ->with('google.com')
+            ->andReturn(['ok' => true]);
+    });
+
+    $response = $this->get('/tools/domain-expiration?domain=google.com');
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('tools/DomainExpirationChecker')
+        ->where('initialDomain', 'google.com')
+        ->where('initialResult.ok', true)
+    );
+});
+
 test('website checker page renders successfully', function () {
-    $response = $this->get('/tools/website-checker');
+    $response = $this->get('/tools/website-checker?url=https://example.com');
 
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/WebsiteChecker')
+        ->where('initialUrl', 'https://example.com')
     );
 });
 
-test('ssl checker page renders successfully', function () {
-    $response = $this->get('/tools/ssl-checker');
+test('ssl checker page renders with domain query parameter', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('checkSsl')
+            ->once()
+            ->with('google.com')
+            ->andReturn(['ok' => true]);
+    });
+
+    $response = $this->get('/tools/ssl-checker?domain=google.com');
 
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/SslChecker')
+        ->where('initialDomain', 'google.com')
+        ->where('initialResult.ok', true)
     );
 });
 
-test('dns lookup page renders successfully', function () {
-    $response = $this->get('/tools/dns-lookup');
+test('dns lookup page renders with domain and type query parameter', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('lookupDns')
+            ->once()
+            ->with('google.com', 'A')
+            ->andReturn(['ok' => true]);
+    });
+
+    $response = $this->get('/tools/dns-lookup?domain=google.com&type=A');
 
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/DnsLookup')
+        ->where('initialDomain', 'google.com')
+        ->where('initialType', 'A')
+        ->where('initialResult.ok', true)
     );
 });
 
-test('headers checker page renders successfully', function () {
-    $response = $this->get('/tools/headers-checker');
+test('headers checker page renders with url query parameter', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('checkHeaders')
+            ->once()
+            ->with('https://example.com')
+            ->andReturn(['ok' => true]);
+    });
+
+    $response = $this->get('/tools/headers-checker?url=https://example.com');
 
     $response->assertSuccessful();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('tools/HeadersChecker')
+        ->where('initialUrl', 'https://example.com')
+        ->where('initialResult.ok', true)
     );
 });
 

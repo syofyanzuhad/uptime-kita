@@ -401,4 +401,47 @@ describe('MonitorListController', function () {
             );
         });
     });
+
+    describe('tag filter', function () {
+        it('filters monitors by tag', function () {
+            $tag = Spatie\Tags\Tag::create(['name' => 'API']);
+            $monitorWithTag = Monitor::factory()->create(['is_public' => true]);
+            $monitorWithTag->attachTag('API');
+            $monitorWithoutTag = Monitor::factory()->create(['is_public' => true]);
+
+            $response = $this->get(route('monitors.list', [
+                'type' => 'public',
+                'tag_filter' => $tag->id,
+            ]));
+
+            $response->assertOk();
+            $response->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $monitorWithTag->id)
+                ->where('tagFilter', (string) $tag->id)
+            );
+        });
+
+        it('filters pinned monitors with private visibility filter', function () {
+            $privateMonitor = Monitor::factory()->create(['is_public' => false]);
+            $publicMonitor = Monitor::factory()->create(['is_public' => true]);
+
+            $this->user->monitors()->syncWithoutDetaching([
+                $privateMonitor->id => ['is_pinned' => true],
+                $publicMonitor->id => ['is_pinned' => true],
+            ]);
+
+            $response = $this->get(route('monitors.list', [
+                'type' => 'pinned',
+                'visibility_filter' => 'private',
+            ]));
+
+            $response->assertOk();
+            $response->assertInertia(fn (Assert $page) => $page
+                ->has('monitors.data', 1)
+                ->where('monitors.data.0.id', $privateMonitor->id)
+                ->where('visibilityFilter', 'private')
+            );
+        });
+    });
 });

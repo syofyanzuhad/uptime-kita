@@ -226,4 +226,51 @@ describe('PrivateMonitorController', function () {
         expect($monitorIds)->toContain($bothMonitor->id);
         expect($monitors)->toHaveCount(4); // 2 owned + 1 subscribed + 1 both
     });
+
+    it('filters private monitors by status and search', function () {
+        $searchMonitor = Monitor::factory()->create([
+            'is_public' => false,
+            'url' => 'https://search-target-domain.com',
+            'uptime_status' => 'up',
+            'uptime_check_enabled' => true,
+        ]);
+        $searchMonitor->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => false]);
+
+        $globallyDisabled = Monitor::factory()->create([
+            'is_public' => false,
+            'uptime_check_enabled' => false,
+        ]);
+        $globallyDisabled->users()->attach($this->user->id, ['is_active' => true, 'is_pinned' => false]);
+
+        $userDisabled = Monitor::factory()->create([
+            'is_public' => false,
+            'uptime_check_enabled' => true,
+        ]);
+        $userDisabled->users()->attach($this->user->id, ['is_active' => false, 'is_pinned' => false]);
+
+        // Search test
+        $res = actingAs($this->user)->get('/private-monitors?search=search-target');
+        $res->assertOk();
+        expect(collect($res->json('data'))->pluck('id'))->toContain($searchMonitor->id);
+
+        // Globally disabled filter test
+        $res = actingAs($this->user)->get('/private-monitors?status_filter=globally_disabled');
+        $res->assertOk();
+        expect(collect($res->json('data'))->pluck('id'))->toContain($globallyDisabled->id);
+
+        // Globally enabled filter test
+        $res = actingAs($this->user)->get('/private-monitors?status_filter=globally_enabled');
+        $res->assertOk();
+        expect(collect($res->json('data'))->pluck('id'))->toContain($this->ownedPrivateMonitor1->id);
+
+        // User disabled filter test
+        $res = actingAs($this->user)->get('/private-monitors?status_filter=disabled');
+        $res->assertOk();
+        expect(collect($res->json('data'))->pluck('id'))->toContain($userDisabled->id);
+
+        // Up status filter test
+        $res = actingAs($this->user)->get('/private-monitors?status_filter=up');
+        $res->assertOk();
+        expect(collect($res->json('data'))->pluck('id'))->toContain($this->ownedPrivateMonitor1->id);
+    });
 });

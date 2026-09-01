@@ -5,6 +5,7 @@ use App\Services\SmartRetryAttempt;
 use App\Services\SmartRetryService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
@@ -299,4 +300,26 @@ it('classifies connection errors correctly', function () {
 
     $ssl = new ConnectException('SSL certificate problem', new Request('GET', 'https://example.com'));
     expect($method->invoke($service, $ssl))->toBe(SmartRetryAttempt::ERROR_SSL);
+});
+
+it('handles RequestException and general Exception gracefully during HTTP requests', function () {
+    $monitor = Monitor::factory()->create(['url' => 'https://example.com']);
+
+    // Test RequestException
+    $req = new Request('GET', 'https://example.com');
+    $reqException = new RequestException('Error Communicating with Server', $req, new Response(502));
+    $service = makeSmartRetryService([$reqException]);
+    $service->shouldReceive('canPerformTcpPing')->andReturn(false);
+
+    $result = $service->performSmartCheck($monitor, ['retries' => 1]);
+    expect($result->isSuccess())->toBeFalse();
+    expect($result->statusCode)->toBe(502);
+
+    // Test generic exception
+    $service2 = makeSmartRetryService([new Exception('Generic unexpected failure')]);
+    $service2->shouldReceive('canPerformTcpPing')->andReturn(false);
+
+    $result2 = $service2->performSmartCheck($monitor, ['retries' => 1]);
+    expect($result2->isSuccess())->toBeFalse();
+    expect($result2->message)->toBe('Generic unexpected failure');
 });
