@@ -79,15 +79,12 @@ class CalculateMonitorBatchUptimeJob implements ShouldQueue
                     'uptime_percentage' => $uptimePercentage,
                     'total_checks' => $totalChecks,
                     'failed_checks' => $totalChecks - $upChecks,
+                    'avg_response_time' => $responseMetrics['avg_response_time'] ?? null,
+                    'min_response_time' => $responseMetrics['min_response_time'] ?? null,
+                    'max_response_time' => $responseMetrics['max_response_time'] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
-
-                if (! empty($responseMetrics)) {
-                    $record['avg_response_time'] = $responseMetrics['avg_response_time'] ?? null;
-                    $record['min_response_time'] = $responseMetrics['min_response_time'] ?? null;
-                    $record['max_response_time'] = $responseMetrics['max_response_time'] ?? null;
-                }
 
                 $recordsToUpsert[] = $record;
             } catch (Throwable $e) {

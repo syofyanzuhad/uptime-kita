@@ -73,6 +73,35 @@ describe('CalculateMonitorBatchUptimeJob', function () {
         expect((int) $daily2->failed_checks)->toBe(0);
     });
 
+    it('handles batch with monitors having zero checks mixed with monitors having checks', function () {
+        $date = now()->subDay()->toDateString();
+
+        $monitorWithChecks = Monitor::factory()->create();
+        $monitorWithoutChecks = Monitor::factory()->create();
+
+        MonitorHistory::create([
+            'monitor_id' => $monitorWithChecks->id,
+            'uptime_status' => 'up',
+            'response_time' => 100,
+            'status_code' => 200,
+            'created_at' => now()->subDay()->setHour(10),
+            'checked_at' => now()->subDay()->setHour(10),
+        ]);
+
+        $job = new CalculateMonitorBatchUptimeJob([$monitorWithChecks->id, $monitorWithoutChecks->id], $date);
+        app()->call([$job, 'handle']);
+
+        $daily1 = MonitorUptimeDaily::where('monitor_id', $monitorWithChecks->id)->where('date', $date)->first();
+        $daily2 = MonitorUptimeDaily::where('monitor_id', $monitorWithoutChecks->id)->where('date', $date)->first();
+
+        expect($daily1)->not->toBeNull();
+        expect((float) $daily1->avg_response_time)->toBe(100.0);
+
+        expect($daily2)->not->toBeNull();
+        expect((int) $daily2->total_checks)->toBe(0);
+        expect($daily2->avg_response_time)->toBeNull();
+    });
+
     it('handles empty monitor ids gracefully', function () {
         $job = new CalculateMonitorBatchUptimeJob([], now()->toDateString());
         app()->call([$job, 'handle']);
