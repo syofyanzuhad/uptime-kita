@@ -104,7 +104,9 @@ function formatDate(dateString?: string | null) {
                         <div class="text-sm font-bold">{{ monitor.uptime_check_interval ? monitor.uptime_check_interval + ' min' : '-' }}</div>
                     </div>
                     <div class="space-y-1">
-                        <span class="text-xs font-semibold text-gray-500 uppercase">SSL</span>
+                        <span class="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase">
+                            <Icon name="shieldCheck" class="h-3 w-3" /> SSL
+                        </span>
                         <div
                             v-if="monitor.certificate_check_enabled"
                             class="text-sm font-bold"
@@ -119,7 +121,9 @@ function formatDate(dateString?: string | null) {
                         <div class="text-sm font-bold">{{ formatDate(monitor.certificate_expiration_date) }}</div>
                     </div>
                     <div class="space-y-1">
-                        <span class="text-xs font-semibold text-gray-500 uppercase">Domain Expired</span>
+                        <span class="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase">
+                            <Icon name="globe" class="h-3 w-3" /> Domain Expired
+                        </span>
                         <div v-if="monitor.domain_expiration_check_enabled" class="text-sm font-bold">
                             {{ formatDate(monitor.domain_expiration_date) }}
                         </div>

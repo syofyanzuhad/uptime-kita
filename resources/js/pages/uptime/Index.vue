@@ -305,26 +305,34 @@ function onPerPageChange() {
                                     <TableCell class="text-gray-500 dark:text-gray-400">
                                         <template v-if="monitor.certificate_check_enabled">
                                             <span
+                                                class="inline-flex items-center gap-1 font-medium"
                                                 :class="{
                                                     'text-green-600 dark:text-green-400': monitor.certificate_status === 'valid',
                                                     'text-red-600 dark:text-red-400': monitor.certificate_status === 'invalid',
                                                     'text-gray-600 dark:text-gray-400': monitor.certificate_status === 'not applicable',
                                                 }"
                                             >
-                                                {{ monitor.certificate_status }}
+                                                <Icon
+                                                    :name="monitor.certificate_status === 'valid' ? 'shieldCheck' : 'shieldAlert'"
+                                                    class="h-3.5 w-3.5"
+                                                />
+                                                SSL {{ monitor.certificate_status }}
                                             </span>
-                                            <br />
-                                            <span v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
-                                                Expired: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
-                                            </span>
+                                            <div v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
+                                                Expires: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
+                                            </div>
                                         </template>
                                         <template v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date">
-                                            <br />
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            <div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                                <Icon name="globe" class="h-3 w-3 text-gray-400" />
                                                 Domain: {{ new Date(monitor.domain_expiration_date).toLocaleDateString() }}
-                                            </span>
+                                            </div>
                                         </template>
-                                        <span v-else class="text-gray-400 dark:text-gray-500">Tidak dicek</span>
+                                        <span
+                                            v-if="!monitor.certificate_check_enabled && !monitor.domain_expiration_check_enabled"
+                                            class="text-gray-400 dark:text-gray-500"
+                                            >Tidak dicek</span
+                                        >
                                     </TableCell>
                                     <TableCell class="text-right">
                                         <button

@@ -345,14 +345,16 @@ onMounted(() => {
                                         class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase"
                                         :class="getCertStatusColor(monitor.certificate_status)"
                                     >
-                                        SSL {{ monitor.certificate_status }}
+                                        <Icon :name="monitor.certificate_status === 'valid' ? 'shieldCheck' : 'shieldAlert'" class="h-3 w-3" />
+                                        <span>SSL {{ monitor.certificate_status }}</span>
                                     </span>
                                     <span
                                         v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date"
                                         class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase"
                                         :class="getDomainExpirationColor(monitor.domain_expiration_date)"
                                     >
-                                        {{ getDomainExpirationLabel(monitor.domain_expiration_date) }}
+                                        <Icon name="globe" class="h-3 w-3" />
+                                        <span>{{ getDomainExpirationLabel(monitor.domain_expiration_date) }}</span>
                                     </span>
                                 </div>
                                 <a

@@ -357,7 +357,7 @@ onMounted(() => {
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">SSL Certificate</h4>
                                 <div class="flex items-center gap-2">
                                     <Icon
-                                        :name="monitorData.certificate_status === 'valid' ? 'lock' : 'lockOpen'"
+                                        :name="monitorData.certificate_status === 'valid' ? 'shieldCheck' : 'shieldAlert'"
                                         class="h-5 w-5"
                                         :class="certificateColor"
                                     />
@@ -373,6 +373,18 @@ onMounted(() => {
                             <!-- Domain Expiration Status -->
                             <div class="space-y-2" v-if="monitorData.domain_expiration_check_enabled">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Domain Expiration</h4>
+                                <div class="flex items-center gap-2">
+                                    <Icon name="globe" class="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                                    <span class="font-medium text-gray-900 dark:text-gray-100">
+                                        {{
+                                            monitorData.domain_expiration_date
+                                                ? 'Monitored'
+                                                : monitorData.domain_expiration_lookup_error
+                                                  ? 'Error'
+                                                  : 'Checking...'
+                                        }}
+                                    </span>
+                                </div>
                                 <p v-if="monitorData.domain_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
                                     Expires: {{ new Date(monitorData.domain_expiration_date).toLocaleDateString() }}
                                 </p>

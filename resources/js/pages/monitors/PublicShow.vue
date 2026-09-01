@@ -484,15 +484,23 @@
                                     <span class="text-xs font-semibold text-gray-500">Domain Expiration</span>
                                     <span
                                         v-if="monitor.domain_expiration_date"
-                                        class="text-xs font-bold"
+                                        class="flex items-center gap-1 text-xs font-bold"
                                         :class="getDomainExpirationColor(monitor.domain_expiration_date)"
                                     >
+                                        <Icon name="globe" class="h-3.5 w-3.5" />
                                         {{ getDomainDaysLeft(monitor.domain_expiration_date) }}
                                     </span>
-                                    <span v-else-if="monitor.domain_expiration_lookup_error" class="text-xs font-semibold text-rose-500">
+                                    <span
+                                        v-else-if="monitor.domain_expiration_lookup_error"
+                                        class="flex items-center gap-1 text-xs font-semibold text-rose-500"
+                                    >
+                                        <Icon name="globe" class="h-3.5 w-3.5 text-rose-500" />
                                         Lookup error
                                     </span>
-                                    <span v-else class="text-xs font-medium text-gray-400"> Checking... </span>
+                                    <span v-else class="flex items-center gap-1 text-xs font-medium text-gray-400">
+                                        <Icon name="globe" class="h-3.5 w-3.5 text-gray-400" />
+                                        Checking...
+                                    </span>
                                 </div>
                                 <div v-if="monitor.domain_expiration_date" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                     Expires: {{ formatDate(monitor.domain_expiration_date) }}
