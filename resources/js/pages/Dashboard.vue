@@ -4,7 +4,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Activity, AlertCircle, BellOff, CheckCircle2, Plus, RefreshCw, Search, ShieldAlert, ShieldCheck, Users, X, XCircle } from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { usePollMode } from '@/composables/usePollMode';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PinnedMonitorsCard from '../components/PinnedMonitorsCard.vue';
 import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
 import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
@@ -79,8 +80,32 @@ async function fetchMonitorStatistics() {
     }
 }
 
+const { isAutoPolling } = usePollMode();
+let statsInterval: ReturnType<typeof setInterval> | null = null;
+
+function startStatsPolling() {
+    if (!isAutoPolling.value || statsInterval) return;
+    statsInterval = setInterval(() => {
+        if (!loadingMonitors.value) {
+            fetchMonitorStatistics();
+        }
+    }, 60000);
+}
+
+function stopStatsPolling() {
+    if (statsInterval) {
+        clearInterval(statsInterval);
+        statsInterval = null;
+    }
+}
+
 onMounted(() => {
     fetchMonitorStatistics();
+    startStatsPolling();
+});
+
+onUnmounted(() => {
+    stopStatsPolling();
 });
 </script>
 

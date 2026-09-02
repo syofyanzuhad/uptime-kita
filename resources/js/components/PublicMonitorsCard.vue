@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookmarks } from '@/composables/useBookmarks';
+import { usePollMode } from '@/composables/usePollMode';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
 import { router, usePage } from '@inertiajs/vue3';
@@ -275,11 +276,31 @@ const toggleActive = async (monitorId: number) => {
     }
 };
 
+const { isAutoPolling } = usePollMode();
+
+let pollingInterval: number | null = null;
 let cleanupPinCallback: (() => void) | null = null;
+
+function startPolling() {
+    if (!isAutoPolling.value || pollingInterval) return;
+    pollingInterval = window.setInterval(() => {
+        if (!loading.value && !loadingMore.value) {
+            fetchPublicMonitors(false, 1);
+        }
+    }, 60000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
 
 onMounted(() => {
     initialize();
     fetchPublicMonitors(true);
+    startPolling();
 
     cleanupPinCallback = onPinChanged(() => {
         fetchPublicMonitors(false, 1);
@@ -287,6 +308,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    stopPolling();
     if (cleanupPinCallback) {
         cleanupPinCallback();
     }

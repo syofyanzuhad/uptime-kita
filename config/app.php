@@ -132,6 +132,9 @@ return [
     // Show Smol Launch badge on homepage
     'show_smol_launch_badge' => env('SHOW_SMOL_LAUNCH_BADGE', false),
 
+    // Polling mode for monitor requests: manual or auto
+    'poll_request_api' => env('POLL_REQUEST_API', env('VITE_POLL_REQUEST_API', 'manual')),
+
     // Admin credentials
     'admin_credentials' => [
         'email' => env('ADMIN_EMAIL', 'mail@syofyanzuhad.dev'),

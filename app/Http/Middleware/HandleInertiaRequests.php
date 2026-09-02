@@ -54,6 +54,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => $request->session()->get('flash'),
             // Add last update date for UI
             'lastUpdate' => config('app.last_update'),
+            'pollRequestApi' => config('app.poll_request_api', 'manual'),
         ];
     }
 }

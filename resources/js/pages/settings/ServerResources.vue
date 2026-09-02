@@ -4,6 +4,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import Icon from '@/components/Icon.vue';
+import { usePollMode } from '@/composables/usePollMode';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -93,10 +94,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const { isAutoPolling } = usePollMode();
 const metrics = ref<ServerMetrics>(props.initialMetrics);
 const loading = ref(false);
 const lastUpdated = ref<Date>(new Date());
-const autoRefresh = ref(true);
+const autoRefresh = ref(isAutoPolling.value);
 const refreshInterval = ref(5); // seconds
 let intervalId: ReturnType<typeof setInterval> | null = null;
 

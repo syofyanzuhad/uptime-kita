@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBookmarks } from '@/composables/useBookmarks';
+import { usePollMode } from '@/composables/usePollMode';
 import type { SharedData } from '@/types';
 import type { Monitor } from '@/types/monitor';
 import { usePage } from '@inertiajs/vue3';
@@ -206,8 +207,19 @@ watch(
     { deep: true },
 );
 
+const { isAutoPolling } = usePollMode();
+
 let pollingInterval: number | null = null;
 let cleanupPinCallback: (() => void) | null = null;
+
+function startPolling() {
+    if (!isAutoPolling.value || pollingInterval) return;
+    pollingInterval = window.setInterval(() => {
+        if (!loading.value && !loadingMore.value) {
+            fetchPinnedMonitors(false, 1);
+        }
+    }, 60000);
+}
 
 function stopPolling() {
     if (pollingInterval) {
@@ -218,6 +230,7 @@ function stopPolling() {
 
 onMounted(() => {
     fetchPinnedMonitors(true);
+    startPolling();
 
     cleanupPinCallback = onPinChanged(() => {
         fetchPinnedMonitors(false, 1);

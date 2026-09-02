@@ -3,6 +3,7 @@
 use App\Models\Monitor;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Tags\Tag;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -404,7 +405,7 @@ describe('MonitorListController', function () {
 
     describe('tag filter', function () {
         it('filters monitors by tag', function () {
-            $tag = Spatie\Tags\Tag::create(['name' => 'API']);
+            $tag = Tag::create(['name' => 'API']);
             $monitorWithTag = Monitor::factory()->create(['is_public' => true]);
             $monitorWithTag->attachTag('API');
             $monitorWithoutTag = Monitor::factory()->create(['is_public' => true]);

@@ -32,6 +32,7 @@ export interface SharedData extends PageProps {
         warning?: string;
         info?: string;
     };
+    pollRequestApi?: 'manual' | 'auto';
 }
 
 export interface User {

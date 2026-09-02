@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
+import { usePollMode } from '@/composables/usePollMode';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 interface ServerStats {
@@ -17,6 +18,7 @@ const loading = ref(true);
 const error = ref(false);
 const expanded = ref(false);
 
+const { isAutoPolling } = usePollMode();
 let refreshInterval: ReturnType<typeof setInterval> | null = null;
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -64,8 +66,10 @@ function handleMouseLeave() {
 
 onMounted(() => {
     fetchStats();
-    // Refresh every 30 seconds
-    refreshInterval = setInterval(fetchStats, 30000);
+    // Refresh every 30 seconds only if auto polling is enabled
+    if (isAutoPolling.value) {
+        refreshInterval = setInterval(fetchStats, 30000);
+    }
 });
 
 onUnmounted(() => {
@@ -219,7 +223,7 @@ onUnmounted(() => {
                 </div>
 
                 <div class="mt-3 border-t border-gray-100 pt-2 text-center text-[10px] text-gray-400 dark:border-gray-800">
-                    Auto-refreshes every 30 seconds
+                    {{ isAutoPolling ? 'Auto-refreshes every 30 seconds' : 'Manual refresh mode' }}
                 </div>
             </div>
         </Transition>
