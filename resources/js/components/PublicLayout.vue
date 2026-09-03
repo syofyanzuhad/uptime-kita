@@ -5,9 +5,18 @@ import PublicFooter from '@/components/PublicFooter.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import ShareDropdown from '@/components/ShareDropdown.vue';
 import ToastContainer from '@/components/ToastContainer.vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/composables/useTheme';
+import { globalToasts } from '@/composables/useToastNotifications';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
+import { LayoutDashboard, LogIn, Menu, Share2, Wrench } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = withDefaults(
@@ -49,6 +58,38 @@ onUnmounted(() => {
     window.removeEventListener('online', onOnline);
     window.removeEventListener('offline', onOffline);
 });
+
+async function handleMobileShare() {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+            await navigator.share({
+                title: props.title,
+                text: props.shareText,
+                url: props.shareUrl,
+            });
+            return;
+        } catch (e: any) {
+            if (e?.name === 'AbortError') return;
+        }
+    }
+
+    try {
+        await navigator.clipboard.writeText(props.shareUrl);
+        globalToasts.addToast({
+            title: 'Link Copied',
+            message: 'Page URL copied to clipboard',
+            type: 'success',
+            duration: 3000,
+        });
+    } catch {
+        globalToasts.addToast({
+            title: 'Failed to copy',
+            message: 'Unable to copy URL to clipboard',
+            type: 'error',
+            duration: 3000,
+        });
+    }
+}
 
 const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd) : ''));
 </script>
@@ -107,8 +148,8 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         <!-- Custom Page Nav/Action Slots -->
                         <slot name="header-nav" />
 
-                        <!-- Main Nav Links -->
-                        <nav class="flex items-center gap-1">
+                        <!-- Desktop Main Nav Links -->
+                        <nav class="hidden sm:flex items-center gap-1">
                             <Link
                                 href="/tools"
                                 class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
@@ -141,7 +182,9 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         <div class="flex items-center gap-0.5">
                             <ServerStatsBadge v-if="showServerStats" class="hidden md:block" />
 
-                            <ShareDropdown :url="shareUrl" :text="shareText" />
+                            <div class="hidden sm:block">
+                                <ShareDropdown :url="shareUrl" :text="shareText" />
+                            </div>
 
                             <button
                                 @click="toggleTheme"
@@ -150,6 +193,60 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                             >
                                 <Icon :name="isDark ? 'sun' : 'moon'" class="h-4 w-4 rotate-0 transition-transform duration-300 dark:-rotate-12" />
                             </button>
+
+                            <!-- Mobile Navigation Dropdown -->
+                            <div class="sm:hidden">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <button
+                                            class="cursor-pointer rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            aria-label="Open navigation menu"
+                                        >
+                                            <Menu class="h-4 w-4" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" class="w-48 rounded-2xl border border-gray-200/80 bg-white/95 p-1.5 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95">
+                                        <DropdownMenuItem as-child>
+                                            <Link
+                                                href="/tools"
+                                                class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            >
+                                                <Wrench class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span>Tools</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem as-child>
+                                            <Link
+                                                v-if="isAuthenticated"
+                                                href="/dashboard"
+                                                class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            >
+                                                <LayoutDashboard class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span>Dashboard</span>
+                                            </Link>
+                                            <Link
+                                                v-else
+                                                href="/login"
+                                                class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            >
+                                                <LogIn class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span>Log in</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuSeparator class="my-1 bg-gray-100 dark:bg-gray-800" />
+
+                                        <DropdownMenuItem
+                                            @click="handleMobileShare"
+                                            class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                                        >
+                                            <Share2 class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            <span>Share Page</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
                     </div>
                 </div>
