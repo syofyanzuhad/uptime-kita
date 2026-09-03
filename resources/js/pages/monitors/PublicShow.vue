@@ -91,7 +91,7 @@
         <TooltipProvider>
             <!-- Hero Status Banner -->
             <div
-                class="mb-6 overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-md transition-all duration-300 sm:p-8"
+                class="mb-6 overflow-hidden rounded-3xl border p-5 shadow-sm backdrop-blur-md transition-all duration-300 sm:p-8"
                 :class="[
                     monitor.uptime_status === 'up'
                         ? 'border-emerald-200/80 bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white dark:border-emerald-900/50 dark:from-emerald-950/30 dark:via-gray-900 dark:to-gray-900'
@@ -100,93 +100,110 @@
                           : 'border-amber-200/80 bg-gradient-to-r from-amber-50/70 via-yellow-50/40 to-white dark:border-amber-900/50 dark:from-amber-950/30 dark:via-gray-900 dark:to-gray-900',
                 ]"
             >
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-md"
-                            :class="[
-                                monitor.uptime_status === 'up'
-                                    ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-                                    : monitor.uptime_status === 'down'
-                                      ? 'bg-rose-500 text-white shadow-rose-500/20'
-                                      : 'bg-amber-500 text-white shadow-amber-500/20',
-                            ]"
-                        >
-                            <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-8 w-8" />
-                        </div>
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2.5">
-                                <h2 class="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
+                <div class="flex flex-col gap-5 sm:gap-6 sm:flex-row sm:items-center sm:justify-between">
+                    <!-- Left: Status Icon, Title & Info, and Check Button -->
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                            <!-- Status Icon -->
+                            <div
+                                class="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl shadow-md"
+                                :class="[
+                                    monitor.uptime_status === 'up'
+                                        ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                                        : monitor.uptime_status === 'down'
+                                          ? 'bg-rose-500 text-white shadow-rose-500/20'
+                                          : 'bg-amber-500 text-white shadow-amber-500/20',
+                                ]"
+                            >
+                                <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-6 w-6 sm:h-8 sm:w-8" />
+                            </div>
+
+                            <!-- Title & Subtitle -->
+                            <div class="min-w-0">
+                                <h2 class="text-xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
                                     {{ getStatusText(monitor.uptime_status) }}
                                 </h2>
-
-                                <!-- Manual Check Button inside Hero Banner -->
-                                <Tooltip>
-                                    <TooltipTrigger as-child>
-                                        <button
-                                            id="manual-check-btn"
-                                            :disabled="isCheckingNow || checkCooldown > 0"
-                                            :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
-                                            :class="[
-                                                'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95',
-                                                checkCooldown > 0 || isCheckingNow
-                                                    ? 'cursor-not-allowed border-gray-200/80 bg-white/60 text-gray-400 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-500'
-                                                    : 'border-white/90 bg-white/90 text-gray-700 hover:bg-white hover:text-blue-600 dark:border-gray-800 dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-blue-400',
-                                            ]"
-                                            @click="triggerManualCheck"
-                                        >
-                                            <Icon
-                                                :name="isCheckingNow ? 'loader' : 'refreshCw'"
-                                                :class="['h-3.5 w-3.5', isCheckingNow && 'animate-spin']"
-                                            />
-                                            <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
-                                            <span v-else-if="isCheckingNow">Checking…</span>
-                                            <span v-else>Check Now</span>
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <span v-if="checkCooldown > 0">Next check available in {{ checkCooldown }}s</span>
-                                        <span v-else>Trigger an immediate uptime check</span>
-                                    </TooltipContent>
-                                </Tooltip>
+                                <p class="mt-0.5 text-xs text-gray-600 sm:text-sm dark:text-gray-300">
+                                    Checked every {{ monitor.uptime_check_interval }} min{{ monitor.uptime_check_interval > 1 ? 's' : '' }}
+                                    <span v-if="monitor.last_check_date">• Last checked {{ formatDate(monitor.last_check_date) }}</span>
+                                </p>
                             </div>
-                            <p class="mt-1 text-xs text-gray-600 sm:text-sm dark:text-gray-300">
-                                Checked every {{ monitor.uptime_check_interval }} minutes
-                                <span v-if="monitor.last_check_date">• Last checked {{ formatDate(monitor.last_check_date) }}</span>
-                            </p>
+                        </div>
+
+                        <!-- Manual Check Button (Aligned on the right of hero header) -->
+                        <div class="shrink-0">
+                            <Tooltip>
+                                <TooltipTrigger as-child>
+                                    <button
+                                        id="manual-check-btn"
+                                        :disabled="isCheckingNow || checkCooldown > 0"
+                                        :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
+                                        :class="[
+                                            'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95',
+                                            checkCooldown > 0 || isCheckingNow
+                                                ? 'cursor-not-allowed border-gray-200/80 bg-white/60 text-gray-400 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-500'
+                                                : 'border-white/90 bg-white/90 text-gray-700 hover:bg-white hover:text-blue-600 dark:border-gray-800 dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-blue-400',
+                                        ]"
+                                        @click="triggerManualCheck"
+                                    >
+                                        <Icon
+                                            :name="isCheckingNow ? 'loader' : 'refreshCw'"
+                                            :class="['h-3.5 w-3.5', isCheckingNow && 'animate-spin']"
+                                        />
+                                        <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
+                                        <span v-else-if="isCheckingNow">Checking…</span>
+                                        <span v-else>Check Now</span>
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <span v-if="checkCooldown > 0">Next check available in {{ checkCooldown }}s</span>
+                                    <span v-else>Trigger an immediate uptime check</span>
+                                </TooltipContent>
+                            </Tooltip>
                         </div>
                     </div>
 
-                    <!-- Quick Metrics Chips -->
-                    <div class="flex flex-wrap items-center gap-2.5 sm:justify-end">
+                    <!-- Quick Metrics Chips (Equal 2 or 3 columns on mobile, flex on desktop) -->
+                    <div
+                        class="grid gap-2 w-full sm:w-auto sm:flex sm:flex-wrap sm:items-center sm:gap-2.5 sm:justify-end"
+                        :class="monitor.certificate_check_enabled && monitor.certificate_status ? 'grid-cols-3' : 'grid-cols-2'"
+                    >
                         <div
-                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-2.5 py-2.5 text-center shadow-xs backdrop-blur-sm sm:px-4 dark:border-gray-800 dark:bg-gray-800/90"
                         >
-                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white" :class="getUptimeColor(uptimeStats['24h'])">
-                                {{ uptimeStats['24h'] }}%
+                            <span
+                                class="block text-base font-extrabold sm:text-lg"
+                                :class="monitor.uptime_status === 'not yet checked' ? 'text-gray-400 dark:text-gray-500' : getUptimeColor(uptimeStats['24h'])"
+                            >
+                                {{ monitor.uptime_status === 'not yet checked' ? '—' : `${uptimeStats['24h']}%` }}
                             </span>
                             <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">24h Uptime</span>
                         </div>
 
                         <div
-                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-2.5 py-2.5 text-center shadow-xs backdrop-blur-sm sm:px-4 dark:border-gray-800 dark:bg-gray-800/90"
                         >
-                            <span class="block text-lg font-extrabold text-gray-900 dark:text-white"> {{ avgResponseTime }}ms </span>
+                            <span
+                                class="block text-base font-extrabold sm:text-lg"
+                                :class="monitor.uptime_status === 'not yet checked' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
+                            >
+                                {{ monitor.uptime_status === 'not yet checked' ? '—' : `${avgResponseTime}ms` }}
+                            </span>
                             <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">Avg Latency</span>
                         </div>
 
                         <div
                             v-if="monitor.certificate_check_enabled && monitor.certificate_status"
-                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-4 py-2.5 text-center shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/90"
+                            class="rounded-2xl border border-gray-200/80 bg-white/90 px-2.5 py-2.5 text-center shadow-xs backdrop-blur-sm sm:px-4 dark:border-gray-800 dark:bg-gray-800/90"
                         >
                             <span
-                                class="flex items-center justify-center gap-1 text-base font-extrabold"
+                                class="flex items-center justify-center gap-1 text-sm font-extrabold sm:text-base"
                                 :class="getCertificateColor(monitor.certificate_status)"
                             >
-                                <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-4 w-4" />
-                                <span>{{ getCertificateText(monitor.certificate_status) }}</span>
+                                <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-3.5 w-3.5 shrink-0" />
+                                <span class="truncate">{{ monitor.certificate_status === 'not yet checked' ? 'Pending' : getCertificateText(monitor.certificate_status) }}</span>
                             </span>
-                            <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">SSL Certificate</span>
+                            <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">SSL Cert</span>
                         </div>
                     </div>
                 </div>
