@@ -60,38 +60,6 @@
         </template>
 
         <template #header-actions>
-            <!-- Manual Check Button -->
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger as-child>
-                        <button
-                            id="manual-check-btn"
-                            :disabled="isCheckingNow || checkCooldown > 0"
-                            :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
-                            :class="[
-                                'flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-all active:scale-95 sm:px-3',
-                                checkCooldown > 0 || isCheckingNow
-                                    ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600'
-                                    : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-950',
-                            ]"
-                            @click="triggerManualCheck"
-                        >
-                            <Icon
-                                :name="isCheckingNow ? 'loader' : 'refreshCw'"
-                                :class="['h-3.5 w-3.5', isCheckingNow && 'animate-spin']"
-                            />
-                            <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
-                            <span v-else-if="isCheckingNow">Checking…</span>
-                            <span v-else>Check<span class="hidden sm:inline"> Now</span></span>
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <span v-if="checkCooldown > 0">Next check available in {{ checkCooldown }}s</span>
-                        <span v-else>Trigger an immediate uptime check</span>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
             <!-- Live Status Pill in Header (dot-only on mobile, dot+text on sm+) -->
             <span
                 role="status"
@@ -147,10 +115,40 @@
                             <Icon :name="getStatusIcon(monitor.uptime_status)" class="h-8 w-8" />
                         </div>
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2.5">
                                 <h2 class="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
                                     {{ getStatusText(monitor.uptime_status) }}
                                 </h2>
+
+                                <!-- Manual Check Button inside Hero Banner -->
+                                <Tooltip>
+                                    <TooltipTrigger as-child>
+                                        <button
+                                            id="manual-check-btn"
+                                            :disabled="isCheckingNow || checkCooldown > 0"
+                                            :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
+                                            :class="[
+                                                'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95',
+                                                checkCooldown > 0 || isCheckingNow
+                                                    ? 'cursor-not-allowed border-gray-200/80 bg-white/60 text-gray-400 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-500'
+                                                    : 'border-white/90 bg-white/90 text-gray-700 hover:bg-white hover:text-blue-600 dark:border-gray-800 dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-blue-400',
+                                            ]"
+                                            @click="triggerManualCheck"
+                                        >
+                                            <Icon
+                                                :name="isCheckingNow ? 'loader' : 'refreshCw'"
+                                                :class="['h-3.5 w-3.5', isCheckingNow && 'animate-spin']"
+                                            />
+                                            <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
+                                            <span v-else-if="isCheckingNow">Checking…</span>
+                                            <span v-else>Check Now</span>
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <span v-if="checkCooldown > 0">Next check available in {{ checkCooldown }}s</span>
+                                        <span v-else>Trigger an immediate uptime check</span>
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
                             <p class="mt-1 text-xs text-gray-600 sm:text-sm dark:text-gray-300">
                                 Checked every {{ monitor.uptime_check_interval }} minutes
