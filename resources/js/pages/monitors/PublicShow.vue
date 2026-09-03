@@ -69,7 +69,7 @@
                             :disabled="isCheckingNow || checkCooldown > 0"
                             :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
                             :class="[
-                                'flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all active:scale-95',
+                                'flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-all active:scale-95 sm:px-3',
                                 checkCooldown > 0 || isCheckingNow
                                     ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600'
                                     : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-950',
@@ -82,7 +82,7 @@
                             />
                             <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
                             <span v-else-if="isCheckingNow">Checking…</span>
-                            <span v-else>Check Now</span>
+                            <span v-else>Check<span class="hidden sm:inline"> Now</span></span>
                         </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -92,12 +92,13 @@
                 </Tooltip>
             </TooltipProvider>
 
-            <!-- Live Status Pill in Header -->
+            <!-- Live Status Pill in Header (dot-only on mobile, dot+text on sm+) -->
             <span
                 role="status"
                 :aria-label="getStatusText(monitor.uptime_status)"
+                :title="getStatusText(monitor.uptime_status)"
                 :class="[
-                    'inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold shadow-sm ring-1 transition-colors',
+                    'inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-sm ring-1 transition-colors sm:px-3',
                     monitor.uptime_status === 'up'
                         ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-500/30'
                         : monitor.uptime_status === 'down'
@@ -115,7 +116,7 @@
                               : 'bg-amber-500',
                     ]"
                 />
-                <span>{{ getStatusText(monitor.uptime_status) }}</span>
+                <span class="hidden sm:inline">{{ getStatusText(monitor.uptime_status) }}</span>
             </span>
         </template>
 
