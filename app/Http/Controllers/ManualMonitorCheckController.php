@@ -34,18 +34,19 @@ class ManualMonitorCheckController extends Controller
         $cooldownKey = "manual_check_cooldown_{$monitor->id}";
         $cooldownSeconds = 60;
 
-        if (Cache::has($cooldownKey)) {
+        // Atomically acquire cooldown lock to prevent race conditions from concurrent clicks.
+        $acquired = Cache::add($cooldownKey, true, $cooldownSeconds);
+
+        if (! $acquired) {
             $remaining = (int) Cache::get($cooldownKey.'_ttl', $cooldownSeconds);
 
             return response()->json([
                 'message' => 'A check was recently requested. Please wait before trying again.',
-                'retry_after' => Cache::get($cooldownKey.'_ttl', $cooldownSeconds),
+                'retry_after' => $remaining,
             ], 429);
         }
 
-        // Store cooldown — the TTL value is also stored so the frontend can
-        // show an accurate countdown without an extra round-trip.
-        Cache::put($cooldownKey, true, $cooldownSeconds);
+        // Store the TTL reference for countdown calculation
         Cache::put($cooldownKey.'_ttl', $cooldownSeconds, $cooldownSeconds);
 
         // Bust the cached history so the next page load reflects fresh data.
