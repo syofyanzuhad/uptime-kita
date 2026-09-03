@@ -91,7 +91,15 @@ function sparkColor(pct: number | null): string {
             <!-- Top Status Accent Line -->
             <div
                 class="h-1 w-full transition-colors"
-                :class="[monitor.uptime_status === 'up' ? 'bg-emerald-500' : monitor.uptime_status === 'down' ? 'bg-rose-500' : 'bg-amber-500']"
+                :class="[
+                    monitor.uptime_status === 'up'
+                        ? 'bg-emerald-500'
+                        : monitor.uptime_status === 'down'
+                          ? 'bg-rose-500'
+                          : monitor.uptime_status === 'not yet checked'
+                            ? 'bg-gray-300 dark:bg-gray-700'
+                            : 'bg-amber-500',
+                ]"
             />
 
             <CardContent class="p-4 sm:p-5">
@@ -148,7 +156,18 @@ function sparkColor(pct: number | null): string {
                                 <span>Down</span>
                             </span>
 
-                            <!-- Checking / Unknown: Neutral badge -->
+                            <!-- Not Yet Checked: Clean Pending badge -->
+                            <span
+                                v-else-if="monitor.uptime_status === 'not yet checked'"
+                                role="status"
+                                aria-label="Pending initial check"
+                                class="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-gray-500/20 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-400/20"
+                            >
+                                <Icon name="clock" class="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                <span>Pending</span>
+                            </span>
+
+                            <!-- Checking / Other: Neutral amber badge -->
                             <span
                                 v-else
                                 role="status"
@@ -160,7 +179,9 @@ function sparkColor(pct: number | null): string {
                             </span>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                            <p class="text-xs font-medium">{{ getStatusText(monitor.uptime_status) }}</p>
+                            <p class="text-xs font-medium">
+                                {{ monitor.uptime_status === 'not yet checked' ? 'Awaiting initial check' : getStatusText(monitor.uptime_status) }}
+                            </p>
                         </TooltipContent>
                     </Tooltip>
                 </div>
