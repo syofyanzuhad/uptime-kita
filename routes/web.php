@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DebugStatsController;
 use App\Http\Controllers\DomainCheckController;
 use App\Http\Controllers\LatestHistoryController;
+use App\Http\Controllers\ManualMonitorCheckController;
 use App\Http\Controllers\MonitorCompactController;
 use App\Http\Controllers\MonitorExpirationController;
 use App\Http\Controllers\MonitorExportController;
@@ -81,6 +82,12 @@ Route::get('/api/server-stats', PublicServerStatsController::class)
 Route::get('/api/monitor-status-stream', MonitorStatusStreamController::class)
     ->middleware('throttle:10,1')
     ->name('api.monitor-status-stream');
+
+// Manual uptime check — dispatches a single-monitor check job (public, throttled)
+Route::post('/api/monitor/{domain}/check', ManualMonitorCheckController::class)
+    ->where('domain', '[a-zA-Z0-9.-]+')
+    ->middleware('throttle:3,1')
+    ->name('api.monitor.check');
 
 Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
