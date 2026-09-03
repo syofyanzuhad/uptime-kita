@@ -60,6 +60,38 @@
         </template>
 
         <template #header-actions>
+            <!-- Manual Check Button -->
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <button
+                            id="manual-check-btn"
+                            :disabled="isCheckingNow || checkCooldown > 0"
+                            :aria-label="checkCooldown > 0 ? `Check available in ${checkCooldown}s` : 'Trigger manual uptime check'"
+                            :class="[
+                                'flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all active:scale-95',
+                                checkCooldown > 0 || isCheckingNow
+                                    ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600'
+                                    : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-950',
+                            ]"
+                            @click="triggerManualCheck"
+                        >
+                            <Icon
+                                :name="isCheckingNow ? 'loader' : 'refreshCw'"
+                                :class="['h-3.5 w-3.5', isCheckingNow && 'animate-spin']"
+                            />
+                            <span v-if="checkCooldown > 0">{{ checkCooldown }}s</span>
+                            <span v-else-if="isCheckingNow">Checking…</span>
+                            <span v-else>Check Now</span>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <span v-if="checkCooldown > 0">Next check available in {{ checkCooldown }}s</span>
+                        <span v-else>Trigger an immediate uptime check</span>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
             <!-- Live Status Pill in Header -->
             <span
                 role="status"
@@ -750,6 +782,69 @@ const copyToClipboard = async (text: string, type: string) => {
     }
 };
 
+// Manual check state
+const isCheckingNow = ref(false);
+const checkCooldown = ref(0);
+let checkCooldownTimer: ReturnType<typeof setInterval> | null = null;
+
+const startCooldownTimer = (seconds: number) => {
+    checkCooldown.value = seconds;
+    if (checkCooldownTimer) clearInterval(checkCooldownTimer);
+    checkCooldownTimer = setInterval(() => {
+        checkCooldown.value--;
+        if (checkCooldown.value <= 0) {
+            clearInterval(checkCooldownTimer!);
+            checkCooldownTimer = null;
+        }
+    }, 1000);
+};
+
+const triggerManualCheck = async () => {
+    if (isCheckingNow.value || checkCooldown.value > 0) return;
+
+    isCheckingNow.value = true;
+
+    try {
+        const response = await fetch(`/api/monitor/${monitor.value.host}/check`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
+                Accept: 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (response.status === 202) {
+            globalToasts.addToast({
+                type: 'success',
+                message: 'Check queued! Results will refresh shortly.',
+            });
+            startCooldownTimer(data.retry_after ?? 60);
+            // Refresh history after a short delay to pick up the new result
+            setTimeout(refetchHistory, 8000);
+        } else if (response.status === 429) {
+            globalToasts.addToast({
+                type: 'warning',
+                message: 'A check was recently requested. Please wait a moment.',
+            });
+            startCooldownTimer(data.retry_after ?? 60);
+        } else {
+            globalToasts.addToast({
+                type: 'error',
+                message: data.message ?? 'Failed to trigger check.',
+            });
+        }
+    } catch {
+        globalToasts.addToast({
+            type: 'error',
+            message: 'Network error. Could not reach the server.',
+        });
+    } finally {
+        isCheckingNow.value = false;
+    }
+};
+
 // Auto-refetch functionality
 const { isAutoPolling } = usePollMode();
 const refreshInterval = ref<number | null>(null);
@@ -835,6 +930,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     stopPolling();
+    if (checkCooldownTimer) clearInterval(checkCooldownTimer);
 });
 
 // Function to get last 100 minutes timeline
