@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
-import MonitorLink from '@/components/MonitorLink.vue';
 import { CardContent } from '@/components/ui/card';
 import Card from '@/components/ui/card/Card.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,6 +21,42 @@ const monogram = computed(() => {
     const raw = props.monitor.name || props.monitor.host || props.monitor.url || '';
     const clean = raw.replace(/^https?:\/\//, '').replace(/^www\./, '');
     return clean.slice(0, 2).toUpperCase() || 'UK';
+});
+
+const displayTitle = computed(() => {
+    return props.monitor.name && props.monitor.name !== props.monitor.host && props.monitor.name !== props.monitor.url
+        ? props.monitor.name
+        : (props.monitor.host || props.monitor.url || '');
+});
+
+const displaySubtitle = computed(() => {
+    if (props.monitor.name && props.monitor.name !== props.monitor.host && props.monitor.name !== props.monitor.url) {
+        return props.monitor.host || props.monitor.url;
+    }
+    return null;
+});
+
+const displayUptimePct = computed(() => {
+    if (uptime7d.value !== null) {
+        return Number(uptime7d.value).toFixed(1).replace(/\.0$/, '');
+    }
+    if (props.monitor.today_uptime_percentage !== undefined && props.monitor.today_uptime_percentage !== null) {
+        return Number(props.monitor.today_uptime_percentage).toFixed(1).replace(/\.0$/, '');
+    }
+    return null;
+});
+
+const uptimePeriodLabel = computed(() => {
+    return uptime7d.value !== null ? '7d' : 'today';
+});
+
+const uptimePercentageColor = computed(() => {
+    if (displayUptimePct.value === null) return 'text-gray-400 dark:text-gray-500';
+    const val = Number(displayUptimePct.value);
+    if (isNaN(val)) return 'text-gray-400 dark:text-gray-500';
+    if (val >= 99.5) return 'text-emerald-600 dark:text-emerald-400';
+    if (val >= 95) return 'text-amber-600 dark:text-amber-400';
+    return 'text-rose-600 dark:text-rose-400';
 });
 
 function sparklineData() {
@@ -60,13 +95,14 @@ function sparkColor(pct: number | null): string {
             />
 
             <CardContent class="p-4 sm:p-5">
-                <div class="mb-3 flex items-center justify-between gap-2">
+                <!-- Top Row: Favicon, Domain (once!), and Smart Status Indicator -->
+                <div class="flex items-start justify-between gap-3">
                     <div class="flex min-w-0 items-center gap-2.5">
                         <img
                             v-if="monitor.favicon && !faviconFailed"
                             :src="monitor.favicon"
-                            :alt="`${monitor.name} favicon`"
-                            class="h-6 w-6 rounded-lg object-contain drop-shadow-sm transition-transform group-hover:scale-105"
+                            :alt="`${displayTitle} favicon`"
+                            class="h-6 w-6 shrink-0 rounded-lg object-contain drop-shadow-sm transition-transform group-hover:scale-105"
                             @error="faviconFailed = true"
                         />
                         <div
@@ -75,64 +111,102 @@ function sparkColor(pct: number | null): string {
                         >
                             {{ monogram }}
                         </div>
-                        <span class="truncate text-xs font-medium text-gray-500 dark:text-gray-400" :title="monitor.url">
-                            {{ monitor.host || monitor.url }}
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <h3 class="truncate text-sm font-bold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+                                    {{ displayTitle }}
+                                </h3>
+                                <Icon name="externalLink" class="h-3 w-3 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-500" />
+                            </div>
+                            <p v-if="displaySubtitle" class="truncate text-xs text-gray-500 dark:text-gray-400">
+                                {{ displaySubtitle }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Smart Status Indicator -->
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <!-- Operational (Up): Minimalist pulsing dot badge -->
+                            <span
+                                v-if="monitor.uptime_status === 'up'"
+                                role="status"
+                                aria-label="Operational"
+                                class="inline-flex shrink-0 items-center rounded-full bg-emerald-50 p-1.5 ring-1 ring-emerald-600/20 dark:bg-emerald-950/40 dark:ring-emerald-500/30"
+                            >
+                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            </span>
+
+                            <!-- Down: Bold, high-contrast alert badge with text -->
+                            <span
+                                v-else-if="monitor.uptime_status === 'down'"
+                                role="status"
+                                aria-label="Down"
+                                class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 ring-1 ring-rose-600/30 dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-500/40"
+                            >
+                                <span class="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
+                                <span>Down</span>
+                            </span>
+
+                            <!-- Checking / Unknown: Neutral badge -->
+                            <span
+                                v-else
+                                role="status"
+                                :aria-label="getStatusText(monitor.uptime_status)"
+                                class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-500/30"
+                            >
+                                <span class="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                <span>{{ getStatusText(monitor.uptime_status) }}</span>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                            <p class="text-xs font-medium">{{ getStatusText(monitor.uptime_status) }}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+
+                <!-- Highlighted Uptime Metric & Sparkline Row -->
+                <div class="mt-4 flex items-baseline justify-between gap-3">
+                    <div>
+                        <div class="flex items-baseline gap-1.5">
+                            <span
+                                class="text-2xl font-black tracking-tight"
+                                :class="uptimePercentageColor"
+                            >
+                                {{ displayUptimePct !== null ? `${displayUptimePct}%` : '—' }}
+                            </span>
+                            <span v-if="displayUptimePct !== null" class="text-xs font-medium text-gray-400 dark:text-gray-500">
+                                {{ uptimePeriodLabel }}
+                            </span>
+                        </div>
+                        <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
+                            Uptime
                         </span>
                     </div>
 
-                    <!-- Live status pill -->
-                    <span
-                        role="status"
-                        :aria-label="getStatusText(monitor.uptime_status)"
-                        :class="[
-                            'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-colors',
-                            monitor.uptime_status === 'up'
-                                ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-500/30'
-                                : monitor.uptime_status === 'down'
-                                  ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-600/20 dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-500/30'
-                                  : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-500/30',
-                        ]"
-                    >
-                        <span
-                            class="h-1.5 w-1.5 rounded-full"
-                            :class="[
-                                monitor.uptime_status === 'up'
-                                    ? 'animate-pulse bg-emerald-500'
-                                    : monitor.uptime_status === 'down'
-                                      ? 'animate-ping bg-rose-500'
-                                      : 'bg-amber-500',
-                            ]"
-                        />
-                        <span>{{ getStatusText(monitor.uptime_status) }}</span>
-                    </span>
+                    <!-- 7-day Sparkline Micro-Bars -->
+                    <div class="flex flex-col items-end gap-1" title="7-day uptime history">
+                        <div class="flex items-center gap-1">
+                            <Tooltip v-for="(d, i) in sparklineData()" :key="i">
+                                <TooltipTrigger as-child>
+                                    <div class="h-5 w-1.5 rounded-full transition-all hover:scale-125" :class="sparkColor(d.pct)" />
+                                </TooltipTrigger>
+                                <TooltipContent side="top" class="text-xs">
+                                    <p class="font-medium">{{ d.date }}</p>
+                                    <p>{{ d.pct !== null ? `${d.pct}% uptime` : 'No checks recorded' }}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                        <span class="text-[10px] font-medium text-gray-400 dark:text-gray-500">7-day trend</span>
+                    </div>
                 </div>
 
-                <MonitorLink
-                    :monitor="monitor"
-                    :show-favicon="false"
-                    class-name="mb-1.5"
-                    link-class-name="text-base font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-1 leading-tight tracking-tight transition-colors"
-                />
-
-                <!-- Key Metrics & Sparkline Row -->
-                <div class="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-3 dark:border-gray-800/80">
-                    <div class="flex flex-wrap items-center gap-2 text-xs">
-                        <span
-                            v-if="uptime7d !== null"
-                            class="inline-flex items-center font-bold text-gray-900 dark:text-white"
-                            :title="`7-day uptime: ${uptime7d}%`"
-                        >
-                            {{ uptime7d }}%
-                            <span class="ml-1 text-[10px] font-normal text-gray-400">7d</span>
-                        </span>
-                        <span v-else-if="monitor.today_uptime_percentage" class="inline-flex items-center font-bold text-gray-900 dark:text-white">
-                            {{ monitor.today_uptime_percentage }}%
-                            <span class="ml-1 text-[10px] font-normal text-gray-400">today</span>
-                        </span>
-
+                <!-- Secondary Metrics & Meta Info Row -->
+                <div class="mt-3.5 flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] text-gray-500 dark:border-gray-800/80 dark:text-gray-400">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span
                             v-if="responseTime !== null"
-                            class="inline-flex items-center gap-0.5 rounded-md bg-gray-50 px-1.5 py-0.5 font-mono text-[11px] font-medium dark:bg-gray-800/60"
+                            class="inline-flex items-center gap-1 rounded-md bg-gray-50 px-1.5 py-0.5 font-mono text-[11px] font-medium dark:bg-gray-800/60"
                             :class="getResponseTimeColorClass(responseTime)"
                             title="Average response time in last 24 hours"
                         >
@@ -148,41 +222,29 @@ function sparkColor(pct: number | null): string {
                             <Icon name="alertTriangle" class="h-3 w-3" />
                             {{ incidents24h }}
                         </span>
+
+                        <!-- Tags -->
+                        <div v-if="monitor.tags?.length" class="flex flex-wrap items-center gap-1">
+                            <span
+                                v-for="tag in monitor.tags.slice(0, 2)"
+                                :key="(tag as any).id || getTagDisplayName(tag)"
+                                class="rounded-md bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                            >
+                                #{{ getTagDisplayName(tag) }}
+                            </span>
+                            <span v-if="(monitor.tags.length ?? 0) > 2" class="text-[10px] text-gray-400">
+                                +{{ monitor.tags.length - 2 }}
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- 7-day Sparkline Micro-Bars -->
-                    <div class="flex items-center gap-1" title="7-day uptime history">
-                        <Tooltip v-for="(d, i) in sparklineData()" :key="i">
-                            <TooltipTrigger as-child>
-                                <div class="h-4 w-1.5 rounded-full transition-all hover:scale-125" :class="sparkColor(d.pct)" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" class="text-xs">
-                                <p class="font-medium">{{ d.date }}</p>
-                                <p>{{ d.pct !== null ? `${d.pct}% uptime` : 'No checks recorded' }}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                </div>
-
-                <!-- Tags & Meta Info -->
-                <div class="mt-3 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-gray-400">
-                    <div v-if="monitor.tags?.length" class="flex flex-wrap items-center gap-1">
-                        <span
-                            v-for="tag in monitor.tags.slice(0, 3)"
-                            :key="(tag as any).id || getTagDisplayName(tag)"
-                            class="rounded-md bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                        >
-                            #{{ getTagDisplayName(tag) }}
-                        </span>
-                        <span v-if="(monitor.tags.length ?? 0) > 3" class="text-[10px] text-gray-400"> +{{ monitor.tags.length - 3 }} </span>
-                    </div>
-                    <div v-else class="text-[11px] text-gray-400">
-                        {{ monitor.last_check_date_human || 'Active' }}
-                    </div>
-
+                    <!-- Right side: Page views or Last checked -->
                     <div v-if="(monitor.page_views_count ?? 0) > 0" class="flex items-center gap-1 text-gray-400">
                         <Icon name="eye" class="h-3 w-3" />
                         <span>{{ monitor.formatted_page_views }}</span>
+                    </div>
+                    <div v-else-if="monitor.last_check_date_human" class="text-gray-400 dark:text-gray-500">
+                        {{ monitor.last_check_date_human }}
                     </div>
                 </div>
             </CardContent>
