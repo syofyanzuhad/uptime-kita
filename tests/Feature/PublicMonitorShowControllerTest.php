@@ -3,6 +3,7 @@
 use App\Models\Monitor;
 use App\Models\MonitorHistory;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\get;
 
@@ -278,6 +279,22 @@ describe('PublicMonitorShowController', function () {
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('monitors/PublicShowNotFound')
+        );
+    });
+
+    it('shares pollRequestApi configuration to frontend', function () {
+        config(['app.poll_request_api' => 'auto']);
+
+        $response = get('/m/example.com');
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('pollRequestApi', 'auto')
+        );
+
+        config(['app.poll_request_api' => 'manual']);
+
+        $response = get('/m/example.com');
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('pollRequestApi', 'manual')
         );
     });
 });

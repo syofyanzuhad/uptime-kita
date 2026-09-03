@@ -204,8 +204,21 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 text-xs text-gray-400">
-                            <Icon :name="isRefreshing ? 'loader' : 'refreshCw'" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" />
-                            <span class="hidden sm:inline">{{ isRefreshing ? 'Refreshing…' : 'Live' }}</span>
+                            <button
+                                v-if="!isAutoPolling"
+                                type="button"
+                                @click="refetchHistory"
+                                :disabled="isRefreshing"
+                                class="flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-2.5 py-1 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 disabled:opacity-50 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                                title="Refresh monitor history"
+                            >
+                                <Icon :name="isRefreshing ? 'loader' : 'refreshCw'" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" />
+                                <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh' }}</span>
+                            </button>
+                            <div v-else class="flex items-center gap-1.5 text-xs text-gray-400">
+                                <Icon :name="isRefreshing ? 'loader' : 'refreshCw'" class="h-3.5 w-3.5" :class="isRefreshing ? 'animate-spin' : ''" />
+                                <span class="hidden sm:inline">{{ isRefreshing ? 'Refreshing…' : 'Live' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -653,6 +666,7 @@ import UptimeLineChart from '@/components/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';
+import { usePollMode } from '@/composables/usePollMode';
 import { globalToasts } from '@/composables/useToastNotifications';
 import type { Monitor, MonitorHistory } from '@/types/monitor';
 import { Link, router } from '@inertiajs/vue3';
@@ -737,9 +751,22 @@ const copyToClipboard = async (text: string, type: string) => {
 };
 
 // Auto-refetch functionality
+const { isAutoPolling } = usePollMode();
 const refreshInterval = ref<number | null>(null);
 const lastRefreshTime = ref<Date>(new Date());
 const isRefreshing = ref(false);
+
+const startPolling = () => {
+    if (!isAutoPolling.value || refreshInterval.value) return;
+    refreshInterval.value = window.setInterval(refetchHistory, 60000);
+};
+
+const stopPolling = () => {
+    if (refreshInterval.value) {
+        clearInterval(refreshInterval.value);
+        refreshInterval.value = null;
+    }
+};
 
 // Theme toggle functionality
 const isDark = ref(false);
@@ -800,15 +827,14 @@ onMounted(() => {
         uptimeChartViewMode.value = savedUptimeChartViewMode;
     }
 
-    // Start auto-refresh timer (every 60 seconds)
-    refreshInterval.value = window.setInterval(refetchHistory, 60000);
+    // Start auto-refresh timer if auto polling is enabled
+    if (isAutoPolling.value) {
+        startPolling();
+    }
 });
 
 onUnmounted(() => {
-    // Clean up timer when component is destroyed
-    if (refreshInterval.value) {
-        clearInterval(refreshInterval.value);
-    }
+    stopPolling();
 });
 
 // Function to get last 100 minutes timeline
