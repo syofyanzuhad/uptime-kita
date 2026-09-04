@@ -100,13 +100,33 @@ function stopStatsPolling() {
     }
 }
 
+const searchInputRef = ref<any>(null);
+
+function handleKeyDown(e: KeyboardEvent) {
+    if (
+        e.key === '/' &&
+        (document.activeElement as HTMLElement)?.tagName !== 'INPUT' &&
+        (document.activeElement as HTMLElement)?.tagName !== 'TEXTAREA'
+    ) {
+        e.preventDefault();
+        const el = searchInputRef.value?.$el ?? searchInputRef.value;
+        if (el && typeof el.focus === 'function') {
+            el.focus();
+        } else if (el?.querySelector) {
+            el.querySelector('input')?.focus();
+        }
+    }
+}
+
 onMounted(() => {
     fetchMonitorStatistics();
     startStatsPolling();
+    window.addEventListener('keydown', handleKeyDown);
 });
 
 onUnmounted(() => {
     stopStatsPolling();
+    window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
 
@@ -311,26 +331,27 @@ onUnmounted(() => {
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <!-- Status Filter Pills -->
                 <div
-                    class="flex flex-wrap items-center gap-1 rounded-2xl border border-gray-200/80 bg-gray-100/80 p-1 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
+                    class="flex items-center gap-1 overflow-x-auto rounded-2xl border border-gray-200/80 bg-gray-100/80 p-1 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
                 >
+                    <!-- Operational Status Group -->
                     <button
                         type="button"
                         @click="statusFilter = 'all'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'all'
-                                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+                                ? 'bg-white text-gray-900 shadow-xs dark:bg-gray-800 dark:text-white'
                                 : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white',
                         ]"
                     >
-                        <Activity class="h-3.5 w-3.5" />
+                        <Activity class="h-3.5 w-3.5 text-blue-500" />
                         <span>All</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'all'
                                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ allCount }}
@@ -340,21 +361,21 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="statusFilter = 'up'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'up'
-                                ? 'bg-white text-emerald-700 shadow-sm dark:bg-gray-800 dark:text-emerald-400'
+                                ? 'bg-white text-emerald-700 shadow-xs dark:bg-gray-800 dark:text-emerald-400'
                                 : 'text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400',
                         ]"
                     >
                         <CheckCircle2 class="h-3.5 w-3.5 text-emerald-500" />
                         <span>Online</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'up'
                                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ onlineCount }}
@@ -364,45 +385,49 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="statusFilter = 'down'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'down'
-                                ? 'bg-white text-rose-700 shadow-sm dark:bg-gray-800 dark:text-rose-400'
+                                ? 'bg-white text-rose-700 shadow-xs dark:bg-gray-800 dark:text-rose-400'
                                 : 'text-gray-500 hover:text-rose-600 dark:text-gray-400 dark:hover:text-rose-400',
                         ]"
                     >
                         <XCircle class="h-3.5 w-3.5 text-rose-500" />
                         <span>Offline</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'down'
                                     ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ offlineCount }}
                         </span>
                     </button>
 
+                    <!-- Subtle Section Divider -->
+                    <div class="mx-0.5 h-4 w-px shrink-0 bg-gray-300/80 dark:bg-gray-700/80" />
+
+                    <!-- Secondary State Group -->
                     <button
                         type="button"
                         @click="statusFilter = 'unsubscribed'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'unsubscribed'
-                                ? 'bg-white text-amber-700 shadow-sm dark:bg-gray-800 dark:text-amber-400'
+                                ? 'bg-white text-amber-700 shadow-xs dark:bg-gray-800 dark:text-amber-400'
                                 : 'text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400',
                         ]"
                     >
                         <BellOff class="h-3.5 w-3.5 text-amber-500" />
                         <span>Unsubscribed</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'unsubscribed'
                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ unsubscribedCount }}
@@ -412,21 +437,21 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="statusFilter = 'globally_enabled'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'globally_enabled'
-                                ? 'bg-white text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-400'
+                                ? 'bg-white text-blue-700 shadow-xs dark:bg-gray-800 dark:text-blue-400'
                                 : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400',
                         ]"
                     >
                         <ShieldCheck class="h-3.5 w-3.5 text-blue-500" />
                         <span>Enabled</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'globally_enabled'
                                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ enabledCount }}
@@ -436,21 +461,21 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="statusFilter = 'globally_disabled'"
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-all"
+                        class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all"
                         :class="[
                             statusFilter === 'globally_disabled'
-                                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+                                ? 'bg-white text-gray-900 shadow-xs dark:bg-gray-800 dark:text-white'
                                 : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white',
                         ]"
                     >
-                        <ShieldAlert class="h-3.5 w-3.5 text-gray-500" />
+                        <ShieldAlert class="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                         <span>Disabled</span>
                         <span
-                            class="py-0.2 rounded-full px-1.5 text-[10px] font-extrabold"
+                            class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                             :class="
                                 statusFilter === 'globally_disabled'
                                     ? 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100'
-                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                                    : 'bg-gray-200/80 text-gray-600 dark:bg-gray-700/80 dark:text-gray-300'
                             "
                         >
                             {{ disabledCount }}
@@ -461,21 +486,31 @@ onUnmounted(() => {
                 <!-- Search Input & Reset Button -->
                 <div class="flex items-center gap-2">
                     <div class="relative flex-1 sm:w-80">
-                        <Search class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Search class="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-400" />
                         <Input
+                            ref="searchInputRef"
                             v-model="searchQuery"
                             type="text"
-                            placeholder="Search domain or URL... (/)"
-                            class="h-10 w-full rounded-2xl pr-8 pl-9 backdrop-blur-sm sm:text-sm"
+                            placeholder="Search domain or URL..."
+                            class="h-10 w-full rounded-2xl pr-9 pl-9 text-sm backdrop-blur-sm sm:text-sm"
                         />
-                        <button
-                            v-if="searchQuery"
-                            @click="searchQuery = ''"
-                            class="absolute top-1/2 right-2.5 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                            title="Clear search"
-                        >
-                            <X class="h-3.5 w-3.5" />
-                        </button>
+                        <div class="absolute top-1/2 right-2.5 z-10 flex -translate-y-1/2 items-center">
+                            <button
+                                v-if="searchQuery"
+                                @click="searchQuery = ''"
+                                type="button"
+                                class="cursor-pointer rounded-full p-0.5 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200"
+                                title="Clear search"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                            </button>
+                            <kbd
+                                v-else
+                                class="pointer-events-none hidden items-center rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[10px] font-medium text-gray-400 sm:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                            >
+                                /
+                            </kbd>
+                        </div>
                     </div>
 
                     <Button
@@ -483,7 +518,7 @@ onUnmounted(() => {
                         variant="ghost"
                         size="sm"
                         @click="resetFilters"
-                        class="h-10 shrink-0 rounded-2xl text-xs font-semibold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        class="h-10 shrink-0 rounded-2xl px-3 text-xs font-semibold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     >
                         <X class="mr-1 h-3.5 w-3.5" />
                         Reset
