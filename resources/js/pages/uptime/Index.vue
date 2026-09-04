@@ -1,12 +1,4 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-// Impor Link dan usePage dari @inertiajs/vue3
-// Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
-import type { Monitor, Paginator } from '@/types/monitor';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-// Import Dialog and Button components for modal
 import Icon from '@/components/Icon.vue';
 import Pagination from '@/components/Pagination.vue';
 import Button from '@/components/ui/button/Button.vue';
@@ -18,12 +10,16 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Input, Select } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ExternalLink, Eye, Pencil, Search, Trash2, X } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import type { Monitor, Paginator } from '@/types/monitor';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ExternalLink, Eye, Pencil, Plus, Search, Trash2, Upload, X } from 'lucide-vue-next';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import CreateMonitorModal from './partials/CreateMonitorModal.vue';
 import DetailMonitorModal from './partials/DetailMonitorModal.vue';
 import EditMonitorModal from './partials/EditMonitorModal.vue';
 
-// Pastikan props didefinisikan dengan benar dan diakses di template dengan 'props.' jika perlu
 const props = defineProps<{
     monitors: Paginator<Monitor>;
     search?: string;
@@ -42,50 +38,35 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // Countdown timer state
-const countdown = ref(0);
+const countdown = ref(30);
 let countdownInterval: number | null = null;
 
-// Function to calculate seconds until next minute
-const calculateSecondsUntilNextMinute = () => {
-    const now = new Date();
-    return 60 - now.getSeconds();
-};
-
-// Function to start countdown
 const startCountdown = () => {
-    const updateCountdown = () => {
-        const secondsUntilNextMinute = calculateSecondsUntilNextMinute();
-        countdown.value = secondsUntilNextMinute;
-
-        // If we're at the start of a minute, trigger a refresh
-        if (secondsUntilNextMinute === 60) {
-            router.reload({ only: ['monitors'] });
+    countdownInterval = window.setInterval(() => {
+        if (countdown.value > 0) {
+            countdown.value--;
+        } else {
+            countdown.value = 30;
+            router.reload({
+                only: ['monitors'],
+                preserveScroll: true,
+                preserveState: true,
+            });
         }
-    };
-
-    // Initial update
-    updateCountdown();
-
-    // Update every second
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-    }
-    countdownInterval = setInterval(updateCountdown, 1000);
+    }, 1000);
 };
 
-// Start countdown when component is mounted
 onMounted(() => {
     startCountdown();
 });
 
-// Clean up interval when component is unmounted
 onUnmounted(() => {
     if (countdownInterval) {
         clearInterval(countdownInterval);
+        countdownInterval = null;
     }
 });
 
-// Fungsi untuk menghapus monitor
 // Modal state
 const isDeleteModalOpen = ref(false);
 const isCreateModalOpen = ref(false);
@@ -101,6 +82,21 @@ const openDeleteModal = (monitor: Monitor) => {
     isDeleteModalOpen.value = true;
 };
 
+const closeDeleteModal = () => {
+    isDeleteModalOpen.value = false;
+    monitorToDelete.value = null;
+};
+
+const confirmDeleteMonitor = () => {
+    if (monitorToDelete.value) {
+        router.delete(route('monitors.destroy', monitorToDelete.value.id), {
+            preserveScroll: true,
+            onSuccess: () => closeDeleteModal(),
+            onFinish: () => closeDeleteModal(),
+        });
+    }
+};
+
 const openEditModal = (monitor: Monitor) => {
     monitorToEdit.value = monitor;
     isEditModalOpen.value = true;
@@ -111,30 +107,19 @@ const openDetailModal = (monitor: Monitor) => {
     isDetailModalOpen.value = true;
 };
 
-const closeDeleteModal = () => {
-    isDeleteModalOpen.value = false;
-    monitorToDelete.value = null;
-};
+// Distinct local filter state to prevent mutating prop warnings
+const searchQuery = ref(props.search || '');
+const selectedStatus = ref(props.statusFilter || 'all');
+const selectedVisibility = ref(props.visibilityFilter || 'all');
+const selectedTag = ref(props.tagFilter || 'all');
+const selectedPerPage = ref(String(props.perPage || 15));
 
-const confirmDeleteMonitor = () => {
-    if (monitorToDelete.value) {
-        router.delete(route('monitors.destroy', monitorToDelete.value.id), {
-            onSuccess: () => closeDeleteModal(),
-            onFinish: () => closeDeleteModal(),
-        });
-    }
-};
-
-const search = ref(props.search || '');
-const statusFilter = ref(props.statusFilter || 'all');
-const visibilityFilter = ref(props.visibilityFilter || 'all');
-const tagFilter = ref(props.tagFilter || 'all');
-const perPage = ref(String(props.perPage || 15));
-
+// Filter options
 const statusOptions = [
     { label: 'Semua Status', value: 'all' },
     { label: 'Up', value: 'up' },
     { label: 'Down', value: 'down' },
+    { label: 'Belum Dicek', value: 'not yet checked' },
 ];
 
 const visibilityOptions = [
@@ -143,62 +128,85 @@ const visibilityOptions = [
     { label: 'Privat', value: 'private' },
 ];
 
-const tagOptions = computed(() => [
-    { label: 'Semua Tag', value: 'all' },
-    ...(props.availableTags || []).map((tag) => ({ label: tag.name, value: tag.name })),
-]);
+const tagOptions = computed(() => {
+    if (!props.availableTags) return [{ label: 'Semua Tag', value: 'all' }];
+
+    return [{ label: 'Semua Tag', value: 'all' }, ...props.availableTags.map((tag) => ({ label: tag.name, value: tag.name }))];
+});
 
 const perPageOptions = [
-    { label: '5 / halaman', value: '5' },
-    { label: '10 / halaman', value: '10' },
-    { label: '15 / halaman', value: '15' },
-    { label: '20 / halaman', value: '20' },
-    { label: '50 / halaman', value: '50' },
-    { label: '100 / halaman', value: '100' },
+    { label: '10 per halaman', value: '10' },
+    { label: '15 per halaman', value: '15' },
+    { label: '25 per halaman', value: '25' },
+    { label: '50 per halaman', value: '50' },
+    { label: '100 per halaman', value: '100' },
 ];
 
-function submitSearch() {
+const submitSearch = () => {
     router.get(
         route('monitors.index'),
         {
-            search: search.value || undefined,
-            status_filter: statusFilter.value !== 'all' ? statusFilter.value : undefined,
-            visibility_filter: visibilityFilter.value !== 'all' ? visibilityFilter.value : undefined,
-            tag_filter: tagFilter.value && tagFilter.value !== 'all' ? tagFilter.value : undefined,
-            per_page: perPage.value,
+            search: searchQuery.value || undefined,
+            status_filter: selectedStatus.value && selectedStatus.value !== 'all' ? selectedStatus.value : undefined,
+            visibility_filter: selectedVisibility.value && selectedVisibility.value !== 'all' ? selectedVisibility.value : undefined,
+            tag_filter: selectedTag.value && selectedTag.value !== 'all' ? selectedTag.value : undefined,
+            per_page: selectedPerPage.value || undefined,
         },
-        { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter'] },
+        {
+            preserveState: true,
+            replace: true,
+        },
     );
-}
+};
 
-function clearSearch() {
-    search.value = '';
+const clearSearch = () => {
+    searchQuery.value = '';
     submitSearch();
-}
+};
+
+const resetFilters = () => {
+    searchQuery.value = '';
+    selectedStatus.value = 'all';
+    selectedVisibility.value = 'all';
+    selectedTag.value = 'all';
+    submitSearch();
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Uptime Monitor" />
 
-        <div class="py-10">
+        <div class="py-8">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg dark:bg-gray-800">
-                    <div class="mb-4 flex items-center justify-between">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Daftar Monitor</h3>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Next refresh in: {{ countdown }}s</div>
-                        <div class="flex items-center gap-2">
-                            <Link
-                                :href="route('monitors.import.index')"
-                                class="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                            >
-                                Import
+                <div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
+                    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl dark:text-white">Daftar Monitor</h3>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Kelola dan pantau seluruh endpoint situs web Anda secara real-time</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200/80 bg-white/80 px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-xs backdrop-blur-sm dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-400">
+                                <span class="h-2 w-2 animate-ping rounded-full bg-blue-500" />
+                                <span>Auto-refresh: {{ countdown }}s</span>
+                            </span>
+                            <Link :href="route('monitors.import.index')">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="h-9 gap-1.5 rounded-xl border-gray-200/80 bg-white/80 font-semibold shadow-xs hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                                >
+                                    <Upload class="h-4 w-4" />
+                                    <span>Import</span>
+                                </Button>
                             </Link>
                             <Button
+                                size="sm"
                                 @click="isCreateModalOpen = true"
-                                class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                                class="h-9 gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                             >
-                                Tambah Monitor
+                                <Plus class="h-4 w-4" />
+                                <span>Tambah Monitor</span>
                             </Button>
                         </div>
                     </div>
@@ -208,13 +216,13 @@ function clearSearch() {
                         <div class="relative min-w-[220px] flex-1 max-w-sm">
                             <Search class="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                             <Input
-                                v-model="search"
+                                v-model="searchQuery"
                                 type="text"
                                 placeholder="Cari monitor (min 3 karakter)..."
                                 class="h-9 w-full rounded-md pr-8 pl-9 text-sm"
                             />
                             <button
-                                v-if="search"
+                                v-if="searchQuery"
                                 type="button"
                                 @click="clearSearch"
                                 class="absolute top-1/2 right-2.5 z-10 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -225,14 +233,14 @@ function clearSearch() {
                         </div>
 
                         <Select
-                            v-model="statusFilter"
+                            v-model="selectedStatus"
                             :items="statusOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Status"
                             class="h-9 w-36 shrink-0"
                         />
                         <Select
-                            v-model="visibilityFilter"
+                            v-model="selectedVisibility"
                             :items="visibilityOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Visibilitas"
@@ -240,20 +248,27 @@ function clearSearch() {
                         />
                         <Select
                             v-if="props.availableTags && props.availableTags.length > 0"
-                            v-model="tagFilter"
+                            v-model="selectedTag"
                             :items="tagOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Tag"
                             class="h-9 w-36 shrink-0"
                         />
                         <Select
-                            v-model="perPage"
+                            v-model="selectedPerPage"
                             :items="perPageOptions"
                             @update:model-value="submitSearch"
                             placeholder="Per Halaman"
                             class="h-9 w-36 shrink-0"
                         />
-                        <Button v-if="search || statusFilter !== 'all' || visibilityFilter !== 'all' || tagFilter !== 'all'" type="button" variant="outline" size="sm" @click="() => { search = ''; statusFilter = 'all'; visibilityFilter = 'all'; tagFilter = 'all'; submitSearch(); }" class="h-9">
+                        <Button
+                            v-if="searchQuery || selectedStatus !== 'all' || selectedVisibility !== 'all' || selectedTag !== 'all'"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            @click="resetFilters"
+                            class="h-9"
+                        >
                             Reset
                         </Button>
                         <Button type="submit" size="sm" class="h-9 gap-1.5 px-4">
