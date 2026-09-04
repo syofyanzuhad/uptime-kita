@@ -37,7 +37,7 @@ const form = useForm({
     certificate_check_enabled: true,
     domain_expiration_check_enabled: false,
     uptime_check_interval: 5,
-    is_public: false,
+    is_public: false as boolean,
     tags: [] as string[],
 });
 
