@@ -1,49 +1,51 @@
-import Api from './Api';
-import Auth from './Auth';
-import BadgeController from './BadgeController';
-import CustomDomainController from './CustomDomainController';
-import DashboardController from './DashboardController';
-import DebugStatsController from './DebugStatsController';
-import DomainCheckController from './DomainCheckController';
-import LatestHistoryController from './LatestHistoryController';
-import MonitorCompactController from './MonitorCompactController';
-import MonitorExpirationController from './MonitorExpirationController';
-import MonitorExportController from './MonitorExportController';
-import MonitorHistoryController from './MonitorHistoryController';
-import MonitorImportController from './MonitorImportController';
-import MonitorListController from './MonitorListController';
-import MonitorStatusStreamController from './MonitorStatusStreamController';
-import NotificationController from './NotificationController';
-import OgImageController from './OgImageController';
-import PinnedMonitorController from './PinnedMonitorController';
-import PrivateMonitorController from './PrivateMonitorController';
-import PublicMonitorController from './PublicMonitorController';
-import PublicMonitorShowController from './PublicMonitorShowController';
-import PublicServerStatsController from './PublicServerStatsController';
-import PublicStatusPageController from './PublicStatusPageController';
-import PublicToolsController from './PublicToolsController';
-import ServerResourceController from './ServerResourceController';
-import Settings from './Settings';
-import StatisticMonitorController from './StatisticMonitorController';
-import StatusPageAssociateMonitorController from './StatusPageAssociateMonitorController';
-import StatusPageAvailableMonitorsController from './StatusPageAvailableMonitorsController';
-import StatusPageController from './StatusPageController';
-import StatusPageDisassociateMonitorController from './StatusPageDisassociateMonitorController';
-import StatusPageOrderController from './StatusPageOrderController';
-import SubscribeMonitorController from './SubscribeMonitorController';
-import SubscribeStatusPageController from './SubscribeStatusPageController';
-import TagController from './TagController';
-import TelegramWebhookController from './TelegramWebhookController';
-import TelemetryDashboardController from './TelemetryDashboardController';
-import TestFlashController from './TestFlashController';
-import ToggleMonitorActiveController from './ToggleMonitorActiveController';
-import ToggleNotificationChannelController from './ToggleNotificationChannelController';
-import UnsubscribeMonitorController from './UnsubscribeMonitorController';
-import UnsubscribeStatusPageController from './UnsubscribeStatusPageController';
-import UptimeMonitorController from './UptimeMonitorController';
-import UptimesDailyController from './UptimesDailyController';
-import UserController from './UserController';
-import VerifyStatusPageSubscriptionController from './VerifyStatusPageSubscriptionController';
+import Api from './Api'
+import PublicMonitorController from './PublicMonitorController'
+import PublicToolsController from './PublicToolsController'
+import DomainCheckController from './DomainCheckController'
+import PublicServerStatsController from './PublicServerStatsController'
+import MonitorStatusStreamController from './MonitorStatusStreamController'
+import ManualMonitorCheckController from './ManualMonitorCheckController'
+import PublicIncidentController from './PublicIncidentController'
+import StatisticMonitorController from './StatisticMonitorController'
+import DashboardController from './DashboardController'
+import PublicMonitorShowController from './PublicMonitorShowController'
+import BadgeController from './BadgeController'
+import OgImageController from './OgImageController'
+import PublicStatusPageController from './PublicStatusPageController'
+import SubscribeStatusPageController from './SubscribeStatusPageController'
+import VerifyStatusPageSubscriptionController from './VerifyStatusPageSubscriptionController'
+import UnsubscribeStatusPageController from './UnsubscribeStatusPageController'
+import LatestHistoryController from './LatestHistoryController'
+import MonitorCompactController from './MonitorCompactController'
+import PinnedMonitorController from './PinnedMonitorController'
+import MonitorExpirationController from './MonitorExpirationController'
+import MonitorListController from './MonitorListController'
+import PrivateMonitorController from './PrivateMonitorController'
+import MonitorImportController from './MonitorImportController'
+import MonitorExportController from './MonitorExportController'
+import UptimeMonitorController from './UptimeMonitorController'
+import ToggleMonitorActiveController from './ToggleMonitorActiveController'
+import SubscribeMonitorController from './SubscribeMonitorController'
+import UnsubscribeMonitorController from './UnsubscribeMonitorController'
+import TagController from './TagController'
+import MonitorHistoryController from './MonitorHistoryController'
+import UptimesDailyController from './UptimesDailyController'
+import StatusPageController from './StatusPageController'
+import StatusPageAssociateMonitorController from './StatusPageAssociateMonitorController'
+import StatusPageDisassociateMonitorController from './StatusPageDisassociateMonitorController'
+import StatusPageAvailableMonitorsController from './StatusPageAvailableMonitorsController'
+import StatusPageOrderController from './StatusPageOrderController'
+import CustomDomainController from './CustomDomainController'
+import UserController from './UserController'
+import TestFlashController from './TestFlashController'
+import DebugStatsController from './DebugStatsController'
+import TelegramWebhookController from './TelegramWebhookController'
+import TelemetryDashboardController from './TelemetryDashboardController'
+import Settings from './Settings'
+import ServerResourceController from './ServerResourceController'
+import NotificationController from './NotificationController'
+import ToggleNotificationChannelController from './ToggleNotificationChannelController'
+import Auth from './Auth'
 
 const Controllers = {
     Api: Object.assign(Api, Api),
@@ -52,6 +54,8 @@ const Controllers = {
     DomainCheckController: Object.assign(DomainCheckController, DomainCheckController),
     PublicServerStatsController: Object.assign(PublicServerStatsController, PublicServerStatsController),
     MonitorStatusStreamController: Object.assign(MonitorStatusStreamController, MonitorStatusStreamController),
+    ManualMonitorCheckController: Object.assign(ManualMonitorCheckController, ManualMonitorCheckController),
+    PublicIncidentController: Object.assign(PublicIncidentController, PublicIncidentController),
     StatisticMonitorController: Object.assign(StatisticMonitorController, StatisticMonitorController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     PublicMonitorShowController: Object.assign(PublicMonitorShowController, PublicMonitorShowController),
@@ -70,10 +74,10 @@ const Controllers = {
     MonitorImportController: Object.assign(MonitorImportController, MonitorImportController),
     MonitorExportController: Object.assign(MonitorExportController, MonitorExportController),
     UptimeMonitorController: Object.assign(UptimeMonitorController, UptimeMonitorController),
+    ToggleMonitorActiveController: Object.assign(ToggleMonitorActiveController, ToggleMonitorActiveController),
     SubscribeMonitorController: Object.assign(SubscribeMonitorController, SubscribeMonitorController),
     UnsubscribeMonitorController: Object.assign(UnsubscribeMonitorController, UnsubscribeMonitorController),
     TagController: Object.assign(TagController, TagController),
-    ToggleMonitorActiveController: Object.assign(ToggleMonitorActiveController, ToggleMonitorActiveController),
     MonitorHistoryController: Object.assign(MonitorHistoryController, MonitorHistoryController),
     UptimesDailyController: Object.assign(UptimesDailyController, UptimesDailyController),
     StatusPageController: Object.assign(StatusPageController, StatusPageController),
@@ -92,6 +96,6 @@ const Controllers = {
     NotificationController: Object.assign(NotificationController, NotificationController),
     ToggleNotificationChannelController: Object.assign(ToggleNotificationChannelController, ToggleNotificationChannelController),
     Auth: Object.assign(Auth, Auth),
-};
+}
 
-export default Controllers;
+export default Controllers

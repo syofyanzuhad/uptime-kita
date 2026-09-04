@@ -1,7 +1,7 @@
-import McpController from './McpController';
+import McpController from './McpController'
 
 const Api = {
     McpController: Object.assign(McpController, McpController),
-};
+}
 
-export default Api;
+export default Api
