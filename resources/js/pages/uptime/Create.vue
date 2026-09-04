@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import TagInput from '@/components/TagInput.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { SharedData } from '@/types';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { onMounted, ref, watch } from 'vue';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { AlertTriangle, CheckCircle2, Loader2, Minus, Plus } from 'lucide-vue-next';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     url?: string;
@@ -32,6 +39,13 @@ const form = useForm({
     uptime_check_interval: 5,
     is_public: false,
     tags: [] as string[],
+});
+
+const visibilityValue = computed({
+    get: () => (form.is_public ? 'public' : 'private'),
+    set: (val: string) => {
+        form.is_public = val === 'public';
+    },
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -192,200 +206,168 @@ const submit = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <template #header>
-            <h2 class="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200">Tambah Monitor Baru</h2>
+            <h2 class="text-xl leading-tight font-semibold text-foreground">Tambah Monitor Baru</h2>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg dark:bg-gray-800">
+        <div class="py-8">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <Card>
                     <form @submit.prevent="submit">
-                        <div class="mb-4">
-                            <label for="url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL Monitor</label>
-                            <div class="relative">
-                                <input
-                                    id="url"
-                                    type="url"
-                                    class="border-input bg-background ring-offset-background file:text-foreground placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 pr-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-gray-200 dark:file:text-gray-200 dark:placeholder:text-gray-400"
-                                    v-model="form.url"
-                                    required
-                                    autofocus
-                                    autocomplete="url"
-                                    placeholder="https://example.com"
-                                />
-                                <!-- DNS Status Indicator -->
-                                <div v-if="dnsStatus !== 'idle'" class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <!-- Checking -->
-                                    <svg
-                                        v-if="dnsStatus === 'checking'"
-                                        class="h-5 w-5 animate-spin text-gray-400"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
+                        <CardHeader>
+                            <CardTitle>Detail Monitor</CardTitle>
+                            <CardDescription>
+                                Konfigurasikan URL situs web dan parameter pengecekan uptime secara berkala.
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent class="space-y-6">
+                            <!-- URL Input -->
+                            <div class="space-y-2">
+                                <Label for="url">URL Monitor</Label>
+                                <div class="relative">
+                                    <Input
+                                        id="url"
+                                        type="url"
+                                        v-model="form.url"
+                                        required
+                                        autofocus
+                                        autocomplete="url"
+                                        placeholder="https://example.com"
+                                        class="pr-10"
+                                        :class="{
+                                            'border-destructive focus-visible:ring-destructive/20': form.errors.url,
+                                        }"
+                                    />
+                                    <!-- DNS Status Indicator -->
+                                    <div v-if="dnsStatus !== 'idle'" class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <Loader2 v-if="dnsStatus === 'checking'" class="h-4 w-4 animate-spin text-muted-foreground" />
+                                        <CheckCircle2 v-else-if="dnsStatus === 'valid'" class="h-4 w-4 text-emerald-500" />
+                                        <AlertTriangle v-else-if="dnsStatus === 'invalid'" class="h-4 w-4 text-amber-500" />
+                                    </div>
+                                </div>
+                                <!-- DNS Message -->
+                                <div
+                                    v-if="dnsMessage"
+                                    class="flex items-center gap-1.5 text-xs"
+                                    :class="{
+                                        'text-muted-foreground': dnsStatus === 'checking',
+                                        'text-emerald-600 dark:text-emerald-400': dnsStatus === 'valid',
+                                        'text-amber-600 dark:text-amber-400': dnsStatus === 'invalid',
+                                    }"
+                                >
+                                    <CheckCircle2 v-if="dnsStatus === 'valid'" class="h-3.5 w-3.5 shrink-0" />
+                                    <AlertTriangle v-else-if="dnsStatus === 'invalid'" class="h-3.5 w-3.5 shrink-0" />
+                                    <Loader2 v-else-if="dnsStatus === 'checking'" class="h-3.5 w-3.5 shrink-0 animate-spin" />
+                                    <span>{{ dnsMessage }}</span>
+                                </div>
+                                <div v-if="form.errors.url" class="text-xs text-destructive">{{ form.errors.url }}</div>
+                            </div>
+
+                            <!-- Interval Input -->
+                            <div class="space-y-2">
+                                <Label for="uptime_check_interval">Interval Pengecekan</Label>
+                                <div class="flex items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        @click="decrementInterval"
+                                        :disabled="form.uptime_check_interval <= 1"
                                     >
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path
-                                            class="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                    <!-- Valid -->
-                                    <svg v-else-if="dnsStatus === 'valid'" class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                    <!-- Invalid -->
-                                    <svg v-else-if="dnsStatus === 'invalid'" class="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
+                                        <Minus class="h-4 w-4" />
+                                        <span class="sr-only">Kurangi</span>
+                                    </Button>
+                                    <Input
+                                        id="uptime_check_interval"
+                                        type="number"
+                                        min="1"
+                                        max="60"
+                                        v-model.number="form.uptime_check_interval"
+                                        class="w-20 text-center font-medium"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        @click="incrementInterval"
+                                        :disabled="form.uptime_check_interval >= 60"
+                                    >
+                                        <Plus class="h-4 w-4" />
+                                        <span class="sr-only">Tambah</span>
+                                    </Button>
+                                    <span class="text-sm text-muted-foreground">menit</span>
+                                </div>
+                                <div v-if="form.errors.uptime_check_interval" class="text-xs text-destructive">
+                                    {{ form.errors.uptime_check_interval }}
                                 </div>
                             </div>
-                            <!-- DNS Message -->
-                            <div
-                                v-if="dnsMessage"
-                                class="mt-2 text-sm"
-                                :class="{
-                                    'text-gray-500 dark:text-gray-400': dnsStatus === 'checking',
-                                    'text-green-600 dark:text-green-400': dnsStatus === 'valid',
-                                    'text-yellow-600 dark:text-yellow-400': dnsStatus === 'invalid',
-                                }"
-                            >
-                                {{ dnsMessage }}
+
+                            <!-- Tags -->
+                            <div class="space-y-2">
+                                <Label for="tags">Tags</Label>
+                                <TagInput v-model="form.tags" placeholder="Tambah tag (contoh: production, api, critical)" />
+                                <div v-if="form.errors.tags" class="text-xs text-destructive">{{ form.errors.tags }}</div>
                             </div>
-                            <div v-if="form.errors.url" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.url }}</div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label for="uptime_check_interval" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >Interval Pengecekan (menit)</label
-                            >
-                            <div class="mt-1 flex items-center">
-                                <button
-                                    type="button"
-                                    @click="decrementInterval"
-                                    class="inline-flex h-10 w-10 items-center justify-center rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                >
-                                    <span class="sr-only">Kurangi</span>
-                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <input
-                                    id="uptime_check_interval"
-                                    type="number"
-                                    min="1"
-                                    max="60"
-                                    v-model="form.uptime_check_interval"
-                                    class="flex h-10 w-20 border-t border-b border-gray-300 bg-white text-center text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                                />
-                                <button
-                                    type="button"
-                                    @click="incrementInterval"
-                                    class="inline-flex h-10 w-10 items-center justify-center rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                >
-                                    <span class="sr-only">Tambah</span>
-                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                                            clip-rule="evenodd"
-                                        />
-                                    </svg>
-                                </button>
+                            <!-- Feature Checks Toggles -->
+                            <div class="space-y-3">
+                                <Label class="text-sm font-medium">Fitur Pengecekan</Label>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                        <div class="space-y-0.5">
+                                            <Label for="uptime_check_enabled" class="cursor-pointer text-sm font-medium">Pengecekan Uptime</Label>
+                                            <p class="text-xs text-muted-foreground">Periksa ketersediaan situs secara berkala sesuai interval</p>
+                                        </div>
+                                        <Switch id="uptime_check_enabled" v-model="form.uptime_check_enabled" />
+                                    </div>
+
+                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                        <div class="space-y-0.5">
+                                            <Label for="certificate_check_enabled" class="cursor-pointer text-sm font-medium">Sertifikat SSL</Label>
+                                            <p class="text-xs text-muted-foreground">Pantau validitas dan masa berlaku sertifikat SSL/TLS</p>
+                                        </div>
+                                        <Switch id="certificate_check_enabled" v-model="form.certificate_check_enabled" />
+                                    </div>
+
+                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                        <div class="space-y-0.5">
+                                            <Label for="domain_expiration_check_enabled" class="cursor-pointer text-sm font-medium">Kedaluwarsa Domain</Label>
+                                            <p class="text-xs text-muted-foreground">Peringatan sebelum domain Anda memasuki masa kedaluwarsa</p>
+                                        </div>
+                                        <Switch id="domain_expiration_check_enabled" v-model="form.domain_expiration_check_enabled" />
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="form.errors.uptime_check_interval" class="mt-2 text-sm text-red-600 dark:text-red-400">
-                                {{ form.errors.uptime_check_interval }}
+
+                            <!-- Visibility (Admin only) -->
+                            <div v-if="userId === 1" class="space-y-2">
+                                <Label class="text-sm font-medium">Visibilitas Monitor</Label>
+                                <RadioGroup v-model="visibilityValue" class="flex gap-6 pt-1">
+                                    <div class="flex items-center space-x-2">
+                                        <RadioGroupItem id="public" value="public" />
+                                        <Label for="public" class="cursor-pointer font-normal">Publik</Label>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <RadioGroupItem id="private" value="private" />
+                                        <Label for="private" class="cursor-pointer font-normal">Privat</Label>
+                                    </div>
+                                </RadioGroup>
+                                <div v-if="form.errors.is_public" class="text-xs text-destructive">{{ form.errors.is_public }}</div>
                             </div>
-                        </div>
+                        </CardContent>
 
-                        <div class="mb-4">
-                            <label for="tags" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
-                            <TagInput v-model="form.tags" placeholder="Add tags (e.g., production, api, critical)" />
-                            <div v-if="form.errors.tags" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.tags }}</div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="uptime_check_enabled"
-                                    v-model="form.uptime_check_enabled"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
-                                />
-                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Uptime</span>
-                            </label>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="certificate_check_enabled"
-                                    v-model="form.certificate_check_enabled"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
-                                />
-                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Sertifikat SSL</span>
-                            </label>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="domain_expiration_check_enabled"
-                                    v-model="form.domain_expiration_check_enabled"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:text-indigo-400"
-                                />
-                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Aktifkan Pengecekan Kedaluwarsa Domain</span>
-                            </label>
-                        </div>
-
-                        <div v-if="userId === 1" class="mb-4">
-                            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Visibilitas Monitor</label>
-                            <div class="flex gap-4">
-                                <label class="inline-flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="is_public"
-                                        :value="1"
-                                        v-model="form.is_public"
-                                        class="form-radio text-indigo-600 dark:text-indigo-400"
-                                    />
-                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Publik</span>
-                                </label>
-                                <label class="inline-flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="is_public"
-                                        :value="0"
-                                        v-model="form.is_public"
-                                        class="form-radio text-indigo-600 dark:text-indigo-400"
-                                    />
-                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Privat</span>
-                                </label>
-                            </div>
-                            <div v-if="form.errors.is_public" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.is_public }}</div>
-                        </div>
-
-                        <div class="mt-4 flex items-center justify-end">
-                            <button
-                                type="submit"
-                                :class="{ 'opacity-25': form.processing }"
-                                :disabled="form.processing"
-                                class="inline-flex cursor-pointer items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none active:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:bg-gray-600 dark:active:bg-gray-800"
-                            >
+                        <CardFooter class="flex items-center justify-end gap-3 border-t pt-6">
+                            <Button type="button" variant="outline" @click="router.visit('/monitors')">
+                                Batal
+                            </Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
+                                <Plus v-else class="mr-2 h-4 w-4" />
                                 Tambah Monitor
-                            </button>
-                        </div>
+                            </Button>
+                        </CardFooter>
                     </form>
-                </div>
+                </Card>
             </div>
         </div>
     </AppLayout>
