@@ -30,9 +30,9 @@ const iconContainerClass = computed(() => {
 });
 
 const iconName = computed(() => {
-    if (isStatusUp.value) return 'CheckCircle';
-    if (isStatusDown.value) return 'AlertCircle';
-    return 'Info';
+    if (isStatusUp.value) return 'checkCircle';
+    if (isStatusDown.value) return 'alertCircle';
+    return 'info';
 });
 
 const iconClass = computed(() => {
@@ -110,7 +110,7 @@ onUnmounted(() => {
                         :class="closeButtonClass"
                     >
                         <span class="sr-only">Close</span>
-                        <Icon name="X" class="h-5 w-5" />
+                        <Icon name="x" class="h-5 w-5" />
                     </button>
                 </div>
             </div>

@@ -204,7 +204,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const className = computed(() => cn('h-4 w-4', props.class));
-const icon = computed(() => registry[props.name] ?? registry[props.name.charAt(0).toUpperCase() + props.name.slice(1)] ?? null);
+const icon = computed(() => {
+    if (!props.name) return null;
+    const lowerFirst = props.name.charAt(0).toLowerCase() + props.name.slice(1);
+    const upperFirst = props.name.charAt(0).toUpperCase() + props.name.slice(1);
+    return registry[props.name] ?? registry[lowerFirst] ?? registry[upperFirst] ?? null;
+});
 </script>
 
 <template>
