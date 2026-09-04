@@ -58,7 +58,7 @@ class MonitorImportController extends Controller
                 $message .= " {$result['skipped']} monitor dilewati.";
             }
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', [
                     'message' => $message,
                     'type' => 'success',

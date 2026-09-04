@@ -148,7 +148,7 @@ class UptimeMonitorController extends Controller
         if ($monitor) {
             $monitor->users()->attach(auth()->id(), ['is_active' => true]);
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
         }
 
@@ -163,7 +163,7 @@ class UptimeMonitorController extends Controller
                 'tags' => $request->input('tags'),
             ]);
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', ['message' => 'Monitor berhasil ditambahkan!', 'type' => 'success']);
 
         } catch (\Exception $e) {
@@ -203,7 +203,7 @@ class UptimeMonitorController extends Controller
         if ($monitorExists) {
             $monitorExists->users()->sync(auth()->id(), ['is_active' => true]);
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
         }
 
@@ -224,7 +224,7 @@ class UptimeMonitorController extends Controller
                 $monitor->syncTags($request->input('tags') ?? []);
             }
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', ['message' => 'Monitor berhasil diperbarui!', 'type' => 'success']);
 
         } catch (\Exception $e) {
@@ -252,7 +252,7 @@ class UptimeMonitorController extends Controller
             // remove cache index
             cache()->forget('monitor_list_page_1_per_page_15_user_'.auth()->id());
 
-            return redirect()->route('monitor.index')
+            return redirect()->route('monitors.index')
                 ->with('flash', ['message' => 'Monitor berhasil dihapus!', 'type' => 'success']);
 
         } catch (\Exception $e) {

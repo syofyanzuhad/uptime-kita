@@ -92,7 +92,7 @@ class DomainExpiringNotification extends Notification implements ShouldQueue
 
         $monitorUrl = $this->monitor->is_public
             ? config('app.url').'/m/'.$host
-            : config('app.url').'/monitor/'.$this->monitor->id;
+            : config('app.url').'/monitors/'.$this->monitor->id;
 
         return TelegramMessage::create()
             ->content($content)

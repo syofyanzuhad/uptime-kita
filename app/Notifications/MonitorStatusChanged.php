@@ -188,7 +188,7 @@ class MonitorStatusChanged extends Notification implements ShouldQueue
         if (@$this->data['is_public']) {
             $monitorUrl = config('app.url').'/m/'.$host;
         } else {
-            $monitorUrl = config('app.url').'/monitor/'.$this->data['id'];
+            $monitorUrl = config('app.url').'/monitors/'.$this->data['id'];
         }
 
         $message = TelegramMessage::create()

@@ -120,17 +120,16 @@ Route::get('/status/{path}/monitors', [PublicStatusPageController::class, 'monit
 Route::post('/status/{path}/subscribe', SubscribeStatusPageController::class)->name('status-page.subscribe');
 Route::get('/status-subscription/verify/{token}', VerifyStatusPageSubscriptionController::class)->name('status-page.subscription.verify');
 Route::get('/status-subscription/unsubscribe/{token}', UnsubscribeStatusPageController::class)->name('status-page.subscription.unsubscribe');
-Route::get('/monitor/{monitor}/latest-history', LatestHistoryController::class)->name('monitor.latest-history');
-Route::get('/monitors', [MonitorCompactController::class, 'index'])->name('monitor.compact');
-Route::get('/monitors/compact', [MonitorCompactController::class, 'index'])->name('monitor.compact.alias');
+Route::get('/monitors/{monitor}/latest-history', LatestHistoryController::class)->name('monitors.latest-history');
+Route::get('/monitors/compact', [MonitorCompactController::class, 'index'])->name('monitors.compact');
 
 // AJAX route for pinned monitors data (returns JSON)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/pinned-monitors', [PinnedMonitorController::class, 'index'])->name('monitor.pinned');
+    Route::get('/pinned-monitors', [PinnedMonitorController::class, 'index'])->name('monitors.pinned');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Domain expiration monitoring page (must be before /monitors/{type})
+    // Specific monitor sub-pages (must be before resource route and {type})
     Route::get('/monitors/expiration', [MonitorExpirationController::class, 'index'])->name('monitors.expiration');
 
     // Dynamic monitor listing route (for pinned, private, public)
@@ -138,13 +137,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->where('type', 'pinned|private|public')
         ->name('monitors.list');
 
-    // Inertia route for toggle pin action
-    Route::post('/monitor/{monitorId}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitor.toggle-pin');
     // Route untuk private monitor
-    Route::get('/private-monitors', PrivateMonitorController::class)->name('monitor.private');
+    Route::get('/private-monitors', PrivateMonitorController::class)->name('monitors.private');
 
-    // Monitor import routes (must be before resource route to avoid conflict with monitor/{monitor})
-    Route::prefix('monitor/import')->name('monitor.import.')->group(function () {
+    // Monitor import routes (must be before resource route to avoid conflict with monitors/{monitor})
+    Route::prefix('monitors/import')->name('monitors.import.')->group(function () {
         Route::get('/', [MonitorImportController::class, 'index'])->name('index');
         Route::post('/preview', [MonitorImportController::class, 'preview'])->name('preview');
         Route::post('/process', [MonitorImportController::class, 'process'])->name('process');
@@ -153,29 +150,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Monitor export routes
-    Route::prefix('monitor/export')->name('monitor.export.')->group(function () {
+    Route::prefix('monitors/export')->name('monitors.export.')->group(function () {
         Route::get('/csv', [MonitorExportController::class, 'csv'])->name('csv');
         Route::get('/json', [MonitorExportController::class, 'json'])->name('json');
     });
 
     // Resource route untuk CRUD monitor
-    Route::resource('monitor', UptimeMonitorController::class);
+    Route::resource('monitors', UptimeMonitorController::class);
 
-    // Route untuk subscribe monitor
-    Route::post('/monitor/{monitorId}/subscribe', SubscribeMonitorController::class)->name('monitor.subscribe');
-    // Route untuk unsubscribe monitor
-    Route::delete('/monitor/{monitorId}/unsubscribe', UnsubscribeMonitorController::class)->name('monitor.unsubscribe');
+    // Monitor actions
+    Route::post('/monitors/{monitorId}/toggle-pin', [PinnedMonitorController::class, 'toggle'])->name('monitors.toggle-pin');
+    Route::post('/monitors/{monitorId}/toggle-active', ToggleMonitorActiveController::class)->name('monitors.toggle-active');
+    Route::post('/monitors/{monitorId}/subscribe', SubscribeMonitorController::class)->name('monitors.subscribe');
+    Route::delete('/monitors/{monitorId}/unsubscribe', UnsubscribeMonitorController::class)->name('monitors.unsubscribe');
 
     // Tag routes
     Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
     Route::get('/tags/search', [TagController::class, 'search'])->name('tags.search');
 
-    // Route untuk toggle monitor active status
-    Route::post('/monitor/{monitorId}/toggle-active', ToggleMonitorActiveController::class)->name('monitor.toggle-active');
-
-    // Get monitor history
-    Route::get('/monitor/{monitor}/history', MonitorHistoryController::class)->name('monitor.history');
-    Route::get('/monitor/{monitor}/uptimes-daily', UptimesDailyController::class)->name('monitor.uptimes-daily');
+    // Monitor history & telemetry routes
+    Route::get('/monitors/{monitor}/history', MonitorHistoryController::class)->name('monitors.history');
+    Route::get('/monitors/{monitor}/uptimes-daily', UptimesDailyController::class)->name('monitors.uptimes-daily');
 
     // Status page management routes
     Route::resource('status-pages', StatusPageController::class);
