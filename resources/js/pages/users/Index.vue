@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Pagination from '@/components/Pagination.vue';
+import Button from '@/components/ui/button/Button.vue';
+import { Input, Select } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem, SharedData, User } from '@/types';
@@ -19,6 +21,15 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: '/users' }];
 const search = ref(props.search || '');
 const perPage = ref((props.perPage as number) || 15);
 
+const perPageOptions = [
+    { label: '5 / page', value: 5 },
+    { label: '10 / page', value: 10 },
+    { label: '15 / page', value: 15 },
+    { label: '20 / page', value: 20 },
+    { label: '50 / page', value: 50 },
+    { label: '100 / page', value: 100 },
+];
+
 function submitSearch() {
     router.get(
         route('users.index'),
@@ -32,10 +43,6 @@ function submitSearch() {
 
 function clearSearch() {
     search.value = '';
-    submitSearch();
-}
-
-function onPerPageChange() {
     submitSearch();
 }
 
@@ -81,34 +88,11 @@ const confirmDeleteUser = () => {
                 <div v-if="flash" class="mb-4 rounded bg-green-100 p-4 text-green-800">{{ flash }}</div>
                 <div class="overflow-auto bg-white p-6 shadow-sm sm:rounded-lg dark:bg-gray-800">
                     <!-- Search Bar & Filter -->
-                    <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2 overflow-auto">
-                        <input
-                            v-model="search"
-                            type="text"
-                            placeholder="Search users (min 3 characters)..."
-                            class="w-full max-w-xs min-w-52 rounded border border-gray-300 px-3 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        />
-                        <select
-                            v-model.number="perPage"
-                            @change="onPerPageChange"
-                            class="rounded border border-gray-300 px-2 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        >
-                            <option :value="5">5 / page</option>
-                            <option :value="10">10 / page</option>
-                            <option :value="15">15 / page</option>
-                            <option :value="20">20 / page</option>
-                            <option :value="50">50 / page</option>
-                            <option :value="100">100 / page</option>
-                        </select>
-                        <button
-                            v-if="search"
-                            type="button"
-                            @click="clearSearch"
-                            class="ml-1 rounded bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        >
-                            Clear
-                        </button>
-                        <button type="submit" class="rounded bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">Search</button>
+                    <form @submit.prevent="submitSearch" class="mb-4 flex flex-wrap items-center gap-2">
+                        <Input v-model="search" type="text" placeholder="Search users (min 3 characters)..." class="h-9 w-full max-w-xs min-w-52" />
+                        <Select v-model="perPage" :items="perPageOptions" @update:model-value="submitSearch" class="h-9 w-32" />
+                        <Button v-if="search" type="button" variant="outline" size="sm" @click="clearSearch" class="h-9"> Clear </Button>
+                        <Button type="submit" size="sm" class="h-9">Search</Button>
                     </form>
                     <Table>
                         <TableHeader>
