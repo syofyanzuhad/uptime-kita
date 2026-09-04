@@ -22,7 +22,7 @@ function testSuccessfulUnsubscription()
             // Set cache to verify it gets cleared
             Cache::put('public_monitors_authenticated_'.$user->id, 'cached_data');
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -48,7 +48,7 @@ function testSuccessfulUnsubscription()
             // Subscribe user to monitor first
             $monitor->users()->attach($user->id);
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.message', 'Berhasil berhenti berlangganan monitor: https://example-custom.com');
@@ -66,7 +66,7 @@ function testValidationAndErrorHandling()
                 'url' => 'https://private-example.com',
             ]);
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -87,7 +87,7 @@ function testValidationAndErrorHandling()
             ]);
 
             // User is not subscribed to this monitor
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -104,7 +104,7 @@ function testValidationAndErrorHandling()
             $user = User::factory()->create();
             $nonExistentMonitorId = 99999;
 
-            $response = $this->actingAs($user)->delete("/monitor/{$nonExistentMonitorId}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$nonExistentMonitorId}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -126,7 +126,7 @@ function testAuthenticationAndAuthorization()
                 'url' => 'https://auth-example.com',
             ]);
 
-            $response = $this->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect('/login');
         });
@@ -143,7 +143,7 @@ function testAuthenticationAndAuthorization()
             // Both users subscribe to the monitor
             $monitor->users()->attach([$currentUser->id, $otherUser->id]);
 
-            $response = $this->actingAs($currentUser)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($currentUser)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -183,7 +183,7 @@ function testCacheManagement()
             // Verify cache exists before unsubscription
             $this->assertNotNull(Cache::get($cacheKey));
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -211,7 +211,7 @@ function testCacheManagement()
             Cache::put($currentUserCacheKey, 'current_user_data');
             Cache::put($otherUserCacheKey, 'other_user_data');
 
-            $response = $this->actingAs($currentUser)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($currentUser)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -243,7 +243,7 @@ function testEdgeCasesAndDataIntegrity()
             $monitor2->users()->attach($user->id);
 
             // Unsubscribe from first monitor
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor1->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor1->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -278,7 +278,7 @@ function testEdgeCasesAndDataIntegrity()
             // Subscribe user to monitor
             $monitor->users()->attach($user->id);
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -301,7 +301,7 @@ function testEdgeCasesAndDataIntegrity()
             // Subscribe user to monitor
             $monitor->users()->attach($user->id);
 
-            $response = $this->actingAs($user)->delete("/monitor/{$monitor->id}/unsubscribe");
+            $response = $this->actingAs($user)->delete("/monitors/{$monitor->id}/unsubscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');

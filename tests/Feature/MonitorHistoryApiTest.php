@@ -23,7 +23,7 @@ describe('Monitor History API', function () {
             ]
         )->create();
 
-        $response = actingAs($this->user)->get("/monitor/{$this->monitor->id}/history");
+        $response = actingAs($this->user)->get("/monitors/{$this->monitor->id}/history");
 
         $response->assertStatus(200);
         $response->assertJsonCount(5, 'histories');
@@ -53,7 +53,7 @@ describe('Monitor History API', function () {
             ]
         )->create();
 
-        $response = actingAs($this->user)->get("/monitor/{$this->monitor->id}/history");
+        $response = actingAs($this->user)->get("/monitors/{$this->monitor->id}/history");
 
         $response->assertStatus(200);
         $response->assertJsonCount(100, 'histories');

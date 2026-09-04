@@ -6,7 +6,7 @@ use App\Models\User;
 use function Pest\Laravel\actingAs;
 
 test('compact monitor view is accessible to guests', function () {
-    $this->get(route('monitor.compact'))
+    $this->get(route('monitors.compact'))
         ->assertStatus(200)
         ->assertInertia(fn ($page) => $page
             ->component('monitors/Compact')
@@ -18,7 +18,7 @@ test('compact monitor view is accessible to authenticated users', function () {
     Monitor::factory()->create(['uptime_check_enabled' => true]);
 
     actingAs($user)
-        ->get(route('monitor.compact'))
+        ->get(route('monitors.compact'))
         ->assertStatus(200)
         ->assertInertia(fn ($page) => $page
             ->component('monitors/Compact')

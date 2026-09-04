@@ -36,7 +36,7 @@ describe('ToggleMonitorPinController', function () {
         $this->publicMonitor->users()->attach($this->admin->id, ['is_active' => true, 'is_pinned' => false]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -55,7 +55,7 @@ describe('ToggleMonitorPinController', function () {
         $this->pinnedMonitor->users()->attach($this->admin->id, ['is_active' => true, 'is_pinned' => true]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->pinnedMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->pinnedMonitor->id}/toggle-pin", [
                 'is_pinned' => false,
             ]);
 
@@ -71,7 +71,7 @@ describe('ToggleMonitorPinController', function () {
 
     it('allows owner to toggle pin on their private monitor', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->privateMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->privateMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -89,7 +89,7 @@ describe('ToggleMonitorPinController', function () {
         $otherUser = User::factory()->create();
 
         $response = actingAs($otherUser)
-            ->postJson("/monitor/{$this->privateMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->privateMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -102,7 +102,7 @@ describe('ToggleMonitorPinController', function () {
 
     it('prevents regular user from toggling pin on public monitor', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -115,7 +115,7 @@ describe('ToggleMonitorPinController', function () {
 
     it('handles non-existent monitor', function () {
         $response = actingAs($this->admin)
-            ->postJson('/monitor/999999/toggle-pin', [
+            ->postJson('/monitors/999999/toggle-pin', [
                 'is_pinned' => true,
             ]);
 
@@ -123,7 +123,7 @@ describe('ToggleMonitorPinController', function () {
     });
 
     it('requires authentication', function () {
-        $response = postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+        $response = postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -136,7 +136,7 @@ describe('ToggleMonitorPinController', function () {
 
         // First toggle - should pin
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -145,7 +145,7 @@ describe('ToggleMonitorPinController', function () {
 
         // Second toggle - should unpin
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => false,
             ]);
 
@@ -154,7 +154,7 @@ describe('ToggleMonitorPinController', function () {
 
         // Third toggle - should pin again
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -172,7 +172,7 @@ describe('ToggleMonitorPinController', function () {
         $disabledMonitor->users()->attach($this->admin->id, ['is_active' => true, 'is_pinned' => false]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$disabledMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$disabledMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 
@@ -191,7 +191,7 @@ describe('ToggleMonitorPinController', function () {
         $this->publicMonitor->users()->attach($this->admin->id, ['is_active' => true, 'is_pinned' => false]);
 
         $response = actingAs($this->admin)
-            ->postJson("/monitor/{$this->publicMonitor->id}/toggle-pin", [
+            ->postJson("/monitors/{$this->publicMonitor->id}/toggle-pin", [
                 'is_pinned' => true,
             ]);
 

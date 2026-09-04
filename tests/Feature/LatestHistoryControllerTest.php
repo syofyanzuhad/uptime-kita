@@ -43,7 +43,7 @@ describe('LatestHistoryController', function () {
             'created_at' => now(),
         ]);
 
-        $response = get("/monitor/{$this->publicMonitor->id}/latest-history");
+        $response = get("/monitors/{$this->publicMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -75,7 +75,7 @@ describe('LatestHistoryController', function () {
         ]);
 
         $response = actingAs($this->user)
-            ->get("/monitor/{$this->privateMonitor->id}/latest-history");
+            ->get("/monitors/{$this->privateMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJson([
@@ -97,7 +97,7 @@ describe('LatestHistoryController', function () {
         $otherUser = User::factory()->create();
 
         $response = actingAs($otherUser)
-            ->get("/monitor/{$this->privateMonitor->id}/latest-history");
+            ->get("/monitors/{$this->privateMonitor->id}/latest-history");
 
         // Global scope will prevent access to private monitors by non-owners
         $response->assertNotFound();
@@ -109,14 +109,14 @@ describe('LatestHistoryController', function () {
             'uptime_check_enabled' => true,
         ]);
 
-        $response = get("/monitor/{$monitorWithoutHistory->id}/latest-history");
+        $response = get("/monitors/{$monitorWithoutHistory->id}/latest-history");
 
         $response->assertOk();
         $response->assertJson(['latest_history' => null]);
     });
 
     it('returns 404 for non-existent monitor', function () {
-        $response = get('/monitor/999999/latest-history');
+        $response = get('/monitors/999999/latest-history');
 
         $response->assertNotFound();
     });
@@ -130,7 +130,7 @@ describe('LatestHistoryController', function () {
         ]);
 
         $response = actingAs($this->admin)
-            ->get("/monitor/{$this->privateMonitor->id}/latest-history");
+            ->get("/monitors/{$this->privateMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJson([
@@ -160,7 +160,7 @@ describe('LatestHistoryController', function () {
             'created_at' => now()->addMinute(),
         ]);
 
-        $response = get("/monitor/{$this->publicMonitor->id}/latest-history");
+        $response = get("/monitors/{$this->publicMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJson([
@@ -182,7 +182,7 @@ describe('LatestHistoryController', function () {
             'created_at' => now(),
         ]);
 
-        $response = get("/monitor/{$this->publicMonitor->id}/latest-history");
+        $response = get("/monitors/{$this->publicMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -213,7 +213,7 @@ describe('LatestHistoryController', function () {
         ]);
 
         // Disabled monitors are filtered by global scope, so it should return 404
-        $response = get("/monitor/{$disabledMonitor->id}/latest-history");
+        $response = get("/monitors/{$disabledMonitor->id}/latest-history");
 
         $response->assertNotFound();
     });
@@ -229,7 +229,7 @@ describe('LatestHistoryController', function () {
         ]);
 
         $response = actingAs($subscriber)
-            ->get("/monitor/{$this->privateMonitor->id}/latest-history");
+            ->get("/monitors/{$this->privateMonitor->id}/latest-history");
 
         $response->assertOk();
         $response->assertJson([

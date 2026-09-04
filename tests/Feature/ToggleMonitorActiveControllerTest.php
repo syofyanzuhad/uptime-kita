@@ -38,7 +38,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->publicMonitor->id}/toggle-active");
 
         $response->assertRedirect('/dashboard');
         $response->assertSessionHas('flash.type', 'success');
@@ -55,7 +55,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$this->disabledMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->disabledMonitor->id}/toggle-active");
 
         $response->assertRedirect('/dashboard');
         $response->assertSessionHas('flash.type', 'success');
@@ -69,7 +69,7 @@ describe('ToggleMonitorActiveController', function () {
     it('allows owner to toggle their private monitor', function () {
         $response = actingAs($this->user)
             ->from('/dashboard')
-            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->privateMonitor->id}/toggle-active");
 
         $response->assertRedirect('/dashboard');
         $response->assertSessionHas('flash.type', 'success');
@@ -82,7 +82,7 @@ describe('ToggleMonitorActiveController', function () {
         // Toggle back
         $response = actingAs($this->user)
             ->from('/dashboard')
-            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->privateMonitor->id}/toggle-active");
 
         $response->assertRedirect('/dashboard');
         assertDatabaseHas('monitors', [
@@ -94,7 +94,7 @@ describe('ToggleMonitorActiveController', function () {
     it('prevents non-owner from toggling private monitor', function () {
         $response = actingAs($this->otherUser)
             ->from('/dashboard')
-            ->post("/monitor/{$this->privateMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->privateMonitor->id}/toggle-active");
 
         // User not subscribed will get redirect with error
         $response->assertRedirect('/dashboard');
@@ -109,7 +109,7 @@ describe('ToggleMonitorActiveController', function () {
     it('prevents regular user from toggling public monitor not subscribed to', function () {
         $response = actingAs($this->user)
             ->from('/dashboard')
-            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->publicMonitor->id}/toggle-active");
 
         // User not subscribed will get redirect with error
         $response->assertRedirect('/dashboard');
@@ -122,7 +122,7 @@ describe('ToggleMonitorActiveController', function () {
     });
 
     it('requires authentication', function () {
-        $response = post("/monitor/{$this->publicMonitor->id}/toggle-active");
+        $response = post("/monitors/{$this->publicMonitor->id}/toggle-active");
 
         $response->assertRedirect('/login');
     });
@@ -130,7 +130,7 @@ describe('ToggleMonitorActiveController', function () {
     it('handles non-existent monitor', function () {
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post('/monitor/999999/toggle-active');
+            ->post('/monitors/999999/toggle-active');
 
         $response->assertRedirect('/dashboard');
         $response->assertSessionHas('flash.type', 'error');
@@ -146,21 +146,21 @@ describe('ToggleMonitorActiveController', function () {
         // First toggle - disable
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$monitor->id}/toggle-active");
+            ->post("/monitors/{$monitor->id}/toggle-active");
         $response->assertRedirect();
         assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => false]);
 
         // Second toggle - enable
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$monitor->id}/toggle-active");
+            ->post("/monitors/{$monitor->id}/toggle-active");
         $response->assertRedirect();
         assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => true]);
 
         // Third toggle - disable again
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$monitor->id}/toggle-active");
+            ->post("/monitors/{$monitor->id}/toggle-active");
         $response->assertRedirect();
         assertDatabaseHas('monitors', ['id' => $monitor->id, 'uptime_check_enabled' => false]);
     });
@@ -175,7 +175,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$monitor->id}/toggle-active");
+            ->post("/monitors/{$monitor->id}/toggle-active");
 
         $response->assertRedirect();
 
@@ -192,7 +192,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$this->publicMonitor->id}/toggle-active");
+            ->post("/monitors/{$this->publicMonitor->id}/toggle-active");
 
         $response->assertRedirect();
         $response->assertSessionHas('flash.type', 'success');
@@ -213,7 +213,7 @@ describe('ToggleMonitorActiveController', function () {
 
         $response = actingAs($this->admin)
             ->from('/dashboard')
-            ->post("/monitor/{$pinnedMonitor->id}/toggle-active");
+            ->post("/monitors/{$pinnedMonitor->id}/toggle-active");
 
         $response->assertRedirect();
         $response->assertSessionHas('flash.type', 'success');

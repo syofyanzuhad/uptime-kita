@@ -40,7 +40,7 @@ describe('UptimesDailyController', function () {
 
     it('returns daily uptimes for public monitor with auth', function () {
         $response = actingAs($this->user)
-            ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+            ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -54,7 +54,7 @@ describe('UptimesDailyController', function () {
     });
 
     it('returns uptimes ordered by date descending', function () {
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
         $response->assertOk();
 
@@ -76,7 +76,7 @@ describe('UptimesDailyController', function () {
             ]);
         }
 
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
         $response->assertOk();
         $data = $response->json();
@@ -86,7 +86,7 @@ describe('UptimesDailyController', function () {
     });
 
     it('allows custom limit parameter', function () {
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=7");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?limit=7");
 
         $response->assertOk();
         $data = $response->json();
@@ -101,7 +101,7 @@ describe('UptimesDailyController', function () {
             'uptime_percentage' => 100.0,
         ]);
 
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
         $response->assertOk();
         $data = $response->json();
@@ -123,7 +123,7 @@ describe('UptimesDailyController', function () {
         )->create();
 
         $response = actingAs($this->user)
-            ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily");
+            ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily");
 
         $response->assertOk();
         $data = $response->json();
@@ -134,7 +134,7 @@ describe('UptimesDailyController', function () {
         $otherUser = User::factory()->create();
 
         $response = actingAs($otherUser)
-            ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily");
+            ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily");
 
         // Global scope will return 404 if user can't see the monitor
         $response->assertNotFound();
@@ -148,7 +148,7 @@ describe('UptimesDailyController', function () {
         ]);
 
         $response = actingAs($this->admin)
-            ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily");
+            ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily");
 
         $response->assertOk();
     });
@@ -160,20 +160,20 @@ describe('UptimesDailyController', function () {
         ]);
         $monitorWithoutData->users()->attach($this->user->id, ['is_active' => true]);
 
-        $response = actingAs($this->user)->get("/monitor/{$monitorWithoutData->id}/uptimes-daily");
+        $response = actingAs($this->user)->get("/monitors/{$monitorWithoutData->id}/uptimes-daily");
 
         $response->assertOk();
         $response->assertJson(['uptimes_daily' => []]);
     });
 
     it('returns 404 for non-existent monitor', function () {
-        $response = actingAs($this->user)->get('/monitor/999999/uptimes-daily');
+        $response = actingAs($this->user)->get('/monitors/999999/uptimes-daily');
 
         $response->assertNotFound();
     });
 
     it('includes all uptime metrics in response', function () {
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=1");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?limit=1");
 
         $response->assertOk();
 
@@ -203,7 +203,7 @@ describe('UptimesDailyController', function () {
         $disabledMonitor = Monitor::withoutGlobalScopes()->find(999);
 
         // Even admin cannot access disabled monitors due to global scope
-        $response = actingAs($this->admin)->get("/monitor/{$disabledMonitor->id}/uptimes-daily");
+        $response = actingAs($this->admin)->get("/monitors/{$disabledMonitor->id}/uptimes-daily");
 
         $response->assertNotFound();
     });
@@ -219,13 +219,13 @@ describe('UptimesDailyController', function () {
         ]);
 
         $response = actingAs($subscriber)
-            ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily");
+            ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily");
 
         $response->assertOk();
     });
 
     it('handles invalid limit parameter gracefully', function () {
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=invalid");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?limit=invalid");
 
         $response->assertOk();
         $data = $response->json();
@@ -233,7 +233,7 @@ describe('UptimesDailyController', function () {
     });
 
     it('handles negative limit parameter', function () {
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=-5");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?limit=-5");
 
         $response->assertOk();
         $data = $response->json();
@@ -250,7 +250,7 @@ describe('UptimesDailyController', function () {
             ]);
         }
 
-        $response = actingAs($this->user)->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?limit=1000");
+        $response = actingAs($this->user)->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?limit=1000");
 
         $response->assertOk();
 
@@ -273,7 +273,7 @@ describe('UptimesDailyController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
 
             $response->assertOk();
             $response->assertJson([
@@ -292,7 +292,7 @@ describe('UptimesDailyController', function () {
             $nonExistentDate = now()->addDays(10)->toDateString(); // Future date with no data
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$nonExistentDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$nonExistentDate}");
 
             $response->assertOk();
             $response->assertJson([
@@ -304,7 +304,7 @@ describe('UptimesDailyController', function () {
             $invalidDate = 'not-a-date';
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$invalidDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$invalidDate}");
 
             $response->assertOk();
             $response->assertJson([
@@ -335,7 +335,7 @@ describe('UptimesDailyController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$targetDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$targetDate}");
 
             $response->assertOk();
 
@@ -355,7 +355,7 @@ describe('UptimesDailyController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
+                ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
 
             $response->assertOk();
             $response->assertJson([
@@ -371,7 +371,7 @@ describe('UptimesDailyController', function () {
             $specificDate = now()->subDays(2)->toDateString();
 
             $response = actingAs($otherUser)
-                ->get("/monitor/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
+                ->get("/monitors/{$this->privateMonitor->id}/uptimes-daily?date={$specificDate}");
 
             $response->assertNotFound();
         });
@@ -388,7 +388,7 @@ describe('UptimesDailyController', function () {
 
             // Test with Y-m-d format
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$dateString}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$dateString}");
 
             $response->assertOk();
             $data = $response->json();
@@ -398,7 +398,7 @@ describe('UptimesDailyController', function () {
             // Test with URL encoded date
             $urlEncodedDate = urlencode($dateString);
             $response2 = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$urlEncodedDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$urlEncodedDate}");
 
             $response2->assertOk();
             $data2 = $response2->json();
@@ -417,7 +417,7 @@ describe('UptimesDailyController', function () {
             $specificDate = now()->toDateString();
 
             $response = actingAs($this->user)
-                ->get("/monitor/{$emptyMonitor->id}/uptimes-daily?date={$specificDate}");
+                ->get("/monitors/{$emptyMonitor->id}/uptimes-daily?date={$specificDate}");
 
             $response->assertOk();
             $response->assertJson([
@@ -436,7 +436,7 @@ describe('UptimesDailyController', function () {
 
             // Even with limit=100, should only return the one record for the date
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}&limit=100");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}&limit=100");
 
             $response->assertOk();
 
@@ -451,7 +451,7 @@ describe('UptimesDailyController', function () {
 
             // First request should cache the result
             $response1 = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
             $response1->assertOk();
             $data1 = $response1->json();
@@ -466,7 +466,7 @@ describe('UptimesDailyController', function () {
 
             // Second request should return cached result (without the new data)
             $response2 = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
             $response2->assertOk();
             $data2 = $response2->json();
@@ -477,7 +477,7 @@ describe('UptimesDailyController', function () {
 
             // Third request should show updated data
             $response3 = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily");
 
             $response3->assertOk();
             $data3 = $response3->json();
@@ -501,7 +501,7 @@ describe('UptimesDailyController', function () {
 
             // Request with date parameter should bypass cache
             $response = actingAs($this->user)
-                ->get("/monitor/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
+                ->get("/monitors/{$this->publicMonitor->id}/uptimes-daily?date={$specificDate}");
 
             $response->assertOk();
 

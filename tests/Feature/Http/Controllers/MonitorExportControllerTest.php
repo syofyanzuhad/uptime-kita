@@ -14,7 +14,7 @@ test('exports monitors to csv', function () {
         'is_pinned' => false,
     ]);
 
-    $response = $this->actingAs($this->user)->get('/monitor/export/csv');
+    $response = $this->actingAs($this->user)->get('/monitors/export/csv');
 
     $response->assertOk();
     $response->assertHeader('content-type', 'text/csv; charset=utf-8');
@@ -30,7 +30,7 @@ test('exports monitors to json', function () {
         'is_pinned' => false,
     ]);
 
-    $response = $this->actingAs($this->user)->get('/monitor/export/json');
+    $response = $this->actingAs($this->user)->get('/monitors/export/json');
 
     $response->assertOk();
     $response->assertHeader('content-type', 'application/json');
@@ -39,13 +39,13 @@ test('exports monitors to json', function () {
 });
 
 test('requires authentication for csv export', function () {
-    $response = $this->get('/monitor/export/csv');
+    $response = $this->get('/monitors/export/csv');
 
     $response->assertRedirect('/login');
 });
 
 test('requires authentication for json export', function () {
-    $response = $this->get('/monitor/export/json');
+    $response = $this->get('/monitors/export/json');
 
     $response->assertRedirect('/login');
 });

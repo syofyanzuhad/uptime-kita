@@ -17,7 +17,7 @@ it('can pin a monitor', function () {
     ]);
 
     $this->actingAs($user)
-        ->postJson("/monitor/{$monitor->id}/toggle-pin", [
+        ->postJson("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ])
         ->assertSuccessful()
@@ -49,7 +49,7 @@ it('can unpin a monitor', function () {
     ]);
 
     $response = $this->actingAs($user)
-        ->postJson("/monitor/{$monitor->id}/toggle-pin", [
+        ->postJson("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => false,
         ])
         ->assertSuccessful()
@@ -75,7 +75,7 @@ it('cannot pin a monitor if not subscribed', function () {
     ]);
 
     $this->actingAs($user)
-        ->postJson("/monitor/{$monitor->id}/toggle-pin", [
+        ->postJson("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ])
         ->assertStatus(403)
@@ -88,7 +88,7 @@ it('cannot pin a monitor if not subscribed', function () {
 it('requires authentication to pin a monitor', function () {
     $monitor = Monitor::factory()->create();
 
-    $this->postJson("/monitor/{$monitor->id}/toggle-pin", [
+    $this->postJson("/monitors/{$monitor->id}/toggle-pin", [
         'is_pinned' => true,
     ])
         ->assertStatus(401);
@@ -104,6 +104,6 @@ it('requires is_pinned parameter', function () {
     ]);
 
     $this->actingAs($user)
-        ->postJson("/monitor/{$monitor->id}/toggle-pin", [])
+        ->postJson("/monitors/{$monitor->id}/toggle-pin", [])
         ->assertStatus(422);
 });

@@ -23,7 +23,7 @@ describe('SubscribeMonitorController', function () {
 
     it('allows authenticated user to subscribe to public monitor', function () {
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->publicMonitor->id}/subscribe");
+            ->postJson("/monitors/{$this->publicMonitor->id}/subscribe");
 
         $response->assertOk();
         $response->assertJson(['message' => 'Subscribed to monitor successfully']);
@@ -40,7 +40,7 @@ describe('SubscribeMonitorController', function () {
         $this->user->monitors()->attach($this->publicMonitor->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->publicMonitor->id}/subscribe");
+            ->postJson("/monitors/{$this->publicMonitor->id}/subscribe");
 
         $response->assertStatus(400);
         $response->assertJson(['message' => 'Already subscribed to this monitor']);
@@ -50,7 +50,7 @@ describe('SubscribeMonitorController', function () {
         $otherUser = User::factory()->create();
 
         $response = actingAs($otherUser)
-            ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
+            ->postJson("/monitors/{$this->privateMonitor->id}/subscribe");
 
         $response->assertStatus(403);
         $response->assertJson(['message' => 'Cannot subscribe to private monitor']);
@@ -61,7 +61,7 @@ describe('SubscribeMonitorController', function () {
         $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
+            ->postJson("/monitors/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
 
@@ -74,13 +74,13 @@ describe('SubscribeMonitorController', function () {
 
     it('prevents subscription to non-existent monitor', function () {
         $response = actingAs($this->user)
-            ->postJson('/monitor/999999/subscribe');
+            ->postJson('/monitors/999999/subscribe');
 
         $response->assertNotFound();
     });
 
     it('requires authentication', function () {
-        $response = postJson("/monitor/{$this->publicMonitor->id}/subscribe");
+        $response = postJson("/monitors/{$this->publicMonitor->id}/subscribe");
 
         $response->assertUnauthorized();
     });
@@ -92,7 +92,7 @@ describe('SubscribeMonitorController', function () {
         ]);
 
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$disabledMonitor->id}/subscribe");
+            ->postJson("/monitors/{$disabledMonitor->id}/subscribe");
 
         $response->assertStatus(403);
         $response->assertJson(['message' => 'Cannot subscribe to disabled monitor']);
@@ -103,7 +103,7 @@ describe('SubscribeMonitorController', function () {
         $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
 
         $response = actingAs($this->user)
-            ->postJson("/monitor/{$this->privateMonitor->id}/subscribe");
+            ->postJson("/monitors/{$this->privateMonitor->id}/subscribe");
 
         $response->assertOk();
 
@@ -117,7 +117,7 @@ describe('SubscribeMonitorController', function () {
     describe('non-JSON requests (redirect responses)', function () {
         it('returns redirect response for successful public monitor subscription', function () {
             $response = actingAs($this->user)
-                ->post("/monitor/{$this->publicMonitor->id}/subscribe");
+                ->post("/monitors/{$this->publicMonitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -134,7 +134,7 @@ describe('SubscribeMonitorController', function () {
             $otherUser = User::factory()->create();
 
             $response = actingAs($otherUser)
-                ->post("/monitor/{$this->privateMonitor->id}/subscribe");
+                ->post("/monitors/{$this->privateMonitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -148,7 +148,7 @@ describe('SubscribeMonitorController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->post("/monitor/{$disabledMonitor->id}/subscribe");
+                ->post("/monitors/{$disabledMonitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -160,7 +160,7 @@ describe('SubscribeMonitorController', function () {
             $this->user->monitors()->attach($this->publicMonitor->id, ['is_active' => true]);
 
             $response = actingAs($this->user)
-                ->post("/monitor/{$this->publicMonitor->id}/subscribe");
+                ->post("/monitors/{$this->publicMonitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -172,7 +172,7 @@ describe('SubscribeMonitorController', function () {
             $this->privateMonitor->users()->attach($this->user->id, ['is_active' => true]);
 
             $response = actingAs($this->user)
-                ->post("/monitor/{$this->privateMonitor->id}/subscribe");
+                ->post("/monitors/{$this->privateMonitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -181,7 +181,7 @@ describe('SubscribeMonitorController', function () {
 
         it('returns redirect error for monitor not found', function () {
             $response = actingAs($this->user)
-                ->post('/monitor/999999/subscribe');
+                ->post('/monitors/999999/subscribe');
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'error');
@@ -195,7 +195,7 @@ describe('SubscribeMonitorController', function () {
             Cache::put('public_monitors_authenticated_'.$this->user->id, 'cached_data');
 
             $response = actingAs($this->user)
-                ->postJson("/monitor/{$this->publicMonitor->id}/subscribe");
+                ->postJson("/monitors/{$this->publicMonitor->id}/subscribe");
 
             $response->assertOk();
 
@@ -212,7 +212,7 @@ describe('SubscribeMonitorController', function () {
 
             // Try to subscribe again - should be caught by the controller logic
             $response = actingAs($this->user)
-                ->postJson("/monitor/{$this->publicMonitor->id}/subscribe");
+                ->postJson("/monitors/{$this->publicMonitor->id}/subscribe");
 
             $response->assertStatus(400);
             $response->assertJson(['message' => 'Already subscribed to this monitor']);
@@ -228,7 +228,7 @@ describe('SubscribeMonitorController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->post("/monitor/{$monitor->id}/subscribe");
+                ->post("/monitors/{$monitor->id}/subscribe");
 
             $response->assertRedirect();
             $response->assertSessionHas('flash.type', 'success');
@@ -250,7 +250,7 @@ describe('SubscribeMonitorController', function () {
             ]);
 
             $response = actingAs($this->user)
-                ->postJson("/monitor/{$monitor->id}/subscribe");
+                ->postJson("/monitors/{$monitor->id}/subscribe");
 
             $response->assertOk();
             $response->assertJson(['message' => 'Subscribed to monitor successfully']);

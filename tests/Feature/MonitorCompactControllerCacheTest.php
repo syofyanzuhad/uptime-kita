@@ -11,7 +11,7 @@ describe('MonitorCompactControllerCache', function () {
 
         Cache::spy();
 
-        $this->actingAs($user)->get('/monitors');
+        $this->actingAs($user)->get('/monitors/compact');
 
         Cache::shouldHaveReceived('remember')
             ->with(
@@ -25,8 +25,8 @@ describe('MonitorCompactControllerCache', function () {
         $user = User::factory()->create();
         Cache::spy();
 
-        $this->actingAs($user)->get('/monitors?search=site1');
-        $this->actingAs($user)->get('/monitors?search=site2');
+        $this->actingAs($user)->get('/monitors/compact?search=site1');
+        $this->actingAs($user)->get('/monitors/compact?search=site2');
 
         Cache::shouldHaveReceived('remember')->atLeast()->twice();
     });

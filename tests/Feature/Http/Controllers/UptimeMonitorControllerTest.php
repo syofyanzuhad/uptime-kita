@@ -10,12 +10,12 @@ beforeEach(function () {
 
 it('converts http urls to https when storing', function () {
     $response = $this->from('/monitors')
-        ->post('/monitor', [
+        ->post('/monitors', [
             'url' => 'http://example.com/',
             'uptime_check_interval' => 5,
         ]);
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     expect(Monitor::withoutGlobalScopes()
         ->where('url', 'https://example.com')
@@ -31,12 +31,12 @@ it('attaches existing monitor to user instead of duplicating', function () {
     auth()->login($this->user);
 
     $response = $this->from('/monitors')
-        ->post('/monitor', [
+        ->post('/monitors', [
             'url' => 'https://example.com',
             'uptime_check_interval' => 5,
         ]);
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     expect($monitor->users()->where('user_id', $this->user->id)->exists())->toBeTrue();
     expect(Monitor::withoutGlobalScopes()->count())->toBe(1);
@@ -44,13 +44,13 @@ it('attaches existing monitor to user instead of duplicating', function () {
 
 it('stores a new monitor with tags', function () {
     $response = $this->from('/monitors')
-        ->post('/monitor', [
+        ->post('/monitors', [
             'url' => 'https://new-site.test',
             'uptime_check_interval' => 5,
             'tags' => ['laravel', 'production'],
         ]);
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     $monitor = Monitor::withoutGlobalScopes()
         ->where('url', 'https://new-site.test')
@@ -68,7 +68,7 @@ it('updates a monitor and syncs tags', function () {
     $monitor->users()->sync([$this->user->id => ['is_active' => true]]);
 
     $response = $this->from('/monitors')
-        ->put("/monitor/{$monitor->id}", [
+        ->put("/monitors/{$monitor->id}", [
             'url' => 'https://example.com',
             'uptime_check_interval' => 10,
             'uptime_check_enabled' => true,
@@ -78,7 +78,7 @@ it('updates a monitor and syncs tags', function () {
             'tags' => ['updated-tag'],
         ]);
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     expect($monitor->fresh()->uptime_check_interval_in_minutes)->toBe(10);
     expect($monitor->fresh()->tags()->pluck('name')->all())->toContain('updated-tag');
@@ -92,7 +92,7 @@ it('updates http url to https when updating', function () {
     $monitor->users()->sync([$this->user->id => ['is_active' => true]]);
 
     $this->from('/monitors')
-        ->put("/monitor/{$monitor->id}", [
+        ->put("/monitors/{$monitor->id}", [
             'url' => 'http://example.com/',
             'uptime_check_interval' => 5,
             'uptime_check_enabled' => true,
@@ -112,9 +112,9 @@ it('destroys a monitor owned by the user', function () {
     $monitor->users()->sync([$this->user->id => ['is_active' => true]]);
 
     $response = $this->from('/monitors')
-        ->delete("/monitor/{$monitor->id}");
+        ->delete("/monitors/{$monitor->id}");
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     expect(Monitor::withoutGlobalScopes()->find($monitor->id))->toBeNull();
 });
@@ -130,9 +130,9 @@ it('detaches a monitor not owned by the user', function () {
     $monitor->users()->attach($this->user->id, ['is_active' => true]);
 
     $response = $this->from('/monitors')
-        ->delete("/monitor/{$monitor->id}");
+        ->delete("/monitors/{$monitor->id}");
 
-    $response->assertRedirect(route('monitor.index'));
+    $response->assertRedirect(route('monitors.index'));
 
     expect($monitor->fresh())->not->toBeNull();
     expect($monitor->users()->where('user_id', $this->user->id)->exists())->toBeFalse();

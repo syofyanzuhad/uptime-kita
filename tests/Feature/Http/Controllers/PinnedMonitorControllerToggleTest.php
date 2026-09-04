@@ -18,7 +18,7 @@ describe('PinnedMonitorController toggle method', function () {
 
         // Cache clearing is handled by the controller, no need to mock
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -47,7 +47,7 @@ describe('PinnedMonitorController toggle method', function () {
 
         // Cache clearing is handled by the controller, no need to mock
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => false,
         ]);
 
@@ -68,7 +68,7 @@ describe('PinnedMonitorController toggle method', function () {
 
         // No subscription relationship exists
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -88,7 +88,7 @@ describe('PinnedMonitorController toggle method', function () {
             'is_active' => false,
         ]);
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -109,7 +109,7 @@ describe('PinnedMonitorController toggle method', function () {
         $user = User::factory()->create();
         $monitor = Monitor::factory()->create();
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", []);
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", []);
 
         $response->assertSessionHasErrors(['is_pinned']);
     });
@@ -118,7 +118,7 @@ describe('PinnedMonitorController toggle method', function () {
         $user = User::factory()->create();
         $monitor = Monitor::factory()->create();
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => 'not-a-boolean',
         ]);
 
@@ -128,7 +128,7 @@ describe('PinnedMonitorController toggle method', function () {
     it('handles non-existent monitor', function () {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post('/monitor/999/toggle-pin', [
+        $response = $this->actingAs($user)->post('/monitors/999/toggle-pin', [
             'is_pinned' => true,
         ]);
 
@@ -148,7 +148,7 @@ describe('PinnedMonitorController toggle method', function () {
 
         // Cache clearing is handled by the controller, no need to mock
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -169,7 +169,7 @@ describe('PinnedMonitorController toggle method', function () {
         $cacheKey = 'is_pinned_'.$monitor->id.'_'.$user->id;
         cache()->put($cacheKey, true);
 
-        $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -179,7 +179,7 @@ describe('PinnedMonitorController toggle method', function () {
     it('requires authentication', function () {
         $monitor = Monitor::factory()->create();
 
-        $response = $this->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -201,7 +201,7 @@ describe('PinnedMonitorController toggle method', function () {
         $monitorId = $monitor->id;
         $monitor->delete();
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitorId}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitorId}/toggle-pin", [
             'is_pinned' => true,
         ]);
 
@@ -222,7 +222,7 @@ describe('PinnedMonitorController toggle method', function () {
 
         // Cache clearing is handled by the controller
 
-        $response = $this->actingAs($user)->post("/monitor/{$monitor->id}/toggle-pin", [
+        $response = $this->actingAs($user)->post("/monitors/{$monitor->id}/toggle-pin", [
             'is_pinned' => true,
         ]);
 

@@ -14,23 +14,23 @@ beforeEach(function () {
 // ==========================================
 
 it('requires authentication to access import page', function () {
-    $this->get(route('monitor.import.index'))
+    $this->get(route('monitors.import.index'))
         ->assertRedirect(route('login'));
 });
 
 it('requires authentication to preview import', function () {
-    $this->postJson(route('monitor.import.preview'))
+    $this->postJson(route('monitors.import.preview'))
         ->assertUnauthorized();
 });
 
 it('requires authentication to process import', function () {
-    $this->postJson(route('monitor.import.process'))
+    $this->postJson(route('monitors.import.process'))
         ->assertUnauthorized();
 });
 
 it('can access import page when authenticated', function () {
     $this->actingAs($this->user)
-        ->get(route('monitor.import.index'))
+        ->get(route('monitors.import.index'))
         ->assertSuccessful();
 });
 
@@ -40,7 +40,7 @@ it('can access import page when authenticated', function () {
 
 it('requires an import file', function () {
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [])
+        ->postJson(route('monitors.import.preview'), [])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['import_file']);
 });
@@ -49,7 +49,7 @@ it('rejects invalid file types', function () {
     $file = UploadedFile::fake()->create('monitors.pdf', 100, 'application/pdf');
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertStatus(422)
@@ -61,7 +61,7 @@ it('accepts csv files', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful()
@@ -82,7 +82,7 @@ it('accepts json files', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.json', $jsonContent);
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful()
@@ -103,7 +103,7 @@ it('parses csv file with headers correctly', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -119,7 +119,7 @@ it('normalizes http urls to https', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -132,7 +132,7 @@ it('parses comma-separated tags in csv', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -152,7 +152,7 @@ it('parses json array format', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.json', $jsonContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -169,7 +169,7 @@ it('parses json monitors wrapper format', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.json', $jsonContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -182,7 +182,7 @@ it('handles invalid json gracefully', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.json', 'invalid json content');
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -200,7 +200,7 @@ it('marks rows with invalid url as error', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -216,7 +216,7 @@ it('marks rows without url as error', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -231,7 +231,7 @@ it('validates sensitivity field values', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -251,7 +251,7 @@ it('detects duplicate urls', function () {
     $file = UploadedFile::fake()->createWithContent('monitors.csv', $csvContent);
 
     $response = $this->actingAs($this->user)
-        ->postJson(route('monitor.import.preview'), [
+        ->postJson(route('monitors.import.preview'), [
             'import_file' => $file,
         ])
         ->assertSuccessful();
@@ -283,11 +283,11 @@ it('imports valid monitors', function () {
     ];
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.process'), [
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'skip',
         ])
-        ->assertRedirect(route('monitor.index'));
+        ->assertRedirect(route('monitors.index'));
 
     $this->assertDatabaseHas('monitors', ['url' => 'https://newsite1.com']);
     $this->assertDatabaseHas('monitors', ['url' => 'https://newsite2.com']);
@@ -306,11 +306,11 @@ it('skips duplicates when action is skip', function () {
     ];
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.process'), [
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'skip',
         ])
-        ->assertRedirect(route('monitor.index'));
+        ->assertRedirect(route('monitors.index'));
 
     $existingMonitor->refresh();
     expect($existingMonitor->display_name)->toBe('Original');
@@ -334,11 +334,11 @@ it('updates duplicates when action is update', function () {
     ];
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.process'), [
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'update',
         ])
-        ->assertRedirect(route('monitor.index'));
+        ->assertRedirect(route('monitors.index'));
 
     $existingMonitor->refresh();
     expect($existingMonitor->display_name)->toBe('Updated Name');
@@ -361,8 +361,8 @@ it('handles create action for duplicates by redirecting with error', function ()
     // Creating a duplicate with 'create' action will fail due to unique URL constraint
     // The controller catches the exception and redirects back with an error
     $response = $this->actingAs($this->user)
-        ->from(route('monitor.import.index'))
-        ->postJson(route('monitor.import.process'), [
+        ->from(route('monitors.import.index'))
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'create',
         ]);
@@ -387,11 +387,11 @@ it('skips error rows during import', function () {
     ];
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.process'), [
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'skip',
         ])
-        ->assertRedirect(route('monitor.index'));
+        ->assertRedirect(route('monitors.index'));
 
     $this->assertDatabaseHas('monitors', ['url' => 'https://valid.com']);
     $this->assertDatabaseMissing('monitors', ['url' => 'invalid-url']);
@@ -409,11 +409,11 @@ it('attaches tags during import', function () {
     ];
 
     $this->actingAs($this->user)
-        ->postJson(route('monitor.import.process'), [
+        ->postJson(route('monitors.import.process'), [
             'rows' => $rows,
             'duplicate_action' => 'skip',
         ])
-        ->assertRedirect(route('monitor.index'));
+        ->assertRedirect(route('monitors.index'));
 
     $monitor = Monitor::where('url', 'https://tagged-site.com')->first();
     expect($monitor)->not->toBeNull();
@@ -426,7 +426,7 @@ it('attaches tags during import', function () {
 
 it('can download csv template', function () {
     $response = $this->actingAs($this->user)
-        ->get(route('monitor.import.sample.csv'))
+        ->get(route('monitors.import.sample.csv'))
         ->assertSuccessful();
 
     expect($response->headers->get('content-type'))->toContain('text/csv');
@@ -434,7 +434,7 @@ it('can download csv template', function () {
 
 it('can download json template', function () {
     $response = $this->actingAs($this->user)
-        ->get(route('monitor.import.sample.json'))
+        ->get(route('monitors.import.sample.json'))
         ->assertSuccessful();
 
     expect($response->headers->get('content-type'))->toContain('application/json');

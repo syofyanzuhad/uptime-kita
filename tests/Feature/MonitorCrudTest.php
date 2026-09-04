@@ -27,7 +27,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor1->users()->attach($this->user->id);
             $monitor2->users()->attach($this->user->id);
 
-            $response = actingAs($this->user)->get('/monitor');
+            $response = actingAs($this->user)->get('/monitors');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -44,7 +44,7 @@ describe('Monitor CRUD Operations', function () {
             $myMonitor->users()->attach($this->user->id);
             $otherMonitor->users()->attach($otherUser->id);
 
-            $response = actingAs($this->user)->get('/monitor');
+            $response = actingAs($this->user)->get('/monitors');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -62,7 +62,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor1->users()->attach($regularUser->id);
             $monitor2->users()->attach($this->admin->id);
 
-            $response = actingAs($this->admin)->get('/monitor');
+            $response = actingAs($this->admin)->get('/monitors');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -72,7 +72,7 @@ describe('Monitor CRUD Operations', function () {
         });
 
         it('requires authentication', function () {
-            $response = get('/monitor');
+            $response = get('/monitors');
 
             $response->assertRedirect('/login');
         });
@@ -80,7 +80,7 @@ describe('Monitor CRUD Operations', function () {
 
     describe('Create', function () {
         it('can show create form for authenticated user', function () {
-            $response = actingAs($this->user)->get('/monitor/create');
+            $response = actingAs($this->user)->get('/monitors/create');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -89,7 +89,7 @@ describe('Monitor CRUD Operations', function () {
         });
 
         it('passes prefilled url parameter to create form', function () {
-            $response = actingAs($this->user)->get('/monitor/create?url=https%3A%2F%2Fgontorian.com');
+            $response = actingAs($this->user)->get('/monitors/create?url=https%3A%2F%2Fgontorian.com');
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -99,7 +99,7 @@ describe('Monitor CRUD Operations', function () {
         });
 
         it('requires authentication to show create form', function () {
-            $response = get('/monitor/create');
+            $response = get('/monitors/create');
 
             $response->assertRedirect('/login');
         });
@@ -115,7 +115,7 @@ describe('Monitor CRUD Operations', function () {
                 'certificate_check_enabled' => false,
             ];
 
-            $response = actingAs($this->user)->postJson('/monitor', $monitorData);
+            $response = actingAs($this->user)->postJson('/monitors', $monitorData);
 
             $response->assertRedirect();
 
@@ -132,7 +132,7 @@ describe('Monitor CRUD Operations', function () {
         });
 
         it('validates required fields when creating monitor', function () {
-            $response = actingAs($this->user)->postJson('/monitor', []);
+            $response = actingAs($this->user)->postJson('/monitors', []);
 
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(['url']);
@@ -144,7 +144,7 @@ describe('Monitor CRUD Operations', function () {
                 'uptime_check_interval' => 5,
             ];
 
-            $response = actingAs($this->user)->postJson('/monitor', $monitorData);
+            $response = actingAs($this->user)->postJson('/monitors', $monitorData);
 
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(['url']);
@@ -156,7 +156,7 @@ describe('Monitor CRUD Operations', function () {
                 'uptime_check_interval' => 5,
             ];
 
-            $response = postJson('/monitor', $monitorData);
+            $response = postJson('/monitors', $monitorData);
 
             $response->assertUnauthorized();
         });
@@ -167,7 +167,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor = Monitor::factory()->create(['uptime_check_enabled' => true, 'is_public' => false]);
             $monitor->users()->attach($this->user->id);
 
-            $response = actingAs($this->user)->get("/monitor/{$monitor->id}");
+            $response = actingAs($this->user)->get("/monitors/{$monitor->id}");
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -181,7 +181,7 @@ describe('Monitor CRUD Operations', function () {
             $otherUser = User::factory()->create();
             $monitor->users()->attach($otherUser->id);
 
-            $response = actingAs($this->user)->get("/monitor/{$monitor->id}");
+            $response = actingAs($this->user)->get("/monitors/{$monitor->id}");
 
             $response->assertNotFound();
         });
@@ -191,7 +191,7 @@ describe('Monitor CRUD Operations', function () {
             $regularUser = User::factory()->create();
             $monitor->users()->attach($regularUser->id);
 
-            $response = actingAs($this->admin)->get("/monitor/{$monitor->id}");
+            $response = actingAs($this->admin)->get("/monitors/{$monitor->id}");
 
             $response->assertSuccessful();
         });
@@ -199,7 +199,7 @@ describe('Monitor CRUD Operations', function () {
         it('requires authentication to view monitor', function () {
             $monitor = Monitor::factory()->create();
 
-            $response = get("/monitor/{$monitor->id}");
+            $response = get("/monitors/{$monitor->id}");
 
             $response->assertRedirect('/login');
         });
@@ -210,7 +210,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor = Monitor::factory()->create(['uptime_check_enabled' => true, 'is_public' => false]);
             $monitor->users()->attach($this->user->id);
 
-            $response = actingAs($this->user)->get("/monitor/{$monitor->id}/edit");
+            $response = actingAs($this->user)->get("/monitors/{$monitor->id}/edit");
 
             $response->assertSuccessful();
             $response->assertInertia(fn ($page) => $page
@@ -226,7 +226,7 @@ describe('Monitor CRUD Operations', function () {
             // User is subscribed but not owner
             $monitor->users()->attach($this->user->id);
 
-            $response = actingAs($this->user)->get("/monitor/{$monitor->id}/edit");
+            $response = actingAs($this->user)->get("/monitors/{$monitor->id}/edit");
 
             // User is subscribed so can see edit form (but update will be blocked)
             $response->assertSuccessful();
@@ -237,7 +237,7 @@ describe('Monitor CRUD Operations', function () {
             $regularUser = User::factory()->create();
             $monitor->users()->attach($regularUser->id);
 
-            $response = actingAs($this->admin)->get("/monitor/{$monitor->id}/edit");
+            $response = actingAs($this->admin)->get("/monitors/{$monitor->id}/edit");
 
             $response->assertSuccessful();
         });
@@ -258,7 +258,7 @@ describe('Monitor CRUD Operations', function () {
                 'uptime_check_interval' => 10,
             ];
 
-            $response = actingAs($this->user)->putJson("/monitor/{$monitor->id}", $updateData);
+            $response = actingAs($this->user)->putJson("/monitors/{$monitor->id}", $updateData);
 
             $response->assertRedirect();
 
@@ -279,7 +279,7 @@ describe('Monitor CRUD Operations', function () {
                 'url' => 'https://new-url.com',
             ];
 
-            $response = actingAs($this->user)->putJson("/monitor/{$monitor->id}", $updateData);
+            $response = actingAs($this->user)->putJson("/monitors/{$monitor->id}", $updateData);
 
             $response->assertNotFound();
         });
@@ -297,7 +297,7 @@ describe('Monitor CRUD Operations', function () {
                 'uptime_check_interval' => 15,
             ];
 
-            $response = actingAs($this->admin)->putJson("/monitor/{$monitor->id}", $updateData);
+            $response = actingAs($this->admin)->putJson("/monitors/{$monitor->id}", $updateData);
 
             $response->assertRedirect();
 
@@ -317,7 +317,7 @@ describe('Monitor CRUD Operations', function () {
                 'uptime_check_interval' => 5,
             ];
 
-            $response = actingAs($this->user)->putJson("/monitor/{$monitor->id}", $updateData);
+            $response = actingAs($this->user)->putJson("/monitors/{$monitor->id}", $updateData);
 
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(['url']);
@@ -329,7 +329,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor = Monitor::factory()->create(['uptime_check_enabled' => true, 'is_public' => false]);
             $monitor->users()->attach($this->user->id);
 
-            $response = actingAs($this->user)->deleteJson("/monitor/{$monitor->id}");
+            $response = actingAs($this->user)->deleteJson("/monitors/{$monitor->id}");
 
             $response->assertRedirect();
             assertDatabaseMissing('monitors', ['id' => $monitor->id]);
@@ -340,7 +340,7 @@ describe('Monitor CRUD Operations', function () {
             $otherUser = User::factory()->create();
             $monitor->users()->attach($otherUser->id);
 
-            $response = actingAs($this->user)->deleteJson("/monitor/{$monitor->id}");
+            $response = actingAs($this->user)->deleteJson("/monitors/{$monitor->id}");
 
             $response->assertNotFound();
             assertDatabaseHas('monitors', ['id' => $monitor->id]);
@@ -350,7 +350,7 @@ describe('Monitor CRUD Operations', function () {
             $monitor = Monitor::factory()->create(['uptime_check_enabled' => true, 'is_public' => false]);
             $monitor->users()->attach($this->admin->id);
 
-            $response = actingAs($this->admin)->deleteJson("/monitor/{$monitor->id}");
+            $response = actingAs($this->admin)->deleteJson("/monitors/{$monitor->id}");
 
             $response->assertRedirect();
             assertDatabaseMissing('monitors', ['id' => $monitor->id]);
@@ -365,7 +365,7 @@ describe('Monitor CRUD Operations', function () {
 
             assertDatabaseCount('user_monitor', 2);
 
-            actingAs($user1)->deleteJson("/monitor/{$monitor->id}");
+            actingAs($user1)->deleteJson("/monitors/{$monitor->id}");
 
             // Monitor is deleted, so all users are detached
             assertDatabaseMissing('monitors', ['id' => $monitor->id]);
