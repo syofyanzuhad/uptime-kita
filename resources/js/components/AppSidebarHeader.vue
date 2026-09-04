@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import Breadcrumbs from '@/components/navigation/Breadcrumbs.vue';
 import Icon from '@/components/Icon.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';

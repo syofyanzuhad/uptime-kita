@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
-import MonitorCardPublic from '@/components/MonitorCardPublic.vue';
+import MonitorCardPublic from '@/components/monitors/MonitorCardPublic.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

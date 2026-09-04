@@ -8,7 +8,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { ChevronDown, Lock, Plus, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import MonitorGrid from './MonitorGrid.vue';
-import Button from './ui/button/Button.vue';
+import Button from '@/components/ui/button/Button.vue';
 
 interface Props {
     searchQuery?: string;

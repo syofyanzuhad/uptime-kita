@@ -5,7 +5,7 @@ import { computed } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import Icon from '@/components/Icon.vue';
-import NotificationChannelList from '@/components/NotificationChannelList.vue';
+import NotificationChannelList from '@/components/notifications/NotificationChannelList.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';

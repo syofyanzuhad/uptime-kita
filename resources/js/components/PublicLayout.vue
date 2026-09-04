@@ -4,7 +4,7 @@ import OfflineBanner from '@/components/OfflineBanner.vue';
 import PublicFooter from '@/components/PublicFooter.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import ShareDropdown from '@/components/ShareDropdown.vue';
-import ToastContainer from '@/components/ToastContainer.vue';
+import ToastContainer from '@/components/notifications/ToastContainer.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/composables/useTheme';
 import { globalToasts } from '@/composables/useToastNotifications';

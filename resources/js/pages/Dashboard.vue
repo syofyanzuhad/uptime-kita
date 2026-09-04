@@ -7,9 +7,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Activity, AlertCircle, BellOff, CheckCircle2, Plus, RefreshCw, Search, ShieldAlert, ShieldCheck, Users, X, XCircle } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import PinnedMonitorsCard from '../components/PinnedMonitorsCard.vue';
-import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
-import PublicMonitorsCard from '../components/PublicMonitorsCard.vue';
+import PinnedMonitorsCard from '@/components/monitors/PinnedMonitorsCard.vue';
+import PrivateMonitorsCard from '@/components/monitors/PrivateMonitorsCard.vue';
+import PublicMonitorsCard from '@/components/monitors/PublicMonitorsCard.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

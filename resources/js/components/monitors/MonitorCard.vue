@@ -7,7 +7,7 @@ import type { Monitor } from '@/types/monitor';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Bookmark, Clock, ExternalLink, Globe, Lock, Minus, Plus, ShieldAlert, ShieldCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import Button from './ui/button/Button.vue';
+import Button from '@/components/ui/button/Button.vue';
 
 interface Props {
     monitor: Monitor;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
-import MonitorGrid from '@/components/MonitorGrid.vue';
+import MonitorGrid from '@/components/monitors/MonitorGrid.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';

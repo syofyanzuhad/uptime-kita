@@ -717,8 +717,8 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
-import ResponseTimeLineChart from '@/components/ResponseTimeLineChart.vue';
-import UptimeLineChart from '@/components/UptimeLineChart.vue';
+import ResponseTimeLineChart from '@/components/charts/ResponseTimeLineChart.vue';
+import UptimeLineChart from '@/components/charts/UptimeLineChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMonitorStatusStream } from '@/composables/useMonitorStatusStream';

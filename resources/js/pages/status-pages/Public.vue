@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DailyUptimeChart from '@/components/DailyUptimeChart.vue';
+import DailyUptimeChart from '@/components/charts/DailyUptimeChart.vue';
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
 import SubscribeModal from '@/components/status-pages/SubscribeModal.vue';

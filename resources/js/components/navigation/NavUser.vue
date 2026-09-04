@@ -5,7 +5,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/c
 import { type SharedData, type User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { ChevronsUpDown } from 'lucide-vue-next';
-import UserMenuContent from './UserMenuContent.vue';
+import UserMenuContent from '@/components/UserMenuContent.vue';
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
