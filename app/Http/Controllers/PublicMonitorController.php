@@ -36,19 +36,28 @@ class PublicMonitorController extends Controller
             return response()->json($publicMonitors);
         }
 
-        $availableTags = Tag::whereIn('id', function ($query) {
-            $query->select('tag_id')
-                ->from('taggables')
-                ->where('taggable_type', 'App\Models\Monitor')
-                ->whereIn('taggable_id', function ($subQuery) {
-                    $subQuery->select('id')->from('monitors')->where('is_public', true);
-                });
-        })->orderBy('name')->get(['id', 'name']);
+        $availableTags = cache()->remember('public_monitors_available_tags', 600, function () {
+            return Tag::whereIn('id', function ($query) {
+                $query->select('tag_id')
+                    ->from('taggables')
+                    ->where('taggable_type', 'App\Models\Monitor')
+                    ->whereIn('taggable_id', function ($subQuery) {
+                        $subQuery->select('id')->from('monitors')->where('is_public', true);
+                    });
+            })->orderBy('name')->get(['id', 'name']);
+        });
 
         $appUrl = config('app.url');
-        $upCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'up')->count();
-        $totalPublic = Monitor::withoutGlobalScope('user')->public()->count();
-        $downCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'down')->count();
+        $counts = cache()->remember('public_monitors_status_counts', 30, function () {
+            return [
+                'up' => Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'up')->count(),
+                'total_public' => Monitor::withoutGlobalScope('user')->public()->count(),
+                'down' => Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'down')->count(),
+            ];
+        });
+        $upCount = $counts['up'];
+        $totalPublic = $counts['total_public'];
+        $downCount = $counts['down'];
 
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
