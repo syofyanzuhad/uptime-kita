@@ -20,7 +20,7 @@ const props = defineProps<{
 const monitorData = computed(() => props.monitor.data);
 
 const breadcrumbs = [
-    { title: 'Uptime Monitor', href: '/monitor' },
+    { title: 'Uptime Monitor', href: '/monitors' },
     { title: getDomainFromUrl(monitorData.value.url), href: '#' },
 ];
 
@@ -144,7 +144,7 @@ function getMinuteStatus(date: Date) {
 // Function to fetch fresh history data
 async function updateHistoryData() {
     try {
-        const response = await axios.get(route('monitor.history', { monitor: monitorData.value.id }));
+        const response = await axios.get(route('monitors.history', { monitor: monitorData.value.id }));
         if (response.data.histories) {
             historyMinuteMap.value = Object.fromEntries(
                 response.data.histories
@@ -307,7 +307,7 @@ onMounted(() => {
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <Link :href="route('monitor.edit', monitorData.id)">
+                                <Link :href="route('monitors.edit', monitorData.id)">
                                     <Button size="sm">
                                         <Icon name="edit" class="mr-2 h-4 w-4" />
                                         <span class="hidden sm:block">Edit Monitor</span>

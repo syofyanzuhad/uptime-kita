@@ -18,11 +18,11 @@ import type { DuplicateAction, ImportPreviewResult, ImportRow } from '@/types/im
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
-        href: '/monitor',
+        href: '/monitors',
     },
     {
         title: 'Import',
-        href: '/monitor/import',
+        href: '/monitors/import',
     },
 ];
 
@@ -71,7 +71,7 @@ const uploadAndPreview = async () => {
     formData.append('import_file', selectedFile.value);
 
     try {
-        const response = await axios.post(route('monitor.import.preview'), formData, {
+        const response = await axios.post(route('monitors.import.preview'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -105,7 +105,7 @@ const goBackToStep1 = () => {
 };
 
 const submitImport = () => {
-    importForm.post(route('monitor.import.process'), {
+    importForm.post(route('monitors.import.process'), {
         preserveScroll: true,
     });
 };
@@ -184,8 +184,8 @@ const getStatusLabel = (status: string) => {
 
                 <!-- Sample Templates -->
                 <div class="flex flex-wrap gap-2">
-                    <Button as="a" :href="route('monitor.import.sample.csv')" variant="outline" size="sm"> Download Template CSV </Button>
-                    <Button as="a" :href="route('monitor.import.sample.json')" variant="outline" size="sm"> Download Template JSON </Button>
+                    <Button as="a" :href="route('monitors.import.sample.csv')" variant="outline" size="sm"> Download Template CSV </Button>
+                    <Button as="a" :href="route('monitors.import.sample.json')" variant="outline" size="sm"> Download Template JSON </Button>
                 </div>
 
                 <!-- File Upload -->

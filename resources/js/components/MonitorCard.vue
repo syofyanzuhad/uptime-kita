@@ -137,7 +137,7 @@ const handleUnsubscribe = () => {
         <div class="h-1 w-full" :class="topAccentClass" />
 
         <Link
-            :href="route('monitor.show', monitor.id)"
+            :href="route('monitors.show', monitor.id)"
             class="flex flex-1 flex-col p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             style="text-decoration: none; color: inherit"
         >

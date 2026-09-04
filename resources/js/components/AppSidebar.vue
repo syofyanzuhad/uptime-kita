@@ -37,12 +37,12 @@ const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'All Monitors',
-                href: '/monitor',
+                href: '/monitors',
                 icon: CheckCircle,
             },
             {
                 title: 'Compact View',
-                href: '/monitors',
+                href: '/monitors/compact',
                 icon: Grid3X3,
             },
             {

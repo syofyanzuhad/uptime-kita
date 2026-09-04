@@ -92,11 +92,11 @@ const isFormDirty = () => {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
-        href: '/monitor',
+        href: '/monitors',
     },
     {
         title: `Edit: ${props.monitor.data.url}`,
-        href: `/monitor/${props.monitor.data.id}/edit`,
+        href: `/monitors/${props.monitor.data.id}/edit`,
     },
 ];
 
@@ -107,7 +107,7 @@ const submit = () => {
         return;
     }
 
-    form.put(route('monitor.update', props.monitor.data.id), {
+    form.put(route('monitors.update', props.monitor.data.id), {
         onFinish: () => {},
     });
 };

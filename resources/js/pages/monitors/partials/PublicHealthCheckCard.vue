@@ -242,7 +242,7 @@ defineExpose({
                         </div>
                     </div>
                     <Link
-                        :href="`/monitor/create?url=${encodeURIComponent(domainResult.url || 'https://' + domainResult.host)}`"
+                        :href="`/monitors/create?url=${encodeURIComponent(domainResult.url || 'https://' + domainResult.host)}`"
                         class="self-end rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-blue-700 sm:self-auto"
                     >
                         Track Uptime

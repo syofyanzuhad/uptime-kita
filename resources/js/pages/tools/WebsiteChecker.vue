@@ -208,7 +208,7 @@ onMounted(() => {
                     Get instant Telegram, Discord, and Email alerts the moment downtime is detected.
                 </p>
                 <Link
-                    :href="`/monitor/create?url=${encodeURIComponent(result.url || 'https://' + result.host)}`"
+                    :href="`/monitors/create?url=${encodeURIComponent(result.url || 'https://' + result.host)}`"
                     class="mt-2.5 inline-flex items-center gap-1 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95"
                 >
                     <span>Add to 24/7 Monitoring</span>

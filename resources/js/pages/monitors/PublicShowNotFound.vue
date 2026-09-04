@@ -57,7 +57,7 @@
                                 Set up automated checks, SSL expiration tracking, and multi-channel instant outage alerts.
                             </p>
                             <Link
-                                :href="`/monitor/create?url=${encodeURIComponent(props.suggestedUrl || 'https://' + props.domain)}`"
+                                :href="`/monitors/create?url=${encodeURIComponent(props.suggestedUrl || 'https://' + props.domain)}`"
                                 class="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-95"
                             >
                                 <span>Monitor {{ props.domain }}</span>

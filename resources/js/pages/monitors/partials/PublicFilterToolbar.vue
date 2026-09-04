@@ -182,7 +182,7 @@ defineExpose({
 
                 <!-- Add Button -->
                 <button
-                    @click="router.visit('/monitor/create')"
+                    @click="router.visit('/monitors/create')"
                     class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95"
                 >
                     <Icon name="plus" class="h-3 w-3" />

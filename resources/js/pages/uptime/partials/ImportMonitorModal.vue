@@ -67,7 +67,7 @@ const uploadAndPreview = async () => {
     formData.append('import_file', selectedFile.value);
 
     try {
-        const response = await axios.post(route('monitor.import.preview'), formData, {
+        const response = await axios.post(route('monitors.import.preview'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -104,7 +104,7 @@ const reset = () => {
 };
 
 const submitImport = () => {
-    importForm.post(route('monitor.import.process'), {
+    importForm.post(route('monitors.import.process'), {
         preserveScroll: true,
         onSuccess: () => {
             isOpen.value = false;
@@ -163,7 +163,7 @@ const canImport = computed(() => {
                         <div class="flex gap-2">
                             <Button
                                 as="a"
-                                :href="route('monitor.import.sample.csv')"
+                                :href="route('monitors.import.sample.csv')"
                                 variant="ghost"
                                 class="h-8 px-2 text-[9px] font-bold tracking-widest uppercase"
                             >
@@ -171,7 +171,7 @@ const canImport = computed(() => {
                             </Button>
                             <Button
                                 as="a"
-                                :href="route('monitor.import.sample.json')"
+                                :href="route('monitors.import.sample.json')"
                                 variant="ghost"
                                 class="h-8 px-2 text-[9px] font-bold tracking-widest uppercase"
                             >

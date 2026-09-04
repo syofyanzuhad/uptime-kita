@@ -179,7 +179,7 @@ const subscribeToMonitor = async (monitorId: number) => {
         subscribingMonitors.value.add(monitorId);
 
         router.post(
-            '/monitor/' + monitorId + '/subscribe',
+            '/monitors/' + monitorId + '/subscribe',
             {
                 _token: page.props.csrf_token as string,
             },
@@ -214,7 +214,7 @@ const unsubscribeFromMonitor = async (monitorId: number) => {
         unsubscribingMonitors.value.add(monitorId);
 
         router.post(
-            '/monitor/' + monitorId + '/unsubscribe',
+            '/monitors/' + monitorId + '/unsubscribe',
             {
                 _token: page.props.csrf_token as string,
                 _method: 'DELETE',
@@ -250,7 +250,7 @@ const toggleActive = async (monitorId: number) => {
         togglingMonitors.value.add(monitorId);
 
         router.post(
-            `/monitor/${monitorId}/toggle-active`,
+            `/monitors/${monitorId}/toggle-active`,
             {
                 _token: page.props.csrf_token as string,
             },

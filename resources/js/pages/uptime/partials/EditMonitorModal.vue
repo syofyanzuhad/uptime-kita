@@ -83,7 +83,7 @@ const incrementInterval = () => {
 const submit = () => {
     if (!props.monitor) return;
 
-    form.put(route('monitor.update', props.monitor.id), {
+    form.put(route('monitors.update', props.monitor.id), {
         onSuccess: () => {
             emit('update:open', false);
             emit('success');

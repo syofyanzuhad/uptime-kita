@@ -123,7 +123,7 @@ const submit = () => {
         if (!confirm('The domain DNS could not be verified. Do you want to continue?')) return;
     }
 
-    form.post(route('monitor.store'), {
+    form.post(route('monitors.store'), {
         onSuccess: () => {
             form.reset();
             dnsStatus.value = 'idle';

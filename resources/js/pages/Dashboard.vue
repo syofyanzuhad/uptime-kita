@@ -136,7 +136,7 @@ onUnmounted(() => {
                     </Button>
                     <Link
                         v-if="isAuthenticated"
-                        :href="route('monitor.create')"
+                        :href="route('monitors.create')"
                         class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                     >
                         <Plus class="h-4 w-4" />

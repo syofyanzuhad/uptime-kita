@@ -30,7 +30,7 @@ const fetchHistory = async () => {
     if (!props.monitor) return;
     loading.value = true;
     try {
-        const response = await axios.get(route('monitor.history', { monitor: props.monitor.id }));
+        const response = await axios.get(route('monitors.history', { monitor: props.monitor.id }));
         histories.value = response.data.histories || [];
     } catch (error) {
         console.error('Failed to fetch history:', error);
@@ -178,7 +178,7 @@ function formatDate(dateString?: string | null) {
                     "
                     >Edit Monitor</Button
                 >
-                <Button v-if="monitor" @click="router.get(route('monitor.show', monitor.id))">Buka Halaman Detail</Button>
+                <Button v-if="monitor" @click="router.get(route('monitors.show', monitor.id))">Buka Halaman Detail</Button>
             </div>
         </DialogContent>
     </Dialog>

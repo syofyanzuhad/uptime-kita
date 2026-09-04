@@ -394,7 +394,7 @@ const avgLatency = computed(() => {
                 </button>
                 <button
                     v-else
-                    @click="router.visit('/monitor/create')"
+                    @click="router.visit('/monitors/create')"
                     class="cursor-pointer rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
                 >
                     Create a Monitor Now

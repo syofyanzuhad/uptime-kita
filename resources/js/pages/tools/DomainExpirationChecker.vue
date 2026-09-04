@@ -247,7 +247,7 @@ async function checkDomain() {
                     Uptime Kita tracks domain expiration dates continuously and notifies you 30, 14, 7, and 1 days before expiration.
                 </p>
                 <Link
-                    :href="`/monitor/create?url=${encodeURIComponent('https://' + result.domain)}`"
+                    :href="`/monitors/create?url=${encodeURIComponent('https://' + result.domain)}`"
                     class="mt-2.5 inline-flex items-center gap-1 rounded-xl bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95"
                 >
                     <span>Track {{ result.domain }} on Uptime Kita</span>

@@ -29,7 +29,7 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Monitors',
-        href: '/monitor',
+        href: '/monitors',
     },
     {
         title: 'Domain Expiration',
@@ -171,7 +171,7 @@ const tagOptions = computed(() => [
                     </p>
                 </div>
                 <Link
-                    href="/monitor/create"
+                    href="/monitors/create"
                     class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                 >
                     <Icon name="plus" class="h-4 w-4" />
@@ -311,7 +311,7 @@ const tagOptions = computed(() => [
                             Enable "Domain Expiration Check" when creating or editing a monitor to track its domain expiry.
                         </p>
                         <Link
-                            href="/monitor/create"
+                            href="/monitors/create"
                             class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400"
                         >
                             <span>Create a monitor</span>
@@ -353,7 +353,7 @@ const tagOptions = computed(() => [
                                         </div>
                                         <div class="min-w-0">
                                             <Link
-                                                :href="route('monitor.show', monitor.id)"
+                                                :href="route('monitors.show', monitor.id)"
                                                 class="block max-w-[200px] truncate font-bold text-gray-900 hover:text-blue-600 sm:max-w-xs dark:text-white dark:hover:text-blue-400"
                                             >
                                                 {{ monitor.name }}

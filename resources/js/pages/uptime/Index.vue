@@ -36,7 +36,7 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
-        href: '/monitor',
+        href: '/monitors',
     },
 ];
 
@@ -117,7 +117,7 @@ const closeDeleteModal = () => {
 
 const confirmDeleteMonitor = () => {
     if (monitorToDelete.value) {
-        router.delete(route('monitor.destroy', monitorToDelete.value.id), {
+        router.delete(route('monitors.destroy', monitorToDelete.value.id), {
             onSuccess: () => closeDeleteModal(),
             onFinish: () => closeDeleteModal(),
         });
@@ -158,7 +158,7 @@ const perPageOptions = [
 
 function submitSearch() {
     router.get(
-        route('monitor.index'),
+        route('monitors.index'),
         {
             search: search.value,
             status_filter: statusFilter.value,
@@ -188,7 +188,7 @@ function clearSearch() {
                         <div class="text-sm text-gray-600 dark:text-gray-400">Next refresh in: {{ countdown }}s</div>
                         <div class="flex items-center gap-2">
                             <Link
-                                :href="route('monitor.import.index')"
+                                :href="route('monitors.import.index')"
                                 class="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             >
                                 Import

@@ -37,11 +37,11 @@ const form = useForm({
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Uptime Monitor',
-        href: '/monitor',
+        href: '/monitors',
     },
     {
         title: 'Tambah Monitor',
-        href: '/monitor/create',
+        href: '/monitors/create',
     },
 ];
 
@@ -177,7 +177,7 @@ const submit = () => {
         }
     }
 
-    form.post(route('monitor.store'), {
+    form.post(route('monitors.store'), {
         onFinish: () => {
             form.reset('url');
             dnsStatus.value = 'idle';

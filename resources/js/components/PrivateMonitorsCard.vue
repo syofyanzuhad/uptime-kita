@@ -190,7 +190,7 @@ const toggleActive = async (monitorId: number) => {
         togglingMonitors.value.add(monitorId);
 
         router.post(
-            route('monitor.toggle-active', monitorId),
+            route('monitors.toggle-active', monitorId),
             {
                 _token: page.props.csrf_token as string,
             },
@@ -282,7 +282,7 @@ onUnmounted(() => {
 
                 <div class="flex items-center gap-2">
                     <Link
-                        :href="route('monitor.create')"
+                        :href="route('monitors.create')"
                         class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-xs transition-colors"
                     >
                         <Plus class="h-3.5 w-3.5" />
@@ -347,7 +347,7 @@ onUnmounted(() => {
                         <p class="text-muted-foreground mt-1 text-xs">Add private websites or API endpoints that only you and your team can view.</p>
                     </div>
                     <Link
-                        :href="route('monitor.create')"
+                        :href="route('monitors.create')"
                         class="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-medium shadow-xs"
                     >
                         <Plus class="h-3.5 w-3.5" />

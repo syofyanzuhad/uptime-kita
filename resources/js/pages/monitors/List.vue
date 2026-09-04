@@ -49,7 +49,7 @@ const pageTitle = computed(() => {
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
         title: 'Monitors',
-        href: '/monitor',
+        href: '/monitors',
     },
     {
         title: pageTitle.value,
@@ -146,7 +146,7 @@ const deleteMonitor = () => {
     if (!monitorToDelete.value) return;
 
     isDeleting.value = true;
-    router.delete(`/monitor/${monitorToDelete.value.id}`, {
+    router.delete(`/monitors/${monitorToDelete.value.id}`, {
         onSuccess: () => {
             showDeleteModal.value = false;
             monitorToDelete.value = null;
@@ -208,7 +208,7 @@ const togglePin = (monitorId: number) => {
     loadingMonitors.value.add(monitorId);
     const isPinned = pinnedMonitors.value.has(monitorId);
     router.post(
-        `/monitor/${monitorId}/toggle-pin`,
+        `/monitors/${monitorId}/toggle-pin`,
         {
             is_pinned: !isPinned,
         },
@@ -224,7 +224,7 @@ const togglePin = (monitorId: number) => {
 const toggleActive = (monitorId: number) => {
     togglingMonitors.value.add(monitorId);
     router.post(
-        `/monitor/${monitorId}/toggle-active`,
+        `/monitors/${monitorId}/toggle-active`,
         {
             is_active: false, // This will be handled by the backend
         },
@@ -240,7 +240,7 @@ const toggleActive = (monitorId: number) => {
 const subscribeMonitor = (monitorId: number) => {
     subscribingMonitors.value.add(monitorId);
     router.post(
-        `/monitor/${monitorId}/subscribe`,
+        `/monitors/${monitorId}/subscribe`,
         {},
         {
             onFinish: () => {
@@ -253,7 +253,7 @@ const subscribeMonitor = (monitorId: number) => {
 // Unsubscribe monitor
 const unsubscribeMonitor = (monitorId: number) => {
     unsubscribingMonitors.value.add(monitorId);
-    router.delete(`/monitor/${monitorId}/unsubscribe`, {
+    router.delete(`/monitors/${monitorId}/unsubscribe`, {
         onFinish: () => {
             unsubscribingMonitors.value.delete(monitorId);
         },
@@ -293,7 +293,7 @@ onUnmounted(() => {
                         <span>Auto-refresh: {{ countdown }}s</span>
                     </span>
                     <Link
-                        href="/monitor/create"
+                        href="/monitors/create"
                         class="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-95 sm:text-sm"
                     >
                         <Icon name="plus" class="h-4 w-4" />
@@ -391,7 +391,7 @@ onUnmounted(() => {
                         <span v-else-if="type === 'public'">No public monitors are available.</span>
                         <span v-else>No monitors match your current filters.</span>
                     </p>
-                    <Link href="/monitor/create" class="mt-4 inline-block">
+                    <Link href="/monitors/create" class="mt-4 inline-block">
                         <Button>
                             <Icon name="heroicons:plus" class="mr-2" />
                             Create Monitor

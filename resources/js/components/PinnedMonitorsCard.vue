@@ -151,7 +151,7 @@ async function toggleMonitorActive(monitorId: number) {
     togglingMonitors.value.add(monitorId);
 
     try {
-        const response = await fetch(`/monitor/${monitorId}/toggle-active`, {
+        const response = await fetch(`/monitors/${monitorId}/toggle-active`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

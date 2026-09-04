@@ -366,10 +366,10 @@ const sortLabels: Record<string, string> = {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-40 rounded-xl border border-gray-200/80 dark:border-gray-800">
-                                <DropdownMenuItem as="a" href="/monitor/export/csv" class="text-[10px] font-bold tracking-widest uppercase">
+                                <DropdownMenuItem as="a" href="/monitors/export/csv" class="text-[10px] font-bold tracking-widest uppercase">
                                     <Icon name="fileText" class="mr-2" size="12" /> CSV
                                 </DropdownMenuItem>
-                                <DropdownMenuItem as="a" href="/monitor/export/json" class="text-[10px] font-bold tracking-widest uppercase">
+                                <DropdownMenuItem as="a" href="/monitors/export/json" class="text-[10px] font-bold tracking-widest uppercase">
                                     <Icon name="fileJson" class="mr-2" size="12" /> JSON
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
