@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
-import v1 from './v1'
 import tools from './tools'
 import monitor from './monitor'
+import v1 from './v1'
 import telemetry from './telemetry'
 /**
 * @see \App\Http\Controllers\DomainCheckController::__invoke
@@ -180,12 +180,12 @@ serverResources.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 const api = {
-    v1: Object.assign(v1, v1),
     tools: Object.assign(tools, tools),
     checkDomain: Object.assign(checkDomain, checkDomain),
     serverStats: Object.assign(serverStats, serverStats),
     monitorStatusStream: Object.assign(monitorStatusStream, monitorStatusStream),
     monitor: Object.assign(monitor, monitor),
+    v1: Object.assign(v1, v1),
     telemetry: Object.assign(telemetry, telemetry),
     serverResources: Object.assign(serverResources, serverResources),
 }

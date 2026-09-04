@@ -1,10 +1,10 @@
-import Api from './Api'
-import PublicMonitorController from './PublicMonitorController'
 import PublicToolsController from './PublicToolsController'
 import DomainCheckController from './DomainCheckController'
 import PublicServerStatsController from './PublicServerStatsController'
 import MonitorStatusStreamController from './MonitorStatusStreamController'
 import ManualMonitorCheckController from './ManualMonitorCheckController'
+import Api from './Api'
+import PublicMonitorController from './PublicMonitorController'
 import PublicIncidentController from './PublicIncidentController'
 import StatisticMonitorController from './StatisticMonitorController'
 import DashboardController from './DashboardController'
@@ -48,13 +48,13 @@ import ToggleNotificationChannelController from './ToggleNotificationChannelCont
 import Auth from './Auth'
 
 const Controllers = {
-    Api: Object.assign(Api, Api),
-    PublicMonitorController: Object.assign(PublicMonitorController, PublicMonitorController),
     PublicToolsController: Object.assign(PublicToolsController, PublicToolsController),
     DomainCheckController: Object.assign(DomainCheckController, DomainCheckController),
     PublicServerStatsController: Object.assign(PublicServerStatsController, PublicServerStatsController),
     MonitorStatusStreamController: Object.assign(MonitorStatusStreamController, MonitorStatusStreamController),
     ManualMonitorCheckController: Object.assign(ManualMonitorCheckController, ManualMonitorCheckController),
+    Api: Object.assign(Api, Api),
+    PublicMonitorController: Object.assign(PublicMonitorController, PublicMonitorController),
     PublicIncidentController: Object.assign(PublicIncidentController, PublicIncidentController),
     StatisticMonitorController: Object.assign(StatisticMonitorController, StatisticMonitorController),
     DashboardController: Object.assign(DashboardController, DashboardController),

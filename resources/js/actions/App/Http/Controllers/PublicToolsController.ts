@@ -1,5 +1,141 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
+* @see app/Http/Controllers/PublicToolsController.php:113
+* @route '/api/tools/domain-expiration'
+*/
+export const apiCheckDomainExpiration = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckDomainExpiration.url(options),
+    method: 'post',
+})
+
+apiCheckDomainExpiration.definition = {
+    methods: ["post"],
+    url: '/api/tools/domain-expiration',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
+* @see app/Http/Controllers/PublicToolsController.php:113
+* @route '/api/tools/domain-expiration'
+*/
+apiCheckDomainExpiration.url = (options?: RouteQueryOptions) => {
+    return apiCheckDomainExpiration.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
+* @see app/Http/Controllers/PublicToolsController.php:113
+* @route '/api/tools/domain-expiration'
+*/
+apiCheckDomainExpiration.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckDomainExpiration.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
+* @see app/Http/Controllers/PublicToolsController.php:155
+* @route '/api/tools/ssl-check'
+*/
+export const apiCheckSsl = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckSsl.url(options),
+    method: 'post',
+})
+
+apiCheckSsl.definition = {
+    methods: ["post"],
+    url: '/api/tools/ssl-check',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
+* @see app/Http/Controllers/PublicToolsController.php:155
+* @route '/api/tools/ssl-check'
+*/
+apiCheckSsl.url = (options?: RouteQueryOptions) => {
+    return apiCheckSsl.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
+* @see app/Http/Controllers/PublicToolsController.php:155
+* @route '/api/tools/ssl-check'
+*/
+apiCheckSsl.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckSsl.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
+* @see app/Http/Controllers/PublicToolsController.php:186
+* @route '/api/tools/dns-lookup'
+*/
+export const apiLookupDns = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiLookupDns.url(options),
+    method: 'post',
+})
+
+apiLookupDns.definition = {
+    methods: ["post"],
+    url: '/api/tools/dns-lookup',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
+* @see app/Http/Controllers/PublicToolsController.php:186
+* @route '/api/tools/dns-lookup'
+*/
+apiLookupDns.url = (options?: RouteQueryOptions) => {
+    return apiLookupDns.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
+* @see app/Http/Controllers/PublicToolsController.php:186
+* @route '/api/tools/dns-lookup'
+*/
+apiLookupDns.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiLookupDns.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
+* @see app/Http/Controllers/PublicToolsController.php:218
+* @route '/api/tools/headers-check'
+*/
+export const apiCheckHeaders = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckHeaders.url(options),
+    method: 'post',
+})
+
+apiCheckHeaders.definition = {
+    methods: ["post"],
+    url: '/api/tools/headers-check',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
+* @see app/Http/Controllers/PublicToolsController.php:218
+* @route '/api/tools/headers-check'
+*/
+apiCheckHeaders.url = (options?: RouteQueryOptions) => {
+    return apiCheckHeaders.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
+* @see app/Http/Controllers/PublicToolsController.php:218
+* @route '/api/tools/headers-check'
+*/
+apiCheckHeaders.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: apiCheckHeaders.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\PublicToolsController::index
 * @see app/Http/Controllers/PublicToolsController.php:24
 * @route '/tools'
@@ -307,142 +443,6 @@ badgeGenerator.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
     method: 'head',
 })
 
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
-* @see app/Http/Controllers/PublicToolsController.php:113
-* @route '/api/tools/domain-expiration'
-*/
-export const apiCheckDomainExpiration = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckDomainExpiration.url(options),
-    method: 'post',
-})
-
-apiCheckDomainExpiration.definition = {
-    methods: ["post"],
-    url: '/api/tools/domain-expiration',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
-* @see app/Http/Controllers/PublicToolsController.php:113
-* @route '/api/tools/domain-expiration'
-*/
-apiCheckDomainExpiration.url = (options?: RouteQueryOptions) => {
-    return apiCheckDomainExpiration.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckDomainExpiration
-* @see app/Http/Controllers/PublicToolsController.php:113
-* @route '/api/tools/domain-expiration'
-*/
-apiCheckDomainExpiration.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckDomainExpiration.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
-* @see app/Http/Controllers/PublicToolsController.php:155
-* @route '/api/tools/ssl-check'
-*/
-export const apiCheckSsl = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckSsl.url(options),
-    method: 'post',
-})
-
-apiCheckSsl.definition = {
-    methods: ["post"],
-    url: '/api/tools/ssl-check',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
-* @see app/Http/Controllers/PublicToolsController.php:155
-* @route '/api/tools/ssl-check'
-*/
-apiCheckSsl.url = (options?: RouteQueryOptions) => {
-    return apiCheckSsl.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckSsl
-* @see app/Http/Controllers/PublicToolsController.php:155
-* @route '/api/tools/ssl-check'
-*/
-apiCheckSsl.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckSsl.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
-* @see app/Http/Controllers/PublicToolsController.php:186
-* @route '/api/tools/dns-lookup'
-*/
-export const apiLookupDns = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiLookupDns.url(options),
-    method: 'post',
-})
-
-apiLookupDns.definition = {
-    methods: ["post"],
-    url: '/api/tools/dns-lookup',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
-* @see app/Http/Controllers/PublicToolsController.php:186
-* @route '/api/tools/dns-lookup'
-*/
-apiLookupDns.url = (options?: RouteQueryOptions) => {
-    return apiLookupDns.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiLookupDns
-* @see app/Http/Controllers/PublicToolsController.php:186
-* @route '/api/tools/dns-lookup'
-*/
-apiLookupDns.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiLookupDns.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
-* @see app/Http/Controllers/PublicToolsController.php:218
-* @route '/api/tools/headers-check'
-*/
-export const apiCheckHeaders = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckHeaders.url(options),
-    method: 'post',
-})
-
-apiCheckHeaders.definition = {
-    methods: ["post"],
-    url: '/api/tools/headers-check',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
-* @see app/Http/Controllers/PublicToolsController.php:218
-* @route '/api/tools/headers-check'
-*/
-apiCheckHeaders.url = (options?: RouteQueryOptions) => {
-    return apiCheckHeaders.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PublicToolsController::apiCheckHeaders
-* @see app/Http/Controllers/PublicToolsController.php:218
-* @route '/api/tools/headers-check'
-*/
-apiCheckHeaders.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: apiCheckHeaders.url(options),
-    method: 'post',
-})
-
-const PublicToolsController = { index, websiteChecker, domainExpiration, sslChecker, dnsLookup, headersChecker, badgeGenerator, apiCheckDomainExpiration, apiCheckSsl, apiLookupDns, apiCheckHeaders }
+const PublicToolsController = { apiCheckDomainExpiration, apiCheckSsl, apiLookupDns, apiCheckHeaders, index, websiteChecker, domainExpiration, sslChecker, dnsLookup, headersChecker, badgeGenerator }
 
 export default PublicToolsController
