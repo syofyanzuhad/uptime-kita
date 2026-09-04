@@ -16,7 +16,7 @@ import { useTheme } from '@/composables/useTheme';
 import { globalToasts } from '@/composables/useToastNotifications';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { LayoutDashboard, LogIn, Menu, Share2, Wrench } from 'lucide-vue-next';
+import { Activity, LayoutDashboard, LogIn, Menu, Share2, Wrench } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = withDefaults(
@@ -151,6 +151,13 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         <!-- Desktop Main Nav Links -->
                         <nav class="hidden sm:flex items-center gap-1">
                             <Link
+                                href="/incidents"
+                                class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                            >
+                                Incidents
+                            </Link>
+
+                            <Link
                                 href="/tools"
                                 class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                             >
@@ -206,6 +213,16 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" class="w-48 rounded-2xl border border-gray-200/80 bg-white/95 p-1.5 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95">
+                                        <DropdownMenuItem as-child>
+                                            <Link
+                                                href="/incidents"
+                                                class="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            >
+                                                <Activity class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span>Incidents</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+
                                         <DropdownMenuItem as-child>
                                             <Link
                                                 href="/tools"

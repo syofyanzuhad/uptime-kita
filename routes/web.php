@@ -18,6 +18,7 @@ use App\Http\Controllers\MonitorStatusStreamController;
 use App\Http\Controllers\OgImageController;
 use App\Http\Controllers\PinnedMonitorController;
 use App\Http\Controllers\PrivateMonitorController;
+use App\Http\Controllers\PublicIncidentController;
 use App\Http\Controllers\PublicMonitorController;
 use App\Http\Controllers\PublicMonitorShowController;
 use App\Http\Controllers\PublicServerStatsController;
@@ -90,6 +91,7 @@ Route::post('/api/monitor/{domain}/check', ManualMonitorCheckController::class)
     ->name('api.monitor.check');
 
 Route::get('/public-monitors', [PublicMonitorController::class, 'index'])->name('monitor.public');
+Route::get('/incidents', [PublicIncidentController::class, 'index'])->name('incidents.public');
 Route::get('/statistic-monitor', StatisticMonitorController::class)->name('monitor.statistic');
 Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
