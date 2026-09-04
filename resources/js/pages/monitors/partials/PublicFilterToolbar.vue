@@ -92,10 +92,10 @@ defineExpose({
 
 <template>
     <!-- Integrated Search & Filter Toolbar: Single Rounded Pill Container -->
-    <div class="mb-2 rounded-2xl sm:rounded-full border border-gray-200/80 bg-white p-1.5 shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90">
-        <div class="flex flex-col md:flex-row md:items-center gap-2">
+    <div class="mb-2 rounded-2xl border border-gray-200/80 bg-white p-1.5 shadow-xs sm:rounded-full dark:border-gray-800/80 dark:bg-gray-900/90">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center">
             <!-- Search Input with Keyboard Shortcut Indicator -->
-            <div class="relative flex-1 flex items-center min-w-[200px]">
+            <div class="relative flex min-w-[200px] flex-1 items-center">
                 <label for="search-monitors" class="sr-only">Search monitors</label>
                 <Icon name="search" class="pointer-events-none absolute left-3.5 h-3.5 w-3.5 text-gray-400" />
                 <input
@@ -104,7 +104,7 @@ defineExpose({
                     :value="searchQuery"
                     type="text"
                     placeholder="Search public monitors (e.g. google, api, blog)..."
-                    class="w-full rounded-full border-0 bg-transparent py-1.5 pr-9 pl-9 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder-gray-500"
+                    class="w-full rounded-full border-0 bg-transparent py-1.5 pr-9 pl-9 text-xs text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-500"
                     @input="
                         emit('update:searchQuery', ($event.target as HTMLInputElement).value);
                         emit('debounceSearch');
@@ -115,14 +115,14 @@ defineExpose({
                         v-if="searchQuery"
                         type="button"
                         @click="emit('clearSearch')"
-                        class="rounded-full p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                        class="cursor-pointer rounded-full p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                         aria-label="Clear search"
                     >
                         <Icon name="x" class="h-3 w-3" />
                     </button>
                     <kbd
                         v-else
-                        class="hidden sm:inline-flex items-center rounded border border-gray-200 bg-gray-100 px-1.5 py-0.2 font-mono text-[9px] text-gray-400 dark:border-gray-700 dark:bg-gray-800"
+                        class="py-0.2 hidden items-center rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[9px] text-gray-400 sm:inline-flex dark:border-gray-700 dark:bg-gray-800"
                     >
                         /
                     </kbd>
@@ -136,7 +136,7 @@ defineExpose({
                     :key="tab.key"
                     type="button"
                     @click="emit('filterByStatus', tab.key)"
-                    class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                    class="cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="statusFilter === tab.key ? tab.activeClass : tab.inactiveClass"
                 >
                     {{ tab.label }} ({{ tab.count }})
@@ -155,11 +155,9 @@ defineExpose({
                             emit('update:sortBy', ($event.target as HTMLSelectElement).value);
                             emit('applyFilters');
                         "
-                        class="appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 cursor-pointer focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
+                        class="cursor-pointer appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
                     >
-                        <option v-for="o in sortOptions" :key="o.value" :value="o.value">
-                            Sort: {{ o.label }}
-                        </option>
+                        <option v-for="o in sortOptions" :key="o.value" :value="o.value">Sort: {{ o.label }}</option>
                     </select>
                     <Icon name="chevronDown" class="pointer-events-none absolute right-2.5 h-3 w-3 text-gray-500" />
                 </div>
@@ -174,7 +172,7 @@ defineExpose({
                             emit('update:tagFilter', ($event.target as HTMLSelectElement).value);
                             emit('applyFilters');
                         "
-                        class="appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 cursor-pointer focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
+                        class="cursor-pointer appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
                     >
                         <option value="">All Tags</option>
                         <option v-for="tag in availableTags" :key="tag.id" :value="tag.name.en">#{{ tag.name.en }}</option>
@@ -185,7 +183,7 @@ defineExpose({
                 <!-- Add Button -->
                 <button
                     @click="router.visit('/monitor/create')"
-                    class="inline-flex shrink-0 items-center justify-center gap-1 rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95 cursor-pointer"
+                    class="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95"
                 >
                     <Icon name="plus" class="h-3 w-3" />
                     <span>Add</span>
@@ -195,7 +193,7 @@ defineExpose({
     </div>
 
     <!-- Left-aligned Monitors Count Text -->
-    <div class="mb-4 flex items-center justify-between px-2 text-xs text-gray-400 dark:text-gray-500 font-medium">
+    <div class="mb-4 flex items-center justify-between px-2 text-xs font-medium text-gray-400 dark:text-gray-500">
         <span>{{ showingText }}</span>
 
         <!-- Active filter reset if any -->
@@ -206,15 +204,11 @@ defineExpose({
                 class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
             >
                 {{ pill.label }}
-                <button type="button" @click="pill.clear()" class="hover:text-blue-900 cursor-pointer" :aria-label="`Remove ${pill.key} filter`">
+                <button type="button" @click="pill.clear()" class="cursor-pointer hover:text-blue-900" :aria-label="`Remove ${pill.key} filter`">
                     <Icon name="x" class="h-2.5 w-2.5" />
                 </button>
             </span>
-            <button
-                type="button"
-                @click="emit('resetFilters')"
-                class="text-blue-600 hover:underline dark:text-blue-400 text-[11px] cursor-pointer"
-            >
+            <button type="button" @click="emit('resetFilters')" class="cursor-pointer text-[11px] text-blue-600 hover:underline dark:text-blue-400">
                 Reset all
             </button>
         </div>

@@ -17,10 +17,7 @@ export function usePollMode() {
             return inertiaProp.toLowerCase() === 'auto' ? 'auto' : 'manual';
         }
 
-        const viteEnv =
-            import.meta.env.VITE_POLL_REQUEST_API ||
-            import.meta.env.VITE_POLLING_MODE ||
-            import.meta.env.VITE_POLL_MODE;
+        const viteEnv = import.meta.env.VITE_POLL_REQUEST_API || import.meta.env.VITE_POLLING_MODE || import.meta.env.VITE_POLL_MODE;
 
         if (typeof viteEnv === 'string') {
             return viteEnv.toLowerCase() === 'auto' ? 'auto' : 'manual';

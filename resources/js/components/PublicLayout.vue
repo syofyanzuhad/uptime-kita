@@ -5,13 +5,7 @@ import PublicFooter from '@/components/PublicFooter.vue';
 import ServerStatsBadge from '@/components/ServerStatsBadge.vue';
 import ShareDropdown from '@/components/ShareDropdown.vue';
 import ToastContainer from '@/components/ToastContainer.vue';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/composables/useTheme';
 import { globalToasts } from '@/composables/useToastNotifications';
 import type { SharedData } from '@/types';
@@ -149,7 +143,7 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                         <slot name="header-nav" />
 
                         <!-- Desktop Main Nav Links -->
-                        <nav class="hidden sm:flex items-center gap-1">
+                        <nav class="hidden items-center gap-1 sm:flex">
                             <Link
                                 href="/incidents"
                                 class="rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
@@ -219,7 +213,10 @@ const jsonLdString = computed(() => (props.jsonLd ? JSON.stringify(props.jsonLd)
                                             <Menu class="h-4 w-4" />
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" class="w-48 rounded-2xl border border-gray-200/80 bg-white/95 p-1.5 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95">
+                                    <DropdownMenuContent
+                                        align="end"
+                                        class="w-48 rounded-2xl border border-gray-200/80 bg-white/95 p-1.5 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/95"
+                                    >
                                         <DropdownMenuItem as-child>
                                             <Link
                                                 href="/incidents"

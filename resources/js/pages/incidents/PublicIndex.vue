@@ -108,9 +108,7 @@ function resetFilters() {
     applyFilters();
 }
 
-const hasActiveFilters = computed(
-    () => !!searchQuery.value || statusFilter.value !== 'all' || rangeFilter.value !== '30d',
-);
+const hasActiveFilters = computed(() => !!searchQuery.value || statusFilter.value !== 'all' || rangeFilter.value !== '30d');
 
 function getMonitorCleanDomain(monitor: Incident['monitor']): string {
     const raw = monitor.raw_url || monitor.url || '';
@@ -196,8 +194,10 @@ const rangeOptions = [
         :json-ld="jsonLd"
     >
         <!-- Top Status & Summary Strip -->
-        <div class="mb-5 overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90">
-            <div class="grid grid-cols-2 divide-y sm:divide-y-0 sm:grid-cols-4 sm:divide-x divide-gray-100 dark:divide-gray-800/80">
+        <div
+            class="mb-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-xs sm:rounded-3xl dark:border-gray-800/80 dark:bg-gray-900/90"
+        >
+            <div class="grid grid-cols-2 divide-y divide-gray-100 sm:grid-cols-4 sm:divide-x sm:divide-y-0 dark:divide-gray-800/80">
                 <!-- System Operational Status -->
                 <div class="flex flex-col items-center justify-center p-4 text-center">
                     <div class="flex items-center gap-2">
@@ -212,63 +212,55 @@ const rangeOptions = [
                             ></span>
                         </span>
                         <span
-                            class="text-base sm:text-lg font-black tracking-tight"
+                            class="text-base font-black tracking-tight sm:text-lg"
                             :class="stats.ongoing_count > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'"
                         >
                             {{ stats.ongoing_count > 0 ? `${stats.ongoing_count} Active Outage` : 'All Systems Up' }}
                         </span>
                     </div>
-                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Current System State
-                    </span>
+                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"> Current System State </span>
                 </div>
 
                 <!-- 30d Resolved -->
                 <div class="flex flex-col items-center justify-center p-4 text-center">
                     <div class="flex items-center gap-1.5">
                         <Icon name="checkCircle" class="h-4 w-4 text-emerald-500" />
-                        <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+                        <span class="text-xl font-black tracking-tight text-gray-900 sm:text-2xl dark:text-white">
                             {{ stats.resolved_30d }}
                         </span>
                     </div>
-                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Resolved (Past 30d)
-                    </span>
+                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"> Resolved (Past 30d) </span>
                 </div>
 
                 <!-- MTTR (Mean Time to Recovery) -->
                 <div class="flex flex-col items-center justify-center p-4 text-center">
                     <div class="flex items-center gap-1.5">
                         <Icon name="clock" class="h-4 w-4 text-amber-500" />
-                        <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+                        <span class="text-xl font-black tracking-tight text-gray-900 sm:text-2xl dark:text-white">
                             {{ stats.avg_duration_minutes > 0 ? `${stats.avg_duration_minutes}m` : '< 1m' }}
                         </span>
                     </div>
-                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Avg Recovery Time (MTTR)
-                    </span>
+                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"> Avg Recovery Time (MTTR) </span>
                 </div>
 
                 <!-- Public Services Tracked -->
                 <div class="flex flex-col items-center justify-center p-4 text-center">
                     <div class="flex items-center gap-1.5">
                         <Icon name="globe" class="h-4 w-4 text-blue-500" />
-                        <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+                        <span class="text-xl font-black tracking-tight text-gray-900 sm:text-2xl dark:text-white">
                             {{ stats.total_public_monitors }}
                         </span>
                     </div>
-                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Monitored Services
-                    </span>
+                    <span class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"> Monitored Services </span>
                 </div>
             </div>
         </div>
 
         <!-- Filter & Search Toolbar -->
-        <div class="mb-4 rounded-2xl sm:rounded-full border border-gray-200/80 bg-white p-1.5 shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90">
-            <div class="flex flex-col md:flex-row md:items-center gap-2">
+        <div class="mb-4 rounded-2xl border border-gray-200/80 bg-white p-1.5 shadow-xs sm:rounded-full dark:border-gray-800/80 dark:bg-gray-900/90">
+            <div class="flex flex-col gap-2 md:flex-row md:items-center">
                 <!-- Search Input -->
-                <div class="relative flex-1 flex items-center min-w-[200px]">
+                <div class="relative flex min-w-[200px] flex-1 items-center">
                     <label for="search-incidents" class="sr-only">Search incidents</label>
                     <Icon name="search" class="pointer-events-none absolute left-3.5 h-3.5 w-3.5 text-gray-400" />
                     <input
@@ -277,22 +269,25 @@ const rangeOptions = [
                         v-model="searchQuery"
                         type="text"
                         placeholder="Search incidents by service or URL..."
-                        class="w-full rounded-full border-0 bg-transparent py-1.5 pr-9 pl-9 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder-gray-500"
+                        class="w-full rounded-full border-0 bg-transparent py-1.5 pr-9 pl-9 text-xs text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-500"
                         @input="debounceSearch"
                     />
                     <div class="absolute right-2.5 flex items-center">
                         <button
                             v-if="searchQuery"
                             type="button"
-                            @click="searchQuery = ''; applyFilters();"
-                            class="rounded-full p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                            @click="
+                                searchQuery = '';
+                                applyFilters();
+                            "
+                            class="cursor-pointer rounded-full p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                             aria-label="Clear search"
                         >
                             <Icon name="x" class="h-3 w-3" />
                         </button>
                         <kbd
                             v-else
-                            class="hidden sm:inline-flex items-center rounded border border-gray-200 bg-gray-100 px-1.5 py-0.2 font-mono text-[9px] text-gray-400 dark:border-gray-700 dark:bg-gray-800"
+                            class="py-0.2 hidden items-center rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[9px] text-gray-400 sm:inline-flex dark:border-gray-700 dark:bg-gray-800"
                         >
                             /
                         </kbd>
@@ -306,7 +301,7 @@ const rangeOptions = [
                         :key="tab.key"
                         type="button"
                         @click="filterByStatus(tab.key)"
-                        class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
                         :class="
                             statusFilter === tab.key
                                 ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
@@ -316,7 +311,7 @@ const rangeOptions = [
                         <span>{{ tab.label }}</span>
                         <span
                             v-if="tab.count !== undefined && tab.count > 0"
-                            class="rounded-full bg-rose-500 px-1.5 py-0.2 text-[9px] font-extrabold text-white"
+                            class="py-0.2 rounded-full bg-rose-500 px-1.5 text-[9px] font-extrabold text-white"
                         >
                             {{ tab.count }}
                         </span>
@@ -330,7 +325,7 @@ const rangeOptions = [
                         id="range-filter"
                         v-model="rangeFilter"
                         @change="applyFilters"
-                        class="appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 cursor-pointer focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
+                        class="cursor-pointer appearance-none rounded-full bg-gray-100/90 py-1.5 pr-7 pl-3 text-xs font-medium text-gray-700 focus:outline-none dark:bg-gray-800/90 dark:text-gray-200"
                     >
                         <option v-for="r in rangeOptions" :key="r.value" :value="r.value">
                             {{ r.label }}
@@ -342,15 +337,13 @@ const rangeOptions = [
         </div>
 
         <!-- Active Filter Indicator & Count Bar -->
-        <div class="mb-4 flex items-center justify-between px-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-            <span>
-                Showing {{ incidents.total }} {{ incidents.total === 1 ? 'incident' : 'incidents' }}
-            </span>
+        <div class="mb-4 flex items-center justify-between px-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <span> Showing {{ incidents.total }} {{ incidents.total === 1 ? 'incident' : 'incidents' }} </span>
             <button
                 v-if="hasActiveFilters"
                 type="button"
                 @click="resetFilters"
-                class="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-xs font-semibold"
+                class="cursor-pointer text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
             >
                 Reset filters
             </button>
@@ -361,9 +354,9 @@ const rangeOptions = [
             <div
                 v-for="inc in incidents.data"
                 :key="inc.id"
-                class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-gray-300 dark:border-gray-800/80 dark:bg-gray-900/90 dark:hover:border-gray-700"
+                class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-4 shadow-xs transition-all hover:border-gray-300 sm:p-5 dark:border-gray-800/80 dark:bg-gray-900/90 dark:hover:border-gray-700"
             >
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-gray-800/70">
+                <div class="flex flex-col justify-between gap-3 border-b border-gray-100 pb-3 sm:flex-row sm:items-center dark:border-gray-800/70">
                     <!-- Left: Service Identity -->
                     <div class="flex items-center gap-3">
                         <div
@@ -380,7 +373,7 @@ const rangeOptions = [
                             <div class="flex items-center gap-2">
                                 <a
                                     :href="`/m/${getMonitorCleanDomain(inc.monitor)}`"
-                                    class="text-sm sm:text-base font-bold text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400 transition-colors"
+                                    class="text-sm font-bold text-gray-900 transition-colors hover:text-blue-600 sm:text-base dark:text-white dark:hover:text-blue-400"
                                 >
                                     {{ inc.monitor.display_name || inc.monitor.url }}
                                 </a>
@@ -388,21 +381,21 @@ const rangeOptions = [
                                     class="rounded-full px-2 py-0.5 text-[10px] font-bold"
                                     :class="
                                         inc.ended_at
-                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                            : 'bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 animate-pulse'
+                                            ? 'border border-emerald-200/60 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                            : 'animate-pulse border border-rose-200/60 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                                     "
                                 >
                                     {{ inc.ended_at ? 'Resolved' : 'Ongoing Outage' }}
                                 </span>
                             </div>
-                            <span class="block truncate text-xs text-gray-400 dark:text-gray-500 font-mono">
+                            <span class="block truncate font-mono text-xs text-gray-400 dark:text-gray-500">
                                 {{ inc.monitor.raw_url || inc.monitor.url }}
                             </span>
                         </div>
                     </div>
 
                     <!-- Right: Outage Duration -->
-                    <div class="flex items-center gap-2 text-xs self-start sm:self-auto">
+                    <div class="flex items-center gap-2 self-start text-xs sm:self-auto">
                         <span class="font-medium text-gray-400 dark:text-gray-500">Duration:</span>
                         <span
                             class="rounded-lg px-2.5 py-1 font-mono font-bold"
@@ -418,7 +411,7 @@ const rangeOptions = [
                 </div>
 
                 <!-- Outage Details and Timestamps -->
-                <div class="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="flex flex-col justify-between gap-3 pt-3 text-xs sm:flex-row sm:items-center">
                     <!-- Reason / Status -->
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="text-gray-500 dark:text-gray-400">Trigger:</span>
@@ -428,18 +421,10 @@ const rangeOptions = [
                         >
                             HTTP {{ inc.status_code }}
                         </span>
-                        <span
-                            v-if="inc.reason"
-                            class="text-gray-600 dark:text-gray-300 font-medium"
-                        >
+                        <span v-if="inc.reason" class="font-medium text-gray-600 dark:text-gray-300">
                             {{ inc.reason }}
                         </span>
-                        <span
-                            v-else-if="!inc.status_code"
-                            class="text-gray-400 dark:text-gray-500"
-                        >
-                            Service unavailable / Check failed
-                        </span>
+                        <span v-else-if="!inc.status_code" class="text-gray-400 dark:text-gray-500"> Service unavailable / Check failed </span>
                         <span
                             v-if="inc.response_time"
                             class="rounded bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
@@ -458,9 +443,7 @@ const rangeOptions = [
 
             <!-- Pagination Bar -->
             <div v-if="incidents.last_page > 1" class="mt-6 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                <span class="text-xs text-gray-500 dark:text-gray-400">
-                    Page {{ incidents.current_page }} of {{ incidents.last_page }}
-                </span>
+                <span class="text-xs text-gray-500 dark:text-gray-400"> Page {{ incidents.current_page }} of {{ incidents.last_page }} </span>
                 <div class="flex items-center gap-1.5">
                     <button
                         v-for="(link, idx) in incidents.links"
@@ -468,7 +451,7 @@ const rangeOptions = [
                         type="button"
                         :disabled="!link.url"
                         @click="link.url && router.visit(link.url, { preserveState: true })"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                         :class="
                             link.active
                                 ? 'bg-blue-600 text-white'
@@ -485,7 +468,9 @@ const rangeOptions = [
             v-else
             class="rounded-3xl border border-dashed border-gray-200 bg-white/50 py-16 text-center backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/50"
         >
-            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+            <div
+                class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+            >
                 <Icon name="checkCircle" class="h-8 w-8" />
             </div>
             <h3 class="mb-1 text-lg font-bold text-gray-900 dark:text-white">
@@ -502,15 +487,11 @@ const rangeOptions = [
                 <button
                     v-if="hasActiveFilters"
                     @click="resetFilters"
-                    class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 cursor-pointer"
+                    class="cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
                 >
                     Clear all filters
                 </button>
-                <a
-                    v-else
-                    href="/public-monitors"
-                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
-                >
+                <a v-else href="/public-monitors" class="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700">
                     Browse All Monitors
                 </a>
             </div>

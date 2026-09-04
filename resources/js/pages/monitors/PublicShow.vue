@@ -100,13 +100,13 @@
                           : 'border-amber-200/80 bg-gradient-to-r from-amber-50/70 via-yellow-50/40 to-white dark:border-amber-900/50 dark:from-amber-950/30 dark:via-gray-900 dark:to-gray-900',
                 ]"
             >
-                <div class="flex flex-col gap-5 sm:gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                     <!-- Left: Status Icon, Title & Info, and Check Button -->
                     <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <div class="flex min-w-0 items-center gap-3 sm:gap-4">
                             <!-- Status Icon -->
                             <div
-                                class="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl shadow-md"
+                                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-md sm:h-14 sm:w-14"
                                 :class="[
                                     monitor.uptime_status === 'up'
                                         ? 'bg-emerald-500 text-white shadow-emerald-500/20'
@@ -120,7 +120,7 @@
 
                             <!-- Title & Subtitle -->
                             <div class="min-w-0">
-                                <h2 class="text-xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+                                <h2 class="text-xl font-black tracking-tight text-gray-900 sm:text-3xl dark:text-white">
                                     {{ getStatusText(monitor.uptime_status) }}
                                 </h2>
                                 <p class="mt-0.5 text-xs text-gray-600 sm:text-sm dark:text-gray-300">
@@ -165,7 +165,7 @@
 
                     <!-- Quick Metrics Chips (Equal 2 or 3 columns on mobile, flex on desktop) -->
                     <div
-                        class="grid gap-2 w-full sm:w-auto sm:flex sm:flex-wrap sm:items-center sm:gap-2.5 sm:justify-end"
+                        class="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end sm:gap-2.5"
                         :class="monitor.certificate_check_enabled && monitor.certificate_status ? 'grid-cols-3' : 'grid-cols-2'"
                     >
                         <div
@@ -173,7 +173,11 @@
                         >
                             <span
                                 class="block text-base font-extrabold sm:text-lg"
-                                :class="monitor.uptime_status === 'not yet checked' ? 'text-gray-400 dark:text-gray-500' : getUptimeColor(uptimeStats['24h'])"
+                                :class="
+                                    monitor.uptime_status === 'not yet checked'
+                                        ? 'text-gray-400 dark:text-gray-500'
+                                        : getUptimeColor(uptimeStats['24h'])
+                                "
                             >
                                 {{ monitor.uptime_status === 'not yet checked' ? '—' : `${uptimeStats['24h']}%` }}
                             </span>
@@ -185,7 +189,9 @@
                         >
                             <span
                                 class="block text-base font-extrabold sm:text-lg"
-                                :class="monitor.uptime_status === 'not yet checked' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'"
+                                :class="
+                                    monitor.uptime_status === 'not yet checked' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'
+                                "
                             >
                                 {{ monitor.uptime_status === 'not yet checked' ? '—' : `${avgResponseTime}ms` }}
                             </span>
@@ -201,7 +207,9 @@
                                 :class="getCertificateColor(monitor.certificate_status)"
                             >
                                 <Icon :name="getCertificateIcon(monitor.certificate_status)" class="h-3.5 w-3.5 shrink-0" />
-                                <span class="truncate">{{ monitor.certificate_status === 'not yet checked' ? 'Pending' : getCertificateText(monitor.certificate_status) }}</span>
+                                <span class="truncate">{{
+                                    monitor.certificate_status === 'not yet checked' ? 'Pending' : getCertificateText(monitor.certificate_status)
+                                }}</span>
                             </span>
                             <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">SSL Cert</span>
                         </div>

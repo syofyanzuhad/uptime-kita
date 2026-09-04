@@ -38,6 +38,7 @@ import {
     Facebook,
     FileJson,
     FileText,
+    Gauge,
     Github,
     Globe,
     GripVertical,
@@ -73,6 +74,7 @@ import {
     ShieldAlert,
     ShieldCheck,
     ShieldOff,
+    Sparkles,
     Sun,
     Tag,
     Terminal,
@@ -81,8 +83,6 @@ import {
     Upload,
     X,
     Zap,
-    Gauge,
-    Sparkles,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 

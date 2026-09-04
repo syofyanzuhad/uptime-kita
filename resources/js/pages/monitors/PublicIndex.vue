@@ -35,7 +35,15 @@ interface Incident {
 interface Props {
     monitors: Paginator<Monitor>;
     filters: { search: string | null; status_filter: string; tag_filter: string | null; sort_by: string };
-    stats: { total: number; up: number; down: number; total_public: number; daily_checks?: number; monthly_checks?: number; avg_response_time?: number | null };
+    stats: {
+        total: number;
+        up: number;
+        down: number;
+        total_public: number;
+        daily_checks?: number;
+        monthly_checks?: number;
+        avg_response_time?: number | null;
+    };
     availableTags?: Array<{ id: number; name: { en: string } }>;
     latestIncidents?: Incident[];
     showSmolLaunchBadge?: boolean;
@@ -294,9 +302,7 @@ const avgLatency = computed(() => {
     if (props.stats.avg_response_time) {
         return `${Math.round(props.stats.avg_response_time)}ms`;
     }
-    const times = monitorsData.value
-        .map((m) => m.statistics?.avg_response_time_24h)
-        .filter((t): t is number => typeof t === 'number' && t > 0);
+    const times = monitorsData.value.map((m) => m.statistics?.avg_response_time_24h).filter((t): t is number => typeof t === 'number' && t > 0);
     if (times.length) {
         return `${Math.round(times.reduce((a, b) => a + b, 0) / times.length)}ms`;
     }
@@ -316,21 +322,13 @@ const avgLatency = computed(() => {
         :json-ld="jsonLd"
     >
         <!-- Top Metric Strip: Unified 6-Item Card with Vertical Dividers -->
-        <PublicMetricStrip
-            :stats="props.stats"
-            :status-filter="statusFilter"
-            :avg-latency="avgLatency"
-            @filter-by-status="filterByStatus"
-        />
+        <PublicMetricStrip :stats="props.stats" :status-filter="statusFilter" :avg-latency="avgLatency" @filter-by-status="filterByStatus" />
 
         <!-- Instant Website Health Check Card -->
         <PublicHealthCheckCard />
 
         <!-- Recent Incident & Event Activity Card -->
-        <PublicIncidentFeed
-            :incidents="props.latestIncidents"
-            @select-incident="viewIncidentMonitor"
-        />
+        <PublicIncidentFeed :incidents="props.latestIncidents" @select-incident="viewIncidentMonitor" />
 
         <!-- Integrated Search & Filter Toolbar -->
         <PublicFilterToolbar
@@ -390,14 +388,14 @@ const avgLatency = computed(() => {
                 <button
                     v-if="hasActiveFilter"
                     @click="resetFilters"
-                    class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 cursor-pointer"
+                    class="cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
                 >
                     Clear all filters
                 </button>
                 <button
                     v-else
                     @click="router.visit('/monitor/create')"
-                    class="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 cursor-pointer"
+                    class="cursor-pointer rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700"
                 >
                     Create a Monitor Now
                 </button>
@@ -423,7 +421,7 @@ const avgLatency = computed(() => {
             <button
                 @click="loadMore"
                 :disabled="isLoading"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 text-xs font-bold text-gray-700 shadow-sm hover:bg-gray-50 active:scale-95 disabled:bg-gray-100 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 text-xs font-bold text-gray-700 shadow-sm hover:bg-gray-50 active:scale-95 disabled:bg-gray-100 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
                 <Icon v-if="isLoading" name="loader" class="h-4 w-4 animate-spin" />
                 <span>Load More (Page {{ currentPage + 1 }} of {{ monitorsMeta.last_page }})</span>
@@ -440,7 +438,7 @@ const avgLatency = computed(() => {
         <button
             v-show="showBackToTop"
             @click="scrollToTop"
-            class="fixed right-6 bottom-6 z-50 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-xl transition-all hover:bg-blue-700 active:scale-90 dark:bg-blue-500 cursor-pointer"
+            class="fixed right-6 bottom-6 z-50 flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl bg-blue-600 text-white shadow-xl transition-all hover:bg-blue-700 active:scale-90 dark:bg-blue-500"
             aria-label="Back to top"
         >
             <Icon name="chevronUp" class="h-5 w-5" />

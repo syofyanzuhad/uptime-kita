@@ -26,7 +26,7 @@ const monogram = computed(() => {
 const displayTitle = computed(() => {
     return props.monitor.name && props.monitor.name !== props.monitor.host && props.monitor.name !== props.monitor.url
         ? props.monitor.name
-        : (props.monitor.host || props.monitor.url || '');
+        : props.monitor.host || props.monitor.url || '';
 });
 
 const displaySubtitle = computed(() => {
@@ -121,10 +121,15 @@ function sparkColor(pct: number | null): string {
                         </div>
                         <div class="min-w-0">
                             <div class="flex items-center gap-1.5">
-                                <h3 class="truncate text-sm font-bold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+                                <h3
+                                    class="truncate text-sm font-bold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400"
+                                >
                                     {{ displayTitle }}
                                 </h3>
-                                <Icon name="externalLink" class="h-3 w-3 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-500" />
+                                <Icon
+                                    name="externalLink"
+                                    class="h-3 w-3 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 dark:text-gray-500"
+                                />
                             </div>
                             <p v-if="displaySubtitle" class="truncate text-xs text-gray-500 dark:text-gray-400">
                                 {{ displaySubtitle }}
@@ -142,7 +147,7 @@ function sparkColor(pct: number | null): string {
                                 aria-label="Operational"
                                 class="inline-flex shrink-0 items-center rounded-full bg-emerald-50 p-1.5 ring-1 ring-emerald-600/20 dark:bg-emerald-950/40 dark:ring-emerald-500/30"
                             >
-                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                             </span>
 
                             <!-- Down: Bold, high-contrast alert badge with text -->
@@ -152,7 +157,7 @@ function sparkColor(pct: number | null): string {
                                 aria-label="Down"
                                 class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 ring-1 ring-rose-600/30 dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-500/40"
                             >
-                                <span class="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
+                                <span class="h-1.5 w-1.5 animate-ping rounded-full bg-rose-500" />
                                 <span>Down</span>
                             </span>
 
@@ -190,10 +195,7 @@ function sparkColor(pct: number | null): string {
                 <div class="mt-4 flex items-baseline justify-between gap-3">
                     <div>
                         <div class="flex items-baseline gap-1.5">
-                            <span
-                                class="text-2xl font-black tracking-tight"
-                                :class="uptimePercentageColor"
-                            >
+                            <span class="text-2xl font-black tracking-tight" :class="uptimePercentageColor">
                                 {{ displayUptimePct !== null ? `${displayUptimePct}%` : '—' }}
                             </span>
                             <span v-if="displayUptimePct !== null" class="text-xs font-medium text-gray-400 dark:text-gray-500">
@@ -220,7 +222,9 @@ function sparkColor(pct: number | null): string {
                 </div>
 
                 <!-- Secondary Metrics & Meta Info Row -->
-                <div class="mt-3.5 flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] text-gray-500 dark:border-gray-800/80 dark:text-gray-400">
+                <div
+                    class="mt-3.5 flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] text-gray-500 dark:border-gray-800/80 dark:text-gray-400"
+                >
                     <div class="flex flex-wrap items-center gap-2">
                         <span
                             v-if="responseTime !== null"
@@ -250,9 +254,7 @@ function sparkColor(pct: number | null): string {
                             >
                                 #{{ getTagDisplayName(tag) }}
                             </span>
-                            <span v-if="(monitor.tags.length ?? 0) > 2" class="text-[10px] text-gray-400">
-                                +{{ monitor.tags.length - 2 }}
-                            </span>
+                            <span v-if="(monitor.tags.length ?? 0) > 2" class="text-[10px] text-gray-400"> +{{ monitor.tags.length - 2 }} </span>
                         </div>
                     </div>
 
