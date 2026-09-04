@@ -102,7 +102,7 @@ function sparkColor(pct: number | null): string {
                 ]"
             />
 
-            <CardContent class="p-4 sm:p-5">
+            <CardContent class="p-2 sm:p-4">
                 <!-- Top Row: Favicon, Domain (once!), and Smart Status Indicator -->
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex min-w-0 items-center gap-2.5">
