@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 // Penting: Untuk request seperti delete, post, put, kita akan menggunakan 'router'
 import type { Monitor, Paginator } from '@/types/monitor';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 // Import Dialog and Button components for modal
 import Icon from '@/components/Icon.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -16,6 +16,7 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
+import { Input, Select } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import CreateMonitorModal from './partials/CreateMonitorModal.vue';
 import DetailMonitorModal from './partials/DetailMonitorModal.vue';
@@ -129,6 +130,32 @@ const visibilityFilter = ref(props.visibilityFilter || 'all');
 const tagFilter = ref(props.tagFilter || '');
 const perPage = ref((props.perPage as number) || 15);
 
+const statusOptions = [
+    { label: 'Semua Status', value: 'all' },
+    { label: 'Up', value: 'up' },
+    { label: 'Down', value: 'down' },
+];
+
+const visibilityOptions = [
+    { label: 'Semua Visibilitas', value: 'all' },
+    { label: 'Publik', value: 'public' },
+    { label: 'Privat', value: 'private' },
+];
+
+const tagOptions = computed(() => [
+    { label: 'Semua Tag', value: '' },
+    ...(props.availableTags || []).map((tag) => ({ label: tag.name, value: tag.name })),
+]);
+
+const perPageOptions = [
+    { label: '5 / halaman', value: 5 },
+    { label: '10 / halaman', value: 10 },
+    { label: '15 / halaman', value: 15 },
+    { label: '20 / halaman', value: 20 },
+    { label: '50 / halaman', value: 50 },
+    { label: '100 / halaman', value: 100 },
+];
+
 function submitSearch() {
     router.get(
         route('monitor.index'),
@@ -145,22 +172,6 @@ function submitSearch() {
 
 function clearSearch() {
     search.value = '';
-    submitSearch();
-}
-
-function onStatusFilterChange() {
-    submitSearch();
-}
-
-function onVisibilityFilterChange() {
-    submitSearch();
-}
-
-function onTagFilterChange() {
-    submitSearch();
-}
-
-function onPerPageChange() {
     submitSearch();
 }
 </script>
@@ -192,62 +203,33 @@ function onPerPageChange() {
                     </div>
 
                     <!-- Search Bar & Filter -->
-                    <form @submit.prevent="submitSearch" class="mb-4 flex items-center gap-2 overflow-auto">
-                        <input
-                            v-model="search"
-                            type="text"
-                            placeholder="Cari monitor (min 3 karakter)..."
-                            class="w-full max-w-xs min-w-52 rounded border border-gray-300 px-3 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        />
-                        <select
+                    <form @submit.prevent="submitSearch" class="mb-4 flex flex-wrap items-center gap-2">
+                        <Input v-model="search" type="text" placeholder="Cari monitor (min 3 karakter)..." class="h-9 w-full max-w-xs min-w-52" />
+                        <Select
                             v-model="statusFilter"
-                            @change="onStatusFilterChange"
-                            class="rounded border border-gray-300 px-2 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        >
-                            <option value="all">Semua Status</option>
-                            <option value="up">Up</option>
-                            <option value="down">Down</option>
-                        </select>
-                        <select
+                            :items="statusOptions"
+                            @update:model-value="submitSearch"
+                            placeholder="Semua Status"
+                            class="h-9 w-36"
+                        />
+                        <Select
                             v-model="visibilityFilter"
-                            @change="onVisibilityFilterChange"
-                            class="rounded border border-gray-300 px-2 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        >
-                            <option value="all">Semua Visibilitas</option>
-                            <option value="public">Publik</option>
-                            <option value="private">Privat</option>
-                        </select>
-                        <select
+                            :items="visibilityOptions"
+                            @update:model-value="submitSearch"
+                            placeholder="Semua Visibilitas"
+                            class="h-9 w-40"
+                        />
+                        <Select
+                            v-if="props.availableTags && props.availableTags.length > 0"
                             v-model="tagFilter"
-                            @change="onTagFilterChange"
-                            class="rounded border border-gray-300 px-3 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        >
-                            <option value="">Semua Tag</option>
-                            <option v-for="tag in props.availableTags" :key="tag.id" :value="tag.name">
-                                {{ tag.name }}
-                            </option>
-                        </select>
-                        <select
-                            v-model.number="perPage"
-                            @change="onPerPageChange"
-                            class="rounded border border-gray-300 px-2 py-2 focus:border-blue-400 focus:ring focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                        >
-                            <option :value="5">5 / halaman</option>
-                            <option :value="10">10 / halaman</option>
-                            <option :value="15">15 / halaman</option>
-                            <option :value="20">20 / halaman</option>
-                            <option :value="50">50 / halaman</option>
-                            <option :value="100">100 / halaman</option>
-                        </select>
-                        <button
-                            v-if="search"
-                            type="button"
-                            @click="clearSearch"
-                            class="ml-1 rounded bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        >
-                            Bersihkan
-                        </button>
-                        <button type="submit" class="rounded bg-blue-500 px-3 py-2 text-white hover:bg-blue-600">Cari</button>
+                            :items="tagOptions"
+                            @update:model-value="submitSearch"
+                            placeholder="Semua Tag"
+                            class="h-9 w-36"
+                        />
+                        <Select v-model="perPage" :items="perPageOptions" @update:model-value="submitSearch" class="h-9 w-36" />
+                        <Button v-if="search" type="button" variant="outline" size="sm" @click="clearSearch" class="h-9"> Bersihkan </Button>
+                        <Button type="submit" size="sm" class="h-9"> Cari </Button>
                     </form>
 
                     <div v-if="props.monitors.data.length === 0" class="text-gray-600 dark:text-gray-400">Belum ada monitor yang terdaftar.</div>

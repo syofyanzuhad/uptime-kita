@@ -8,6 +8,8 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
@@ -146,17 +148,10 @@ const close = () => {
             </DialogHeader>
 
             <form @submit.prevent="submit" class="space-y-4 py-4">
-                <div>
-                    <label for="url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL Monitor</label>
-                    <div class="relative mt-1">
-                        <input
-                            id="url"
-                            type="url"
-                            class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            v-model="form.url"
-                            required
-                            placeholder="https://example.com"
-                        />
+                <div class="space-y-1.5">
+                    <Label for="url">URL Monitor</Label>
+                    <div class="relative">
+                        <Input id="url" type="url" class="h-10 pr-10" v-model="form.url" required placeholder="https://example.com" />
                         <div v-if="dnsStatus !== 'idle'" class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                             <Icon v-if="dnsStatus === 'checking'" name="clock" class="h-4 w-4 animate-spin text-gray-400" />
                             <Icon v-else-if="dnsStatus === 'valid'" name="checkCircle" class="h-4 w-4 text-green-500" />
@@ -177,13 +172,13 @@ const close = () => {
                     <div v-if="form.errors.url" class="mt-1 text-xs text-red-600">{{ form.errors.url }}</div>
                 </div>
 
-                <div>
-                    <label for="interval" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interval Pengecekan (menit)</label>
-                    <div class="mt-1 flex items-center">
+                <div class="space-y-1.5">
+                    <Label for="interval">Interval Pengecekan (menit)</Label>
+                    <div class="flex items-center">
                         <button
                             type="button"
                             @click="decrementInterval"
-                            class="flex h-10 w-10 items-center justify-center rounded-l-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-l-md border"
                         >
                             <Icon name="minus" size="16" />
                         </button>
@@ -191,21 +186,21 @@ const close = () => {
                             id="interval"
                             type="number"
                             v-model="form.uptime_check_interval"
-                            class="h-10 w-20 border-t border-b border-gray-300 text-center text-sm focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            class="border-input dark:bg-input/30 h-10 w-20 border-t border-b bg-transparent text-center text-sm focus:outline-none"
                         />
                         <button
                             type="button"
                             @click="incrementInterval"
-                            class="flex h-10 w-10 items-center justify-center rounded-r-md border border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-r-md border"
                         >
                             <Icon name="plus" size="16" />
                         </button>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
-                    <div class="mt-1">
+                <div class="space-y-1.5">
+                    <Label>Tags</Label>
+                    <div>
                         <TagInput v-model="form.tags" placeholder="Add tags..." />
                     </div>
                 </div>
