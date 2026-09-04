@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { usePollMode } from '@/composables/usePollMode';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Activity, AlertCircle, BellOff, CheckCircle2, Plus, RefreshCw, Search, ShieldAlert, ShieldCheck, Users, X, XCircle } from 'lucide-vue-next';
-import { usePollMode } from '@/composables/usePollMode';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PinnedMonitorsCard from '../components/PinnedMonitorsCard.vue';
 import PrivateMonitorsCard from '../components/PrivateMonitorsCard.vue';
@@ -461,11 +462,11 @@ onUnmounted(() => {
                 <div class="flex items-center gap-2">
                     <div class="relative flex-1 sm:w-80">
                         <Search class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        <input
+                        <Input
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search domain or URL... (/)"
-                            class="h-10 w-full rounded-2xl border border-gray-200/80 bg-white/80 pr-8 pl-9 text-xs text-gray-900 shadow-xs backdrop-blur-sm transition-all placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none sm:text-sm dark:border-gray-800 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500"
+                            class="h-10 w-full rounded-2xl pr-8 pl-9 backdrop-blur-sm sm:text-sm"
                         />
                         <button
                             v-if="searchQuery"
