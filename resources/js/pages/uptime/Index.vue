@@ -18,7 +18,7 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Input, Select } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, X } from 'lucide-vue-next';
+import { ExternalLink, Eye, Pencil, Search, Trash2, X } from 'lucide-vue-next';
 import CreateMonitorModal from './partials/CreateMonitorModal.vue';
 import DetailMonitorModal from './partials/DetailMonitorModal.vue';
 import EditMonitorModal from './partials/EditMonitorModal.vue';
@@ -277,49 +277,64 @@ function clearSearch() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow v-for="monitor in props.monitors.data" :key="monitor.id">
-                                    <TableCell>
-                                        <a :href="monitor.url" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">{{
-                                            monitor.url
-                                        }}</a>
+                                <TableRow v-for="monitor in props.monitors.data" :key="monitor.id" class="group">
+                                    <TableCell class="font-medium">
+                                        <div class="flex items-center gap-1.5">
+                                            <a :href="monitor.url" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline dark:text-blue-400">
+                                                {{ monitor.url }}
+                                            </a>
+                                            <a :href="monitor.url" target="_blank" rel="noopener noreferrer" class="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-gray-600 dark:hover:text-gray-200">
+                                                <ExternalLink class="h-3 w-3" />
+                                            </a>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex flex-wrap gap-1">
                                             <span
                                                 v-for="tag in monitor.tags || []"
                                                 :key="tag.id || tag.name"
-                                                class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                                class="inline-flex items-center rounded-md border border-gray-200/80 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-300"
                                             >
                                                 {{ tag.name || tag }}
+                                            </span>
+                                            <span v-if="!monitor.tags || monitor.tags.length === 0" class="text-xs text-gray-400 dark:text-gray-500">
+                                                -
                                             </span>
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <span
                                             :class="{
-                                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': monitor.uptime_status === 'up',
-                                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': monitor.uptime_status === 'down',
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200':
-                                                    monitor.uptime_status === 'not yet checked',
+                                                'bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40': monitor.uptime_status === 'up',
+                                                'bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/40': monitor.uptime_status === 'down',
+                                                'bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/40': monitor.uptime_status === 'not yet checked',
                                             }"
-                                            class="rounded-full px-2.5 py-0.5 text-sm font-medium"
+                                            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap capitalize"
                                         >
+                                            <span
+                                                class="h-1.5 w-1.5 rounded-full shrink-0"
+                                                :class="{
+                                                    'bg-emerald-500': monitor.uptime_status === 'up',
+                                                    'bg-rose-500': monitor.uptime_status === 'down',
+                                                    'bg-amber-500': monitor.uptime_status === 'not yet checked',
+                                                }"
+                                            />
                                             {{ monitor.uptime_status }}
                                         </span>
                                     </TableCell>
-                                    <TableCell class="text-gray-500 dark:text-gray-400">
+                                    <TableCell class="text-gray-500 whitespace-nowrap text-xs dark:text-gray-400">
                                         {{ monitor.last_check_date ? new Date(monitor.last_check_date).toLocaleString() : '-' }}
                                     </TableCell>
-                                    <TableCell class="text-gray-500 dark:text-gray-400">
+                                    <TableCell class="text-gray-500 whitespace-nowrap text-xs dark:text-gray-400">
                                         {{ monitor.today_uptime_percentage ? monitor.today_uptime_percentage + '%' : '-' }}
                                     </TableCell>
                                     <TableCell class="text-gray-500 dark:text-gray-400">
                                         <template v-if="monitor.certificate_check_enabled">
                                             <span
-                                                class="inline-flex items-center gap-1 font-medium"
+                                                class="inline-flex items-center gap-1 font-medium text-xs whitespace-nowrap"
                                                 :class="{
-                                                    'text-green-600 dark:text-green-400': monitor.certificate_status === 'valid',
-                                                    'text-red-600 dark:text-red-400': monitor.certificate_status === 'invalid',
+                                                    'text-emerald-600 dark:text-emerald-400': monitor.certificate_status === 'valid',
+                                                    'text-rose-600 dark:text-rose-400': monitor.certificate_status === 'invalid',
                                                     'text-gray-600 dark:text-gray-400': monitor.certificate_status === 'not applicable',
                                                 }"
                                             >
@@ -329,41 +344,55 @@ function clearSearch() {
                                                 />
                                                 SSL {{ monitor.certificate_status }}
                                             </span>
-                                            <div v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400">
+                                            <div v-if="monitor.certificate_expiration_date" class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                 Expires: {{ new Date(monitor.certificate_expiration_date).toLocaleDateString() }}
                                             </div>
                                         </template>
                                         <template v-if="monitor.domain_expiration_check_enabled && monitor.domain_expiration_date">
-                                            <div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                            <div class="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                 <Icon name="globe" class="h-3 w-3 text-gray-400" />
                                                 Domain: {{ new Date(monitor.domain_expiration_date).toLocaleDateString() }}
                                             </div>
                                         </template>
                                         <span
                                             v-if="!monitor.certificate_check_enabled && !monitor.domain_expiration_check_enabled"
-                                            class="text-gray-400 dark:text-gray-500"
+                                            class="text-xs text-gray-400 dark:text-gray-500"
                                             >Tidak dicek</span
                                         >
                                     </TableCell>
-                                    <TableCell class="text-right">
-                                        <button
-                                            @click="openDetailModal(monitor)"
-                                            class="mr-3 cursor-pointer text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                        >
-                                            View
-                                        </button>
-                                        <button
-                                            @click="openEditModal(monitor)"
-                                            class="mr-3 cursor-pointer text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            @click="openDeleteModal(monitor)"
-                                            class="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                        >
-                                            Hapus
-                                        </button>
+                                    <TableCell class="text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1 justify-end">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                @click="openDetailModal(monitor)"
+                                                class="h-8 gap-1 rounded-lg px-2 text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                                                title="Detail monitor"
+                                            >
+                                                <Eye class="h-3.5 w-3.5" />
+                                                <span class="hidden xl:inline">Detail</span>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                @click="openEditModal(monitor)"
+                                                class="h-8 gap-1 rounded-lg px-2 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/40"
+                                                title="Edit monitor"
+                                            >
+                                                <Pencil class="h-3.5 w-3.5" />
+                                                <span class="hidden xl:inline">Edit</span>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                @click="openDeleteModal(monitor)"
+                                                class="h-8 gap-1 rounded-lg px-2 text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                                                title="Hapus monitor"
+                                            >
+                                                <Trash2 class="h-3.5 w-3.5" />
+                                                <span class="hidden xl:inline">Hapus</span>
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
