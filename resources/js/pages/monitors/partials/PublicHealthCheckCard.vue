@@ -18,8 +18,10 @@ const domainError = ref('');
 const exampleDomains = ['google.com', 'github.com', 'cloudflare.com'];
 const showApiSnippet = ref(false);
 const copiedApi = ref(false);
+const isMobileExpanded = ref(false);
 
 async function checkDomain() {
+    isMobileExpanded.value = true;
     const v = domainInput.value.trim();
     if (!v) {
         domainError.value = 'Enter a domain or URL to inspect.';
@@ -46,6 +48,7 @@ async function checkDomain() {
 }
 
 function tryExample(domain: string) {
+    isMobileExpanded.value = true;
     domainInput.value = domain;
     checkDomain();
 }
@@ -62,27 +65,46 @@ function copyApiCommand(customHost?: string) {
 }
 
 defineExpose({
-    focusInput: () => heroInputRef.value?.focus(),
+    focusInput: () => {
+        isMobileExpanded.value = true;
+        heroInputRef.value?.focus();
+    },
 });
 </script>
 
 <template>
     <!-- Instant Website Health Check Card -->
-    <div class="mb-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90">
-        <!-- Header Row -->
-        <div class="mb-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <Icon name="sparkles" class="h-4 w-4 text-amber-500" />
-                <h2 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Instant Website Health Check</h2>
+    <div class="mb-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-3.5 sm:p-5 shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90 transition-all">
+        <!-- Header Row (Collapsible toggle on mobile, static on desktop) -->
+        <div
+            @click="isMobileExpanded = !isMobileExpanded"
+            class="flex items-center justify-between cursor-pointer sm:cursor-default select-none gap-2"
+            :class="[isMobileExpanded ? 'mb-3' : 'mb-0 sm:mb-3']"
+        >
+            <div class="flex min-w-0 items-center gap-2">
+                <Icon name="sparkles" class="h-4 w-4 shrink-0 text-amber-500" />
+                <h2 class="truncate text-xs sm:text-base font-bold text-gray-900 dark:text-white">Instant Website Health Check</h2>
             </div>
-            <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50/90 border border-emerald-200/70 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                <span>Free & No Sign-up</span>
+            <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50/90 border border-emerald-200/70 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    <span class="hidden xs:inline">Free & No Sign-up</span>
+                    <span class="xs:hidden">Free</span>
+                </div>
+                <button
+                    type="button"
+                    class="sm:hidden -mr-0.5 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer transition-transform"
+                    :aria-label="isMobileExpanded ? 'Collapse health check' : 'Expand health check'"
+                >
+                    <Icon :name="isMobileExpanded ? 'chevronUp' : 'chevronDown'" class="h-4 w-4" />
+                </button>
             </div>
         </div>
 
-        <!-- Input Form -->
-        <form @submit.prevent="checkDomain" class="flex flex-col sm:flex-row items-center gap-2">
+        <!-- Collapsible Content (Collapsed on mobile, always visible on sm:) -->
+        <div :class="[isMobileExpanded ? 'block' : 'hidden sm:block']">
+            <!-- Input Form -->
+            <form @submit.prevent="checkDomain" class="flex flex-col sm:flex-row items-center gap-2">
             <label for="hero-domain-input" class="sr-only">Domain or URL to check</label>
             <div class="relative w-full flex-1">
                 <input
@@ -214,6 +236,7 @@ defineExpose({
                     Track Uptime
                 </Link>
             </div>
+        </div>
         </div>
     </div>
 </template>

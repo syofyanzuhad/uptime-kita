@@ -55,31 +55,39 @@ function formatIncidentDuration(inc: Incident): string {
     <!-- Recent Incident & Event Activity Card -->
     <div class="mb-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800/80 dark:bg-gray-900/90">
         <!-- Header Row -->
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <Icon name="alertTriangle" class="h-4 w-4 text-rose-500" />
-                <h2 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">Recent Incident & Event Activity</h2>
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-400">
-                    Live Feed
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                <Icon name="alertTriangle" class="h-4 w-4 shrink-0 text-rose-500" />
+                <h2 class="truncate text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                    <span class="sm:hidden">Recent Incidents</span>
+                    <span class="hidden sm:inline">Recent Incident & Event Activity</span>
+                </h2>
+                <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200/60 px-1.5 sm:px-2 py-0.5 text-[10px] font-semibold text-emerald-600 whitespace-nowrap dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-400">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="sm:hidden">Live</span>
+                    <span class="hidden sm:inline">Live Feed</span>
                 </span>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                 <Link
                     href="/incidents"
-                    class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                    class="inline-flex items-center gap-0.5 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors whitespace-nowrap"
+                    title="View full incident history"
                 >
-                    Full History &rarr;
+                    <span class="sm:hidden">History &nearr;</span>
+                    <span class="hidden sm:inline">Full History &rarr;</span>
                 </Link>
                 <button
                     type="button"
                     @click="incidentsExpanded = !incidentsExpanded"
-                    class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+                    class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer whitespace-nowrap"
                 >
                     <template v-if="incidents !== undefined">
-                        <span>{{ incidentsExpanded ? 'Collapse' : 'Expand' }} ({{ incidents?.length || 0 }})</span>
+                        <span class="hidden sm:inline">{{ incidentsExpanded ? 'Collapse' : 'Expand' }} ({{ incidents?.length || 0 }})</span>
+                        <span class="sm:hidden">({{ incidents?.length || 0 }})</span>
                     </template>
-                    <div v-else class="h-3.5 w-16 rounded bg-gray-200 dark:bg-gray-800 animate-pulse"></div>
-                    <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-3.5 w-3.5" />
+                    <div v-else class="h-3.5 w-8 sm:w-16 rounded bg-gray-200 dark:bg-gray-800 animate-pulse"></div>
+                    <Icon :name="incidentsExpanded ? 'chevronUp' : 'chevronDown'" class="h-3.5 w-3.5 shrink-0" />
                 </button>
             </div>
         </div>
