@@ -45,19 +45,10 @@ class PublicMonitorController extends Controller
                 });
         })->orderBy('name')->get(['id', 'name']);
 
-        $latestIncidents = cache()->remember('public_monitors_latest_incidents', 300, function () {
-            return MonitorIncident::with(['monitor:id,url,display_name,is_public'])
-                ->whereHas('monitor', function ($query) {
-                    $query->where('is_public', true);
-                })
-                ->orderBy('started_at', 'desc')
-                ->limit(10)
-                ->get(['id', 'monitor_id', 'type', 'started_at', 'ended_at', 'duration_minutes', 'reason', 'status_code']);
-        });
-
         $appUrl = config('app.url');
         $upCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'up')->count();
         $totalPublic = Monitor::withoutGlobalScope('user')->public()->count();
+        $downCount = Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'down')->count();
 
         return Inertia::render('monitors/PublicIndex', [
             'monitors' => $publicMonitors,
@@ -68,14 +59,23 @@ class PublicMonitorController extends Controller
                 'sort_by' => $filters['sortBy'],
             ],
             'availableTags' => $availableTags,
-            'latestIncidents' => $latestIncidents,
+            'latestIncidents' => Inertia::defer(fn () => cache()->remember('public_monitors_latest_incidents', 300, function () {
+                return MonitorIncident::with(['monitor:id,url,display_name,is_public'])
+                    ->whereHas('monitor', function ($query) {
+                        $query->where('is_public', true);
+                    })
+                    ->orderBy('started_at', 'desc')
+                    ->limit(10)
+                    ->get(['id', 'monitor_id', 'type', 'started_at', 'ended_at', 'duration_minutes', 'reason', 'status_code']);
+            })),
             'stats' => [
                 'total' => $publicMonitors->total(),
                 'up' => $upCount,
-                'down' => Monitor::withoutGlobalScope('user')->public()->where('uptime_status', 'down')->count(),
+                'down' => $downCount,
                 'total_public' => $totalPublic,
-                'daily_checks' => $this->getDailyChecksCount(),
-                'monthly_checks' => $this->getMonthlyChecksCount(),
+                'daily_checks' => Inertia::defer(fn () => $this->getDailyChecksCount()),
+                'monthly_checks' => Inertia::defer(fn () => $this->getMonthlyChecksCount()),
+                'avg_response_time' => Inertia::defer(fn () => $this->getAvgResponseTime()),
             ],
             'showSmolLaunchBadge' => config('app.show_smol_launch_badge'),
             'appUrl' => $appUrl,
@@ -249,6 +249,23 @@ class PublicMonitorController extends Controller
             return MonitorHistory::whereIn('monitor_id', function ($query) {
                 $query->select('id')->from('monitors')->where('is_public', true);
             })->where('checked_at', '>=', now()->startOfMonth())->count();
+        });
+    }
+
+    /**
+     * Get the average response time (ms) for public monitors in the last 24h.
+     */
+    private function getAvgResponseTime(): ?int
+    {
+        return cache()->remember('public_monitors_avg_response_time', 900, function () {
+            $avg = DB::table('monitor_statistics')
+                ->join('monitors', 'monitor_statistics.monitor_id', '=', 'monitors.id')
+                ->where('monitors.is_public', true)
+                ->whereNotNull('monitor_statistics.avg_response_time_24h')
+                ->where('monitor_statistics.avg_response_time_24h', '>', 0)
+                ->avg('monitor_statistics.avg_response_time_24h');
+
+            return $avg ? (int) round($avg) : null;
         });
     }
 }

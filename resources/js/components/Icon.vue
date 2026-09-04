@@ -81,6 +81,8 @@ import {
     Upload,
     X,
     Zap,
+    Gauge,
+    Sparkles,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -172,6 +174,8 @@ const registry: Record<string, any> = {
     upload: Upload,
     x: X,
     zap: Zap,
+    gauge: Gauge,
+    sparkles: Sparkles,
     box: Box,
     layers: Layers,
     radio: Radio,

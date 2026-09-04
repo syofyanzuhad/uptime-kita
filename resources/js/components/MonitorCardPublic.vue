@@ -200,9 +200,6 @@ function sparkColor(pct: number | null): string {
                                 {{ uptimePeriodLabel }}
                             </span>
                         </div>
-                        <span class="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
-                            Uptime
-                        </span>
                     </div>
 
                     <!-- 7-day Sparkline Micro-Bars -->
