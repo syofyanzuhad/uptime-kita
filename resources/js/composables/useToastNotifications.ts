@@ -11,6 +11,11 @@ export interface ToastNotification {
     data?: Record<string, unknown>;
 }
 
+export type ToastNotificationInput = Omit<ToastNotification, 'id' | 'timestamp' | 'title' | 'duration'> & {
+    title?: string;
+    duration?: number;
+};
+
 const toasts = ref<ToastNotification[]>([]);
 const maxToasts = 5;
 
@@ -21,11 +26,31 @@ export function useToastNotifications() {
     const visibleToasts = computed(() => toasts.value.slice(0, maxToasts));
     const { show, isSupported } = useWebNotification();
 
-    const addToast = (toast: Omit<ToastNotification, 'id' | 'timestamp'>) => {
+    const getDefaultTitle = (type: ToastNotification['type']): string => {
+        switch (type) {
+            case 'success':
+                return 'Success';
+            case 'error':
+                return 'Error';
+            case 'warning':
+                return 'Warning';
+            case 'info':
+                return 'Info';
+            case 'status-up':
+                return 'Service Recovered';
+            case 'status-down':
+                return 'Service Down';
+            default:
+                return 'Notification';
+        }
+    };
+
+    const addToast = (toast: ToastNotificationInput) => {
         const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newToast: ToastNotification = {
             ...toast,
             id,
+            title: toast.title || getDefaultTitle(toast.type),
             timestamp: new Date(),
             duration: toast.duration ?? 5000,
         };

@@ -49,8 +49,6 @@ const startCountdown = () => {
             countdown.value = 30;
             router.reload({
                 only: ['monitors'],
-                preserveScroll: true,
-                preserveState: true,
             });
         }
     }, 1000);

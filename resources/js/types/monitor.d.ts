@@ -20,6 +20,8 @@ export interface Monitor {
     id: number;
     name: string; // This comes from raw_url in MonitorResource
     url: string; // This also comes from raw_url in MonitorResource
+    display_name?: string | null;
+    raw_url?: string;
     uptime_status: 'up' | 'down' | 'not yet checked';
     uptime_check_enabled: boolean;
     last_check_date: string | null;
