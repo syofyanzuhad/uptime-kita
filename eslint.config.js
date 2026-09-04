@@ -13,6 +13,15 @@ export default defineConfigWithVueTs(
         rules: {
             'vue/multi-word-component-names': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector:
+                        "ObjectExpression:has(Property[key.name='label']):has(Property[key.name='value'][value.type='Literal'][value.value=''])",
+                    message:
+                        "Select options must not have an empty string value (value: ''). Use a semantic value like 'all' or 'default' instead to prevent Reka UI runtime errors.",
+                },
+            ],
         },
     },
     prettier,
