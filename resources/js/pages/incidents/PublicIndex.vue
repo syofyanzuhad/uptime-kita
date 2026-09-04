@@ -111,8 +111,14 @@ function resetFilters() {
 const hasActiveFilters = computed(() => !!searchQuery.value || statusFilter.value !== 'all' || rangeFilter.value !== '30d');
 
 function getMonitorCleanDomain(monitor: Incident['monitor']): string {
-    const raw = monitor.raw_url || monitor.url || '';
+    const raw = monitor.raw_url || (typeof monitor.url === 'string' ? monitor.url : '');
     return raw.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+}
+
+function getMonitorDisplayName(monitor: Incident['monitor']): string {
+    if (monitor.display_name) return monitor.display_name;
+    const clean = getMonitorCleanDomain(monitor);
+    return clean || `Monitor #${monitor.id}`;
 }
 
 function formatDuration(minutes: number | null, startedAt: string, endedAt: string | null): string {
@@ -375,7 +381,7 @@ const rangeOptions = [
                                     :href="`/m/${getMonitorCleanDomain(inc.monitor)}`"
                                     class="text-sm font-bold text-gray-900 transition-colors hover:text-blue-600 sm:text-base dark:text-white dark:hover:text-blue-400"
                                 >
-                                    {{ inc.monitor.display_name || inc.monitor.url }}
+                                    {{ getMonitorDisplayName(inc.monitor) }}
                                 </a>
                                 <span
                                     class="rounded-full px-2 py-0.5 text-[10px] font-bold"
@@ -389,7 +395,7 @@ const rangeOptions = [
                                 </span>
                             </div>
                             <span class="block truncate font-mono text-xs text-gray-400 dark:text-gray-500">
-                                {{ inc.monitor.raw_url || inc.monitor.url }}
+                                {{ inc.monitor.raw_url || (typeof inc.monitor.url === 'string' ? inc.monitor.url : '') }}
                             </span>
                         </div>
                     </div>

@@ -13,7 +13,14 @@ interface Incident {
     duration_minutes: number | null;
     reason: string | null;
     status_code: number | null;
-    monitor: { id: number; url: string; name: string | null; is_public: boolean; raw_url: string };
+    monitor: {
+        id: number;
+        url?: string | Record<string, any>;
+        name?: string | null;
+        display_name?: string | null;
+        is_public: boolean;
+        raw_url?: string;
+    };
 }
 
 const props = defineProps<{
@@ -30,6 +37,18 @@ const visibleIncidents = computed(() => {
     const list = props.incidents || [];
     return incidentsExpanded.value ? list : list.slice(0, 3);
 });
+
+function getIncidentMonitorName(inc: Incident): string {
+    if (!inc.monitor) return 'Unknown Service';
+    if (inc.monitor.display_name) return inc.monitor.display_name;
+    if (inc.monitor.name) return inc.monitor.name;
+
+    const raw = inc.monitor.raw_url || (typeof inc.monitor.url === 'string' ? inc.monitor.url : '');
+    if (raw) {
+        return raw.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    }
+    return `Monitor #${inc.monitor_id}`;
+}
 
 function formatIncidentDuration(inc: Incident): string {
     if (inc.duration_minutes) {
@@ -131,7 +150,7 @@ function formatIncidentDuration(inc: Incident): string {
                             {{ inc.ended_at ? 'Operational' : 'Down' }}
                         </span>
                         <span class="truncate text-xs font-medium text-gray-700 dark:text-gray-300">
-                            {{ inc.monitor?.name || inc.monitor?.url || inc.monitor?.raw_url }}
+                            {{ getIncidentMonitorName(inc) }}
                         </span>
                     </div>
                     <span class="shrink-0 text-xs text-gray-400 dark:text-gray-500">

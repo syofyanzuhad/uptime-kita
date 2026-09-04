@@ -23,7 +23,7 @@ class PublicIncidentController extends Controller
 
         $incidents = cache()->remember($cacheKey, 60, function () use ($search, $status, $range, $page) {
             $query = MonitorIncident::query()
-                ->with(['monitor:id,url,display_name,is_public,uptime_status,raw_url'])
+                ->with(['monitor:id,url,display_name,is_public,uptime_status'])
                 ->whereHas('monitor', function ($q) {
                     $q->where('is_public', true);
                 });
@@ -32,8 +32,7 @@ class PublicIncidentController extends Controller
             if (! empty($search)) {
                 $query->whereHas('monitor', function ($q) use ($search) {
                     $q->where('display_name', 'like', "%{$search}%")
-                        ->orWhere('url', 'like', "%{$search}%")
-                        ->orWhere('raw_url', 'like', "%{$search}%");
+                        ->orWhere('url', 'like', "%{$search}%");
                 });
             }
 

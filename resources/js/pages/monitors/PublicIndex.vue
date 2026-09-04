@@ -165,10 +165,18 @@ const loadMore = async () => {
 };
 
 const viewMonitor = (m: Monitor) => {
-    router.visit(`/m/${m.url.replace(/^https?:\/\//, '')}`);
+    const raw = m.raw_url || (typeof m.url === 'string' ? m.url : '');
+    const cleanDomain = raw.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    if (cleanDomain) {
+        router.visit(`/m/${cleanDomain}`);
+    }
 };
 const viewIncidentMonitor = (inc: Incident) => {
-    router.visit(`/m/${inc.monitor.raw_url.replace(/^https?:\/\//, '')}`);
+    const raw = inc.monitor?.raw_url || (typeof inc.monitor?.url === 'string' ? inc.monitor.url : '');
+    const cleanDomain = raw.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    if (cleanDomain) {
+        router.visit(`/m/${cleanDomain}`);
+    }
 };
 
 let isInitialSetup = true;
