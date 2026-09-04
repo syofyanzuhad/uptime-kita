@@ -18,6 +18,7 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Input, Select } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Search, X } from 'lucide-vue-next';
 import CreateMonitorModal from './partials/CreateMonitorModal.vue';
 import DetailMonitorModal from './partials/DetailMonitorModal.vue';
 import EditMonitorModal from './partials/EditMonitorModal.vue';
@@ -127,8 +128,8 @@ const confirmDeleteMonitor = () => {
 const search = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
 const visibilityFilter = ref(props.visibilityFilter || 'all');
-const tagFilter = ref(props.tagFilter || '');
-const perPage = ref((props.perPage as number) || 15);
+const tagFilter = ref(props.tagFilter || 'all');
+const perPage = ref(String(props.perPage || 15));
 
 const statusOptions = [
     { label: 'Semua Status', value: 'all' },
@@ -143,27 +144,27 @@ const visibilityOptions = [
 ];
 
 const tagOptions = computed(() => [
-    { label: 'Semua Tag', value: '' },
+    { label: 'Semua Tag', value: 'all' },
     ...(props.availableTags || []).map((tag) => ({ label: tag.name, value: tag.name })),
 ]);
 
 const perPageOptions = [
-    { label: '5 / halaman', value: 5 },
-    { label: '10 / halaman', value: 10 },
-    { label: '15 / halaman', value: 15 },
-    { label: '20 / halaman', value: 20 },
-    { label: '50 / halaman', value: 50 },
-    { label: '100 / halaman', value: 100 },
+    { label: '5 / halaman', value: '5' },
+    { label: '10 / halaman', value: '10' },
+    { label: '15 / halaman', value: '15' },
+    { label: '20 / halaman', value: '20' },
+    { label: '50 / halaman', value: '50' },
+    { label: '100 / halaman', value: '100' },
 ];
 
 function submitSearch() {
     router.get(
         route('monitors.index'),
         {
-            search: search.value,
-            status_filter: statusFilter.value,
-            visibility_filter: visibilityFilter.value,
-            tag_filter: tagFilter.value,
+            search: search.value || undefined,
+            status_filter: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+            visibility_filter: visibilityFilter.value !== 'all' ? visibilityFilter.value : undefined,
+            tag_filter: tagFilter.value && tagFilter.value !== 'all' ? tagFilter.value : undefined,
             per_page: perPage.value,
         },
         { preserveState: true, only: ['monitors', 'search', 'statusFilter', 'perPage', 'visibilityFilter', 'tagFilter'] },
@@ -202,22 +203,40 @@ function clearSearch() {
                         </div>
                     </div>
 
-                    <!-- Search Bar & Filter -->
-                    <form @submit.prevent="submitSearch" class="mb-4 flex flex-wrap items-center gap-2">
-                        <Input v-model="search" type="text" placeholder="Cari monitor (min 3 karakter)..." class="h-9 w-full max-w-xs min-w-52" />
+                    <!-- Search Bar & Filter Toolbar -->
+                    <form @submit.prevent="submitSearch" class="mb-5 flex flex-wrap items-center gap-2.5">
+                        <div class="relative min-w-[220px] flex-1 max-w-sm">
+                            <Search class="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Input
+                                v-model="search"
+                                type="text"
+                                placeholder="Cari monitor (min 3 karakter)..."
+                                class="h-9 w-full rounded-md pr-8 pl-9 text-sm"
+                            />
+                            <button
+                                v-if="search"
+                                type="button"
+                                @click="clearSearch"
+                                class="absolute top-1/2 right-2.5 z-10 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                title="Clear"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
                         <Select
                             v-model="statusFilter"
                             :items="statusOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Status"
-                            class="h-9 w-36"
+                            class="h-9 w-36 shrink-0"
                         />
                         <Select
                             v-model="visibilityFilter"
                             :items="visibilityOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Visibilitas"
-                            class="h-9 w-40"
+                            class="h-9 w-40 shrink-0"
                         />
                         <Select
                             v-if="props.availableTags && props.availableTags.length > 0"
@@ -225,11 +244,21 @@ function clearSearch() {
                             :items="tagOptions"
                             @update:model-value="submitSearch"
                             placeholder="Semua Tag"
-                            class="h-9 w-36"
+                            class="h-9 w-36 shrink-0"
                         />
-                        <Select v-model="perPage" :items="perPageOptions" @update:model-value="submitSearch" class="h-9 w-36" />
-                        <Button v-if="search" type="button" variant="outline" size="sm" @click="clearSearch" class="h-9"> Bersihkan </Button>
-                        <Button type="submit" size="sm" class="h-9"> Cari </Button>
+                        <Select
+                            v-model="perPage"
+                            :items="perPageOptions"
+                            @update:model-value="submitSearch"
+                            placeholder="Per Halaman"
+                            class="h-9 w-36 shrink-0"
+                        />
+                        <Button v-if="search || statusFilter !== 'all' || visibilityFilter !== 'all' || tagFilter !== 'all'" type="button" variant="outline" size="sm" @click="() => { search = ''; statusFilter = 'all'; visibilityFilter = 'all'; tagFilter = 'all'; submitSearch(); }" class="h-9">
+                            Reset
+                        </Button>
+                        <Button type="submit" size="sm" class="h-9 gap-1.5 px-4">
+                            Cari
+                        </Button>
                     </form>
 
                     <div v-if="props.monitors.data.length === 0" class="text-gray-600 dark:text-gray-400">Belum ada monitor yang terdaftar.</div>

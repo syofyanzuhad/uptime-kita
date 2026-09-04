@@ -41,11 +41,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 const searchQuery = ref(props.search || '');
 const statusFilter = ref(props.statusFilter || 'all');
 const uptimeFilter = ref(props.uptimeFilter || 'all');
-const tagFilter = ref(props.tagFilter || '');
+const tagFilter = ref(props.tagFilter || 'all');
 const perPage = ref(props.perPage || 50);
 
 const hasActiveFilters = computed(() => {
-    return searchQuery.value !== '' || statusFilter.value !== 'all' || uptimeFilter.value !== 'all' || tagFilter.value !== '' || perPage.value !== 50;
+    return searchQuery.value !== '' || statusFilter.value !== 'all' || uptimeFilter.value !== 'all' || tagFilter.value !== 'all' || perPage.value !== 50;
 });
 
 const applyFilters = () => {
@@ -55,7 +55,7 @@ const applyFilters = () => {
             search: searchQuery.value || undefined,
             status_filter: statusFilter.value !== 'all' ? statusFilter.value : undefined,
             uptime_filter: uptimeFilter.value !== 'all' ? uptimeFilter.value : undefined,
-            tag_filter: tagFilter.value || undefined,
+            tag_filter: tagFilter.value && tagFilter.value !== 'all' ? tagFilter.value : undefined,
             per_page: perPage.value !== 50 ? perPage.value : undefined,
         },
         {
@@ -69,7 +69,7 @@ const resetFilters = () => {
     searchQuery.value = '';
     statusFilter.value = 'all';
     uptimeFilter.value = 'all';
-    tagFilter.value = '';
+    tagFilter.value = 'all';
     perPage.value = 50;
     applyFilters();
 };
@@ -152,7 +152,7 @@ const statCards = computed(() => [
 ]);
 
 const tagOptions = computed(() => [
-    { label: 'All Tags', value: '' },
+    { label: 'All Tags', value: 'all' },
     ...(props.availableTags || []).map((t) => ({ label: `#${t.name}`, value: t.name })),
 ]);
 </script>
