@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
             // Add last update date for UI
             'lastUpdate' => config('app.last_update'),
             'pollRequestApi' => config('app.poll_request_api', 'manual'),
+            'sseEnabled' => (bool) config('uptime-monitor.sse.enabled', true),
         ];
     }
 }

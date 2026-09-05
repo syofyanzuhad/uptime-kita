@@ -43,6 +43,14 @@ describe('MonitorStatusStreamController', function () {
         $response->assertHeader('Content-Type', 'text/event-stream; charset=utf-8');
     });
 
+    it('returns 503 service unavailable when sse is disabled', function () {
+        config(['uptime-monitor.sse.enabled' => false]);
+
+        $response = get('/api/monitor-status-stream');
+
+        $response->assertStatus(503);
+    });
+
     it('is rate limited', function () {
         // Make 10 requests (the limit)
         for ($i = 0; $i < 10; $i++) {

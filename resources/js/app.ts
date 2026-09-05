@@ -13,6 +13,7 @@ declare global {
     interface ImportMetaEnv {
         readonly VITE_APP_NAME: string;
         readonly VITE_POLL_REQUEST_API?: string;
+        readonly VITE_SSE_ENABLED?: string | boolean;
         [key: string]: string | boolean | undefined;
     }
 }

@@ -218,6 +218,16 @@ return [
     ],
 
     /*
+     * Server-Sent Events (SSE) configuration for real-time monitor status updates.
+     */
+    'sse' => [
+        'enabled' => (bool) env('SSE_ENABLED', env('VITE_SSE_ENABLED', true)),
+        'heartbeat_interval' => (int) env('SSE_HEARTBEAT_INTERVAL', 30),
+        'max_duration' => (int) env('SSE_MAX_DURATION', 300),
+        'poll_sleep_microseconds' => (int) (env('SSE_POLL_INTERVAL_MS', 500) * 1000),
+    ],
+
+    /*
      * To add or modify behaviour to the Monitor model you can specify your
      * own model here. The only requirement is that it should extend
      * `Spatie\UptimeMonitor\Models\Monitor`.

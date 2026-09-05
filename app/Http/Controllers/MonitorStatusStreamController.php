@@ -19,6 +19,10 @@ class MonitorStatusStreamController extends Controller
      */
     public function __invoke(Request $request): Response
     {
+        if (! config('uptime-monitor.sse.enabled', true)) {
+            abort(503, 'SSE streaming is disabled.');
+        }
+
         $monitorIds = $request->query('monitor_ids')
             ? array_map('intval', explode(',', $request->query('monitor_ids')))
             : [];
@@ -27,11 +31,13 @@ class MonitorStatusStreamController extends Controller
             : null;
         $lastEventId = $request->header('Last-Event-ID') ?? $request->query('last_event_id');
 
-        return response()->eventStream(function () use ($monitorIds, $statusPageId, $lastEventId) {
+        $heartbeatInterval = (int) config('uptime-monitor.sse.heartbeat_interval', 30);
+        $maxDuration = (int) config('uptime-monitor.sse.max_duration', 300);
+        $pollSleepMicroseconds = (int) config('uptime-monitor.sse.poll_sleep_microseconds', 500000);
+
+        return response()->eventStream(function () use ($monitorIds, $statusPageId, $lastEventId, $heartbeatInterval, $maxDuration, $pollSleepMicroseconds) {
             $seenIds = $lastEventId ? [$lastEventId] : [];
-            $heartbeatInterval = 30; // seconds
             $lastHeartbeat = time();
-            $maxDuration = 300; // 5 minutes max connection
             $startTime = time();
 
             while (true) {
@@ -80,8 +86,8 @@ class MonitorStatusStreamController extends Controller
                     $lastHeartbeat = time();
                 }
 
-                // Small sleep to prevent CPU spinning
-                usleep(500000); // 0.5 seconds
+                // Sleep to prevent CPU spinning
+                usleep($pollSleepMicroseconds);
             }
         }, endStreamWith: new StreamedEvent(event: 'end', data: '</stream>'));
     }

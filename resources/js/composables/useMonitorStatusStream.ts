@@ -1,4 +1,5 @@
-import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 
 export interface StatusChange {
     id: string;
@@ -19,11 +20,38 @@ export interface UseMonitorStatusStreamOptions {
     enabled?: boolean | Ref<boolean>;
 }
 
+function checkSseGloballyEnabled(): boolean {
+    try {
+        const page = usePage();
+        const inertiaProp = (page?.props as any)?.sseEnabled;
+        if (typeof inertiaProp === 'boolean') {
+            return inertiaProp;
+        }
+    } catch {
+        // Fallback when invoked outside Inertia component context
+    }
+
+    const viteEnv = import.meta.env.VITE_SSE_ENABLED;
+    if (viteEnv !== undefined) {
+        return viteEnv !== 'false' && viteEnv !== false;
+    }
+
+    return true;
+}
+
 export function useMonitorStatusStream(options: UseMonitorStatusStreamOptions = {}) {
     const { monitorIds = [], statusPageId, onStatusChange } = options;
 
-    // Handle enabled as either a boolean or a ref
-    const enabledRef = typeof options.enabled === 'object' ? options.enabled : ref(options.enabled ?? true);
+    const isSseGloballyEnabled = checkSseGloballyEnabled();
+
+    // Handle enabled as either a boolean or a ref, respecting global SSE enablement
+    const isOptionsEnabledRef = typeof options.enabled === 'object' && options.enabled !== null && 'value' in options.enabled;
+    const initialOptionValue = isOptionsEnabledRef ? (options.enabled as Ref<boolean>).value : (options.enabled ?? true);
+    const initialEnabled = Boolean(initialOptionValue && isSseGloballyEnabled);
+
+    const enabledRef = isOptionsEnabledRef
+        ? computed(() => Boolean((options.enabled as Ref<boolean>).value && isSseGloballyEnabled))
+        : ref(initialEnabled);
 
     const isConnected = ref(false);
     const isConnecting = ref(false);

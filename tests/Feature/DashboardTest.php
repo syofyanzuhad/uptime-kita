@@ -33,3 +33,19 @@ test('dashboard shares pollRequestApi configuration to frontend', function () {
         ->where('pollRequestApi', 'manual')
     );
 });
+
+test('dashboard shares sseEnabled configuration to frontend', function () {
+    config(['uptime-monitor.sse.enabled' => true]);
+
+    $response = $this->get('/dashboard');
+    $response->assertInertia(fn (Assert $page) => $page
+        ->where('sseEnabled', true)
+    );
+
+    config(['uptime-monitor.sse.enabled' => false]);
+
+    $response = $this->get('/dashboard');
+    $response->assertInertia(fn (Assert $page) => $page
+        ->where('sseEnabled', false)
+    );
+});
