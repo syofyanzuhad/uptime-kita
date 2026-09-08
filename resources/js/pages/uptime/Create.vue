@@ -150,6 +150,7 @@ watch(
         if (!newUrl) {
             dnsStatus.value = 'idle';
             dnsMessage.value = '';
+            showDnsWarningDismissed.value = false;
             return;
         }
 
@@ -160,8 +161,9 @@ watch(
             } else {
                 dnsStatus.value = 'idle';
                 dnsMessage.value = '';
+                showDnsWarningDismissed.value = false;
             }
-        }, 1000); // 1 second debounce
+        }, 800);
     },
 );
 
@@ -183,19 +185,25 @@ const incrementInterval = () => {
     }
 };
 
+const clampInterval = () => {
+    if (form.uptime_check_interval < 1) form.uptime_check_interval = 1;
+    if (form.uptime_check_interval > 60) form.uptime_check_interval = 60;
+};
+
+const showDnsWarningDismissed = ref(false);
+
 const submit = () => {
-    if (dnsStatus.value === 'invalid') {
-        // Show warning but allow submission
-        if (!confirm('The domain DNS could not be verified. Do you want to continue adding this monitor?')) {
-            return;
-        }
+    if (dnsStatus.value === 'invalid' && !showDnsWarningDismissed.value) {
+        showDnsWarningDismissed.value = true;
+        return;
     }
 
     form.post(route('monitors.store'), {
-        onFinish: () => {
-            form.reset('url');
+        onSuccess: () => {
+            form.reset();
             dnsStatus.value = 'idle';
             dnsMessage.value = '';
+            showDnsWarningDismissed.value = false;
         },
     });
 };
@@ -260,7 +268,21 @@ const submit = () => {
                                     <Loader2 v-else-if="dnsStatus === 'checking'" class="h-3.5 w-3.5 shrink-0 animate-spin" />
                                     <span>{{ dnsMessage }}</span>
                                 </div>
-                                <div v-if="form.errors.url" class="text-xs text-destructive">{{ form.errors.url }}</div>
+                                <div v-if="form.errors.url" class="text-destructive text-xs">{{ form.errors.url }}</div>
+
+                                <!-- Inline DNS warning banner if unverified -->
+                                <div
+                                    v-if="dnsStatus === 'invalid' && showDnsWarningDismissed"
+                                    class="border-amber-500/30 bg-amber-50/70 dark:bg-amber-950/30 rounded-md border p-3 text-xs text-amber-800 dark:text-amber-200"
+                                >
+                                    <div class="flex items-start gap-2">
+                                        <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                        <div>
+                                            <span class="font-medium">DNS belum terverifikasi:</span>
+                                            Monitor tetap dapat disimpan, namun pemeriksaan kemungkinan akan gagal sampai domain dapat diakses. Tekan "Tambah Monitor" lagi untuk melanjutkan.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Interval Input -->
@@ -283,6 +305,7 @@ const submit = () => {
                                         min="1"
                                         max="60"
                                         v-model.number="form.uptime_check_interval"
+                                        @blur="clampInterval"
                                         class="w-20 text-center font-medium"
                                     />
                                     <Button
@@ -295,9 +318,9 @@ const submit = () => {
                                         <Plus class="h-4 w-4" />
                                         <span class="sr-only">Tambah</span>
                                     </Button>
-                                    <span class="text-sm text-muted-foreground">menit</span>
+                                    <span class="text-muted-foreground text-sm">menit</span>
                                 </div>
-                                <div v-if="form.errors.uptime_check_interval" class="text-xs text-destructive">
+                                <div v-if="form.errors.uptime_check_interval" class="text-destructive text-xs">
                                     {{ form.errors.uptime_check_interval }}
                                 </div>
                             </div>
@@ -306,33 +329,33 @@ const submit = () => {
                             <div class="space-y-2">
                                 <Label for="tags">Tags</Label>
                                 <TagInput v-model="form.tags" placeholder="Tambah tag (contoh: production, api, critical)" />
-                                <div v-if="form.errors.tags" class="text-xs text-destructive">{{ form.errors.tags }}</div>
+                                <div v-if="form.errors.tags" class="text-destructive text-xs">{{ form.errors.tags }}</div>
                             </div>
 
                             <!-- Feature Checks Toggles -->
                             <div class="space-y-3">
                                 <Label class="text-sm font-medium">Fitur Pengecekan</Label>
                                 <div class="space-y-3">
-                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                    <div class="border-border flex items-center justify-between rounded-lg border p-3.5">
                                         <div class="space-y-0.5">
                                             <Label for="uptime_check_enabled" class="cursor-pointer text-sm font-medium">Pengecekan Uptime</Label>
-                                            <p class="text-xs text-muted-foreground">Periksa ketersediaan situs secara berkala sesuai interval</p>
+                                            <p class="text-muted-foreground text-xs">Periksa ketersediaan situs secara berkala sesuai interval</p>
                                         </div>
                                         <Switch id="uptime_check_enabled" v-model="form.uptime_check_enabled" />
                                     </div>
 
-                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                    <div class="border-border flex items-center justify-between rounded-lg border p-3.5">
                                         <div class="space-y-0.5">
                                             <Label for="certificate_check_enabled" class="cursor-pointer text-sm font-medium">Sertifikat SSL</Label>
-                                            <p class="text-xs text-muted-foreground">Pantau validitas dan masa berlaku sertifikat SSL/TLS</p>
+                                            <p class="text-muted-foreground text-xs">Pantau validitas dan masa berlaku sertifikat SSL/TLS</p>
                                         </div>
                                         <Switch id="certificate_check_enabled" v-model="form.certificate_check_enabled" />
                                     </div>
 
-                                    <div class="flex items-center justify-between rounded-lg border p-3.5 shadow-2xs dark:border-input/50">
+                                    <div class="border-border flex items-center justify-between rounded-lg border p-3.5">
                                         <div class="space-y-0.5">
                                             <Label for="domain_expiration_check_enabled" class="cursor-pointer text-sm font-medium">Kedaluwarsa Domain</Label>
-                                            <p class="text-xs text-muted-foreground">Peringatan sebelum domain Anda memasuki masa kedaluwarsa</p>
+                                            <p class="text-muted-foreground text-xs">Peringatan sebelum domain Anda memasuki masa kedaluwarsa</p>
                                         </div>
                                         <Switch id="domain_expiration_check_enabled" v-model="form.domain_expiration_check_enabled" />
                                     </div>
@@ -352,18 +375,18 @@ const submit = () => {
                                         <Label for="private" class="cursor-pointer font-normal">Privat</Label>
                                     </div>
                                 </RadioGroup>
-                                <div v-if="form.errors.is_public" class="text-xs text-destructive">{{ form.errors.is_public }}</div>
+                                <div v-if="form.errors.is_public" class="text-destructive text-xs">{{ form.errors.is_public }}</div>
                             </div>
                         </CardContent>
 
-                        <CardFooter class="flex items-center justify-end gap-3 border-t pt-6">
+                        <CardFooter class="border-border flex items-center justify-end gap-3 border-t pt-6">
                             <Button type="button" variant="outline" @click="router.visit('/monitors')">
                                 Batal
                             </Button>
                             <Button type="submit" :disabled="form.processing">
                                 <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                                 <Plus v-else class="mr-2 h-4 w-4" />
-                                Tambah Monitor
+                                {{ dnsStatus === 'invalid' && !showDnsWarningDismissed ? 'Verifikasi & Tambah' : 'Tambah Monitor' }}
                             </Button>
                         </CardFooter>
                     </form>

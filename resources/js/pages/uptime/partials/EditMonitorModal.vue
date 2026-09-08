@@ -2,6 +2,7 @@
 import Icon from '@/components/Icon.vue';
 import TagInput from '@/components/TagInput.vue';
 import Button from '@/components/ui/button/Button.vue';
+import Checkbox from '@/components/ui/checkbox/Checkbox.vue';
 import Dialog from '@/components/ui/dialog/Dialog.vue';
 import DialogContent from '@/components/ui/dialog/DialogContent.vue';
 import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
@@ -10,6 +11,7 @@ import DialogHeader from '@/components/ui/dialog/DialogHeader.vue';
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue';
 import { Input, Select } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Monitor } from '@/types/monitor';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
@@ -80,6 +82,11 @@ const incrementInterval = () => {
     if (form.uptime_check_interval < 60) form.uptime_check_interval++;
 };
 
+const clampInterval = () => {
+    if (form.uptime_check_interval < 1) form.uptime_check_interval = 1;
+    if (form.uptime_check_interval > 60) form.uptime_check_interval = 60;
+};
+
 const submit = () => {
     if (!props.monitor) return;
 
@@ -104,11 +111,11 @@ const close = () => {
                 <DialogDescription> Perbarui konfigurasi monitor untuk {{ monitor?.url }}. </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submit" class="space-y-4 py-4">
+            <form @submit.prevent="submit" class="space-y-4 py-2">
                 <div class="space-y-1.5">
                     <Label for="edit-url">URL Monitor</Label>
                     <Input id="edit-url" type="url" class="h-10" v-model="form.url" required />
-                    <div v-if="form.errors.url" class="mt-1 text-xs text-red-600">{{ form.errors.url }}</div>
+                    <div v-if="form.errors.url" class="text-destructive text-xs">{{ form.errors.url }}</div>
                 </div>
 
                 <div class="space-y-1.5">
@@ -117,20 +124,25 @@ const close = () => {
                         <button
                             type="button"
                             @click="decrementInterval"
-                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-l-md border"
+                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-l-md border transition-colors"
+                            aria-label="Kurangi interval"
                         >
                             <Icon name="minus" size="16" />
                         </button>
                         <input
                             id="edit-interval"
                             type="number"
-                            v-model="form.uptime_check_interval"
-                            class="border-input dark:bg-input/30 h-10 w-20 border-t border-b bg-transparent text-center text-sm focus:outline-none"
+                            v-model.number="form.uptime_check_interval"
+                            @blur="clampInterval"
+                            min="1"
+                            max="60"
+                            class="border-input dark:bg-input/30 text-foreground h-10 w-20 border-t border-b bg-transparent text-center text-sm focus:outline-none"
                         />
                         <button
                             type="button"
                             @click="incrementInterval"
-                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-r-md border"
+                            class="border-input bg-muted hover:bg-accent text-foreground flex h-10 w-10 items-center justify-center rounded-r-md border transition-colors"
+                            aria-label="Tambah interval"
                         >
                             <Icon name="plus" size="16" />
                         </button>
@@ -140,44 +152,66 @@ const close = () => {
                 <div class="space-y-1.5">
                     <Label>Tags</Label>
                     <div>
-                        <TagInput v-model="form.tags" placeholder="Add tags..." />
+                        <TagInput v-model="form.tags" placeholder="Tambahkan tags..." />
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="form.uptime_check_enabled" class="rounded border-gray-300 text-blue-600" />
-                        Aktifkan Pengecekan Uptime
-                    </label>
-                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="form.certificate_check_enabled" class="rounded border-gray-300 text-blue-600" />
-                        Aktifkan Pengecekan Sertifikat SSL
-                    </label>
-                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input type="checkbox" v-model="form.domain_expiration_check_enabled" class="rounded border-gray-300 text-blue-600" />
-                        Aktifkan Pengecekan Kedaluwarsa Domain
-                    </label>
+                <div class="space-y-2.5 pt-1">
+                    <div class="flex items-center gap-2">
+                        <Checkbox
+                            id="edit-uptime-check"
+                            :checked="form.uptime_check_enabled"
+                            @update:checked="form.uptime_check_enabled = $event"
+                        />
+                        <Label for="edit-uptime-check" class="cursor-pointer text-sm font-normal">
+                            Aktifkan Pengecekan Uptime
+                        </Label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox
+                            id="edit-cert-check"
+                            :checked="form.certificate_check_enabled"
+                            @update:checked="form.certificate_check_enabled = $event"
+                        />
+                        <Label for="edit-cert-check" class="cursor-pointer text-sm font-normal">
+                            Aktifkan Pengecekan Sertifikat SSL
+                        </Label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox
+                            id="edit-domain-check"
+                            :checked="form.domain_expiration_check_enabled"
+                            @update:checked="form.domain_expiration_check_enabled = $event"
+                        />
+                        <Label for="edit-domain-check" class="cursor-pointer text-sm font-normal">
+                            Aktifkan Pengecekan Kedaluwarsa Domain
+                        </Label>
+                    </div>
                 </div>
 
-                <div v-if="userId === 1" class="space-y-1.5">
+                <div v-if="userId === 1" class="space-y-1.5 pt-1">
                     <Label>Visibilitas</Label>
-                    <div class="flex gap-4">
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="radio" :value="true" v-model="form.is_public" class="text-blue-600" />
-                            Publik
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="radio" :value="false" v-model="form.is_public" class="text-blue-600" />
-                            Privat
-                        </label>
-                    </div>
+                    <RadioGroup
+                        :model-value="form.is_public ? 'public' : 'private'"
+                        @update:model-value="form.is_public = $event === 'public'"
+                        class="flex items-center gap-4"
+                    >
+                        <div class="flex items-center gap-2">
+                            <RadioGroupItem id="edit-vis-public" value="public" />
+                            <Label for="edit-vis-public" class="cursor-pointer text-sm font-normal">Publik</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <RadioGroupItem id="edit-vis-private" value="private" />
+                            <Label for="edit-vis-private" class="cursor-pointer text-sm font-normal">Privat</Label>
+                        </div>
+                    </RadioGroup>
                 </div>
 
-                <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+                <div class="border-border border-t pt-4">
                     <button
                         type="button"
                         @click="showAdvanced = !showAdvanced"
-                        class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                        class="text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm font-medium transition-colors"
                     >
                         <Icon :name="showAdvanced ? 'chevronDown' : 'chevronRight'" size="16" />
                         Pengaturan Lanjutan
@@ -190,16 +224,16 @@ const close = () => {
                         </div>
                         <div class="space-y-1.5">
                             <Label for="delay">Delay Konfirmasi (detik)</Label>
-                            <Input id="delay" type="number" v-model="form.confirmation_delay_seconds" />
+                            <Input id="delay" type="number" v-model="form.confirmation_delay_seconds" placeholder="misal: 30" />
                         </div>
                         <div class="space-y-1.5">
                             <Label for="retries">Jumlah Retry</Label>
-                            <Input id="retries" type="number" v-model="form.confirmation_retries" />
+                            <Input id="retries" type="number" v-model="form.confirmation_retries" placeholder="misal: 3" />
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter class="mt-6">
+                <DialogFooter class="pt-4">
                     <Button type="button" variant="outline" @click="close">Batal</Button>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Menyimpan...' : 'Perbarui Monitor' }}

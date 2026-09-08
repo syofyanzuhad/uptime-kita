@@ -177,16 +177,16 @@ onUnmounted(() => {
 <template>
     <div class="tag-input-container relative">
         <div
-            class="flex flex-wrap gap-2 rounded-md border border-gray-300 bg-white p-2 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+            class="border-input dark:bg-input/30 focus-within:border-ring focus-within:ring-ring/50 flex flex-wrap gap-2 rounded-md border bg-transparent p-2 shadow-xs transition-[color,box-shadow] focus-within:ring-[3px] focus-within:outline-none"
         >
             <!-- Tags -->
             <span
                 v-for="(tag, index) in tags"
                 :key="index"
-                class="inline-flex items-center gap-1 rounded-md bg-indigo-100 px-2 py-1 text-sm text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                class="bg-secondary text-secondary-foreground inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium"
             >
                 {{ tag }}
-                <button type="button" @click="removeTag(index)" class="hover:text-indigo-600 dark:hover:text-indigo-400">
+                <button type="button" @click="removeTag(index)" class="text-muted-foreground hover:text-foreground inline-flex items-center justify-center">
                     <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             fill-rule="evenodd"
@@ -205,7 +205,7 @@ onUnmounted(() => {
                 @input="handleInput"
                 @keydown="handleKeydown"
                 :placeholder="tags.length === 0 ? placeholder : ''"
-                class="min-w-[120px] flex-1 border-0 bg-transparent p-0 text-sm text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none dark:text-gray-100 dark:placeholder-gray-500"
+                class="placeholder:text-muted-foreground text-foreground min-w-[120px] flex-1 border-0 bg-transparent p-0 text-sm focus:outline-none focus:ring-0"
                 :disabled="tags.length >= maxTags"
             />
         </div>
@@ -213,10 +213,10 @@ onUnmounted(() => {
         <!-- Suggestions dropdown -->
         <div
             v-if="showSuggestions || isLoading"
-            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
+            class="border-border bg-popover text-popover-foreground absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border shadow-md"
         >
             <!-- Loading indicator -->
-            <div v-if="isLoading" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+            <div v-if="isLoading" class="text-muted-foreground px-3 py-2 text-sm">
                 <svg class="mr-2 inline-block h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path
@@ -235,10 +235,10 @@ onUnmounted(() => {
                     :key="suggestion.id || index"
                     @click="selectSuggestion(suggestion)"
                     :class="[
-                        'cursor-pointer px-3 py-2 text-sm',
+                        'cursor-pointer px-3 py-1.5 text-sm transition-colors',
                         selectedIndex === index
-                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200'
-                            : 'text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700',
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-foreground hover:bg-muted',
                     ]"
                 >
                     {{ suggestion.name }}
@@ -246,12 +246,12 @@ onUnmounted(() => {
             </ul>
 
             <!-- No results message -->
-            <div v-else class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+            <div v-else class="text-muted-foreground px-3 py-2 text-sm">
                 No matching tags found. Press Enter to create "{{ inputValue }}"
             </div>
         </div>
 
         <!-- Helper text -->
-        <p v-if="tags.length >= maxTags" class="mt-1 text-xs text-red-600 dark:text-red-400">Maximum {{ maxTags }} tags allowed</p>
+        <p v-if="tags.length >= maxTags" class="text-destructive mt-1 text-xs">Maximum {{ maxTags }} tags allowed</p>
     </div>
 </template>
