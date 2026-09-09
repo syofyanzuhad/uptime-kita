@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { WORLD_MAP_PATH } from './worldMapData';
 
 export interface ResolverResult {
     id: string;
@@ -96,36 +97,11 @@ const projectedResolvers = computed(() => {
                 <!-- Grid Background -->
                 <rect width="800" height="400" fill="url(#dns-map-grid)" />
 
-                <!-- Stylized Minimalist Continents Path (Equirectangular background shapes) -->
-                <!-- North America -->
+                <!-- Accurate World Landmass (Equirectangular Projection) -->
                 <path
-                    d="M 120 70 Q 180 50 240 70 Q 280 110 250 160 Q 210 180 160 170 Q 100 130 120 70 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
-                />
-                <!-- South America -->
-                <path
-                    d="M 230 190 Q 280 200 300 240 Q 280 320 240 340 Q 210 280 230 190 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
-                />
-                <!-- Europe -->
-                <path
-                    d="M 370 70 Q 450 60 480 100 Q 460 140 400 140 Q 360 110 370 70 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
-                />
-                <!-- Africa -->
-                <path
-                    d="M 390 150 Q 470 150 490 200 Q 470 280 430 320 Q 380 260 390 150 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
-                />
-                <!-- Asia -->
-                <path
-                    d="M 490 60 Q 640 50 710 110 Q 670 190 560 180 Q 490 140 490 60 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
-                />
-                <!-- Australia -->
-                <path
-                    d="M 640 250 Q 720 250 730 300 Q 690 340 640 330 Q 620 290 640 250 Z"
-                    fill="rgba(255, 255, 255, 0.07)"
+                    :d="WORLD_MAP_PATH"
+                    class="fill-slate-800/90 stroke-slate-700/60"
+                    stroke-width="0.75"
                 />
 
                 <!-- Coordinate Equator & Prime Meridian dashed lines -->
@@ -134,38 +110,36 @@ const projectedResolvers = computed(() => {
 
                 <!-- Resolver Pins -->
                 <g v-for="node in projectedResolvers" :key="node.id" class="group cursor-pointer">
-                    <!-- Pulsing wave ring -->
+                    <!-- Subtle pulsing ring -->
                     <circle
                         :cx="node.x"
                         :cy="node.y"
-                        r="12"
-                        class="animate-ping opacity-30"
+                        r="9"
+                        class="animate-ping opacity-35"
                         :class="{
-                            'text-emerald-400 fill-emerald-400': node.ok && (node.matchesConsensus || !consensusAnswer),
-                            'text-amber-400 fill-amber-400': node.ok && !node.matchesConsensus && consensusAnswer,
-                            'text-rose-500 fill-rose-500': !node.ok,
+                            'fill-emerald-400': node.ok && (node.matchesConsensus || !consensusAnswer),
+                            'fill-amber-400': node.ok && !node.matchesConsensus && consensusAnswer,
+                            'fill-rose-500': !node.ok,
                         }"
                     />
-                    <!-- Outer Glow Ring -->
+                    <!-- Status Ring -->
                     <circle
                         :cx="node.x"
                         :cy="node.y"
-                        r="6"
-                        class="opacity-60"
+                        r="4.5"
                         :class="{
-                            'text-emerald-400 fill-emerald-400': node.ok && (node.matchesConsensus || !consensusAnswer),
-                            'text-amber-400 fill-amber-400': node.ok && !node.matchesConsensus && consensusAnswer,
-                            'text-rose-500 fill-rose-500': !node.ok,
+                            'fill-emerald-500 stroke-emerald-200/80': node.ok && (node.matchesConsensus || !consensusAnswer),
+                            'fill-amber-500 stroke-amber-200/80': node.ok && !node.matchesConsensus && consensusAnswer,
+                            'fill-rose-600 stroke-rose-300/80': !node.ok,
                         }"
+                        stroke-width="1.5"
                     />
                     <!-- Center Dot -->
                     <circle
                         :cx="node.x"
                         :cy="node.y"
-                        r="3.5"
+                        r="1.8"
                         fill="#ffffff"
-                        stroke="#0f172a"
-                        stroke-width="1"
                     />
 
                     <!-- Tooltip Card on Hover -->
