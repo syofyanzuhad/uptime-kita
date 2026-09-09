@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
+import RelatedTools from '@/components/tools/RelatedTools.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -155,5 +156,8 @@ function copy(text: string, type: 'md' | 'html' | 'url') {
                 </CardContent>
             </Card>
         </div>
+
+        <!-- Other Free Tools -->
+        <RelatedTools current-slug="badge-generator" :target-value="cleanDomain" />
     </PublicLayout>
 </template>

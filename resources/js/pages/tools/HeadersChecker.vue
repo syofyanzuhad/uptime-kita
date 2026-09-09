@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import PublicLayout from '@/components/PublicLayout.vue';
+import RelatedTools from '@/components/tools/RelatedTools.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -256,5 +257,8 @@ async function checkHeaders() {
                 </CardContent>
             </Card>
         </div>
+
+        <!-- Other Free Tools -->
+        <RelatedTools current-slug="headers-checker" :target-value="urlInput" />
     </PublicLayout>
 </template>
