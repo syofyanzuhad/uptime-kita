@@ -66,10 +66,24 @@ class PublicToolsService
             ];
         }
 
+        $parsedDetails = $this->parseCertificateData($cert, $domain);
+        $parsedDetails['elapsed_ms'] = round((microtime(true) - $start) * 1000, 1);
+
+        return $parsedDetails;
+    }
+
+    /**
+     * Format and analyze an OpenSSL parsed certificate array.
+     *
+     * @param  array<string, mixed>  $cert
+     * @return array<string, mixed>
+     */
+    public function parseCertificateData(array $cert, string $domain): array
+    {
         $validFrom = isset($cert['validFrom_time_t']) ? date('Y-m-d H:i:s', $cert['validFrom_time_t']) : null;
         $validTo = isset($cert['validTo_time_t']) ? date('Y-m-d H:i:s', $cert['validTo_time_t']) : null;
         $daysRemaining = isset($cert['validTo_time_t']) ? (int) floor(($cert['validTo_time_t'] - time()) / 86400) : 0;
-        $isValid = $daysRemaining > 0 && ($cert['validFrom_time_t'] <= time());
+        $isValid = $daysRemaining > 0 && (($cert['validFrom_time_t'] ?? 0) <= time());
 
         // Extract SANs (Subject Alternative Names)
         $sans = [];
@@ -95,7 +109,6 @@ class PublicToolsService
             'valid_to' => $validTo,
             'sans' => $sans,
             'signature_type' => $cert['signatureTypeSN'] ?? null,
-            'elapsed_ms' => round((microtime(true) - $start) * 1000, 1),
         ];
     }
 
