@@ -170,6 +170,68 @@ test('api dns lookup returns valid schema', function () {
     ]);
 });
 
+test('api dns lookup blocks private ip addresses', function () {
+    $response = $this->postJson('/api/tools/dns-lookup', [
+        'domain' => 'google.com',
+        'type' => 'A',
+        'server' => '192.168.1.1',
+    ]);
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['server']);
+});
+
+test('api dns lookup supports custom public server', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('lookupDns')
+            ->once()
+            ->with('google.com', 'A', '1.1.1.1', false)
+            ->andReturn([
+                'ok' => true,
+                'domain' => 'google.com',
+                'server' => '1.1.1.1',
+            ]);
+    });
+
+    $response = $this->postJson('/api/tools/dns-lookup', [
+        'domain' => 'google.com',
+        'type' => 'A',
+        'server' => '1.1.1.1',
+    ]);
+    $response->assertSuccessful();
+    $response->assertJson(['ok' => true, 'server' => '1.1.1.1']);
+});
+
+test('api dns lookup supports global propagation flag', function () {
+    $this->mock(PublicToolsService::class, function ($mock) {
+        $mock->shouldReceive('lookupDns')
+            ->once()
+            ->with('google.com', 'A', null, true)
+            ->andReturn([
+                'ok' => true,
+                'domain' => 'google.com',
+                'global' => [
+                    'total' => 12,
+                    'responding' => 12,
+                    'propagation_percent' => 100,
+                ],
+            ]);
+    });
+
+    $response = $this->postJson('/api/tools/dns-lookup', [
+        'domain' => 'google.com',
+        'type' => 'A',
+        'check_global' => true,
+    ]);
+
+    $response->assertSuccessful();
+    $response->assertJson([
+        'ok' => true,
+        'global' => [
+            'propagation_percent' => 100,
+        ],
+    ]);
+});
+
 test('api headers check returns valid schema', function () {
     $this->mock(PublicToolsService::class, function ($mock) {
         $mock->shouldReceive('checkHeaders')

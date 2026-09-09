@@ -166,16 +166,29 @@ class PublicToolsController extends Controller
     {
         $domain = $request->query('domain', '');
         $type = $request->query('type', 'ALL');
+        $server = $request->query('server');
+        $checkGlobal = $request->has('check_global') ? $request->boolean('check_global') : false;
         $initialResult = null;
 
         if (! empty($domain)) {
-            $initialResult = $this->toolsService->lookupDns($domain, $type);
+            $initialResult = $server || $checkGlobal
+                ? $this->toolsService->lookupDns($domain, $type, $server, $checkGlobal)
+                : $this->toolsService->lookupDns($domain, $type);
+        }
+
+        $globalResolvers = [];
+        try {
+            $globalResolvers = $this->toolsService->getGlobalDnsResolvers();
+        } catch (\Throwable) {
+            $globalResolvers = [];
         }
 
         return Inertia::render('tools/DnsLookup', [
             'initialDomain' => $domain,
             'initialType' => $type,
+            'initialServer' => $server,
             'initialResult' => $initialResult,
+            'globalResolvers' => $globalResolvers,
             'appUrl' => config('app.url'),
         ]);
     }
@@ -185,10 +198,12 @@ class PublicToolsController extends Controller
      */
     public function apiLookupDns(PublicDnsLookupRequest $request): JsonResponse
     {
-        $result = $this->toolsService->lookupDns(
-            $request->validated('domain'),
-            $request->input('type', 'ALL')
-        );
+        $server = $request->input('server');
+        $checkGlobal = $request->boolean('check_global', false);
+
+        $result = $server || $checkGlobal
+            ? $this->toolsService->lookupDns($request->validated('domain'), $request->input('type', 'ALL'), $server, $checkGlobal)
+            : $this->toolsService->lookupDns($request->validated('domain'), $request->input('type', 'ALL'));
 
         return response()->json($result);
     }
