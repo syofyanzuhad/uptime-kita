@@ -9,7 +9,7 @@ return [
     | Set TRACE_REPLAY_ENABLED=false in production .env to completely disable
     | all tracing with zero overhead.
     */
-    'enabled' => env('TRACE_REPLAY_ENABLED', true),
+    'enabled' => env('TRACE_REPLAY_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,7 +28,7 @@ return [
     | are traced. 1.0 = trace every request, 0.1 = trace 10% at random.
     | Manual Trace-Replay::start() calls are never sampled.
     */
-    'sample_rate' => env('TRACE_REPLAY_SAMPLE_RATE', 1.0),
+    'sample_rate' => env('TRACE_REPLAY_SAMPLE_RATE', 0.1),
 
     /*
     |--------------------------------------------------------------------------
@@ -180,7 +180,7 @@ return [
     | in traces without any manual instrumentation.
     */
     'auto_trace' => [
-        'jobs' => env('TRACE_REPLAY_AUTO_TRACE_JOBS', true),
+        'jobs' => env('TRACE_REPLAY_AUTO_TRACE_JOBS', false),
         'commands' => env('TRACE_REPLAY_AUTO_TRACE_COMMANDS', false),
         'livewire' => env('TRACE_REPLAY_AUTO_TRACE_LIVEWIRE', true),
         // Artisan commands to exclude from auto-tracing (exact names)
