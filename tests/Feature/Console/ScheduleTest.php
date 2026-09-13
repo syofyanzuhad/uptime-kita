@@ -157,3 +157,13 @@ it('does not schedule backup tasks when backup is disabled', function () {
 
     expect($events)->toHaveCount(0);
 });
+
+it('schedules weekly monitor report job on Monday at 08:00', function () {
+    $schedule = reloadApplicationSchedule();
+
+    $event = collect($schedule->events())
+        ->first(fn ($e) => $e->description === 'send-weekly-monitor-reports');
+
+    expect($event)->not->toBeNull();
+    expect($event->expression)->toBe('0 8 * * 1');
+});
