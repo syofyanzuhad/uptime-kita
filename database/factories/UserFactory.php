@@ -31,7 +31,19 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'is_admin' => false,
+            'weekly_report_enabled' => true,
+            'weekly_report_timezone' => 'UTC',
         ];
+    }
+
+    /**
+     * Indicate that the user has opted out of weekly reports.
+     */
+    public function withoutWeeklyReport(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'weekly_report_enabled' => false,
+        ]);
     }
 
     /**

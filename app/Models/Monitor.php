@@ -244,6 +244,11 @@ class Monitor extends SpatieMonitor
         return $this->hasOne(MonitorStatistic::class);
     }
 
+    public function statistic()
+    {
+        return $this->hasOne(MonitorStatistic::class);
+    }
+
     /**
      * Get the incidents for the monitor.
      */
