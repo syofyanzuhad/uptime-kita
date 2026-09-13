@@ -7,6 +7,7 @@ use App\Http\Controllers\Settings\DatabaseBackupController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TelemetryController;
+use App\Http\Controllers\Settings\WeeklyReportController;
 use App\Http\Controllers\ToggleNotificationChannelController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,7 +42,13 @@ Route::middleware('auth')
 
         Route::resource('notifications', NotificationController::class);
         Route::patch('notifications/{notification}/toggle', ToggleNotificationChannelController::class)->name('notifications.toggle');
+        Route::patch('weekly-report', [WeeklyReportController::class, 'update'])->name('settings.weekly-report.update');
     });
+
+// Unsubscribe from weekly reports via signed URL (no auth required)
+Route::get('settings/weekly-report/unsubscribe/{user}', [WeeklyReportController::class, 'unsubscribe'])
+    ->name('settings.weekly-report.unsubscribe')
+    ->middleware('signed');
 
 // API route for server resources polling (authenticated)
 Route::middleware('auth')

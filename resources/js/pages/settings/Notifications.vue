@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { useWebNotification } from '@vueuse/core';
 import { computed } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import Icon from '@/components/Icon.vue';
 import NotificationChannelList from '@/components/notifications/NotificationChannelList.vue';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -19,7 +20,23 @@ const props = defineProps<{
     showForm?: boolean;
     isEdit?: boolean;
     editingChannel?: any;
+    weeklyReport?: {
+        enabled: boolean;
+        timezone: string;
+    };
+    timezones?: string[];
 }>();
+
+const weeklyReportForm = useForm({
+    weekly_report_enabled: props.weeklyReport?.enabled ?? true,
+    weekly_report_timezone: props.weeklyReport?.timezone ?? 'UTC',
+});
+
+const submitWeeklyReport = () => {
+    weeklyReportForm.patch('/settings/weekly-report', {
+        preserveScroll: true,
+    });
+};
 
 const { isSupported, permissionGranted, show } = useWebNotification();
 
@@ -102,6 +119,58 @@ const breadcrumbItems: BreadcrumbItem[] = [
                                 @update:model-value="handleToggleBrowserNotifications"
                             />
                         </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Weekly Uptime Report -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Icon name="mail" class="h-5 w-5" />
+                            Weekly Uptime Report
+                        </CardTitle>
+                        <CardDescription>
+                            Receive an automated fleet performance summary email every Monday morning.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form @submit.prevent="submitWeeklyReport" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="space-y-0.5">
+                                    <Label for="weekly-report-enabled">Receive weekly uptime summary</Label>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        Summarizes fleet health, top performers, incidents, and uptime trends.
+                                    </p>
+                                </div>
+                                <Switch
+                                    id="weekly-report-enabled"
+                                    :model-value="weeklyReportForm.weekly_report_enabled"
+                                    @update:model-value="weeklyReportForm.weekly_report_enabled = $event"
+                                />
+                            </div>
+
+                            <div v-if="weeklyReportForm.weekly_report_enabled" class="space-y-2 pt-2">
+                                <Label for="weekly-report-timezone">Report Timezone</Label>
+                                <select
+                                    id="weekly-report-timezone"
+                                    v-model="weeklyReportForm.weekly_report_timezone"
+                                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                >
+                                    <option v-for="tz in (props.timezones || ['UTC', 'Asia/Jakarta', 'America/New_York', 'Europe/London'])" :key="tz" :value="tz">
+                                        {{ tz }}
+                                    </option>
+                                </select>
+                                <p v-if="weeklyReportForm.errors.weekly_report_timezone" class="text-xs text-red-500">
+                                    {{ weeklyReportForm.errors.weekly_report_timezone }}
+                                </p>
+                            </div>
+
+                            <div class="flex justify-end pt-2">
+                                <Button type="submit" size="sm" :disabled="weeklyReportForm.processing">
+                                    {{ weeklyReportForm.recentlySuccessful ? 'Saved' : 'Save Preferences' }}
+                                </Button>
+                            </div>
+                        </form>
                     </CardContent>
                 </Card>
 

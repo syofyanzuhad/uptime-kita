@@ -20,9 +20,9 @@ class NotificationController extends Controller
     {
         $channels = Auth::user()->notificationChannels()->latest()->get();
 
-        return Inertia::render('settings/Notifications', [
+        return Inertia::render('settings/Notifications', array_merge([
             'channels' => $channels,
-        ]);
+        ], $this->weeklyReportData()));
     }
 
     /**
@@ -30,11 +30,11 @@ class NotificationController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('settings/Notifications', [
+        return Inertia::render('settings/Notifications', array_merge([
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
             'showForm' => true,
             'isEdit' => false,
-        ]);
+        ], $this->weeklyReportData()));
     }
 
     /**
@@ -58,12 +58,12 @@ class NotificationController extends Controller
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
 
-        return Inertia::render('settings/Notifications', [
+        return Inertia::render('settings/Notifications', array_merge([
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
             'editingChannel' => $channel,
             'showForm' => true,
             'isEdit' => true,
-        ]);
+        ], $this->weeklyReportData()));
     }
 
     /**
@@ -73,12 +73,12 @@ class NotificationController extends Controller
     {
         $channel = Auth::user()->notificationChannels()->findOrFail($id);
 
-        return Inertia::render('settings/Notifications', [
+        return Inertia::render('settings/Notifications', array_merge([
             'channels' => Auth::user()->notificationChannels()->latest()->get(),
             'editingChannel' => $channel,
             'showForm' => true,
             'isEdit' => true,
-        ]);
+        ], $this->weeklyReportData()));
     }
 
     /**
@@ -103,5 +103,23 @@ class NotificationController extends Controller
 
         return Redirect::route('notifications.index')
             ->with('success', 'Notification channel deleted successfully.');
+    }
+
+    /**
+     * Get weekly report preference data for the current user.
+     *
+     * @return array<string, mixed>
+     */
+    protected function weeklyReportData(): array
+    {
+        $user = Auth::user();
+
+        return [
+            'weeklyReport' => [
+                'enabled' => (bool) $user->weekly_report_enabled,
+                'timezone' => $user->weekly_report_timezone ?: 'UTC',
+            ],
+            'timezones' => \DateTimeZone::listIdentifiers(),
+        ];
     }
 }
