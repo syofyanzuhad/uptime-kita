@@ -73,6 +73,19 @@ return [
             'throw' => false,
         ],
 
+        'backup' => [
+            'driver' => env('BACKUP_DESTINATION_DRIVER', 'local'),
+            'key' => env('BACKUP_DESTINATION_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('BACKUP_DESTINATION_SECRET', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('BACKUP_DESTINATION_REGION', env('AWS_DEFAULT_REGION', 'us-east-1')),
+            'bucket' => env('BACKUP_DESTINATION_BUCKET', env('AWS_BUCKET')),
+            'url' => env('BACKUP_DESTINATION_URL'),
+            'endpoint' => env('BACKUP_DESTINATION_ENDPOINT'),
+            'use_path_style_endpoint' => env('BACKUP_DESTINATION_USE_PATH_STYLE_ENDPOINT', false),
+            'root' => storage_path('app/backups'),
+            'throw' => false,
+        ],
+
     ],
 
     /*

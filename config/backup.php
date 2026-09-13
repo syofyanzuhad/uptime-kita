@@ -89,9 +89,11 @@ return [
              *
              * For a complete list of available customization options, see https://github.com/spatie/db-dumper
              */
-            'databases' => [
+            'databases' => array_values(array_unique(array_filter([
                 env('DB_CONNECTION', 'sqlite'),
-            ],
+                file_exists(database_path('queue.sqlite')) ? 'sqlite_queue' : null,
+                file_exists(database_path('telescope.sqlite')) ? 'sqlite_telescope' : null,
+            ]))),
         ],
 
         /*
@@ -163,12 +165,15 @@ return [
             /*
              * The disk names on which the backups will be stored.
              */
-            // Back up to S3 when credentials are configured, otherwise
-            // fall back to the local disk (e.g. local development).
-            'disks' => array_values(array_filter([
+            // Back up to configured cloud disks when credentials are provided,
+            // otherwise fall back to local disk.
+            'disks' => array_values(array_unique(array_filter([
+                env('BACKUP_DISK', env('BACKUP_DESTINATION_DISK')),
                 env('AWS_BUCKET') ? 's3' : null,
+                env('CLOUDFLARE_R2_BUCKET') ? 'r2' : null,
+                env('BACKUP_DESTINATION_DRIVER') ? 'backup' : null,
                 'local',
-            ])),
+            ]))),
         ],
 
         /*
@@ -270,8 +275,14 @@ return [
      */
     'monitor_backups' => [
         [
-            'name' => env('APP_NAME', 'laravel-backup'),
-            'disks' => ['s3', 'local'],
+            'name' => env('APP_NAME', 'uptime-kita'),
+            'disks' => array_values(array_unique(array_filter([
+                env('BACKUP_DISK', env('BACKUP_DESTINATION_DISK')),
+                env('AWS_BUCKET') ? 's3' : null,
+                env('CLOUDFLARE_R2_BUCKET') ? 'r2' : null,
+                env('BACKUP_DESTINATION_DRIVER') ? 'backup' : null,
+                'local',
+            ]))),
             'health_checks' => [
                 MaximumAgeInDays::class => 1,
                 MaximumStorageInMegabytes::class => 5000,

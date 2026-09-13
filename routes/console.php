@@ -128,5 +128,6 @@ Schedule::timezone($scheduleTimezone)->group(function () {
             ->onFailure(function () {
                 info('BACKUP-DB: FAILED');
             });
+        Schedule::command('backup:monitor')->daily()->at('03:00');
     }
 });

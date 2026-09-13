@@ -124,3 +124,36 @@ it('logs warning when monitor:check-uptime schedule is skipped due to overlap', 
 
     event(new ScheduledTaskSkipped($event));
 });
+
+function backupEvents(): Collection
+{
+    return collect(reloadApplicationSchedule()->events())
+        ->filter(fn ($event) => $event->command !== null && str_contains($event->command, 'backup:'));
+}
+
+it('schedules backup clean, run, and monitor when backup is enabled', function () {
+    config(['backup.enabled' => true]);
+
+    $events = backupEvents();
+
+    $cleanEvent = $events->first(fn ($e) => str_contains($e->command, 'backup:clean'));
+    $runEvent = $events->first(fn ($e) => str_contains($e->command, 'backup:run'));
+    $monitorEvent = $events->first(fn ($e) => str_contains($e->command, 'backup:monitor'));
+
+    expect($cleanEvent)->not->toBeNull();
+    expect($cleanEvent->expression)->toBe('0 1 * * *');
+
+    expect($runEvent)->not->toBeNull();
+    expect($runEvent->expression)->toBe('30 1 * * *');
+
+    expect($monitorEvent)->not->toBeNull();
+    expect($monitorEvent->expression)->toBe('0 3 * * *');
+});
+
+it('does not schedule backup tasks when backup is disabled', function () {
+    config(['backup.enabled' => false]);
+
+    $events = backupEvents();
+
+    expect($events)->toHaveCount(0);
+});
