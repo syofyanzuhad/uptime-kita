@@ -8,6 +8,7 @@ use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 beforeEach(function () {
     config()->set('backup.backup.name', 'uptime-kita-test');
     config()->set('backup.backup.destination.disks', ['local']);
+    config()->set('backup.backup.password', null);
     config()->set('backup.backup.source.files.include', [database_path('migrations')]);
     config()->set('backup.backup.source.files.exclude', []);
     config()->set('backup.monitor_backups', [
