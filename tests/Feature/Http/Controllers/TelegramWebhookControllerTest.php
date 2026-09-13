@@ -11,12 +11,43 @@ const TEST_USER_NAME = 'John';
 beforeEach(function () {
     // Set a dummy telegram token for tests
     config(['services.telegram-bot-api.token' => 'test-token']);
+    config(['services.telegram.bot_token' => 'test-token']);
     // Webhook verification is off by default unless a secret token is configured
     config(['services.telegram-bot-api.secret_token' => null]);
+    config(['services.telegram.webhook_secret' => null]);
 });
 
 describe('TelegramWebhookController - secret token verification', function () {
-    it('rejects requests with a missing secret token', function () {
+    it('rejects requests with a missing secret token via services.telegram.webhook_secret', function () {
+        config(['services.telegram.webhook_secret' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, []);
+
+        $response->assertForbidden();
+    });
+
+    it('rejects requests with an invalid secret token via services.telegram.webhook_secret', function () {
+        config(['services.telegram.webhook_secret' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, [], [
+            'X-Telegram-Bot-Api-Secret-Token' => 'wrong-secret',
+        ]);
+
+        $response->assertForbidden();
+    });
+
+    it('accepts requests with the correct secret token via services.telegram.webhook_secret', function () {
+        config(['services.telegram.webhook_secret' => 'webhook-secret']);
+
+        $response = $this->postJson(WEBHOOK_ENDPOINT, [], [
+            'X-Telegram-Bot-Api-Secret-Token' => 'webhook-secret',
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['status' => 'ok']);
+    });
+
+    it('rejects requests with a missing secret token via services.telegram-bot-api.secret_token', function () {
         config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
 
         $response = $this->postJson(WEBHOOK_ENDPOINT, []);
@@ -24,7 +55,7 @@ describe('TelegramWebhookController - secret token verification', function () {
         $response->assertForbidden();
     });
 
-    it('rejects requests with an invalid secret token', function () {
+    it('rejects requests with an invalid secret token via services.telegram-bot-api.secret_token', function () {
         config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
 
         $response = $this->postJson(WEBHOOK_ENDPOINT, [], [
@@ -34,7 +65,7 @@ describe('TelegramWebhookController - secret token verification', function () {
         $response->assertForbidden();
     });
 
-    it('accepts requests with the correct secret token', function () {
+    it('accepts requests with the correct secret token via services.telegram-bot-api.secret_token', function () {
         config(['services.telegram-bot-api.secret_token' => 'webhook-secret']);
 
         $response = $this->postJson(WEBHOOK_ENDPOINT, [], [

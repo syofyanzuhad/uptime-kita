@@ -39,7 +39,7 @@ use App\Http\Controllers\UptimeMonitorController;
 use App\Http\Controllers\UptimesDailyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerifyStatusPageSubscriptionController;
-use App\Http\Middleware\VerifyTelegramWebhook;
+use App\Http\Middleware\VerifyTelegramWebhookSignature;
 use Illuminate\Support\Facades\Route;
 use Spatie\Health\Http\Controllers\HealthCheckJsonResultsController;
 use Spatie\Health\Http\Controllers\HealthCheckResultsController;
@@ -172,7 +172,7 @@ Route::middleware('auth')->prefix('health')->as('health.')->group(function () {
 
 Route::prefix('webhook')->as('webhook.')->group(function () {
     Route::post('/telegram', [TelegramWebhookController::class, 'handle'])
-        ->middleware(VerifyTelegramWebhook::class)
+        ->middleware(VerifyTelegramWebhookSignature::class)
         ->name('telegram');
 });
 

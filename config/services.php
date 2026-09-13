@@ -47,9 +47,14 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/auth/google/callback'),
     ],
 
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', env('TELEGRAM_BOT_SECRET_TOKEN')),
+    ],
+
     'telegram-bot-api' => [
         'token' => env('TELEGRAM_BOT_TOKEN'),
-        'secret_token' => env('TELEGRAM_BOT_SECRET_TOKEN'),
+        'secret_token' => env('TELEGRAM_BOT_SECRET_TOKEN', env('TELEGRAM_WEBHOOK_SECRET')),
     ],
 
     'twitter' => [
