@@ -141,7 +141,7 @@ Schedule::timezone($scheduleTimezone)->group(function () {
             ->chunk(100, function ($users) {
                 foreach ($users as $user) {
                     SendWeeklyMonitorReportJob::dispatch($user)
-                        ->onQueue('notifications');
+                        ->onQueue('default');
                 }
             });
     })->weeklyOn(1, '08:00')
