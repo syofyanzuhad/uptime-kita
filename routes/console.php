@@ -4,8 +4,6 @@ use App\Console\Commands\CheckDomainExpiration;
 use App\Jobs\CalculateMonitorStatisticsJob;
 use App\Jobs\SendBatchedNotificationsJob;
 use App\Jobs\SendTelemetryPingJob;
-use App\Jobs\SendWeeklyMonitorReportJob;
-use App\Models\User;
 use Illuminate\Support\Facades\Schedule;
 use Spatie\Health\Models\HealthCheckResultHistoryItem;
 use Spatie\UptimeMonitor\Commands\CheckCertificates;
@@ -134,17 +132,8 @@ Schedule::timezone($scheduleTimezone)->group(function () {
     }
 
     // === WEEKLY MONITOR REPORT ===
-    Schedule::call(function () {
-        User::query()
-            ->where('weekly_report_enabled', true)
-            ->whereHas('monitors', fn ($q) => $q->where('uptime_check_enabled', true))
-            ->chunk(100, function ($users) {
-                foreach ($users as $user) {
-                    SendWeeklyMonitorReportJob::dispatch($user)
-                        ->onQueue('default');
-                }
-            });
-    })->weeklyOn(1, '08:00')
+    Schedule::command('reports:send-weekly')
+        ->weeklyOn(1, '08:00')
         ->name('send-weekly-monitor-reports')
         ->withoutOverlapping();
 });
