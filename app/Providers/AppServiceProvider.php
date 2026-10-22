@@ -73,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Nightwatch::rejectQueries(function (Query $query) {
+            $slowQueryThreshold = config('nightwatch.sampling.slow_query_threshold_ms', 500);
+            if ($slowQueryThreshold !== null && $query->duration >= (float) $slowQueryThreshold) {
+                return false;
+            }
+
             $highVolumePatterns = [
                 'monitor_histories',
                 'monitor_performance_hourly',
@@ -85,6 +90,11 @@ class AppServiceProvider extends ServiceProvider
                     // Drop 95% of these high-volume monitoring queries (keep 5% sample)
                     return random_int(1, 100) > 5;
                 }
+            }
+
+            $querySampleRate = (float) config('nightwatch.sampling.queries', 1.0);
+            if ($querySampleRate < 1.0) {
+                return (random_int(1, 10000) / 10000) > $querySampleRate;
             }
 
             return false;

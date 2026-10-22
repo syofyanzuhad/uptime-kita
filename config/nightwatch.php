@@ -16,6 +16,8 @@ return [
         'exceptions' => env('NIGHTWATCH_EXCEPTION_SAMPLE_RATE', 1.0),
         'scheduled_tasks' => env('NIGHTWATCH_SCHEDULED_TASK_SAMPLE_RATE', 0.0),
         'calculate_monitor_statistics' => env('NIGHTWATCH_CALCULATE_MONITOR_STATISTICS_SAMPLE_RATE', null),
+        'queries' => env('NIGHTWATCH_QUERY_SAMPLE_RATE', 1.0),
+        'slow_query_threshold_ms' => env('NIGHTWATCH_SLOW_QUERY_THRESHOLD_MS', 500),
     ],
 
     'filtering' => [
